@@ -26,7 +26,7 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 
 		$color_a    = (string) sc_get( 'color_a', $atts, '#6aa6ff' );
 		$color_b    = (string) sc_get( 'color_b', $atts, '#b388ff' );
-		$background  = (string) sc_get( 'background', $atts, 'transparent' );
+		$background  = (string) sc_get( 'background', $atts, 'gradient' );
 		$bg_color    = (string) sc_get( 'bg_color', $atts, '#0b0f1a' );
 
 		$config = array(

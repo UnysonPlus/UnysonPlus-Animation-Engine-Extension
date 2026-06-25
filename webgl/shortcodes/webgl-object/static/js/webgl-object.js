@@ -71,6 +71,10 @@
 		var rg = ctx.createRadialGradient(size * 0.72, size * 0.28, 0, size * 0.72, size * 0.28, size * 0.55);
 		rg.addColorStop(0, 'rgba(255,255,255,0.95)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
 		ctx.fillStyle = rg; ctx.fillRect(0, 0, size, size);
+		// A second, softer highlight for richer reflections on dark backgrounds.
+		var rg2 = ctx.createRadialGradient(size * 0.24, size * 0.7, 0, size * 0.24, size * 0.7, size * 0.42);
+		rg2.addColorStop(0, 'rgba(255,255,255,0.55)'); rg2.addColorStop(1, 'rgba(255,255,255,0)');
+		ctx.fillStyle = rg2; ctx.fillRect(0, 0, size, size);
 
 		var tex = new THREE.CanvasTexture(c);
 		tex.mapping = THREE.EquirectangularReflectionMapping;
@@ -124,11 +128,14 @@
 		} else { // glass
 			mat = new THREE.MeshPhysicalMaterial({
 				color: new THREE.Color('#ffffff'),
-				metalness: 0, roughness: 0.05,
+				metalness: 0, roughness: 0.04,
 				transmission: 1, thickness: 1.2,
 				ior: opts.ior != null ? opts.ior : 1.45,
 				iridescence: opts.iridescence != null ? opts.iridescence : 0.3,
-				iridescenceIOR: 1.3, envMap: env, envMapIntensity: 1.4,
+				iridescenceIOR: 1.3,
+				clearcoat: 1, clearcoatRoughness: 0.12,
+				specularIntensity: 1,
+				envMap: env, envMapIntensity: 2,
 				attenuationColor: colA, attenuationDistance: 1.6
 			});
 		}
@@ -187,21 +194,24 @@
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
 		renderer.outputEncoding = THREE.sRGBEncoding;
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
-		renderer.toneMappingExposure = 1.05;
+		renderer.toneMappingExposure = 1.2;
 		if (!transparent) { renderer.setClearColor(new THREE.Color(cfg.background === 'solid' ? (cfg.bgColor || '#0b0f1a') : '#05070d'), 1); }
 		host.appendChild(renderer.domElement);
 
 		var scene = new THREE.Scene();
 		var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-		camera.position.set(0, 0, 3.3);
+		// Closer camera → the object fills the frame (and bleeds slightly past the
+		// edges, like Hatom's hero blobs) rather than floating small in the middle.
+		camera.position.set(0, 0, 2.5);
 
 		// Glass transmission needs an environment; metal/sphere use it for reflections.
 		var env = makeEnv(renderer, cfg.colorA || '#6aa6ff', cfg.colorB || '#b388ff');
 		scene.environment = env;
 
-		var key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(2, 3, 2); scene.add(key);
-		var rim = new THREE.DirectionalLight(new THREE.Color(cfg.colorB || '#b388ff'), 1.1); rim.position.set(-3, -1, -2); scene.add(rim);
-		scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+		var key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(2, 3, 2); scene.add(key);
+		var rim = new THREE.DirectionalLight(new THREE.Color(cfg.colorB || '#b388ff'), 1.5); rim.position.set(-3, -1, -2); scene.add(rim);
+		var fill = new THREE.DirectionalLight(new THREE.Color(cfg.colorA || '#6aa6ff'), 0.8); fill.position.set(0, -2, 3); scene.add(fill);
+		scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
 		var built = buildMesh(cfg, env);
 		var obj = built.object;

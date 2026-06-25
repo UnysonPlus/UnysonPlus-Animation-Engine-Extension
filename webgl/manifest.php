@@ -11,9 +11,10 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.0';
+$manifest['version']     = '1.0.1';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
+$manifest['thumbnail']   = 'thumbnail.svg';
 
 // Needs the shortcodes loader + the page builder to surface [webgl_object].
 $manifest['requirements'] = [
