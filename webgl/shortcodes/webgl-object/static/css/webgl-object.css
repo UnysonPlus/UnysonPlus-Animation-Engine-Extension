@@ -1,0 +1,45 @@
+.fw-webgl {
+	position: relative;
+	width: 100%;
+	height: var(--webgl-h, 520px);
+	overflow: hidden;
+}
+
+.fw-webgl--bg-gradient {
+	background: radial-gradient(120% 120% at 30% 20%, var(--webgl-a, #6aa6ff), var(--webgl-b, #b388ff));
+}
+
+.fw-webgl--bg-solid {
+	background: var(--webgl-bg, #0b0f1a);
+}
+
+.fw-webgl__canvas {
+	position: absolute;
+	inset: 0;
+}
+
+.fw-webgl__canvas canvas {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.fw-webgl__poster {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0;
+	transition: opacity .3s ease;
+	pointer-events: none;
+}
+
+/* Fallback: no WebGL / reduced-motion → show poster, hide the (empty) canvas. */
+.fw-webgl--fallback .fw-webgl__canvas { display: none; }
+.fw-webgl--fallback .fw-webgl__poster { opacity: 1; }
+
+/* Fallback with no poster on a transparent background → never blank: show the palette. */
+.fw-webgl--fallback.fw-webgl--bg-transparent {
+	background: radial-gradient(120% 120% at 30% 20%, var(--webgl-a, #6aa6ff), var(--webgl-b, #b388ff));
+}
