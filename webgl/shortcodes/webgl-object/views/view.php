@@ -28,6 +28,7 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 		$color_b    = (string) sc_get( 'color_b', $atts, '#b388ff' );
 		$background  = (string) sc_get( 'background', $atts, 'gradient' );
 		$bg_color    = (string) sc_get( 'bg_color', $atts, '#0b0f1a' );
+		$display_mode = sc_get( 'display_mode', $atts, 'inline' ) === 'background' ? 'background' : 'inline';
 
 		$config = array(
 			'preset'          => (string) $preset,
@@ -68,6 +69,9 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 			'fw-webgl--' . sanitize_html_class( $preset ),
 			'fw-webgl--bg-' . sanitize_html_class( $background ),
 		);
+		if ( $display_mode === 'background' ) {
+			$classes[] = 'fw-webgl--background';
+		}
 
 		// Wrapper attributes (Advanced-tab id/class + animations) via the shared helper.
 		if ( function_exists( 'sc_build_wrapper_attr' ) ) {
@@ -81,6 +85,9 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 
 		$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style;
 		$attr['data-webgl']  = '1';
+		if ( $display_mode === 'background' ) {
+			$attr['data-webgl-bg'] = '1';
+		}
 		$attr['data-config'] = wp_json_encode( $config );
 
 		$html  = '<div ' . fw_attr_to_html( $attr ) . '>';

@@ -173,6 +173,21 @@
 
 		var poster = root.querySelector('.fw-webgl__poster');
 
+		// Background mode: fill the parent <section> and sit behind its content.
+		// Relocate the canvas to be a direct child of the section so it positions
+		// relative to the section (not its column) and the content paints on top.
+		var bgMode = root.getAttribute('data-webgl-bg') === '1';
+		var sectionEl = null;
+		if (bgMode) {
+			sectionEl = root.closest('section') || root.parentElement;
+			if (sectionEl) {
+				sectionEl.classList.add('fw-webgl-host');
+				if (root.parentElement !== sectionEl) {
+					sectionEl.insertBefore(root, sectionEl.firstChild);
+				}
+			}
+		}
+
 		if (!THREE || !hasWebGL()) { fallback(root); return; }
 		// Reduce-motion: prefer a poster; otherwise we still draw ONE static frame below.
 		if (REDUCE && poster) { fallback(root); return; }
@@ -225,15 +240,20 @@
 		};
 		size();
 
-		// Pointer + parallax.
+		// Pointer + parallax. In background mode the canvas is click-through, so
+		// listen on the window and measure against the section instead of the root.
 		var px = 0, py = 0, tx = 0, ty = 0;
 		if (cfg.pointerFollow) {
-			root.addEventListener('pointermove', function (e) {
-				var r = root.getBoundingClientRect();
+			var moveTarget = bgMode ? window : root;
+			var rectSource = (bgMode && sectionEl) ? sectionEl : root;
+			moveTarget.addEventListener('pointermove', function (e) {
+				var r = rectSource.getBoundingClientRect();
 				tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
 				ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
 			});
-			root.addEventListener('pointerleave', function () { tx = 0; ty = 0; });
+			if (!bgMode) {
+				root.addEventListener('pointerleave', function () { tx = 0; ty = 0; });
+			}
 		}
 
 		var clock = new THREE.Clock();

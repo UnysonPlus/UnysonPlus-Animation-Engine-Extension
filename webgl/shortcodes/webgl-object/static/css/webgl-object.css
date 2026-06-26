@@ -43,3 +43,29 @@
 .fw-webgl--fallback.fw-webgl--bg-transparent {
 	background: radial-gradient(120% 120% at 30% 20%, var(--webgl-a, #6aa6ff), var(--webgl-b, #b388ff));
 }
+
+/* ------------------------------------------------------------------ *
+ * Background mode — the canvas fills the parent <section> behind its
+ * content. JS relocates this node to be a direct child of the section
+ * and adds .fw-webgl-host to that section.
+ * ------------------------------------------------------------------ */
+.fw-webgl-host { position: relative; overflow: hidden; }
+
+/* Lift the section's content band above the canvas layer. */
+.fw-webgl-host > .fw-container,
+.fw-webgl-host > .fw-container-fluid {
+	position: relative;
+	z-index: 1;
+}
+
+.fw-webgl--background {
+	position: absolute;
+	inset: 0;
+	width: auto !important;
+	height: auto !important;
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	z-index: 0;
+	pointer-events: none;
+}

@@ -12,6 +12,16 @@ $options = [
 			'group_object' => [
 				'type'    => 'group',
 				'options' => [
+					'display_mode' => [
+						'type'    => 'select',
+						'label'   => __( 'Placement', 'fw' ),
+						'desc'    => __( 'Inline = a normal element in the column. Section background = the canvas fills the parent Section and sits behind its content (drop this element inside the Section you want it to fill, then add your heading / button in the same Section).', 'fw' ),
+						'value'   => 'inline',
+						'choices' => [
+							'inline'     => __( 'Inline element', 'fw' ),
+							'background' => __( 'Section background', 'fw' ),
+						],
+					],
 					'style_preset' => [
 						'type'         => 'multi-picker',
 						'label'        => false,
