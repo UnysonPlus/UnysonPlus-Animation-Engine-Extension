@@ -34,7 +34,8 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 		$color_b    = (string) sc_get( 'color_b', $atts, '#b388ff' );
 		$background  = (string) sc_get( 'background', $atts, 'gradient' );
 		$bg_color    = (string) sc_get( 'bg_color', $atts, '#0b0f1a' );
-		$display_mode = sc_get( 'display_mode', $atts, 'inline' ) === 'background' ? 'background' : 'inline';
+		// Placement is a multi-picker: placement/mode + (inline) placement/inline/height.
+		$display_mode = sc_get( 'placement/mode', $atts, 'inline' ) === 'background' ? 'background' : 'inline';
 
 		$config = array(
 			'preset'          => (string) $preset,
@@ -58,11 +59,13 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 		$poster     = sc_get( 'poster', $atts, array() );
 		$poster_url = ( is_array( $poster ) && ! empty( $poster['url'] ) ) ? $poster['url'] : '';
 
-		$height = trim( (string) sc_get( 'height', $atts, '520' ) );
+		// Height lives under the inline placement. In background mode it's unused —
+		// the parent Section's Min Height sizes the canvas.
+		$height = trim( (string) sc_get( 'placement/inline/height', $atts, '520' ) );
 
 		// Inline CSS vars: height + palette (also a CSS gradient fallback before JS / without WebGL).
 		$style = '';
-		if ( $height !== '' && is_numeric( $height ) ) {
+		if ( $display_mode !== 'background' && $height !== '' && is_numeric( $height ) ) {
 			$style .= '--webgl-h:' . (int) $height . 'px;';
 		}
 		$style .= '--webgl-a:' . esc_attr( $color_a ) . ';--webgl-b:' . esc_attr( $color_b ) . ';';

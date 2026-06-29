@@ -2,7 +2,8 @@
 	die( 'Forbidden' );
 }
 
-$ext = fw_ext( 'webgl' );
+// The extension was renamed webgl → animation-engine; this is its machine name.
+$ext = fw_ext( 'animation-engine' );
 if ( ! $ext ) {
 	return;
 }

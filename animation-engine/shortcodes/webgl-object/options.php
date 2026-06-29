@@ -12,16 +12,6 @@ $options = [
 			'group_object' => [
 				'type'    => 'group',
 				'options' => [
-					'display_mode' => [
-						'type'    => 'select',
-						'label'   => __( 'Placement', 'fw' ),
-						'desc'    => __( 'Inline = a normal element in the column. Section background = the canvas fills the parent Section and sits behind its content (drop this element inside the Section you want it to fill, then add your heading / button in the same Section).', 'fw' ),
-						'value'   => 'inline',
-						'choices' => [
-							'inline'     => __( 'Inline element', 'fw' ),
-							'background' => __( 'Section background', 'fw' ),
-						],
-					],
 					'style_preset' => [
 						'type'         => 'multi-picker',
 						'label'        => false,
@@ -231,11 +221,37 @@ $options = [
 						'value'      => 1,
 						'properties' => [ 'min' => 0.5, 'max' => 1.6, 'step' => 0.05 ],
 					],
-					'height' => [
-						'type'  => 'text',
-						'label' => __( 'Height (px)', 'fw' ),
-						'desc'  => __( 'Height of the canvas area.', 'fw' ),
-						'value' => '520',
+					// Placement sits last: pick the look first, then how it sits on the
+					// page. A multi-picker so Height appears ONLY for an inline element —
+					// in Section-background mode the parent Section's Min Height sizes it.
+					'placement' => [
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'show_borders' => false,
+						'value'        => [ 'mode' => 'inline' ],
+						'picker'       => [
+							'mode' => [
+								'type'    => 'select',
+								'label'   => __( 'Placement', 'fw' ),
+								'desc'    => __( 'Inline = a normal element in the column (set its Height below). Section background = the canvas fills the parent Section and sits behind its content — drop this element into that Section, size it with the Section\'s Min Height, then add your heading / button in the same Section.', 'fw' ),
+								'choices' => [
+									'inline'     => __( 'Inline element', 'fw' ),
+									'background' => __( 'Section background', 'fw' ),
+								],
+							],
+						],
+						'choices' => [
+							'inline' => [
+								'height' => [
+									'type'  => 'text',
+									'label' => __( 'Height (px)', 'fw' ),
+									'desc'  => __( 'Height of the canvas area.', 'fw' ),
+									'value' => '520',
+								],
+							],
+						// 'background' reveals nothing — the Section owns its height.
+						],
 					],
 				],
 			],
