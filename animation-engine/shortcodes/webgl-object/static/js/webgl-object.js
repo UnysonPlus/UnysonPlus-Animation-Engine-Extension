@@ -38,6 +38,102 @@
 		'}'
 	].join('\n');
 
+	// ---- Full-screen shader presets (fragment shader on a quad) ----
+	var QUAD_VS = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
+
+	var FRAG_HEAD = [
+		'precision highp float;',
+		'varying vec2 vUv;',
+		'uniform float uTime; uniform vec2 uResolution; uniform vec2 uMouse;',
+		'uniform float uScroll; uniform vec3 uColorA; uniform vec3 uColorB;',
+		'uniform float uP1; uniform float uP2; uniform float uP3;',
+		'uniform sampler2D uTexture; uniform float uHasTex;'
+	].join('\n');
+
+	var FBM = 'float fbm(vec3 q){float f=0.0,a=0.5;for(int i=0;i<5;i++){f+=a*snoise(q);q*=2.0;a*=0.5;}return f;}';
+
+	var FRAG = {
+		gradient_mesh:
+			'void main(){vec2 p=vUv;float t=uTime*(0.1+uP1*0.5);vec2 m=uMouse*0.15;' +
+			'float a=0.5+0.5*sin(t+p.x*3.0+m.x);float b=0.5+0.5*sin(t*1.3+p.y*3.0+m.y);' +
+			'float c=0.5+0.5*sin(t*0.7+(p.x+p.y)*2.5);vec3 col=mix(uColorA,uColorB,a);' +
+			'col=mix(col,uColorB,b*0.5);col=mix(col,uColorA,c*0.35);' +
+			'float g=fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);col+=(g-0.5)*uP2;' +
+			'gl_FragColor=vec4(col,1.0);}',
+		plasma: SIMPLEX + FBM +
+			'void main(){vec2 p=(vUv-0.5);p.x*=uResolution.x/uResolution.y;float s=uP1;' +
+			'float t=uTime*(0.1+uP2*0.4);float n=fbm(vec3(p*s,t));' +
+			'n=pow(0.5+0.5*n,mix(1.0,3.0,uP3));gl_FragColor=vec4(mix(uColorA,uColorB,n),1.0);}',
+		aurora: SIMPLEX + FBM +
+			'void main(){vec2 p=vUv;float t=uTime*(0.1+uP2*0.3);float warp=fbm(vec3(p*2.0,t));' +
+			'float v=sin((p.y*uP1+warp)*3.1415);v=smoothstep(1.0-uP3,1.0,abs(v));' +
+			'gl_FragColor=vec4(mix(uColorA,uColorB,p.y)*v,1.0);}',
+		fluid: SIMPLEX +
+			'void main(){vec2 p=vUv;vec2 m=uMouse*0.5;float t=uTime*0.2;' +
+			'vec2 q=p+0.1*vec2(snoise(vec3(p*3.0+m,t)),snoise(vec3(p*3.0-m,t+5.0)));' +
+			'float n=snoise(vec3(q*4.0,t))*(0.5+uP2);n=mix(n,n*0.5,uP1);' +
+			'gl_FragColor=vec4(mix(uColorA,uColorB,0.5+0.5*n),1.0);}',
+		dots: SIMPLEX +
+			'void main(){float density=uP1;vec2 g=vUv*density;vec2 cell=fract(g)-0.5;' +
+			'float field=0.5+0.5*snoise(vec3(floor(g)/max(density,1.0)*3.0,uTime*0.2));' +
+			'float radius=mix(field,0.5,uP3)*uP2*0.5;float d=length(cell);' +
+			'float dt=smoothstep(radius,radius-0.05,d);gl_FragColor=vec4(mix(uColorA,uColorB,dt),1.0);}',
+		image_distort: SIMPLEX +
+			'void main(){vec2 p=vUv;float amt=uP1;' +
+			'vec2 flow=vec2(snoise(vec3(p*4.0,uTime*0.3)),snoise(vec3(p*4.0+10.0,uTime*0.3)));' +
+			'vec2 uv=p+flow*amt*0.1;' +
+			'gl_FragColor=vec4(uHasTex>0.5?texture2D(uTexture,uv).rgb:mix(uColorA,uColorB,p.y),1.0);}'
+	};
+
+	function isShaderPreset(p) { return FRAG.hasOwnProperty(p); }
+
+	// Map each preset's named sub-options onto the generic uP1..uP3 slots.
+	function paramFor(cfg, n) {
+		var o = cfg.presetOpts || {};
+		var num = function (v, d) { return (v === undefined || v === null || v === '') ? d : parseFloat(v); };
+		var t;
+		switch (cfg.preset) {
+			case 'gradient_mesh': t = [num(o.blend_speed, 0.4), num(o.grain, 0.15), 0]; break;
+			case 'plasma':        t = [num(o.scale, 3), num(o.flow_speed, 0.5), num(o.contrast, 0.6)]; break;
+			case 'aurora':        t = [num(o.band_count, 3), num(o.drift_speed, 0.4), num(o.softness, 0.5)]; break;
+			case 'fluid':         t = [num(o.viscosity, 0.5), num(o.splat_strength, 0.6), 0]; break;
+			case 'dots':          t = [num(o.grid_density, 40), num(o.dot_size, 0.5), (o.dot_style === 'halftone' ? 1 : 0)]; break;
+			case 'image_distort': t = [num(o.strength, 0.3), 0, 0]; break;
+			default:              t = [0, 0, 0];
+		}
+		return t[n - 1];
+	}
+
+	function buildShader(cfg) {
+		var uniforms = {
+			uTime:       { value: 0 },
+			uResolution: { value: new THREE.Vector2(1, 1) },
+			uMouse:      { value: new THREE.Vector2(0, 0) },
+			uScroll:     { value: 0 },
+			uColorA:     { value: new THREE.Color(cfg.colorA || '#6aa6ff') },
+			uColorB:     { value: new THREE.Color(cfg.colorB || '#b388ff') },
+			uP1:         { value: paramFor(cfg, 1) },
+			uP2:         { value: paramFor(cfg, 2) },
+			uP3:         { value: paramFor(cfg, 3) },
+			uTexture:    { value: null },
+			uHasTex:     { value: 0 }
+		};
+		var mat = new THREE.ShaderMaterial({
+			vertexShader: QUAD_VS,
+			fragmentShader: FRAG_HEAD + '\n' + FRAG[cfg.preset],
+			uniforms: uniforms
+		});
+		var geo = new THREE.PlaneGeometry(2, 2);
+		var tex = null;
+		if (cfg.preset === 'image_distort' && cfg.presetOpts && cfg.presetOpts.imageUrl) {
+			tex = new THREE.TextureLoader().load(cfg.presetOpts.imageUrl, function () { uniforms.uHasTex.value = 1; });
+			uniforms.uTexture.value = tex;
+			// hover_only starts un-distorted and eases up on pointer-over.
+			if (cfg.presetOpts.hover_only === 'yes') { uniforms.uP1.value = 0; }
+		}
+		return { object: new THREE.Mesh(geo, mat), uniforms: uniforms, geometry: geo, material: mat, texture: tex, shader: true };
+	}
+
 	function hasWebGL() {
 		try {
 			var c = document.createElement('canvas');
@@ -213,30 +309,46 @@
 		if (!transparent) { renderer.setClearColor(new THREE.Color(cfg.background === 'solid' ? (cfg.bgColor || '#0b0f1a') : '#05070d'), 1); }
 		host.appendChild(renderer.domElement);
 
+		var shaderMode = isShaderPreset(cfg.preset);
+
 		var scene = new THREE.Scene();
-		var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-		// Closer camera → the object fills the frame (and bleeds slightly past the
-		// edges, like Hatom's hero blobs) rather than floating small in the middle.
-		camera.position.set(0, 0, 2.5);
+		var camera, env = null, built, obj, s = cfg.scale || 1;
 
-		// Glass transmission needs an environment; metal/sphere use it for reflections.
-		var env = makeEnv(renderer, cfg.colorA || '#6aa6ff', cfg.colorB || '#b388ff');
-		scene.environment = env;
+		if (shaderMode) {
+			// Full-screen quad + fragment shader: no 3D camera/lights/env needed.
+			camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+			built = buildShader(cfg);
+			obj = built.object;
+			scene.add(obj);
+		} else {
+			camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+			// Closer camera → the object fills the frame (and bleeds slightly past the
+			// edges, like Hatom's hero blobs) rather than floating small in the middle.
+			camera.position.set(0, 0, 2.5);
 
-		var key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(2, 3, 2); scene.add(key);
-		var rim = new THREE.DirectionalLight(new THREE.Color(cfg.colorB || '#b388ff'), 1.5); rim.position.set(-3, -1, -2); scene.add(rim);
-		var fill = new THREE.DirectionalLight(new THREE.Color(cfg.colorA || '#6aa6ff'), 0.8); fill.position.set(0, -2, 3); scene.add(fill);
-		scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+			// Glass transmission needs an environment; metal/sphere use it for reflections.
+			env = makeEnv(renderer, cfg.colorA || '#6aa6ff', cfg.colorB || '#b388ff');
+			scene.environment = env;
 
-		var built = buildMesh(cfg, env);
-		var obj = built.object;
-		var s = cfg.scale || 1; obj.scale.setScalar(s);
-		scene.add(obj);
+			var key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(2, 3, 2); scene.add(key);
+			var rim = new THREE.DirectionalLight(new THREE.Color(cfg.colorB || '#b388ff'), 1.5); rim.position.set(-3, -1, -2); scene.add(rim);
+			var fill = new THREE.DirectionalLight(new THREE.Color(cfg.colorA || '#6aa6ff'), 0.8); fill.position.set(0, -2, 3); scene.add(fill);
+			scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+
+			built = buildMesh(cfg, env);
+			obj = built.object;
+			obj.scale.setScalar(s);
+			scene.add(obj);
+		}
 
 		var size = function () {
 			var w = root.clientWidth || 1, h = root.clientHeight || 1;
 			renderer.setSize(w, h, false);
-			camera.aspect = w / h; camera.updateProjectionMatrix();
+			if (shaderMode) {
+				built.uniforms.uResolution.value.set(w, h);
+			} else {
+				camera.aspect = w / h; camera.updateProjectionMatrix();
+			}
 		};
 		size();
 
@@ -256,16 +368,43 @@
 			}
 		}
 
+		// Image Distortion "hover only": ramp the distortion up while the pointer is over.
+		var hoverActive = 0;
+		if (shaderMode && cfg.preset === 'image_distort' && cfg.presetOpts && cfg.presetOpts.hover_only === 'yes') {
+			var hoverTarget = (bgMode && sectionEl) ? sectionEl : root;
+			hoverTarget.addEventListener('pointerenter', function () { hoverActive = 1; });
+			hoverTarget.addEventListener('pointerleave', function () { hoverActive = 0; });
+		}
+
 		var clock = new THREE.Clock();
 		var running = false, raf = 0, last = 0;
 		var minDelta = (cfg.quality === 'low') ? (1 / 30) : 0;
 
 		function renderFrame() {
 			var t = clock.getElapsedTime();
-			if (built.uniforms) { built.uniforms.uTime.value = t * (0.15 + (cfg.noiseSpeed || 0) * 0.6); }
 
 			// Smooth the pointer toward its target.
 			px += (tx - px) * 0.06; py += (ty - py) * 0.06;
+
+			// ---- Shader path: feed the quad's uniforms and draw. ----
+			if (shaderMode) {
+				var u = built.uniforms;
+				u.uTime.value = t;
+				u.uMouse.value.set(px, py);
+				if (cfg.scrollLink) {
+					var sr = root.getBoundingClientRect();
+					u.uScroll.value = 1 - Math.max(0, Math.min(1, (sr.top + sr.height) / (window.innerHeight + sr.height)));
+				}
+				if (cfg.preset === 'image_distort' && cfg.presetOpts && cfg.presetOpts.hover_only === 'yes') {
+					var want = hoverActive * (parseFloat(cfg.presetOpts.strength) || 0.3);
+					u.uP1.value += (want - u.uP1.value) * 0.08;
+				}
+				renderer.render(scene, camera);
+				return;
+			}
+
+			// ---- 3D object path. ----
+			if (built.uniforms) { built.uniforms.uTime.value = t * (0.15 + (cfg.noiseSpeed || 0) * 0.6); }
 			var ps = cfg.pointerFollow ? (cfg.pointerStrength || 0) : 0;
 
 			// Continuous auto-spin + a pointer-driven tilt offset.
@@ -304,6 +443,7 @@
 			stop();
 			if (built.geometry) { built.geometry.dispose(); }
 			if (built.material) { built.material.dispose(); }
+			if (built.texture) { built.texture.dispose(); }
 			if (env) { env.dispose(); }
 			renderer.dispose();
 			if (renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); }

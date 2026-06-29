@@ -32,12 +32,28 @@ $options = [
 							'preset' => [
 								'type'    => 'select',
 								'label'   => __( 'Style', 'fw' ),
-								'desc'    => __( 'The look of the WebGL object.', 'fw' ),
+								'desc'    => __( 'The look of the WebGL element — a 3D object or a full-screen shader.', 'fw' ),
 								'choices' => [
-									'glass'     => __( 'Glass Blob', 'fw' ),
-									'metal'     => __( 'Liquid Metal', 'fw' ),
-									'sphere'    => __( 'Distorted Sphere', 'fw' ),
-									'particles' => __( 'Particle Field', 'fw' ),
+									[
+										'attr'    => [ 'label' => __( '3D Objects', 'fw' ) ],
+										'choices' => [
+											'glass'     => __( 'Glass Blob', 'fw' ),
+											'metal'     => __( 'Liquid Metal', 'fw' ),
+											'sphere'    => __( 'Distorted Sphere', 'fw' ),
+											'particles' => __( 'Particle Field', 'fw' ),
+										],
+									],
+									[
+										'attr'    => [ 'label' => __( 'Shaders (full-screen)', 'fw' ) ],
+										'choices' => [
+											'gradient_mesh' => __( 'Gradient Mesh', 'fw' ),
+											'plasma'        => __( 'Plasma', 'fw' ),
+											'aurora'        => __( 'Aurora', 'fw' ),
+											'fluid'         => __( 'Fluid (pointer-reactive)', 'fw' ),
+											'dots'          => __( 'Dot Matrix / Halftone', 'fw' ),
+											'image_distort' => __( 'Image Distortion', 'fw' ),
+										],
+									],
 								],
 							],
 						],
@@ -92,6 +108,119 @@ $options = [
 									'label'      => __( 'Particle size', 'fw' ),
 									'value'      => 0.02,
 									'properties' => [ 'min' => 0.005, 'max' => 0.08, 'step' => 0.005 ],
+								],
+							],
+
+							/* ---- Full-screen shader presets ---- */
+							'gradient_mesh' => [
+								'blend_speed' => [
+									'type'       => 'slider',
+									'label'      => __( 'Blend speed', 'fw' ),
+									'value'      => 0.4,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+								'grain' => [
+									'type'       => 'slider',
+									'label'      => __( 'Grain', 'fw' ),
+									'value'      => 0.15,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+							],
+							'plasma' => [
+								'scale' => [
+									'type'       => 'slider',
+									'label'      => __( 'Scale', 'fw' ),
+									'value'      => 3,
+									'properties' => [ 'min' => 1, 'max' => 8, 'step' => 0.5 ],
+								],
+								'flow_speed' => [
+									'type'       => 'slider',
+									'label'      => __( 'Flow speed', 'fw' ),
+									'value'      => 0.5,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+								'contrast' => [
+									'type'       => 'slider',
+									'label'      => __( 'Contrast', 'fw' ),
+									'value'      => 0.6,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+							],
+							'aurora' => [
+								'band_count' => [
+									'type'       => 'slider',
+									'label'      => __( 'Bands', 'fw' ),
+									'value'      => 3,
+									'properties' => [ 'min' => 1, 'max' => 6, 'step' => 1 ],
+								],
+								'drift_speed' => [
+									'type'       => 'slider',
+									'label'      => __( 'Drift speed', 'fw' ),
+									'value'      => 0.4,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+								'softness' => [
+									'type'       => 'slider',
+									'label'      => __( 'Softness', 'fw' ),
+									'value'      => 0.5,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+							],
+							'fluid' => [
+								'viscosity' => [
+									'type'       => 'slider',
+									'label'      => __( 'Viscosity', 'fw' ),
+									'value'      => 0.5,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+								'splat_strength' => [
+									'type'       => 'slider',
+									'label'      => __( 'Pointer strength', 'fw' ),
+									'value'      => 0.6,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+							],
+							'dots' => [
+								'dot_style' => [
+									'type'    => 'select',
+									'label'   => __( 'Style', 'fw' ),
+									'value'   => 'dot',
+									'choices' => [
+										'dot'      => __( 'Dot matrix', 'fw' ),
+										'halftone' => __( 'Halftone', 'fw' ),
+									],
+								],
+								'grid_density' => [
+									'type'       => 'slider',
+									'label'      => __( 'Density', 'fw' ),
+									'value'      => 40,
+									'properties' => [ 'min' => 10, 'max' => 120, 'step' => 5 ],
+								],
+								'dot_size' => [
+									'type'       => 'slider',
+									'label'      => __( 'Dot size', 'fw' ),
+									'value'      => 0.5,
+									'properties' => [ 'min' => 0.1, 'max' => 1, 'step' => 0.05 ],
+								],
+							],
+							'image_distort' => [
+								'image' => [
+									'type'  => 'upload',
+									'label' => __( 'Image', 'fw' ),
+									'desc'  => __( 'The image to ripple / displace.', 'fw' ),
+								],
+								'strength' => [
+									'type'       => 'slider',
+									'label'      => __( 'Strength', 'fw' ),
+									'value'      => 0.3,
+									'properties' => [ 'min' => 0, 'max' => 1, 'step' => 0.05 ],
+								],
+								'hover_only' => [
+									'type'         => 'switch',
+									'label'        => __( 'Distort on hover only', 'fw' ),
+									'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+									'left-choice'  => [ 'value' => 'no',  'label' => __( 'No', 'fw' ) ],
+									'value'        => 'yes',
 								],
 							],
 						],

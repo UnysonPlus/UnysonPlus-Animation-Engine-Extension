@@ -24,6 +24,12 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 			$preset_opts = array();
 		}
 
+		// Image Distortion shader: resolve the uploaded image to a URL the JS can load
+		// (the `upload` option stores an array with a 'url'). Mirrors poster handling.
+		if ( $preset === 'image_distort' && isset( $preset_opts['image'] ) && is_array( $preset_opts['image'] ) ) {
+			$preset_opts['imageUrl'] = ! empty( $preset_opts['image']['url'] ) ? esc_url_raw( $preset_opts['image']['url'] ) : '';
+		}
+
 		$color_a    = (string) sc_get( 'color_a', $atts, '#6aa6ff' );
 		$color_b    = (string) sc_get( 'color_b', $atts, '#b388ff' );
 		$background  = (string) sc_get( 'background', $atts, 'gradient' );
