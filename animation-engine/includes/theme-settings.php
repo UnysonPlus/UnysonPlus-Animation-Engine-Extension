@@ -74,13 +74,32 @@ if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 	}
 endif;
 
+// Priority 20 so it runs AFTER the shortcodes extension has merged its built-ins into
+// the Miscellaneous section (priority 10) — the Misc section is then present to anchor
+// against. We insert the Animations section just BEFORE Miscellaneous, so Miscellaneous
+// (and Demo Options, which the theme adds after Misc) remain the last tabs.
 add_filter( 'fw_settings_options', function ( $options ) {
 	if ( ! is_array( $options ) ) {
 		return $options;
 	}
-	$options[] = upw_anim_engine_settings_section();
+
+	$section    = upw_anim_engine_settings_section();
+	$misc_index = null;
+	foreach ( $options as $i => $sec ) {
+		if ( is_array( $sec ) && isset( $sec['misc_container'] ) ) {
+			$misc_index = $i;
+			break;
+		}
+	}
+
+	if ( $misc_index !== null ) {
+		array_splice( $options, $misc_index, 0, array( $section ) );
+	} else {
+		$options[] = $section; // no Miscellaneous section — just append
+	}
+
 	return $options;
-} );
+}, 20 );
 
 if ( ! function_exists( 'upw_anim_engine_setting' ) ) :
 	/**
