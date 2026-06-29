@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.3';
+$manifest['version']     = '1.0.4';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -25,8 +25,8 @@ $manifest['requirements'] = [
 ];
 
 // Repository Info
-$manifest['github_update'] = 'UnysonPlus/UnysonPlus-WebGL-Extension';
-$manifest['github_repo']   = 'https://github.com/UnysonPlus/UnysonPlus-WebGL-Extension';
+$manifest['github_update'] = 'UnysonPlus/UnysonPlus-Animation-Engine-Extension';
+$manifest['github_repo']   = 'https://github.com/UnysonPlus/UnysonPlus-Animation-Engine-Extension';
 $manifest['github_branch'] = 'master';
 
 // Author Info
