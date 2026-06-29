@@ -4,14 +4,14 @@
 
 $manifest = [];
 
-$manifest['name']        = __( 'WebGL', 'fw' );
-$manifest['slug']        = 'unysonplus-webgl';
+$manifest['name']        = __( 'Animation Engine', 'fw' );
+$manifest['slug']        = 'unysonplus-animation-engine';
 $manifest['description'] = __(
-	'Adds a real-time WebGL "liquid glass" element to the page builder — a refractive glass blob, liquid metal, distorted sphere or particle field, rendered with Three.js. Deactivate to remove it.',
+	'The home for UnysonPlus\'s animation capabilities. Its first module is WebGL — a real-time refractive glass blob, liquid metal, distorted sphere or particle field rendered with Three.js (the [webgl_object] page-builder element). Adds an "Animations" section to Theme Settings. More modules (shaders, hover effects, scroll motion) plug in over time.',
 	'fw'
 );
 
-$manifest['version']     = '1.0.4';
+$manifest['version']     = '1.0.5';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
