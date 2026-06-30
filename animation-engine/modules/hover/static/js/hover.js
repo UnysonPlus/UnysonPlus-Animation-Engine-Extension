@@ -20,16 +20,35 @@
 		el.__upwHover = true;
 
 		var fx = el.getAttribute('data-hover');
-		if (!fx || fx === 'image_reveal') { return; } // image_reveal = CSS only
+		// CSS-only effects need no JS (image_reveal, glow_border, underline_grow, lift, color_shift).
+		if (!fx || fx === 'image_reveal' || fx === 'glow_border' || fx === 'underline_grow' || fx === 'lift' || fx === 'color_shift') { return; }
 
 		var pointerFx = (fx === 'magnetic' || fx === 'tilt' || fx === 'spotlight');
 		if (pointerFx && (isTouch || (cfg.disableMobile && isMobile))) { return; }
-		if (reduceMotion && (fx === 'magnetic' || fx === 'tilt' || fx === 'text_scramble')) { return; }
+		if (reduceMotion && (fx === 'magnetic' || fx === 'tilt' || fx === 'text_scramble' || fx === 'ripple')) { return; }
 
 		if (fx === 'magnetic') { magnetic(el); }
 		else if (fx === 'tilt') { tilt(el); }
 		else if (fx === 'spotlight') { spotlight(el); }
+		else if (fx === 'ripple') { ripple(el); }
 		else if (fx === 'text_scramble') { scramble(el); }
+	}
+
+	/* ---- Ripple: a circle emanates from where the cursor enters. ---- */
+	function ripple(el) {
+		if (getComputedStyle(el).position === 'static') { el.style.position = 'relative'; }
+		el.style.overflow = 'hidden';
+		el.addEventListener('pointerenter', function (e) {
+			var r = el.getBoundingClientRect();
+			var size = Math.max(r.width, r.height) * 2;
+			var span = document.createElement('span');
+			span.className = 'sc-hover-ripple';
+			span.style.width = span.style.height = size + 'px';
+			span.style.left = (e.clientX - r.left) + 'px';
+			span.style.top = (e.clientY - r.top) + 'px';
+			el.appendChild(span);
+			setTimeout(function () { if (span.parentNode) { span.parentNode.removeChild(span); } }, 650);
+		});
 	}
 
 	/* ---- Magnetic: the element is pulled toward the cursor. ---- */

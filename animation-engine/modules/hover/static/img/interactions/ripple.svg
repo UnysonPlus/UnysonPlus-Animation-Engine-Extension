@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Ripple from the cursor">
+  <style>.rp{animation:rp 1.8s ease-out infinite;transform-origin:66px 36px}.rp2{animation-delay:.6s}.rp3{animation-delay:1.2s}@keyframes rp{0%{transform:scale(.08);opacity:.75}100%{transform:scale(1);opacity:0}}</style>
+  <circle class="rp" cx="66" cy="36" r="24" fill="none" stroke="#2f74e6" stroke-width="2.5"/>
+  <circle class="rp rp2" cx="66" cy="36" r="24" fill="none" stroke="#2f74e6" stroke-width="2.5"/>
+  <circle class="rp rp3" cx="66" cy="36" r="24" fill="none" stroke="#2f74e6" stroke-width="2.5"/>
+  <circle cx="66" cy="36" r="3" fill="#2f74e6"/>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Ripple</text>
+</svg>

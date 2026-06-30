@@ -33,9 +33,10 @@ Pointer + optional scroll reaction; **Placement** is inline or *Section backgrou
 ### Hover Interactions
 
 A pointer-driven hover effect addable to any element via its *Animations* tab —
-**Magnetic**, **3D Tilt**, **Spotlight**, **Image Reveal**, **Text Scramble** — chosen
-from an animated-SVG image picker. The runtime (JS/CSS) is enqueued only on pages that
-actually use an effect.
+**Magnetic**, **3D Tilt**, **Spotlight**, **Image Reveal**, **Text Scramble**, **Glow
+Border**, **Underline Grow**, **Ripple**, **Lift**, **Color Shift** — chosen from an
+animated-SVG image picker. The runtime (JS/CSS) is enqueued only on pages that actually
+use an effect.
 
 ### Shared guards
 

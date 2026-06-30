@@ -81,6 +81,11 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'spotlight'     => $ix( 'spotlight',     __( 'Spotlight', 'fw' ) ),
 					'image_reveal'  => $ix( 'image-reveal',  __( 'Image Reveal', 'fw' ) ),
 					'text_scramble' => $ix( 'text-scramble', __( 'Text Scramble', 'fw' ) ),
+						'glow_border'    => $ix( 'glow-border',    __( 'Glow Border', 'fw' ) ),
+						'underline_grow' => $ix( 'underline-grow', __( 'Underline Grow', 'fw' ) ),
+						'ripple'         => $ix( 'ripple',         __( 'Ripple', 'fw' ) ),
+						'lift'           => $ix( 'lift',           __( 'Lift', 'fw' ) ),
+						'color_shift'    => $ix( 'color-shift',    __( 'Color Shift', 'fw' ) ),
 				),
 			),
 		),
@@ -156,6 +161,59 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'properties' => array( 'min' => 0.2, 'max' => 2, 'step' => 0.1 ),
 				),
 			),
+			'glow_border' => array(
+				'glow_color' => array(
+					'type'  => 'color-picker',
+					'label' => __( 'Glow color', 'fw' ),
+					'value' => '#6aa6ff',
+				),
+			),
+			'underline_grow' => array(
+				'line_color' => array(
+					'type'  => 'color-picker',
+					'label' => __( 'Line color', 'fw' ),
+					'desc'  => __( 'Defaults to the text color when left blank.', 'fw' ),
+					'value' => '',
+				),
+				'origin' => array(
+					'type'    => 'select',
+					'label'   => __( 'Grow from', 'fw' ),
+					'value'   => 'left',
+					'choices' => array(
+						'left'   => __( 'Left', 'fw' ),
+						'center' => __( 'Center', 'fw' ),
+					),
+				),
+			),
+			'ripple' => array(
+				'ripple_color' => array(
+					'type'  => 'color-picker',
+					'label' => __( 'Ripple color', 'fw' ),
+					'value' => '#6aa6ff',
+				),
+			),
+			'lift' => array(
+				'distance' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Lift distance (px)', 'fw' ),
+					'value'      => 6,
+					'properties' => array( 'min' => 2, 'max' => 20, 'step' => 1 ),
+				),
+				'shadow' => array(
+					'type'         => 'switch',
+					'label'        => __( 'Shadow', 'fw' ),
+					'value'        => 'yes',
+					'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
+					'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
+				),
+			),
+			'color_shift' => array(
+				'shift_color' => array(
+					'type'  => 'color-picker',
+					'label' => __( 'Hover background', 'fw' ),
+					'value' => '#6aa6ff',
+				),
+			),
 		),
 	);
 
@@ -174,7 +232,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$ix     = ( isset( $atts['interaction'] ) && is_array( $atts['interaction'] ) ) ? $atts['interaction'] : array();
 	$effect = isset( $ix['effect'] ) ? (string) $ix['effect'] : 'none';
 
-	$allowed = array( 'magnetic', 'tilt', 'spotlight', 'image_reveal', 'text_scramble' );
+	$allowed = array( 'magnetic', 'tilt', 'spotlight', 'image_reveal', 'text_scramble', 'glow_border', 'underline_grow', 'ripple', 'lift', 'color_shift' );
 	if ( ! in_array( $effect, $allowed, true ) ) {
 		return $attr;
 	}
@@ -217,6 +275,33 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 
 		case 'text_scramble':
 			$attr['data-hover-duration'] = esc_attr( (float) ( $o['duration'] ?? 0.8 ) );
+			break;
+
+		case 'glow_border':
+			$add_style( '--hover-glow:' . (string) ( $o['glow_color'] ?? '#6aa6ff' ) . ';' );
+			break;
+
+		case 'underline_grow':
+			$attr['data-hover-style'] = esc_attr( ( ( $o['origin'] ?? 'left' ) === 'center' ) ? 'center' : 'left' );
+			$line = (string) ( $o['line_color'] ?? '' );
+			if ( $line !== '' ) {
+				$add_style( '--hover-line:' . $line . ';' );
+			}
+			break;
+
+		case 'ripple':
+			$add_style( '--hover-ripple:' . (string) ( $o['ripple_color'] ?? '#6aa6ff' ) . ';' );
+			break;
+
+		case 'lift':
+			$add_style( '--hover-lift:' . (int) ( $o['distance'] ?? 6 ) . 'px;' );
+			if ( ( $o['shadow'] ?? 'yes' ) !== 'yes' ) {
+				$attr['data-hover-noshadow'] = '1';
+			}
+			break;
+
+		case 'color_shift':
+			$add_style( '--hover-shift:' . (string) ( $o['shift_color'] ?? '#6aa6ff' ) . ';' );
 			break;
 	}
 
