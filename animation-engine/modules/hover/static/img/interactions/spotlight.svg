@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Spotlight glow follows the cursor">
+  <style>
+    .sp{animation:spm 2.8s ease-in-out infinite}
+    @keyframes spm{0%,100%{transform:translateX(-15px)}50%{transform:translateX(15px)}}
+  </style>
+  <defs>
+    <radialGradient id="hg"><stop offset="0" stop-color="#6aa6ff" stop-opacity=".95"/><stop offset="1" stop-color="#6aa6ff" stop-opacity="0"/></radialGradient>
+    <clipPath id="hcard"><rect x="34" y="18" width="64" height="36" rx="6"/></clipPath>
+  </defs>
+  <rect x="34" y="18" width="64" height="36" rx="6" fill="#1e293b"/>
+  <g clip-path="url(#hcard)">
+    <circle class="sp" cx="66" cy="36" r="17" fill="url(#hg)"/>
+  </g>
+  <g class="sp" transform="translate(60,30)"><path d="M0 0 L0 14 L3.5 10.5 L6 16 L8 15 L5.5 9.5 L10 9.5 Z" fill="#e2e8f0"/></g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Spotlight</text>
+</svg>

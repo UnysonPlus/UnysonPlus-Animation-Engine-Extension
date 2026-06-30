@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Text scramble resolves on hover">
+  <style>
+    .gl{animation:glf 2.2s ease-in-out infinite}
+    @keyframes glf{0%,32%{opacity:1}48%,100%{opacity:0}}
+    .tx{animation:txf 2.2s ease-in-out infinite}
+    @keyframes txf{0%,32%{opacity:0}48%,100%{opacity:1}}
+  </style>
+  <text class="gl" x="66" y="44" text-anchor="middle" font-family="Consolas,Menlo,monospace" font-size="21" font-weight="700" fill="#94a3b8">#%&amp;@</text>
+  <text class="tx" x="66" y="44" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="22" font-weight="700" fill="#2f74e6">Text</text>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Text Scramble</text>
+</svg>

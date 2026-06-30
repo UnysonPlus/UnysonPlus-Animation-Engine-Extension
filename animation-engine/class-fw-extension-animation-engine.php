@@ -23,5 +23,8 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		// Settings "Animations" section. Loaded always — the fw_settings_options filter
 		// is consumed on the front end too, not just in admin.
 		require_once dirname( __FILE__ ) . '/includes/theme-settings.php';
+
+		// Modules. Each plugs into the shared Animations tab / wrapper / Theme Settings.
+		require_once dirname( __FILE__ ) . '/modules/hover/hover.php'; // Hover Interactions
 	}
 }

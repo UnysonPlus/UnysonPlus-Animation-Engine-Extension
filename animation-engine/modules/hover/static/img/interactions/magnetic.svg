@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Magnetic: element follows the cursor">
+  <style>
+    .mag{animation:mag 1.8s ease-in-out infinite}
+    @keyframes mag{0%,100%{transform:translate(0,0)}50%{transform:translate(15px,-6px)}}
+    .cur{animation:curp 1.8s ease-in-out infinite}
+    @keyframes curp{0%,100%{opacity:.45}50%{opacity:1}}
+  </style>
+  <rect class="mag" x="32" y="28" width="34" height="22" rx="6" fill="#2f74e6"/>
+  <g class="cur" transform="translate(80,28)">
+    <path d="M0 0 L0 17 L4.5 12.5 L7.5 19 L9.5 18 L6.5 11.5 L12 11.5 Z" fill="#475569"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Magnetic</text>
+</svg>

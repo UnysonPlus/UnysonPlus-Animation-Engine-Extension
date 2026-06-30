@@ -1,0 +1,103 @@
+/**
+ * Animation Engine — Hover Interactions styles.
+ * Paired with hover.js. Effects are scoped under .sc-hover--<effect>.
+ */
+
+/* Smooth return for the transform-driven effects (JS sets the live transform). */
+.sc-hover--magnetic,
+.sc-hover--tilt {
+	transition: transform .25s cubic-bezier(.22, .61, .36, 1);
+	will-change: transform;
+}
+
+/* ---- 3D Tilt glare overlay (added by JS when enabled) ---- */
+.sc-hover-glare {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity .3s ease;
+	mix-blend-mode: overlay;
+	border-radius: inherit;
+	z-index: 2;
+}
+
+/* ---- Spotlight: cursor-following radial glow ---- */
+.sc-hover--spotlight {
+	position: relative;
+}
+.sc-hover--spotlight::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	border-radius: inherit;
+	background: radial-gradient(
+		circle var(--hover-glow-size, 40%) at var(--mx, 50%) var(--my, 50%),
+		var(--hover-glow, #6aa6ff),
+		transparent 75%
+	);
+	opacity: 0;
+	transition: opacity .3s ease;
+	mix-blend-mode: screen;
+	z-index: 0;
+}
+.sc-hover--spotlight:hover::before {
+	opacity: .55;
+}
+/* Keep real content above the glow layer. */
+.sc-hover--spotlight > * {
+	position: relative;
+	z-index: 1;
+}
+
+/* ---- Image Reveal (pure CSS, driven by data-hover-style) ---- */
+.sc-hover--image_reveal {
+	overflow: hidden;
+}
+.sc-hover--image_reveal img {
+	display: block;
+	transition: transform .5s cubic-bezier(.22, .61, .36, 1), filter .5s ease;
+}
+.sc-hover--image_reveal[data-hover-style="grayscale"] img,
+.sc-hover--image_reveal[data-hover-style="zoom_gray"] img {
+	filter: grayscale(1);
+}
+.sc-hover--image_reveal[data-hover-style="zoom"]:hover img,
+.sc-hover--image_reveal[data-hover-style="zoom_gray"]:hover img {
+	transform: scale(var(--hover-zoom, 1.06));
+}
+.sc-hover--image_reveal[data-hover-style="grayscale"]:hover img,
+.sc-hover--image_reveal[data-hover-style="zoom_gray"]:hover img {
+	filter: grayscale(0);
+}
+
+/* Shine sweep */
+.sc-hover--image_reveal[data-hover-style="shine"] {
+	position: relative;
+}
+.sc-hover--image_reveal[data-hover-style="shine"]::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -75%;
+	width: 50%;
+	height: 100%;
+	background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .4), transparent);
+	transform: skewX(-20deg);
+	pointer-events: none;
+	z-index: 2;
+}
+.sc-hover--image_reveal[data-hover-style="shine"]:hover::after {
+	animation: sc-hover-shine .8s ease;
+}
+@keyframes sc-hover-shine {
+	to { left: 125%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-hover--magnetic,
+	.sc-hover--tilt {
+		transition: none;
+	}
+}

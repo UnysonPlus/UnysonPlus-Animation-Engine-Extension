@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Image reveal on hover">
+  <style>
+    .imz{animation:imz 3s ease-in-out infinite;transform-origin:66px 37px}
+    @keyframes imz{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    .shine{animation:shn 3s ease-in-out infinite}
+    @keyframes shn{0%,38%{transform:translateX(-44px) skewX(-20deg);opacity:0}48%{opacity:.85}58%,100%{transform:translateX(64px) skewX(-20deg);opacity:0}}
+  </style>
+  <defs><clipPath id="htile"><rect x="38" y="18" width="56" height="38" rx="5"/></clipPath></defs>
+  <g clip-path="url(#htile)">
+    <g class="imz">
+      <rect x="38" y="18" width="56" height="38" rx="5" fill="#dbeafe"/>
+      <circle cx="55" cy="30" r="6" fill="#fbbf24"/>
+      <path d="M38 56 L60 38 L73 49 L82 42 L94 56 Z" fill="#2f74e6"/>
+    </g>
+    <rect class="shine" x="38" y="18" width="14" height="38" fill="#ffffff" opacity="0.6"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Image Reveal</text>
+</svg>
