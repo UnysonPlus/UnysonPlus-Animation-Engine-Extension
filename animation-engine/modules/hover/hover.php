@@ -39,6 +39,56 @@ if ( ! function_exists( 'upw_hover_flag' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'upw_color_field' ) ) :
+	/**
+	 * Build a color option using the shortcodes Styling-tab preset selector
+	 * (predefined-colors-color-picker-compact) instead of a raw color-picker, so
+	 * element colors stay tied to the theme palette. Falls back to a plain
+	 * color-picker if the helper isn't available (engine without shortcodes).
+	 */
+	function upw_color_field( $label, $kind = 'bg', $default_hex = '', $desc = '' ) {
+		if ( function_exists( 'sc_color_field_compact' ) ) {
+			return sc_color_field_compact( array(
+				'label' => $label,
+				'kind'  => $kind,
+				'value' => $default_hex !== '' ? array( 'predefined' => '', 'custom' => $default_hex ) : '',
+				'desc'  => $desc,
+			) );
+		}
+		$f = array( 'type' => 'color-picker', 'label' => $label, 'value' => $default_hex );
+		if ( $desc !== '' ) {
+			$f['desc'] = $desc;
+		}
+		return $f;
+	}
+endif;
+
+if ( ! function_exists( 'upw_hover_color' ) ) :
+	/**
+	 * Resolve a preset-or-custom color value (from upw_color_field) to a CSS color
+	 * string: a preset → var(--color-{slug}) (live-linked to Theme Settings); a
+	 * custom color → its hex; a legacy plain string → passed through.
+	 */
+	function upw_hover_color( $val ) {
+		if ( is_string( $val ) ) {
+			return $val;
+		}
+		if ( ! is_array( $val ) ) {
+			return '';
+		}
+		$pre = isset( $val['predefined'] ) ? trim( (string) $val['predefined'] ) : '';
+		$cus = isset( $val['custom'] )     ? trim( (string) $val['custom'] )     : '';
+		if ( $pre !== '' ) {
+			$slug = preg_replace( '/[^a-z0-9\-]/', '', preg_replace( '/^(text|bg)-/', '', $pre ) );
+			return $slug !== '' ? 'var(--color-' . $slug . ')' : '';
+		}
+		if ( $cus !== '' ) {
+			return preg_replace( '/[^A-Za-z0-9#\(\),.%\s]/', '', $cus );
+		}
+		return '';
+	}
+endif;
+
 /* ------------------------------------------------------------------ *
  * 1) The per-element "Interaction" group, appended to the Animations tab.
  * ------------------------------------------------------------------ */
@@ -122,11 +172,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				),
 			),
 			'spotlight' => array(
-				'glow_color' => array(
-					'type'  => 'color-picker',
-					'label' => __( 'Glow color', 'fw' ),
-					'value' => '#6aa6ff',
-				),
+				'glow_color' => upw_color_field( __( 'Glow color', 'fw' ), 'bg', '#6aa6ff' ),
 				'glow_size' => array(
 					'type'       => 'slider',
 					'label'      => __( 'Glow size (%)', 'fw' ),
@@ -162,19 +208,10 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				),
 			),
 			'glow_border' => array(
-				'glow_color' => array(
-					'type'  => 'color-picker',
-					'label' => __( 'Glow color', 'fw' ),
-					'value' => '#6aa6ff',
-				),
+				'glow_color' => upw_color_field( __( 'Glow color', 'fw' ), 'bg', '#6aa6ff' ),
 			),
 			'underline_grow' => array(
-				'line_color' => array(
-					'type'  => 'color-picker',
-					'label' => __( 'Line color', 'fw' ),
-					'desc'  => __( 'Defaults to the text color when left blank.', 'fw' ),
-					'value' => '',
-				),
+				'line_color' => upw_color_field( __( 'Line color', 'fw' ), 'text', '', __( 'Defaults to the text color when left blank.', 'fw' ) ),
 				'origin' => array(
 					'type'    => 'select',
 					'label'   => __( 'Grow from', 'fw' ),
@@ -186,11 +223,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				),
 			),
 			'ripple' => array(
-				'ripple_color' => array(
-					'type'  => 'color-picker',
-					'label' => __( 'Ripple color', 'fw' ),
-					'value' => '#6aa6ff',
-				),
+				'ripple_color' => upw_color_field( __( 'Ripple color', 'fw' ), 'bg', '#6aa6ff' ),
 			),
 			'lift' => array(
 				'distance' => array(
@@ -208,11 +241,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				),
 			),
 			'color_shift' => array(
-				'shift_color' => array(
-					'type'  => 'color-picker',
-					'label' => __( 'Hover background', 'fw' ),
-					'value' => '#6aa6ff',
-				),
+				'shift_color' => upw_color_field( __( 'Hover background', 'fw' ), 'bg', '#6aa6ff' ),
 			),
 		),
 	);
@@ -263,7 +292,8 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			break;
 
 		case 'spotlight':
-			$color = (string) ( $o['glow_color'] ?? '#6aa6ff' );
+			$color = upw_hover_color( $o['glow_color'] ?? '' );
+			if ( $color === '' ) { $color = '#6aa6ff'; }
 			$size  = (int) ( $o['glow_size'] ?? 40 );
 			$add_style( '--hover-glow:' . $color . '; --hover-glow-size:' . $size . '%;' );
 			break;
@@ -278,19 +308,21 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			break;
 
 		case 'glow_border':
-			$add_style( '--hover-glow:' . (string) ( $o['glow_color'] ?? '#6aa6ff' ) . ';' );
+			$gc = upw_hover_color( $o['glow_color'] ?? '' );
+			$add_style( '--hover-glow:' . ( $gc !== '' ? $gc : '#6aa6ff' ) . ';' );
 			break;
 
 		case 'underline_grow':
 			$attr['data-hover-style'] = esc_attr( ( ( $o['origin'] ?? 'left' ) === 'center' ) ? 'center' : 'left' );
-			$line = (string) ( $o['line_color'] ?? '' );
+			$line = upw_hover_color( $o['line_color'] ?? '' );
 			if ( $line !== '' ) {
 				$add_style( '--hover-line:' . $line . ';' );
 			}
 			break;
 
 		case 'ripple':
-			$add_style( '--hover-ripple:' . (string) ( $o['ripple_color'] ?? '#6aa6ff' ) . ';' );
+			$rc = upw_hover_color( $o['ripple_color'] ?? '' );
+			$add_style( '--hover-ripple:' . ( $rc !== '' ? $rc : '#6aa6ff' ) . ';' );
 			break;
 
 		case 'lift':
@@ -301,7 +333,8 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			break;
 
 		case 'color_shift':
-			$add_style( '--hover-shift:' . (string) ( $o['shift_color'] ?? '#6aa6ff' ) . ';' );
+			$sc = upw_hover_color( $o['shift_color'] ?? '' );
+			$add_style( '--hover-shift:' . ( $sc !== '' ? $sc : '#6aa6ff' ) . ';' );
 			break;
 	}
 
