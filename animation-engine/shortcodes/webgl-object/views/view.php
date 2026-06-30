@@ -30,10 +30,19 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 			$preset_opts['imageUrl'] = ! empty( $preset_opts['image']['url'] ) ? esc_url_raw( $preset_opts['image']['url'] ) : '';
 		}
 
-		$color_a    = (string) sc_get( 'color_a', $atts, '#6aa6ff' );
-		$color_b    = (string) sc_get( 'color_b', $atts, '#b388ff' );
-		$background  = (string) sc_get( 'background', $atts, 'gradient' );
-		$bg_color    = (string) sc_get( 'bg_color', $atts, '#0b0f1a' );
+		// Colors use the preset selector (predefined-colors-color-picker-compact).
+		// Resolve to a HEX — Three.js / the data-config can't read a CSS var — falling
+		// back to the defaults. Legacy plain-string saves pass straight through.
+		$color_a = function_exists( 'sc_color_to_css' )
+			? sc_color_to_css( sc_get( 'color_a', $atts, '' ), '#6aa6ff', true )
+			: (string) sc_get( 'color_a', $atts, '#6aa6ff' );
+		$color_b = function_exists( 'sc_color_to_css' )
+			? sc_color_to_css( sc_get( 'color_b', $atts, '' ), '#b388ff', true )
+			: (string) sc_get( 'color_b', $atts, '#b388ff' );
+		$background = (string) sc_get( 'background', $atts, 'gradient' );
+		$bg_color   = function_exists( 'sc_color_to_css' )
+			? sc_color_to_css( sc_get( 'bg_color', $atts, '' ), '#0b0f1a', true )
+			: (string) sc_get( 'bg_color', $atts, '#0b0f1a' );
 		// Placement is a multi-picker: placement/mode + (inline) placement/inline/height.
 		$display_mode = sc_get( 'placement/mode', $atts, 'inline' ) === 'background' ? 'background' : 'inline';
 

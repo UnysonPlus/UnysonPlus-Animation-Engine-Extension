@@ -2,6 +2,25 @@
 	die( 'Forbidden' );
 }
 
+// Color fields use the Styling-tab preset selector (predefined-colors-color-picker-
+// compact) so WebGL tints stay tied to the theme palette; view.php resolves the
+// preset/custom value to a hex (Three.js can't read a CSS var). Falls back to a plain
+// color-picker if the shortcodes helper isn't available.
+$upw_webgl_color = function ( $label, $hex, $desc = '' ) {
+	if ( function_exists( 'sc_color_field_compact' ) ) {
+		$args = [ 'label' => $label, 'kind' => 'bg', 'value' => [ 'predefined' => '', 'custom' => $hex ] ];
+		if ( $desc !== '' ) {
+			$args['desc'] = $desc;
+		}
+		return sc_color_field_compact( $args );
+	}
+	$f = [ 'type' => 'color-picker', 'label' => $label, 'value' => $hex ];
+	if ( $desc !== '' ) {
+		$f['desc'] = $desc;
+	}
+	return $f;
+};
+
 $options = [
 
 	/* ============================== OBJECT ============================== */
@@ -266,17 +285,8 @@ $options = [
 			'group_appearance' => [
 				'type'    => 'group',
 				'options' => [
-					'color_a' => [
-						'type'  => 'color-picker',
-						'label' => __( 'Primary color', 'fw' ),
-						'value' => '#6aa6ff',
-					],
-					'color_b' => [
-						'type'  => 'color-picker',
-						'label' => __( 'Secondary color', 'fw' ),
-						'desc'  => __( 'Drives the reflections / environment tint and the gradient background.', 'fw' ),
-						'value' => '#b388ff',
-					],
+					'color_a' => $upw_webgl_color( __( 'Primary color', 'fw' ), '#6aa6ff' ),
+					'color_b' => $upw_webgl_color( __( 'Secondary color', 'fw' ), '#b388ff', __( 'Drives the reflections / environment tint and the gradient background.', 'fw' ) ),
 					'background' => [
 						'type'    => 'select',
 						'label'   => __( 'Background', 'fw' ),
@@ -287,12 +297,7 @@ $options = [
 							'gradient'    => __( 'Gradient (primary → secondary)', 'fw' ),
 						],
 					],
-					'bg_color' => [
-						'type'  => 'color-picker',
-						'label' => __( 'Solid background color', 'fw' ),
-						'desc'  => __( 'Used when Background is “Solid color”.', 'fw' ),
-						'value' => '#0b0f1a',
-					],
+					'bg_color' => $upw_webgl_color( __( 'Solid background color', 'fw' ), '#0b0f1a', __( 'Used when Background is “Solid color”.', 'fw' ) ),
 				],
 			],
 		],
