@@ -39,6 +39,16 @@ if ( ! function_exists( 'upw_hover_flag' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'upw_hover_effects' ) ) :
+	/** The valid hover-effect ids — single source of truth for emit + wrapper checks. */
+	function upw_hover_effects() {
+		return array(
+			'magnetic', 'tilt', 'spotlight', 'image_reveal', 'text_scramble',
+			'glow_border', 'underline_grow', 'ripple', 'lift', 'color_shift',
+		);
+	}
+endif;
+
 if ( ! function_exists( 'upw_color_field' ) ) :
 	/**
 	 * Build a color option using the shortcodes Styling-tab preset selector
@@ -261,8 +271,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$ix     = ( isset( $atts['interaction'] ) && is_array( $atts['interaction'] ) ) ? $atts['interaction'] : array();
 	$effect = isset( $ix['effect'] ) ? (string) $ix['effect'] : 'none';
 
-	$allowed = array( 'magnetic', 'tilt', 'spotlight', 'image_reveal', 'text_scramble', 'glow_border', 'underline_grow', 'ripple', 'lift', 'color_shift' );
-	if ( ! in_array( $effect, $allowed, true ) ) {
+	if ( ! in_array( $effect, upw_hover_effects(), true ) ) {
 		return $attr;
 	}
 
@@ -341,6 +350,22 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	upw_hover_flag( true );
 	return $attr;
 }, 21, 2 );
+
+/* ------------------------------------------------------------------ *
+ * 2b) Force a wrapper when an element's ONLY non-default setting is a hover
+ *     interaction. Leaf shortcodes (text-block, special-heading, …) that gate
+ *     their wrapper on sc_needs_wrapper() otherwise emit NO wrapper, so the
+ *     data-hover attrs stamped above have nowhere to land and the effect
+ *     silently never fires. Mirrors the GSAP module's sc_needs_wrapper hook.
+ * ------------------------------------------------------------------ */
+add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
+	if ( $needs || ! upw_hover_enabled() ) {
+		return $needs;
+	}
+	$ix     = ( isset( $atts['interaction'] ) && is_array( $atts['interaction'] ) ) ? $atts['interaction'] : array();
+	$effect = isset( $ix['effect'] ) ? (string) $ix['effect'] : 'none';
+	return in_array( $effect, upw_hover_effects(), true );
+}, 10, 2 );
 
 /* ------------------------------------------------------------------ *
  * 3) Enqueue the runtime — only on pages that actually used an effect.
