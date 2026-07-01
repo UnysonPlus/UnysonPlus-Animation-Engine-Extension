@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="3D Tilt on hover">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="3D Tilt on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>
     .tilt{animation:tlt 2.6s ease-in-out infinite;transform-origin:66px 37px}
     @keyframes tlt{0%,100%{transform:skewX(-11deg) skewY(3deg) scale(.95)}50%{transform:skewX(11deg) skewY(-3deg) scale(1)}}
   </style>
   <rect class="tilt" x="44" y="19" width="44" height="36" rx="5" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">3D Tilt</text>
+  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">3D Tilt</text>
 </svg>

@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Element lifts on hover">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Element lifts on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.lf{animation:lf 2s ease-in-out infinite}@keyframes lf{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}.sh{animation:sh 2s ease-in-out infinite;transform-origin:66px 58px}@keyframes sh{0%,100%{opacity:.15;transform:scaleX(1)}50%{opacity:.32;transform:scaleX(.82)}}</style>
   <ellipse class="sh" cx="66" cy="58" rx="26" ry="4" fill="#1e293b"/>
   <rect class="lf" x="42" y="18" width="48" height="32" rx="6" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Lift</text>
+  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Lift</text>
 </svg>

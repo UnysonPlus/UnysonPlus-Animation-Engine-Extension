@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Underline grows on hover">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Underline grows on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.ul{animation:ul 2s ease-in-out infinite;transform-origin:40px 52px}@keyframes ul{0%,12%{transform:scaleX(0)}50%,88%{transform:scaleX(1)}100%{transform:scaleX(0)}}</style>
   <text x="66" y="44" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="22" font-weight="700" fill="#2f74e6">Link</text>
   <rect class="ul" x="40" y="50" width="52" height="3" rx="1.5" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Underline Grow</text>
+  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Underline Grow</text>
 </svg>

@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Glow border on hover">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Glow border on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.gb{animation:gb 1.8s ease-in-out infinite}@keyframes gb{0%,100%{stroke-width:2;opacity:.5}50%{stroke-width:4;opacity:1}}</style>
   <rect class="gb" x="40" y="20" width="52" height="34" rx="8" fill="none" stroke="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Glow Border</text>
+  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Glow Border</text>
 </svg>
