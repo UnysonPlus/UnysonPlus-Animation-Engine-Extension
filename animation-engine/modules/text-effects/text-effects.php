@@ -47,6 +47,9 @@ if ( ! function_exists( 'upw_text_effects' ) ) :
 			'split_reveal', 'scramble', 'typewriter', 'shimmer', 'wave', 'glitch', 'vf_weight',
 			// Wave A — reveal variants
 			'blur', 'mask', 'flip3d', 'scale', 'slide', 'bounce', 'random', 'skew',
+			// Wave B — CSS-driven (continuous + emphasis)
+			'gradient_flow', 'rainbow', 'neon', 'breathing', 'jitter', 'float',
+			'marker', 'strikebox', 'outline_fill', 'chromatic', 'width_sweep',
 		);
 	}
 endif;
@@ -176,6 +179,17 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'wave'         => $tx( 'wave',         __( 'Wave', 'fw' ) ),
 					'glitch'       => $tx( 'glitch',       __( 'Glitch', 'fw' ) ),
 					'vf_weight'    => $tx( 'vf-weight',    __( 'Weight Sweep', 'fw' ) ),
+					'gradient_flow'=> $tx( 'gradient-flow', __( 'Gradient Flow', 'fw' ) ),
+					'rainbow'      => $tx( 'rainbow',      __( 'Rainbow', 'fw' ) ),
+					'neon'         => $tx( 'neon',         __( 'Neon Flicker', 'fw' ) ),
+					'breathing'    => $tx( 'breathing',    __( 'Breathing', 'fw' ) ),
+					'jitter'       => $tx( 'jitter',       __( 'Jitter', 'fw' ) ),
+					'float'        => $tx( 'float',        __( 'Float', 'fw' ) ),
+					'marker'       => $tx( 'marker',       __( 'Marker Highlight', 'fw' ) ),
+					'strikebox'    => $tx( 'strikebox',    __( 'Strike / Box', 'fw' ) ),
+					'outline_fill' => $tx( 'outline-fill', __( 'Outline → Fill', 'fw' ) ),
+					'chromatic'    => $tx( 'chromatic',    __( 'Chromatic', 'fw' ) ),
+					'width_sweep'  => $tx( 'width-sweep',  __( 'Width Sweep', 'fw' ) ),
 				),
 			),
 		),
@@ -322,6 +336,50 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					),
 				),
 			),
+			'gradient_flow' => array(
+				'color_a' => upw_text_color_field( __( 'Color 1', 'fw' ), 'text', '#ff6b6b' ),
+				'color_b' => upw_text_color_field( __( 'Color 2', 'fw' ), 'text', '#6a8dff' ),
+				'color_c' => upw_text_color_field( __( 'Color 3', 'fw' ), 'text', '#17c964' ),
+				'speed'   => array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => 4, 'properties' => array( 'min' => 1, 'max' => 8, 'step' => 0.5 ) ),
+			),
+			'rainbow' => array(
+				'speed' => array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => 4, 'properties' => array( 'min' => 1, 'max' => 8, 'step' => 0.5 ) ),
+			),
+			'neon' => array(
+				'glow_color' => upw_text_color_field( __( 'Glow color', 'fw' ), 'bg', '#6aa6ff' ),
+				'speed'      => array( 'type' => 'slider', 'label' => __( 'Flicker speed (s)', 'fw' ), 'value' => 2.5, 'properties' => array( 'min' => 1, 'max' => 5, 'step' => 0.5 ) ),
+			),
+			'breathing' => array(
+				'speed' => array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1.5, 'max' => 6, 'step' => 0.5 ) ),
+			),
+			'jitter' => array(
+				'intensity' => array( 'type' => 'slider', 'label' => __( 'Intensity (px)', 'fw' ), 'value' => 2, 'properties' => array( 'min' => 1, 'max' => 6, 'step' => 1 ) ),
+			),
+			'float' => array(
+				'distance' => array( 'type' => 'slider', 'label' => __( 'Distance (px)', 'fw' ), 'value' => 8, 'properties' => array( 'min' => 3, 'max' => 24, 'step' => 1 ) ),
+				'speed'    => array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1.5, 'max' => 6, 'step' => 0.5 ) ),
+			),
+			'marker' => array(
+				'color'   => upw_text_color_field( __( 'Highlight color', 'fw' ), 'bg', '#ffe066' ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+			),
+			'strikebox' => array(
+				'shape'   => array( 'type' => 'select', 'label' => __( 'Shape', 'fw' ), 'value' => 'strike', 'choices' => array( 'strike' => __( 'Strike-through', 'fw' ), 'underline' => __( 'Underline', 'fw' ), 'box' => __( 'Box', 'fw' ) ) ),
+				'color'   => upw_text_color_field( __( 'Line color', 'fw' ), 'text', '', __( 'Defaults to the text color when blank.', 'fw' ) ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+			),
+			'outline_fill' => array(
+				'color'   => upw_text_color_field( __( 'Fill color', 'fw' ), 'text', '', __( 'Defaults to the text color when blank.', 'fw' ) ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+			),
+			'chromatic' => array(
+				'intensity' => array( 'type' => 'slider', 'label' => __( 'Offset (px)', 'fw' ), 'value' => 2, 'properties' => array( 'min' => 1, 'max' => 6, 'step' => 1 ) ),
+			),
+			'width_sweep' => array(
+				'from'    => array( 'type' => 'slider', 'label' => __( 'From width', 'fw' ), 'value' => 75, 'properties' => array( 'min' => 25, 'max' => 200, 'step' => 5 ) ),
+				'to'      => array( 'type' => 'slider', 'label' => __( 'To width', 'fw' ), 'value' => 125, 'properties' => array( 'min' => 25, 'max' => 200, 'step' => 5 ) ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+			),
 		),
 	);
 
@@ -401,6 +459,60 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'vf_weight':
 			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'hover' ) === 'view' ) ? 'view' : 'hover' );
 			$add_style( '--text-wght-from:' . (int) ( $o['from'] ?? 300 ) . '; --text-wght-to:' . (int) ( $o['to'] ?? 800 ) . ';' );
+			break;
+
+		case 'gradient_flow':
+			$add_style( '--text-c1:' . upw_text_color( $o['color_a'] ?? '', '#ff6b6b' )
+				. '; --text-c2:' . upw_text_color( $o['color_b'] ?? '', '#6a8dff' )
+				. '; --text-c3:' . upw_text_color( $o['color_c'] ?? '', '#17c964' )
+				. '; --text-speed:' . (float) ( $o['speed'] ?? 4 ) . 's;' );
+			break;
+
+		case 'rainbow':
+			$add_style( '--text-speed:' . (float) ( $o['speed'] ?? 4 ) . 's;' );
+			break;
+
+		case 'neon':
+			$add_style( '--text-neon:' . upw_text_color( $o['glow_color'] ?? '', '#6aa6ff' ) . '; --text-speed:' . (float) ( $o['speed'] ?? 2.5 ) . 's;' );
+			break;
+
+		case 'breathing':
+			$add_style( '--text-speed:' . (float) ( $o['speed'] ?? 3 ) . 's;' );
+			break;
+
+		case 'jitter':
+			$add_style( '--text-jitter:' . (int) ( $o['intensity'] ?? 2 ) . 'px;' );
+			break;
+
+		case 'float':
+			$add_style( '--text-float:' . (int) ( $o['distance'] ?? 8 ) . 'px; --text-speed:' . (float) ( $o['speed'] ?? 3 ) . 's;' );
+			break;
+
+		case 'marker':
+			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'hover' ) ? 'hover' : 'view' );
+			$add_style( '--text-marker:' . upw_text_color( $o['color'] ?? '', '#ffe066' ) . ';' );
+			break;
+
+		case 'strikebox':
+			$attr['data-text-shape']   = esc_attr( in_array( ( $o['shape'] ?? 'strike' ), array( 'strike', 'underline', 'box' ), true ) ? $o['shape'] : 'strike' );
+			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'hover' ) ? 'hover' : 'view' );
+			$lc = upw_text_color( $o['color'] ?? '', '' );
+			if ( $lc !== '' ) { $add_style( '--text-line:' . $lc . ';' ); }
+			break;
+
+		case 'outline_fill':
+			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'hover' ) ? 'hover' : 'view' );
+			$fc = upw_text_color( $o['color'] ?? '', '' );
+			if ( $fc !== '' ) { $add_style( '--text-fill:' . $fc . ';' ); }
+			break;
+
+		case 'chromatic':
+			$add_style( '--text-chroma:' . (int) ( $o['intensity'] ?? 2 ) . 'px;' );
+			break;
+
+		case 'width_sweep':
+			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'hover' ) === 'view' ) ? 'view' : 'hover' );
+			$add_style( '--text-wdth-from:' . (int) ( $o['from'] ?? 75 ) . '; --text-wdth-to:' . (int) ( $o['to'] ?? 125 ) . ';' );
 			break;
 	}
 

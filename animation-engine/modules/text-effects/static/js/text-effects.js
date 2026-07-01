@@ -158,6 +158,31 @@
 	});
 	H.mask = function (el) { doReveal(el, 'mask'); };
 
+	/* --- Wave B: CSS-driven. Continuous = add a class; triggered = add is-on on view. --- */
+	function cssEffect(cls) { return function (el) { targetOf(el).classList.add(cls); }; }
+	function cssTriggered(cls) {
+		return function (el) {
+			var t = targetOf(el); t.classList.add(cls);
+			if ((el.getAttribute('data-text-trigger') || 'hover') === 'view') { onView(el, function () { t.classList.add('is-on'); }); }
+		};
+	}
+	H.gradient_flow = cssEffect('upw-text-gradflow');
+	H.rainbow = cssEffect('upw-text-rainbow');
+	H.neon = cssEffect('upw-text-neon');
+	H.breathing = cssEffect('upw-text-breathing');
+	H.jitter = cssEffect('upw-text-jitter');
+	H.float = cssEffect('upw-text-float');
+	H.chromatic = cssEffect('upw-text-chromatic');
+	H.marker = cssTriggered('upw-text-marker');
+	H.outline_fill = cssTriggered('upw-text-outline');
+	H.width_sweep = cssTriggered('upw-text-width');
+	H.strikebox = function (el) {
+		var t = targetOf(el);
+		t.setAttribute('data-text-shape', el.getAttribute('data-text-shape') || 'strike');
+		t.classList.add('upw-text-strikebox');
+		if ((el.getAttribute('data-text-trigger') || 'view') === 'view') { onView(el, function () { t.classList.add('is-on'); }); }
+	};
+
 	H.scramble = function (el) {
 		var target = targetOf(el);
 		var dur = (parseFloat(el.getAttribute('data-text-duration')) || 1.2) * 1000;
