@@ -1,0 +1,64 @@
+/**
+ * Animation Engine — Cursor styles. Paired with cursor.js.
+ * Elements are positioned via JS transform; centering is baked into the transform.
+ */
+
+.upw-cursor {
+	position: fixed;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+	z-index: 2147483000;
+	opacity: 0;
+	transition: opacity .25s ease;
+	will-change: transform;
+}
+html.upw-cursor-active .upw-cursor {
+	opacity: 1;
+}
+
+/* Instant dot */
+.upw-cursor-dot {
+	width: var(--upw-cursor-size, 8px);
+	height: var(--upw-cursor-size, 8px);
+	background: var(--upw-cursor-color, #2f74e6);
+	border-radius: 50%;
+}
+
+/* Trailing ring */
+.upw-cursor-ring {
+	width: calc(var(--upw-cursor-size, 8px) * 4);
+	height: calc(var(--upw-cursor-size, 8px) * 4);
+	border: 1.5px solid var(--upw-cursor-color, #2f74e6);
+	border-radius: 50%;
+	transition: width .22s ease, height .22s ease, border-color .22s ease, background-color .22s ease, opacity .25s ease;
+}
+
+/* Grow on interactive elements */
+html.upw-cursor-hover .upw-cursor-ring {
+	width: calc(var(--upw-cursor-size, 8px) * 7);
+	height: calc(var(--upw-cursor-size, 8px) * 7);
+	background-color: color-mix(in srgb, var(--upw-cursor-color, #2f74e6) 12%, transparent);
+}
+html.upw-cursor-hover .upw-cursor-dot {
+	transform-origin: center;
+	opacity: .6;
+}
+
+/* Hide the native pointer */
+html.upw-cursor-hide-default,
+html.upw-cursor-hide-default * {
+	cursor: none !important;
+}
+
+/* Difference blend — cursor inverts against the background (force white so the
+   difference is visible over any color). */
+html.upw-cursor-blend .upw-cursor {
+	mix-blend-mode: difference;
+}
+html.upw-cursor-blend .upw-cursor-dot {
+	background: #fff;
+}
+html.upw-cursor-blend .upw-cursor-ring {
+	border-color: #fff;
+}

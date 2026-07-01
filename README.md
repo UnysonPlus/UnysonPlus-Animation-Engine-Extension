@@ -42,6 +42,14 @@ ScrollTrigger (bundled). Chosen from an animated-SVG image picker; GSAP + the ru
 load only on pages that use an effect. (Moved here from core — Scroll Motion is a
 growing platform, so it belongs with the opt-in engine rather than the lightweight core.)
 
+### Cursor (site-wide)
+
+A custom cursor — **dot**, **ring**, or **dot + trailing ring** — with optional
+hover-grow over interactive elements, difference blend, and native-cursor hiding.
+Configured in **Theme Settings → Animations → Cursor** (site-wide, not per-element);
+the runtime loads on the front end **only when enabled**. Skips touch screens; honours
+reduced motion. Cursor color uses the theme color-preset selector.
+
 ### Hover Interactions
 
 A pointer-driven hover effect addable to any element via its *Animations* tab —
@@ -70,6 +78,7 @@ animation-engine/                          ← the extension (slug "animation-en
 ├─ class-fw-extension-animation-engine.php ← loads the modules
 ├─ includes/theme-settings.php             ← Theme Settings → Animations section
 ├─ modules/scroll-motion/                  ← Scroll Motion module (GSAP + ScrollTrigger)
+├─ modules/cursor/                         ← Cursor module (site-wide custom cursor)
 ├─ modules/hover/                          ← Hover Interactions module
 └─ shortcodes/webgl-object/                ← the [webgl_object] leaf shortcode
 ```
