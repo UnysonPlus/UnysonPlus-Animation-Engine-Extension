@@ -1,0 +1,82 @@
+/**
+ * Animation Engine — Text Effects styles. Paired with text-effects.js.
+ * The JS splits text into .upw-text-piece / .upw-text-line spans and toggles classes;
+ * CSS owns the keyframes + the CSS-only effects (shimmer / glitch / weight sweep).
+ */
+
+.upw-text-piece { display: inline-block; }
+.upw-text-line { display: block; }
+
+/* ---- Wave (per-char bob) ---- */
+.upw-text-wave-ch {
+	display: inline-block;
+	animation: upw-text-wave var(--text-wave-speed, 1.4s) ease-in-out infinite;
+}
+@keyframes upw-text-wave {
+	0%, 100% { transform: translateY(0); }
+	50%      { transform: translateY(calc(var(--text-wave-amp, 6px) * -1)); }
+}
+
+/* ---- Typewriter caret ---- */
+.upw-text-caret {
+	border-right: .08em solid currentColor; padding-right: .04em;
+	animation: upw-text-blink 1s step-end infinite;
+}
+@keyframes upw-text-blink { 0%, 100% { border-color: currentColor; } 50% { border-color: transparent; } }
+
+/* ---- Shimmer (animated gradient sheen, clipped to the text) ---- */
+.upw-text-shimmer {
+	background: linear-gradient(100deg,
+		var(--text-c1, #8a8f98) 0%, var(--text-c1, #8a8f98) 40%,
+		var(--text-c2, #fff) 50%,
+		var(--text-c1, #8a8f98) 60%, var(--text-c1, #8a8f98) 100%);
+	background-size: 200% 100%;
+	-webkit-background-clip: text; background-clip: text;
+	-webkit-text-fill-color: transparent; color: transparent;
+	animation: upw-text-shimmer var(--text-speed, 3s) linear infinite;
+}
+@keyframes upw-text-shimmer { to { background-position: -200% 0; } }
+
+/* ---- Glitch (RGB-split copies on hover / always) ---- */
+.upw-text-glitch { position: relative; }
+.upw-text-glitch::before, .upw-text-glitch::after {
+	content: attr(data-text-content);
+	position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+	pointer-events: none; opacity: 0; overflow: hidden;
+}
+.upw-text-glitch::before { color: #ff00e6; }
+.upw-text-glitch::after  { color: #00fff0; }
+.upw-text-glitch:hover::before, .upw-text-glitch.is-always::before {
+	opacity: .85; animation: upw-text-glitch-a .38s steps(2, end) infinite;
+}
+.upw-text-glitch:hover::after, .upw-text-glitch.is-always::after {
+	opacity: .85; animation: upw-text-glitch-b .38s steps(2, end) infinite;
+}
+@keyframes upw-text-glitch-a {
+	0%   { transform: translate(0); clip-path: inset(0 0 0 0); }
+	25%  { transform: translate(calc(var(--text-glitch, 3px) * -1), 1px); clip-path: inset(18% 0 46% 0); }
+	50%  { transform: translate(var(--text-glitch, 3px), -1px); clip-path: inset(58% 0 12% 0); }
+	75%  { transform: translate(calc(var(--text-glitch, 3px) * -0.6), 0); clip-path: inset(8% 0 70% 0); }
+	100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+}
+@keyframes upw-text-glitch-b {
+	0%   { transform: translate(0); clip-path: inset(0 0 0 0); }
+	25%  { transform: translate(var(--text-glitch, 3px), -1px); clip-path: inset(52% 0 20% 0); }
+	50%  { transform: translate(calc(var(--text-glitch, 3px) * -1), 1px); clip-path: inset(10% 0 60% 0); }
+	75%  { transform: translate(calc(var(--text-glitch, 3px) * 0.6), 0); clip-path: inset(70% 0 8% 0); }
+	100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+}
+
+/* ---- Variable-font weight sweep ---- */
+.upw-text-vf {
+	font-variation-settings: 'wght' var(--text-wght-from, 300);
+	transition: font-variation-settings .45s ease, font-weight .45s ease;
+}
+.sc-text--vf_weight:hover .upw-text-vf,
+.upw-text-vf.is-on { font-variation-settings: 'wght' var(--text-wght-to, 800); }
+
+@media (prefers-reduced-motion: reduce) {
+	.upw-text-wave-ch, .upw-text-caret, .upw-text-shimmer,
+	.upw-text-glitch::before, .upw-text-glitch::after { animation: none; }
+	.upw-text-shimmer { -webkit-text-fill-color: currentColor; color: inherit; background: none; }
+}

@@ -67,6 +67,18 @@ Border**, **Underline Grow**, **Ripple**, **Lift**, **Color Shift** — chosen f
 animated-SVG image picker. The runtime (JS/CSS) is enqueued only on pages that actually
 use an effect.
 
+### Text Effects
+
+A typographic animation addable to any element's text via its *Animations* tab —
+**Split Reveal** (by characters / words / lines, with direction + stagger), **Scramble**
+(decode-in), **Typewriter** (with caret + optional loop), **Shimmer** (animated gradient
+sheen), **Wave** (per-character bob), **Glitch** (RGB-split on hover / always), and
+**Weight Sweep** (variable-font `wght` on hover / in view) — chosen from an animated-SVG
+image picker. Reveal-type effects trigger on scroll-into-view or on load. **Self-contained
+vanilla JS — no GSAP** — and the runtime (JS/CSS) is enqueued only on pages that actually
+use an effect. Shimmer colors use the theme color-preset selector. Global on/off lives in
+**Theme Settings → Animations → Text**.
+
 ### Shared guards
 
 Viewport-only render loop, pause when the tab is hidden, `prefers-reduced-motion` →

@@ -28,5 +28,6 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/scroll-motion/scroll-motion.php'; // Scroll Motion (GSAP)
 		require_once dirname( __FILE__ ) . '/modules/hover/hover.php';                  // Hover Interactions
 		require_once dirname( __FILE__ ) . '/modules/cursor/cursor.php';                // Custom Cursor (site-wide)
+		require_once dirname( __FILE__ ) . '/modules/text-effects/text-effects.php';    // Text Effects (per-element)
 	}
 }
