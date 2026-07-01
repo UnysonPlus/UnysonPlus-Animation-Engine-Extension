@@ -255,6 +255,158 @@
 		BG[k] = function (host) { field(host, k); };
 	});
 
+	/* ---- Wave 3: structural / fluid ---- */
+	function rnd(a, b) { return a + (b - a) * Math.random(); }
+
+	BG.pgrid = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#ff6ac1', speed = num(host, 'data-bg-speed', 6), off = 0;
+		function draw() {
+			var ctx = L.ctx, hz = L.h * 0.42, vx = L.w / 2; ctx.clearRect(0, 0, L.w, L.h); ctx.strokeStyle = color; ctx.lineWidth = 1;
+			ctx.globalAlpha = 0.35; for (var i = -12; i <= 12; i++) { ctx.beginPath(); ctx.moveTo(vx, hz); ctx.lineTo(vx + i * (L.w / 12), L.h); ctx.stroke(); }
+			for (var j = 0; j < 22; j++) { var t = ((j + off) % 22) / 22, y = hz + (L.h - hz) * t * t; ctx.globalAlpha = 0.5 * t + 0.05; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(L.w, y); ctx.stroke(); }
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(); return; } loop(host, function () { off = (off + speed * 0.02) % 22; draw(); });
+	};
+
+	BG.hexgrid = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#6aa6ff', speed = num(host, 'data-bg-speed', 6);
+		function hx(ctx, cx, cy, r) { ctx.beginPath(); for (var k = 0; k < 6; k++) { var a = Math.PI / 3 * k + Math.PI / 6, x = cx + r * Math.cos(a), y = cy + r * Math.sin(a); if (k) { ctx.lineTo(x, y); } else { ctx.moveTo(x, y); } } ctx.closePath(); }
+		function draw(t) {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); ctx.strokeStyle = color; ctx.lineWidth = 1;
+			var r = 16, dx = r * 1.5, dy = r * 1.732, cxm = L.w / 2, cym = L.h / 2;
+			for (var col = 0; col * dx < L.w + r; col++) { for (var row = 0; row * dy < L.h + r; row++) { var cx = col * dx, cy = row * dy + (col % 2 ? dy / 2 : 0), d = Math.sqrt((cx - cxm) * (cx - cxm) + (cy - cym) * (cy - cym)); ctx.globalAlpha = Math.max(0.05, 0.32 + 0.3 * Math.sin(t * speed * 0.0004 - d / 40)); hx(ctx, cx, cy, r * 0.9); ctx.stroke(); } }
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(0); return; } loop(host, draw);
+	};
+
+	BG.topo = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#6aa6ff', speed = num(host, 'data-bg-speed', 6);
+		function draw(t) {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); ctx.strokeStyle = color; ctx.globalAlpha = 0.35; ctx.lineWidth = 1; var ph = t * speed * 0.0003;
+			for (var k = 1; k <= 9; k++) { ctx.beginPath(); for (var x = 0; x <= L.w; x += 6) { var y = L.h / 2 + Math.sin(x / 70 + ph + k) * 22 + Math.sin(x / 33 + ph * 1.5) * 8 + (k - 5) * 15; if (x) { ctx.lineTo(x, y); } else { ctx.moveTo(x, y); } } ctx.stroke(); }
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(0); return; } loop(host, draw);
+	};
+
+	BG.circuit = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#00e5a0', segs = [], dots = [];
+		L.seed = function () {
+			segs = []; dots = []; var g = 34;
+			for (var x = g; x < L.w; x += g) { for (var y = g; y < L.h; y += g) { if (Math.random() < 0.5) { segs.push([x, y, x + g, y]); } if (Math.random() < 0.5) { segs.push([x, y, x, y + g]); } } }
+			for (var i = 0; i < Math.min(30, segs.length); i++) { dots.push({ s: (Math.random() * segs.length) | 0, p: Math.random(), v: rnd(0.01, 0.03) }); }
+		};
+		L.seed();
+		function draw() {
+			var ctx = L.ctx, i; ctx.clearRect(0, 0, L.w, L.h); ctx.strokeStyle = color; ctx.fillStyle = color;
+			ctx.globalAlpha = 0.16; ctx.lineWidth = 1; for (i = 0; i < segs.length; i++) { ctx.beginPath(); ctx.moveTo(segs[i][0], segs[i][1]); ctx.lineTo(segs[i][2], segs[i][3]); ctx.stroke(); }
+			for (i = 0; i < segs.length; i += 3) { ctx.beginPath(); ctx.arc(segs[i][0], segs[i][1], 1.4, 0, 6.2832); ctx.fill(); }
+			ctx.globalAlpha = 1; ctx.shadowColor = color;
+			for (i = 0; i < dots.length; i++) { var d = dots[i]; if (!reduce) { d.p += d.v; if (d.p > 1) { d.p = 0; d.s = (Math.random() * segs.length) | 0; } } var s = segs[d.s]; if (!s) { continue; } ctx.shadowBlur = 6; ctx.beginPath(); ctx.arc(s[0] + (s[2] - s[0]) * d.p, s[1] + (s[3] - s[1]) * d.p, 2, 0, 6.2832); ctx.fill(); }
+			ctx.shadowBlur = 0;
+		}
+		if (reduce) { draw(); return; } loop(host, draw);
+	};
+
+	BG.halftone = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#6aa6ff', gap = num(host, 'data-bg-gap', 16), speed = num(host, 'data-bg-speed', 6);
+		function draw(t) {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); ctx.fillStyle = color; ctx.globalAlpha = 0.5; var ph = t * speed * 0.0006;
+			for (var x = gap / 2; x < L.w; x += gap) { for (var y = gap / 2; y < L.h; y += gap) { var d = Math.sqrt((x - L.w / 2) * (x - L.w / 2) + (y - L.h / 2) * (y - L.h / 2)), r = (gap * 0.42) * (0.5 + 0.5 * Math.sin(ph - d / 40)); ctx.beginPath(); ctx.arc(x, y, Math.max(0.3, r), 0, 6.2832); ctx.fill(); } }
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(0); return; } loop(host, draw);
+	};
+
+	BG.blobs = function (host) { blobField(host, [host.getAttribute('data-bg-color') || '#6a8dff', host.getAttribute('data-bg-color2') || '#c56cff'], 5, 40, 90); };
+	BG.nebula = function (host) { blobField(host, [host.getAttribute('data-bg-color') || '#3b3fff', host.getAttribute('data-bg-color2') || '#c56cff', host.getAttribute('data-bg-color3') || '#00d4c8'], 4, 70, 140); };
+	function blobField(host, cols, count, rmin, rmax) {
+		var L = canvasLayer(host), speed = num(host, 'data-bg-speed', 6), bl = [];
+		L.seed = function () { bl = []; for (var i = 0; i < count; i++) { bl.push({ x: rnd(0, L.w), y: rnd(0, L.h), r: rnd(rmin, rmax), vx: rnd(-0.3, 0.3) * speed * 0.25, vy: rnd(-0.3, 0.3) * speed * 0.25, c: cols[i % cols.length] }); } };
+		L.seed();
+		function draw(anim) {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); ctx.globalCompositeOperation = 'lighter';
+			for (var i = 0; i < bl.length; i++) { var b = bl[i]; if (anim) { b.x += b.vx; b.y += b.vy; if (b.x < 0 || b.x > L.w) { b.vx *= -1; } if (b.y < 0 || b.y > L.h) { b.vy *= -1; } } var g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r); g.addColorStop(0, b.c); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.2832); ctx.fill(); }
+			ctx.globalCompositeOperation = 'source-over';
+		}
+		if (reduce) { draw(false); return; } loop(host, function () { draw(true); });
+	}
+
+	BG.ripple = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#6aa6ff', speed = num(host, 'data-bg-speed', 6), rs = [], last = 0;
+		function draw(t) {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); if (!reduce && t - last > 900 / (speed / 4)) { last = t; rs.push({ x: rnd(0, L.w), y: rnd(0, L.h), r: 0 }); }
+			ctx.strokeStyle = color; ctx.lineWidth = 1.5; var max = Math.max(L.w, L.h);
+			for (var i = rs.length - 1; i >= 0; i--) { var r = rs[i]; r.r += speed * 0.4; ctx.globalAlpha = Math.max(0, 1 - r.r / (max * 1.3)); ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 6.2832); ctx.stroke(); if (r.r > max * 1.3) { rs.splice(i, 1); } }
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(0); return; } loop(host, draw);
+	};
+
+	BG.flow = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#6aa6ff', density = num(host, 'data-bg-density', 60), speed = num(host, 'data-bg-speed', 6), ps = [];
+		L.seed = function () { ps = []; var n = areaCount(density, L.w, L.h); for (var i = 0; i < n; i++) { ps.push({ x: rnd(0, L.w), y: rnd(0, L.h) }); } };
+		L.seed();
+		function draw(t) {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); ctx.fillStyle = color; ctx.globalAlpha = 0.55; var tt = t * speed * 0.0002;
+			for (var i = 0; i < ps.length; i++) { var p = ps[i], a = (Math.sin(p.x / 90 + tt) + Math.cos(p.y / 70 - tt)) * Math.PI; p.x += Math.cos(a) * 0.8; p.y += Math.sin(a) * 0.8; if (p.x < 0 || p.x > L.w || p.y < 0 || p.y > L.h) { p.x = rnd(0, L.w); p.y = rnd(0, L.h); } ctx.fillRect(p.x, p.y, 1.6, 1.6); }
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(0); return; } loop(host, draw);
+	};
+
+	BG.matrix = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#19ff7a', speed = num(host, 'data-bg-speed', 6), cols = [];
+		var GL = 'ｱｲｳｴｵｶｷｸ0123456789ABCDEF';
+		L.seed = function () { cols = []; var n = Math.floor(L.w / 12); for (var i = 0; i < n; i++) { cols.push({ y: rnd(-L.h, 0), v: rnd(2, 6) * speed * 0.3 }); } };
+		L.seed();
+		function draw() {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); ctx.font = '12px monospace';
+			for (var i = 0; i < cols.length; i++) { var c = cols[i]; if (!reduce) { c.y += c.v; if (c.y > L.h + 60) { c.y = rnd(-L.h, 0); } } var x = i * 12 + 2; for (var k = 0; k < 8; k++) { var y = c.y - k * 13; if (y < 0 || y > L.h) { continue; } ctx.globalAlpha = Math.max(0, 1 - k / 8); ctx.fillStyle = k === 0 ? '#d6ffe6' : color; ctx.fillText(GL[(Math.random() * GL.length) | 0], x, y); } }
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(); return; } loop(host, draw);
+	};
+
+	BG.borealis = function (host) {
+		var L = canvasLayer(host), c1 = host.getAttribute('data-bg-color') || '#3bffb0', c2 = host.getAttribute('data-bg-color2') || '#6a8dff', speed = num(host, 'data-bg-speed', 6);
+		function draw(t) {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); var ph = t * speed * 0.0003;
+			for (var b = 0; b < 3; b++) {
+				var baseY = L.h * (0.28 + b * 0.16); ctx.beginPath(); ctx.moveTo(0, 0);
+				for (var x = 0; x <= L.w; x += 8) { ctx.lineTo(x, baseY + Math.sin(x / 80 + ph + b) * 26 + Math.sin(x / 38 + ph * 1.4) * 10); }
+				ctx.lineTo(L.w, 0); ctx.closePath();
+				var g = ctx.createLinearGradient(0, baseY - 50, 0, baseY + 40); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, b % 2 ? c2 : c1);
+				ctx.globalAlpha = 0.22; ctx.fillStyle = g; ctx.fill();
+			}
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(0); return; } loop(host, draw);
+	};
+
+	BG.orbits = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#6aa6ff', count = num(host, 'data-bg-density', 4), centers = [];
+		L.seed = function () {
+			centers = []; for (var i = 0; i < Math.min(6, count); i++) { var c = { x: rnd(L.w * 0.2, L.w * 0.8), y: rnd(L.h * 0.2, L.h * 0.8), s: [] }; for (var j = 0; j < ((Math.random() * 3) | 0) + 2; j++) { c.s.push({ r: rnd(14, 42), a: rnd(0, 6.28), v: rnd(0.005, 0.02) * (Math.random() < 0.5 ? -1 : 1) }); } centers.push(c); }
+		};
+		L.seed();
+		function draw() {
+			var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); ctx.strokeStyle = color; ctx.fillStyle = color;
+			for (var i = 0; i < centers.length; i++) { var c = centers[i]; ctx.globalAlpha = 0.15; for (var j = 0; j < c.s.length; j++) { ctx.beginPath(); ctx.arc(c.x, c.y, c.s[j].r, 0, 6.2832); ctx.stroke(); } ctx.globalAlpha = 0.9; ctx.beginPath(); ctx.arc(c.x, c.y, 2, 0, 6.2832); ctx.fill(); for (j = 0; j < c.s.length; j++) { var s = c.s[j]; if (!reduce) { s.a += s.v; } ctx.beginPath(); ctx.arc(c.x + s.r * Math.cos(s.a), c.y + s.r * Math.sin(s.a), 2.2, 0, 6.2832); ctx.fill(); } }
+			ctx.globalAlpha = 1;
+		}
+		if (reduce) { draw(); return; } loop(host, draw);
+	};
+
+	BG.spotlight = function (host) {
+		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#6aa6ff', size = num(host, 'data-bg-size', 260);
+		var mx = L.w / 2, my = L.h / 2;
+		host.addEventListener('pointermove', function (e) { var r = host.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; }, { passive: true });
+		loop(host, function () { var ctx = L.ctx; ctx.clearRect(0, 0, L.w, L.h); var g = ctx.createRadialGradient(mx, my, 0, mx, my, size); g.addColorStop(0, color); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.globalAlpha = 0.4; ctx.fillStyle = g; ctx.fillRect(0, 0, L.w, L.h); ctx.globalAlpha = 1; });
+	};
+
 	function init() {
 		var nodes = document.querySelectorAll('[data-bg]');
 		Array.prototype.forEach.call(nodes, function (host) {

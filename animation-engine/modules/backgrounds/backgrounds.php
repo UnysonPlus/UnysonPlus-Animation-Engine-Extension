@@ -45,6 +45,8 @@ if ( ! function_exists( 'upw_bg_effects' ) ) :
 			'mesh', 'grid', 'orbs', 'conic', 'scanlines', 'rays',
 			// Wave 2 — canvas particle-family
 			'snow', 'confetti', 'bubbles', 'fireflies', 'bokeh', 'rain', 'shapes', 'meteors',
+			// Wave 3 — canvas structural / fluid
+			'pgrid', 'hexgrid', 'topo', 'circuit', 'halftone', 'blobs', 'ripple', 'flow', 'matrix', 'nebula', 'borealis', 'orbits', 'spotlight',
 		);
 	}
 endif;
@@ -151,6 +153,19 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 					'rain'          => $bg( 'rain',          __( 'Rain', 'fw' ) ),
 					'shapes'        => $bg( 'shapes',        __( 'Floating Shapes', 'fw' ) ),
 					'meteors'       => $bg( 'meteors',       __( 'Shooting Stars', 'fw' ) ),
+					'pgrid'         => $bg( 'pgrid',         __( 'Perspective Grid', 'fw' ) ),
+					'hexgrid'       => $bg( 'hexgrid',       __( 'Hex Grid', 'fw' ) ),
+					'topo'          => $bg( 'topo',          __( 'Topographic', 'fw' ) ),
+					'circuit'       => $bg( 'circuit',       __( 'Circuit Board', 'fw' ) ),
+					'halftone'      => $bg( 'halftone',      __( 'Halftone', 'fw' ) ),
+					'blobs'         => $bg( 'blobs',         __( 'Metaballs', 'fw' ) ),
+					'ripple'        => $bg( 'ripple',        __( 'Ripple', 'fw' ) ),
+					'flow'          => $bg( 'flow',          __( 'Flow Field', 'fw' ) ),
+					'matrix'        => $bg( 'matrix',        __( 'Matrix Rain', 'fw' ) ),
+					'nebula'        => $bg( 'nebula',        __( 'Nebula', 'fw' ) ),
+					'borealis'      => $bg( 'borealis',      __( 'Aurora Borealis', 'fw' ) ),
+					'orbits'        => $bg( 'orbits',        __( 'Orbits', 'fw' ) ),
+					'spotlight'     => $bg( 'spotlight',     __( 'Cursor Spotlight', 'fw' ) ),
 				),
 			),
 		),
@@ -270,6 +285,65 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 				'color'   => upw_bg_color_field( __( 'Star color', 'fw' ), 'bg', '#ffffff' ),
 				'density' => array( 'type' => 'slider', 'label' => __( 'Frequency', 'fw' ), 'value' => 50, 'properties' => array( 'min' => 20, 'max' => 120, 'step' => 10 ) ),
 				'speed'   => $speed( 4, 1, 10 ),
+			),
+			'pgrid' => array(
+				'color' => upw_bg_color_field( __( 'Line color', 'fw' ), 'bg', '#ff6ac1' ),
+				'speed' => $speed( 6, 2, 16 ),
+			),
+			'hexgrid' => array(
+				'color' => upw_bg_color_field( __( 'Line color', 'fw' ), 'bg', '#6aa6ff' ),
+				'speed' => $speed( 6, 2, 16 ),
+			),
+			'topo' => array(
+				'color' => upw_bg_color_field( __( 'Line color', 'fw' ), 'bg', '#6aa6ff' ),
+				'speed' => $speed( 6, 2, 16 ),
+			),
+			'circuit' => array(
+				'color' => upw_bg_color_field( __( 'Trace color', 'fw' ), 'bg', '#00e5a0' ),
+				'speed' => $speed( 6, 2, 16 ),
+			),
+			'halftone' => array(
+				'color' => upw_bg_color_field( __( 'Dot color', 'fw' ), 'bg', '#6aa6ff' ),
+				'gap'   => array( 'type' => 'slider', 'label' => __( 'Gap (px)', 'fw' ), 'value' => 16, 'properties' => array( 'min' => 10, 'max' => 40, 'step' => 2 ) ),
+				'speed' => $speed( 6, 2, 16 ),
+			),
+			'blobs' => array(
+				'color'  => upw_bg_color_field( __( 'Color 1', 'fw' ), 'bg', '#6a8dff' ),
+				'color2' => upw_bg_color_field( __( 'Color 2', 'fw' ), 'bg', '#c56cff' ),
+				'speed'  => $speed( 6, 2, 16 ),
+			),
+			'ripple' => array(
+				'color' => upw_bg_color_field( __( 'Ripple color', 'fw' ), 'bg', '#6aa6ff' ),
+				'speed' => $speed( 6, 2, 16 ),
+			),
+			'flow' => array(
+				'color'   => upw_bg_color_field( __( 'Color', 'fw' ), 'bg', '#6aa6ff' ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Density', 'fw' ), 'value' => 70, 'properties' => array( 'min' => 20, 'max' => 200, 'step' => 10 ) ),
+				'speed'   => $speed( 6, 2, 16 ),
+			),
+			'matrix' => array(
+				'color' => upw_bg_color_field( __( 'Rain color', 'fw' ), 'bg', '#19ff7a' ),
+				'speed' => $speed( 6, 2, 16 ),
+			),
+			'nebula' => array(
+				'color'  => upw_bg_color_field( __( 'Color 1', 'fw' ), 'bg', '#3b3fff' ),
+				'color2' => upw_bg_color_field( __( 'Color 2', 'fw' ), 'bg', '#c56cff' ),
+				'color3' => upw_bg_color_field( __( 'Color 3', 'fw' ), 'bg', '#00d4c8' ),
+				'speed'  => $speed( 8, 3, 20 ),
+			),
+			'borealis' => array(
+				'color'  => upw_bg_color_field( __( 'Color 1', 'fw' ), 'bg', '#3bffb0' ),
+				'color2' => upw_bg_color_field( __( 'Color 2', 'fw' ), 'bg', '#6a8dff' ),
+				'speed'  => $speed( 6, 2, 16 ),
+			),
+			'orbits' => array(
+				'color'   => upw_bg_color_field( __( 'Color', 'fw' ), 'bg', '#6aa6ff' ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Systems', 'fw' ), 'value' => 4, 'properties' => array( 'min' => 1, 'max' => 6, 'step' => 1 ) ),
+				'speed'   => $speed( 6, 2, 16 ),
+			),
+			'spotlight' => array(
+				'color' => upw_bg_color_field( __( 'Glow color', 'fw' ), 'bg', '#6aa6ff' ),
+				'size'  => array( 'type' => 'slider', 'label' => __( 'Radius (px)', 'fw' ), 'value' => 260, 'properties' => array( 'min' => 100, 'max' => 500, 'step' => 20 ) ),
 			),
 		),
 	);
@@ -412,6 +486,50 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			$attr['data-bg-color']   = esc_attr( upw_bg_hex( $o['color'] ?? '', $defc ) );
 			$attr['data-bg-density'] = esc_attr( (int) ( $o['density'] ?? 40 ) );
 			$attr['data-bg-speed']   = esc_attr( (float) ( $o['speed'] ?? 3 ) );
+			break;
+
+		case 'pgrid':
+		case 'hexgrid':
+		case 'topo':
+		case 'circuit':
+		case 'ripple':
+		case 'matrix':
+			$dc = ( $effect === 'pgrid' ) ? '#ff6ac1' : ( ( $effect === 'circuit' ) ? '#00e5a0' : ( ( $effect === 'matrix' ) ? '#19ff7a' : '#6aa6ff' ) );
+			$attr['data-bg-color'] = esc_attr( upw_bg_hex( $o['color'] ?? '', $dc ) );
+			$attr['data-bg-speed'] = esc_attr( (float) ( $o['speed'] ?? 6 ) );
+			break;
+		case 'halftone':
+			$attr['data-bg-color'] = esc_attr( upw_bg_hex( $o['color'] ?? '', '#6aa6ff' ) );
+			$attr['data-bg-gap']   = esc_attr( (int) ( $o['gap'] ?? 16 ) );
+			$attr['data-bg-speed'] = esc_attr( (float) ( $o['speed'] ?? 6 ) );
+			break;
+		case 'flow':
+			$attr['data-bg-color']   = esc_attr( upw_bg_hex( $o['color'] ?? '', '#6aa6ff' ) );
+			$attr['data-bg-density'] = esc_attr( (int) ( $o['density'] ?? 70 ) );
+			$attr['data-bg-speed']   = esc_attr( (float) ( $o['speed'] ?? 6 ) );
+			break;
+		case 'blobs':
+		case 'borealis':
+			$d1 = ( $effect === 'borealis' ) ? '#3bffb0' : '#6a8dff';
+			$d2 = ( $effect === 'borealis' ) ? '#6a8dff' : '#c56cff';
+			$attr['data-bg-color']  = esc_attr( upw_bg_hex( $o['color'] ?? '', $d1 ) );
+			$attr['data-bg-color2'] = esc_attr( upw_bg_hex( $o['color2'] ?? '', $d2 ) );
+			$attr['data-bg-speed']  = esc_attr( (float) ( $o['speed'] ?? 6 ) );
+			break;
+		case 'nebula':
+			$attr['data-bg-color']  = esc_attr( upw_bg_hex( $o['color'] ?? '', '#3b3fff' ) );
+			$attr['data-bg-color2'] = esc_attr( upw_bg_hex( $o['color2'] ?? '', '#c56cff' ) );
+			$attr['data-bg-color3'] = esc_attr( upw_bg_hex( $o['color3'] ?? '', '#00d4c8' ) );
+			$attr['data-bg-speed']  = esc_attr( (float) ( $o['speed'] ?? 8 ) );
+			break;
+		case 'orbits':
+			$attr['data-bg-color']   = esc_attr( upw_bg_hex( $o['color'] ?? '', '#6aa6ff' ) );
+			$attr['data-bg-density'] = esc_attr( (int) ( $o['density'] ?? 4 ) );
+			$attr['data-bg-speed']   = esc_attr( (float) ( $o['speed'] ?? 6 ) );
+			break;
+		case 'spotlight':
+			$attr['data-bg-color'] = esc_attr( upw_bg_hex( $o['color'] ?? '', '#6aa6ff' ) );
+			$attr['data-bg-size']  = esc_attr( (int) ( $o['size'] ?? 260 ) );
 			break;
 	}
 

@@ -69,12 +69,17 @@ use an effect.
 
 ### Animated Backgrounds
 
-**8 animated backgrounds** addable to any **container** (section / bleed-section /
+**35 animated backgrounds** addable to any **container** (section / bleed-section /
 masonry-section / row) via its *Styling* tab — the option only appears on containers,
 never on text/leaf elements. Chosen from an animated-SVG image picker (popover):
 
-- **CSS:** Aurora (drifting blurred blobs), Gradient (animated), Dot Grid.
-- **Canvas:** Particles, Constellation (linked network), Waves, Starfield (warp), Grain.
+- **Gradient / color:** Aurora, Gradient, Mesh Gradient, Conic, Glow Orbs, Dot Grid, Grid
+  Lines, Scanlines, Light Rays.
+- **Particles:** Particles, Constellation, Snow / Petals / Embers / Ash, Confetti, Bubbles,
+  Fireflies, Bokeh, Rain, Floating Shapes, Shooting Stars.
+- **Waves / fluid:** Waves, Metaballs, Ripple, Flow Field, Nebula, Aurora Borealis.
+- **Structural:** Perspective Grid, Hex Grid, Topographic, Circuit Board, Halftone, Orbits.
+- **Space / ambient:** Starfield, Matrix Rain, Grain, Cursor Spotlight.
 
 The runtime injects a layer **behind** the container's content (content is lifted above it),
 with palette-preset colors and per-effect options (density, speed, colors, amplitude …).
