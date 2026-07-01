@@ -119,6 +119,18 @@ line-splitting is accurate. Colors use the theme color-preset selector, reduced-
 leaves text exactly as authored, and the runtime (JS/CSS) is enqueued only on pages that
 actually use an effect. Global on/off lives in **Theme Settings → Animations → Text**.
 
+### Page Transitions (site-wide)
+
+Smooth transitions between pages. A full-screen overlay injected at `wp_body_open` **reveals
+each page on load** (pure CSS, so it runs even without JS) and **covers it when you navigate**
+to another internal page, then the destination reveals — so multi-page navigation feels
+connected. Five transitions: **Fade**, **Slide up**, **Curtain (split)**, **Wipe**, **Circle
+reveal**, with an overlay colour (palette preset) + duration. An optional **first-visit
+loader** (spinner / bar / dots) shows until the first page finishes loading. Skips new-tab /
+download / hash / external / modified clicks (and any link with `data-no-transition`); honours
+reduced motion (normal navigation); a safety timeout always completes the navigation.
+Enabled in **Theme Settings → Animations → Page Transitions** (off by default).
+
 ### Shared guards
 
 Viewport-only render loop, pause when the tab is hidden, `prefers-reduced-motion` →

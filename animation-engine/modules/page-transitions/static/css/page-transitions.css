@@ -1,0 +1,73 @@
+/**
+ * Animation Engine — Page Transitions. Paired with page-transitions.js.
+ * Entrance is pure CSS (auto-plays on load, fill:backwards so it covers from the first
+ * paint); the runtime adds .is-exiting for the cover-then-navigate on internal links.
+ */
+.upw-pt {
+	position: fixed; inset: 0; z-index: 2147483000; pointer-events: none;
+}
+.upw-pt__p { position: absolute; background: var(--pt-color, #0e1524); }
+.upw-pt__p2 { display: none; }
+
+/* ---- Fade ---- */
+[data-pt-type="fade"] .upw-pt__p1 { inset: 0; opacity: 0; animation: upw-pt-fade-in var(--pt-dur, .6s) ease backwards; }
+@keyframes upw-pt-fade-in { from { opacity: 1; } to { opacity: 0; } }
+.upw-pt.is-exiting[data-pt-type="fade"] .upw-pt__p1 { animation: upw-pt-fade-out var(--pt-dur, .6s) ease forwards; }
+@keyframes upw-pt-fade-out { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---- Slide up ---- */
+[data-pt-type="slide"] .upw-pt__p1 { inset: 0; transform: translateY(-101%); animation: upw-pt-slide-in var(--pt-dur, .6s) cubic-bezier(.7, 0, .2, 1) backwards; }
+@keyframes upw-pt-slide-in { from { transform: translateY(0); } to { transform: translateY(-101%); } }
+.upw-pt.is-exiting[data-pt-type="slide"] .upw-pt__p1 { animation: upw-pt-slide-out var(--pt-dur, .6s) cubic-bezier(.7, 0, .2, 1) forwards; }
+@keyframes upw-pt-slide-out { from { transform: translateY(101%); } to { transform: translateY(0); } }
+
+/* ---- Curtain (two panels split apart) ---- */
+[data-pt-type="curtain"] .upw-pt__p2 { display: block; }
+[data-pt-type="curtain"] .upw-pt__p1 { left: 0; right: 0; top: 0; height: 50.5%; transform: translateY(-101%); animation: upw-pt-cur-top-in var(--pt-dur, .6s) cubic-bezier(.7, 0, .2, 1) backwards; }
+[data-pt-type="curtain"] .upw-pt__p2 { left: 0; right: 0; bottom: 0; height: 50.5%; transform: translateY(101%); animation: upw-pt-cur-bot-in var(--pt-dur, .6s) cubic-bezier(.7, 0, .2, 1) backwards; }
+@keyframes upw-pt-cur-top-in { from { transform: translateY(0); } to { transform: translateY(-101%); } }
+@keyframes upw-pt-cur-bot-in { from { transform: translateY(0); } to { transform: translateY(101%); } }
+.upw-pt.is-exiting[data-pt-type="curtain"] .upw-pt__p1 { animation: upw-pt-cur-top-out var(--pt-dur, .6s) cubic-bezier(.7, 0, .2, 1) forwards; }
+.upw-pt.is-exiting[data-pt-type="curtain"] .upw-pt__p2 { animation: upw-pt-cur-bot-out var(--pt-dur, .6s) cubic-bezier(.7, 0, .2, 1) forwards; }
+@keyframes upw-pt-cur-top-out { from { transform: translateY(-101%); } to { transform: translateY(0); } }
+@keyframes upw-pt-cur-bot-out { from { transform: translateY(101%); } to { transform: translateY(0); } }
+
+/* ---- Wipe (horizontal) ---- */
+[data-pt-type="wipe"] .upw-pt__p1 { inset: 0; transform-origin: left; transform: scaleX(0); animation: upw-pt-wipe-in var(--pt-dur, .6s) cubic-bezier(.7, 0, .2, 1) backwards; }
+@keyframes upw-pt-wipe-in { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.upw-pt.is-exiting[data-pt-type="wipe"] .upw-pt__p1 { animation: upw-pt-wipe-out var(--pt-dur, .6s) cubic-bezier(.7, 0, .2, 1) forwards; }
+@keyframes upw-pt-wipe-out { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---- Circle reveal ---- */
+[data-pt-type="reveal"] .upw-pt__p1 { inset: 0; clip-path: circle(0% at 50% 50%); animation: upw-pt-rev-in var(--pt-dur, .6s) ease backwards; }
+@keyframes upw-pt-rev-in { from { clip-path: circle(150% at 50% 50%); } to { clip-path: circle(0% at 50% 50%); } }
+.upw-pt.is-exiting[data-pt-type="reveal"] .upw-pt__p1 { animation: upw-pt-rev-out var(--pt-dur, .6s) ease forwards; }
+@keyframes upw-pt-rev-out { from { clip-path: circle(0% at 50% 50%); } to { clip-path: circle(150% at 50% 50%); } }
+
+/* ---- First-visit loader ---- */
+.upw-pt-loader {
+	position: fixed; inset: 0; z-index: 2147483600;
+	background: var(--pt-color, #0e1524); display: flex; align-items: center; justify-content: center;
+	transition: opacity .5s ease, visibility .5s ease;
+}
+.upw-pt-loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+.upw-pt-loader__box { display: inline-flex; gap: 8px; }
+/* spinner */
+[data-pt-loader="spinner"] .upw-pt-loader__box { width: 40px; height: 40px; border: 3px solid rgba(255, 255, 255, .25); border-top-color: #fff; border-radius: 50%; animation: upw-pt-spin .8s linear infinite; }
+[data-pt-loader="spinner"] .upw-pt-loader__box i { display: none; }
+@keyframes upw-pt-spin { to { transform: rotate(360deg); } }
+/* bar */
+[data-pt-loader="bar"] .upw-pt-loader__box { width: 160px; height: 3px; background: rgba(255, 255, 255, .2); border-radius: 3px; overflow: hidden; position: relative; }
+[data-pt-loader="bar"] .upw-pt-loader__box i { display: none; }
+[data-pt-loader="bar"] .upw-pt-loader__box::after { content: ""; position: absolute; inset: 0; width: 40%; background: #fff; border-radius: 3px; animation: upw-pt-bar 1.1s ease-in-out infinite; }
+@keyframes upw-pt-bar { 0% { left: -40%; } 100% { left: 100%; } }
+/* dots */
+[data-pt-loader="dots"] .upw-pt-loader__box i { width: 10px; height: 10px; border-radius: 50%; background: #fff; animation: upw-pt-dot 1s ease-in-out infinite; }
+[data-pt-loader="dots"] .upw-pt-loader__box i:nth-child(2) { animation-delay: .15s; }
+[data-pt-loader="dots"] .upw-pt-loader__box i:nth-child(3) { animation-delay: .3s; }
+@keyframes upw-pt-dot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-8px); opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+	.upw-pt__p { animation: none !important; opacity: 0; transform: none; clip-path: none; }
+	.upw-pt-loader__box, .upw-pt-loader__box::after, .upw-pt-loader__box i { animation: none !important; }
+}
