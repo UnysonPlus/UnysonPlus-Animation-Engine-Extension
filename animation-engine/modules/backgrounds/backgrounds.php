@@ -107,10 +107,7 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 		return array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => $default, 'properties' => array( 'min' => $min, 'max' => $max, 'step' => 0.5 ) );
 	};
 
-	$options['tab_styling']['options']['group_bg_effect'] = array(
-		'type'    => 'group',
-		'options' => array(
-	'bg_effect' => array(
+	$bg_field = array(
 		'type'         => 'multi-picker',
 		'label'        => __( 'Background Effect', 'fw' ),
 		'desc'         => __( 'An animated background layered behind this container’s content.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
@@ -181,9 +178,26 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 				'speed'   => $speed( 1, 0.5, 4 ),
 			),
 		),
-		),
-		),
 	);
+
+	// Place the Background Effect right after the Background control (same group), so the
+	// two sit together. Containers use different group ids (section: group_background,
+	// bleed/masonry: group_styling), so locate the group that actually holds `background`.
+	$placed = false;
+	foreach ( $options['tab_styling']['options'] as &$grp ) {
+		if ( is_array( $grp ) && isset( $grp['options'] ) && is_array( $grp['options'] ) && isset( $grp['options']['background'] ) ) {
+			$grp['options']['bg_effect'] = $bg_field;
+			$placed = true;
+			break;
+		}
+	}
+	unset( $grp );
+	if ( ! $placed ) {
+		$options['tab_styling']['options']['group_bg_effect'] = array(
+			'type'    => 'group',
+			'options' => array( 'bg_effect' => $bg_field ),
+		);
+	}
 
 	return $options;
 }, 20, 2 );
