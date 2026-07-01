@@ -43,6 +43,8 @@ if ( ! function_exists( 'upw_bg_effects' ) ) :
 			'aurora', 'gradient', 'dots', 'particles', 'constellation', 'waves', 'starfield', 'noise',
 			// Wave 1 — CSS-driven
 			'mesh', 'grid', 'orbs', 'conic', 'scanlines', 'rays',
+			// Wave 2 — canvas particle-family
+			'snow', 'confetti', 'bubbles', 'fireflies', 'bokeh', 'rain', 'shapes', 'meteors',
 		);
 	}
 endif;
@@ -141,6 +143,14 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 					'conic'         => $bg( 'conic',         __( 'Conic', 'fw' ) ),
 					'scanlines'     => $bg( 'scanlines',     __( 'Scanlines', 'fw' ) ),
 					'rays'          => $bg( 'rays',          __( 'Light Rays', 'fw' ) ),
+					'snow'          => $bg( 'snow',          __( 'Snow / Petals', 'fw' ) ),
+					'confetti'      => $bg( 'confetti',      __( 'Confetti', 'fw' ) ),
+					'bubbles'       => $bg( 'bubbles',       __( 'Bubbles', 'fw' ) ),
+					'fireflies'     => $bg( 'fireflies',     __( 'Fireflies', 'fw' ) ),
+					'bokeh'         => $bg( 'bokeh',         __( 'Bokeh', 'fw' ) ),
+					'rain'          => $bg( 'rain',          __( 'Rain', 'fw' ) ),
+					'shapes'        => $bg( 'shapes',        __( 'Floating Shapes', 'fw' ) ),
+					'meteors'       => $bg( 'meteors',       __( 'Shooting Stars', 'fw' ) ),
 				),
 			),
 		),
@@ -219,6 +229,47 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 				'color' => upw_bg_color_field( __( 'Ray color', 'fw' ), 'bg', '#ffffff' ),
 				'angle' => array( 'type' => 'slider', 'label' => __( 'Angle (°)', 'fw' ), 'value' => 25, 'properties' => array( 'min' => 0, 'max' => 90, 'step' => 5 ) ),
 				'speed' => $speed( 10, 4, 24 ),
+			),
+			'snow' => array(
+				'variant' => array( 'type' => 'select', 'label' => __( 'Style', 'fw' ), 'value' => 'snow', 'choices' => array(
+					'snow' => __( 'Snowflakes', 'fw' ), 'petals' => __( 'Petals', 'fw' ), 'embers' => __( 'Embers (rise)', 'fw' ), 'ash' => __( 'Ash', 'fw' ),
+				) ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Density', 'fw' ), 'value' => 70, 'properties' => array( 'min' => 20, 'max' => 200, 'step' => 10 ) ),
+				'speed'   => $speed( 3, 1, 8 ),
+			),
+			'confetti' => array(
+				'density' => array( 'type' => 'slider', 'label' => __( 'Density', 'fw' ), 'value' => 60, 'properties' => array( 'min' => 20, 'max' => 200, 'step' => 10 ) ),
+				'speed'   => $speed( 3, 1, 8 ),
+			),
+			'bubbles' => array(
+				'color'   => upw_bg_color_field( __( 'Bubble color', 'fw' ), 'bg', '#8fd0ff' ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Density', 'fw' ), 'value' => 40, 'properties' => array( 'min' => 10, 'max' => 120, 'step' => 5 ) ),
+				'speed'   => $speed( 3, 1, 8 ),
+			),
+			'fireflies' => array(
+				'color'   => upw_bg_color_field( __( 'Glow color', 'fw' ), 'bg', '#ffd36a' ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Density', 'fw' ), 'value' => 50, 'properties' => array( 'min' => 15, 'max' => 140, 'step' => 5 ) ),
+				'speed'   => $speed( 3, 1, 8 ),
+			),
+			'bokeh' => array(
+				'color'   => upw_bg_color_field( __( 'Color', 'fw' ), 'bg', '#6aa6ff' ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Density', 'fw' ), 'value' => 20, 'properties' => array( 'min' => 6, 'max' => 40, 'step' => 2 ) ),
+				'speed'   => $speed( 3, 1, 8 ),
+			),
+			'rain' => array(
+				'color'   => upw_bg_color_field( __( 'Rain color', 'fw' ), 'bg', '#9db4d0' ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Density', 'fw' ), 'value' => 90, 'properties' => array( 'min' => 30, 'max' => 240, 'step' => 10 ) ),
+				'speed'   => $speed( 4, 1, 10 ),
+			),
+			'shapes' => array(
+				'color'   => upw_bg_color_field( __( 'Shape color', 'fw' ), 'bg', '#94a3b8' ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Density', 'fw' ), 'value' => 24, 'properties' => array( 'min' => 8, 'max' => 60, 'step' => 2 ) ),
+				'speed'   => $speed( 3, 1, 8 ),
+			),
+			'meteors' => array(
+				'color'   => upw_bg_color_field( __( 'Star color', 'fw' ), 'bg', '#ffffff' ),
+				'density' => array( 'type' => 'slider', 'label' => __( 'Frequency', 'fw' ), 'value' => 50, 'properties' => array( 'min' => 20, 'max' => 120, 'step' => 10 ) ),
+				'speed'   => $speed( 4, 1, 10 ),
 			),
 		),
 	);
@@ -340,6 +391,27 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'rays':
 			$add_style( '--bg-color:' . upw_bg_css_color( $o['color'] ?? '', '#ffffff' )
 				. '; --bg-angle:' . (int) ( $o['angle'] ?? 25 ) . 'deg; --bg-speed:' . (float) ( $o['speed'] ?? 10 ) . 's;' );
+			break;
+
+		case 'snow':
+			$attr['data-bg-variant'] = esc_attr( in_array( ( $o['variant'] ?? 'snow' ), array( 'snow', 'petals', 'embers', 'ash' ), true ) ? $o['variant'] : 'snow' );
+			$attr['data-bg-density'] = esc_attr( (int) ( $o['density'] ?? 70 ) );
+			$attr['data-bg-speed']   = esc_attr( (float) ( $o['speed'] ?? 3 ) );
+			break;
+		case 'confetti':
+			$attr['data-bg-density'] = esc_attr( (int) ( $o['density'] ?? 60 ) );
+			$attr['data-bg-speed']   = esc_attr( (float) ( $o['speed'] ?? 3 ) );
+			break;
+		case 'bubbles':
+		case 'fireflies':
+		case 'bokeh':
+		case 'rain':
+		case 'shapes':
+		case 'meteors':
+			$defc = ( $effect === 'fireflies' ) ? '#ffd36a' : ( ( $effect === 'meteors' ) ? '#ffffff' : '#6aa6ff' );
+			$attr['data-bg-color']   = esc_attr( upw_bg_hex( $o['color'] ?? '', $defc ) );
+			$attr['data-bg-density'] = esc_attr( (int) ( $o['density'] ?? 40 ) );
+			$attr['data-bg-speed']   = esc_attr( (float) ( $o['speed'] ?? 3 ) );
 			break;
 	}
 
