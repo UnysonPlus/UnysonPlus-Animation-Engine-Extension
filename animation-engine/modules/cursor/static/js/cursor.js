@@ -73,7 +73,15 @@
 	else if (style === 'particles') { particles(); }
 	else if (style === 'elastic') { elastic(); }
 	else if (style === 'arrow') { arrow(); }
+	else if (style === 'echo' || style === 'firefly' || style === 'confetti' || style === 'bubble') { swarm(style); }
+	else if (style === 'spring') { spring(); }
+	else if (style === 'streak') { streak(); }
+	else if (style === 'rope') { rope(); }
+	else if (style === 'metaball') { metaball(); }
 	else { shapes(); }
+
+	// Click feedback modifiers — layered on top of ANY style.
+	if (cfg.clickRipple || cfg.clickBurst) { clickFx(); }
 
 	/* Single element (+ lagging ring for dot_ring). */
 	function shapes() {
@@ -174,6 +182,132 @@
 			el.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px) translate(-50%,-50%) rotate(' + ang.toFixed(1) + 'deg)';
 			requestAnimationFrame(loop);
 		})();
+	}
+
+	/* Generic trailing swarm — one pool, per-kind spawn + physics (echo/firefly/confetti/bubble). */
+	function swarm(kind) {
+		var head = make('upw-cursor--dot upw-cursor-primary');
+		if (kind === 'firefly' || kind === 'bubble') { head.style.opacity = '0'; } // swarm is the star
+		var N = Math.max(3, Math.min(30, cfg.count || 10)), pool = [], i;
+		for (i = 0; i < N; i++) {
+			var el = make('upw-cursor-p upw-cursor-p-' + kind);
+			pool.push({ el: el, life: 0, x: mx, y: my, vx: 0, vy: 0, rot: 0, vr: 0 });
+		}
+		var idx = 0, last = 0, spawnMs = (kind === 'confetti') ? 30 : 45;
+		(function loop(t) {
+			var pp = pos(); if (kind === 'echo') { place(head, pp.x, pp.y); }
+			if (!reduce) {
+				if (!last) { last = t; }
+				if (t - last > spawnMs) {
+					last = t;
+					var q = pool[idx % N]; idx++;
+					q.x = pp.x; q.y = pp.y; q.life = 1; q.rot = Math.random() * 360;
+					if (kind === 'echo') { q.vx = 0; q.vy = 0; q.vr = 0; }
+					else if (kind === 'firefly') { q.vx = (Math.random() - 0.5) * 1.2; q.vy = (Math.random() - 0.5) * 1.2; q.vr = 0; }
+					else if (kind === 'confetti') { q.vx = (Math.random() - 0.5) * 3; q.vy = -Math.random() * 2 - 0.5; q.vr = (Math.random() - 0.5) * 24; }
+					else if (kind === 'bubble') { q.vx = (Math.random() - 0.5) * 0.8; q.vy = -Math.random() * 1.2 - 0.4; q.vr = 0; }
+				}
+			}
+			for (i = 0; i < N; i++) {
+				var s = pool[i];
+				if (s.life <= 0) { continue; }
+				s.life = Math.max(0, s.life - (kind === 'confetti' ? 0.018 : 0.028));
+				if (kind === 'confetti') { s.vy += 0.12; } // gravity
+				s.x += s.vx; s.y += s.vy; s.rot += s.vr;
+				var sc = kind === 'echo' ? (0.4 + s.life * 0.9) : (0.4 + s.life * 0.6);
+				var flick = kind === 'firefly' ? (0.55 + 0.45 * Math.abs(Math.sin((s.life + i) * 6))) : 1;
+				s.el.style.opacity = String(s.life * (kind === 'echo' ? 0.55 : 0.85) * flick);
+				s.el.style.transform = 'translate(' + s.x.toFixed(1) + 'px,' + s.y.toFixed(1) + 'px) translate(-50%,-50%) rotate(' + s.rot.toFixed(0) + 'deg) scale(' + sc.toFixed(2) + ')';
+			}
+			requestAnimationFrame(loop);
+		})(0);
+	}
+
+	/* Dot that overshoots and springs back (critically-damped-ish spring). */
+	function spring() {
+		var el = make('upw-cursor--dot upw-cursor-primary');
+		var x = mx, y = my, vx = 0, vy = 0, k = reduce ? 1 : 0.18, damp = 0.72;
+		(function loop() {
+			var p = pos();
+			vx = (vx + (p.x - x) * k) * damp; vy = (vy + (p.y - y) * k) * damp;
+			x += vx; y += vy; place(el, x, y);
+			requestAnimationFrame(loop);
+		})();
+	}
+
+	/* Filled teardrop that elongates along its velocity vector. */
+	function streak() {
+		var el = make('upw-cursor--streak upw-cursor-primary');
+		var cx = mx, cy = my, px = mx, py = my;
+		(function loop() {
+			var p = pos();
+			cx += (p.x - cx) * 0.25; cy += (p.y - cy) * 0.25;
+			var dx = cx - px, dy = cy - py; px = cx; py = cy;
+			var spd = reduce ? 0 : Math.min(1.4, Math.sqrt(dx * dx + dy * dy) / 22);
+			var ang = Math.atan2(dy, dx) * 180 / Math.PI;
+			el.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px) translate(-50%,-50%) rotate(' + ang.toFixed(1) + 'deg) scale(' + (1 + spd).toFixed(2) + ',' + (1 - spd * 0.4).toFixed(2) + ')';
+			requestAnimationFrame(loop);
+		})();
+	}
+
+	/* A stretchy band drawn between a lagging tail point and the head dot. */
+	function rope() {
+		var line = make('upw-cursor--rope', false);
+		var head = make('upw-cursor--dot upw-cursor-primary');
+		var tx = mx, ty = my;
+		(function loop() {
+			var p = pos(); place(head, p.x, p.y);
+			tx += (p.x - tx) * (reduce ? 1 : 0.2); ty += (p.y - ty) * (reduce ? 1 : 0.2);
+			var dx = p.x - tx, dy = p.y - ty, len = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dy, dx) * 180 / Math.PI;
+			line.style.width = len.toFixed(1) + 'px';
+			line.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) rotate(' + ang.toFixed(1) + 'deg)';
+			requestAnimationFrame(loop);
+		})();
+	}
+
+	/* Two blobs that merge like liquid via an SVG gooey filter. */
+	function metaball() {
+		var ns = 'http://www.w3.org/2000/svg';
+		var svg = document.createElementNS(ns, 'svg');
+		svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
+		svg.style.position = 'absolute';
+		svg.innerHTML = '<defs><filter id="upw-goo"><feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/>'
+			+ '<feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="g"/>'
+			+ '<feBlend in="SourceGraphic" in2="g"/></filter></defs>';
+		document.body.appendChild(svg);
+		var wrap = make('upw-cursor-goo', false);
+		var a = document.createElement('div'); a.className = 'upw-goo-ball upw-goo-a'; wrap.appendChild(a);
+		var b = document.createElement('div'); b.className = 'upw-goo-ball upw-goo-b'; wrap.appendChild(b);
+		var rx = mx, ry = my, lag = reduce ? 1 : (cfg.trail != null ? cfg.trail : 0.18);
+		(function loop() {
+			var p = pos(); place(a, p.x, p.y);
+			rx += (p.x - rx) * lag; ry += (p.y - ry) * lag; place(b, rx, ry);
+			requestAnimationFrame(loop);
+		})();
+	}
+
+	/* Click ripple + burst — spawns transient elements at the click point. */
+	function clickFx() {
+		document.addEventListener('pointerdown', function (e) {
+			var x = e.clientX, y = e.clientY;
+			if (cfg.clickRipple) {
+				var r = make('upw-cursor-click-ripple', false);
+				r.style.left = x + 'px'; r.style.top = y + 'px'; // animation owns transform, so position via left/top
+				r.addEventListener('animationend', function () { r.remove(); });
+			}
+			if (cfg.clickBurst && !reduce) {
+				for (var i = 0; i < 8; i++) {
+					(function (ang) {
+						var s = make('upw-cursor-click-spark', false);
+						var dist = 18 + Math.random() * 14;
+						s.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(1) + 'px');
+						s.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(1) + 'px');
+						s.style.left = x + 'px'; s.style.top = y + 'px';
+						s.addEventListener('animationend', function () { s.remove(); });
+					})(Math.PI * 2 * i / 8);
+				}
+			}
+		}, { passive: true });
 	}
 
 	/* Full-screen dim with a lit hole around the cursor. */

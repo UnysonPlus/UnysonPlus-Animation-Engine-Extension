@@ -140,6 +140,124 @@ html.upw-cursor-active .upw-cursor { opacity: 1; }
 	100% { transform: translate(-50%, -50%) scale(1);  opacity: 0; }
 }
 
+/* ---- Geometric (single tracked element; JS owns translate, shapes via clip/pseudo) ---- */
+.upw-cursor--plus { width: calc(var(--s) * 2.6); height: calc(var(--s) * 2.6); }
+.upw-cursor--plus::before, .upw-cursor--plus::after { content: ""; position: absolute; background: var(--c); border-radius: 2px; }
+.upw-cursor--plus::before { left: 50%; top: 15%; width: 2.5px; height: 70%; transform: translateX(-50%); }
+.upw-cursor--plus::after { top: 50%; left: 15%; height: 2.5px; width: 70%; transform: translateY(-50%); }
+
+.upw-cursor--star {
+	width: calc(var(--s) * 3); height: calc(var(--s) * 3); background: var(--c);
+	clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+	animation: upw-cursor-twinkle 1.6s ease-in-out infinite;
+}
+@keyframes upw-cursor-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+.upw-cursor--diamond {
+	width: calc(var(--s) * 2.6); height: calc(var(--s) * 2.6); background: var(--c);
+	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.upw-cursor--dual-ring { width: calc(var(--s) * 4); height: calc(var(--s) * 4); }
+.upw-cursor--dual-ring::before, .upw-cursor--dual-ring::after {
+	content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid transparent;
+}
+.upw-cursor--dual-ring::before { border-top-color: var(--c); border-bottom-color: var(--c); animation: upw-cursor-rot 2.4s linear infinite; }
+.upw-cursor--dual-ring::after  { border-left-color: var(--c); border-right-color: var(--c); animation: upw-cursor-rot-rev 3.2s linear infinite; }
+@keyframes upw-cursor-rot { to { transform: rotate(360deg); } }
+@keyframes upw-cursor-rot-rev { to { transform: rotate(-360deg); } }
+
+.upw-cursor--bullseye {
+	width: calc(var(--s) * 4); height: calc(var(--s) * 4);
+	border: 1.5px solid var(--c); border-radius: 50%;
+}
+.upw-cursor--bullseye::before {
+	content: ""; position: absolute; left: 50%; top: 50%; width: 55%; height: 55%;
+	border: 1.5px solid var(--c); border-radius: 50%; transform: translate(-50%, -50%);
+}
+.upw-cursor--bullseye::after {
+	content: ""; position: absolute; left: 50%; top: 50%; width: calc(var(--s) * 0.9); height: calc(var(--s) * 0.9);
+	background: var(--c); border-radius: 50%; transform: translate(-50%, -50%);
+}
+
+.upw-cursor--reticle {
+	width: calc(var(--s) * 4); height: calc(var(--s) * 4);
+	--rt: linear-gradient(var(--c), var(--c));
+	background:
+		var(--rt) left top / 30% 2px no-repeat, var(--rt) left top / 2px 30% no-repeat,
+		var(--rt) right top / 30% 2px no-repeat, var(--rt) right top / 2px 30% no-repeat,
+		var(--rt) left bottom / 30% 2px no-repeat, var(--rt) left bottom / 2px 30% no-repeat,
+		var(--rt) right bottom / 30% 2px no-repeat, var(--rt) right bottom / 2px 30% no-repeat;
+}
+.upw-cursor--reticle::after {
+	content: ""; position: absolute; left: 50%; top: 50%; width: 3px; height: 3px;
+	background: var(--c); border-radius: 50%; transform: translate(-50%, -50%);
+}
+
+.upw-cursor--invert {
+	width: calc(var(--s) * 3); height: calc(var(--s) * 3);
+	background: #fff; border-radius: 50%; mix-blend-mode: difference;
+}
+
+/* ---- Trailing swarms (JS pool, per-frame opacity/scale — no transition) ---- */
+.upw-cursor-p { transition: none; opacity: 0; }
+.upw-cursor-p-echo { width: calc(var(--s) * 3); height: calc(var(--s) * 3); border: 1.5px solid var(--c); border-radius: 50%; }
+.upw-cursor-p-firefly {
+	width: calc(var(--s) * 0.8); height: calc(var(--s) * 0.8); background: var(--c); border-radius: 50%;
+	box-shadow: 0 0 6px 2px var(--c), 0 0 12px 4px color-mix(in srgb, var(--c) 45%, transparent);
+}
+.upw-cursor-p-confetti { width: calc(var(--s) * 0.9); height: calc(var(--s) * 0.5); background: var(--c); border-radius: 1px; }
+.upw-cursor-p-bubble {
+	width: calc(var(--s) * 1.4); height: calc(var(--s) * 1.4); border-radius: 50%;
+	background: color-mix(in srgb, var(--c) 12%, transparent);
+	border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+}
+
+/* ---- Physics ---- */
+.upw-cursor--streak { width: calc(var(--s) * 1.6); height: calc(var(--s) * 1.6); background: var(--c); border-radius: 50%; }
+.upw-cursor--rope {
+	position: fixed; top: 0; left: 0; height: 2px; border-radius: 2px; background: var(--c);
+	transform-origin: left center; pointer-events: none; z-index: 2147483000;
+	opacity: 0; transition: opacity .25s ease;
+}
+html.upw-cursor-active .upw-cursor--rope { opacity: 1; }
+
+/* Gooey metaball — two blobs merged by an SVG threshold filter */
+.upw-cursor-goo {
+	position: fixed; inset: 0; pointer-events: none; z-index: 2147483000;
+	filter: url(#upw-goo); opacity: 0; transition: opacity .25s ease;
+}
+html.upw-cursor-active .upw-cursor-goo { opacity: 1; }
+.upw-goo-ball {
+	position: fixed; top: 0; left: 0; background: var(--upw-cursor-color, #2f74e6); border-radius: 50%;
+	will-change: transform;
+}
+.upw-goo-a { width: calc(var(--upw-cursor-size, 8px) * 2.2); height: calc(var(--upw-cursor-size, 8px) * 2.2); }
+.upw-goo-b { width: calc(var(--upw-cursor-size, 8px) * 3);   height: calc(var(--upw-cursor-size, 8px) * 3); }
+
+/* ---- Click feedback modifiers (transient, positioned via left/top) ---- */
+.upw-cursor-click-ripple, .upw-cursor-click-spark {
+	position: fixed; pointer-events: none; z-index: 2147483600;
+}
+.upw-cursor-click-ripple {
+	width: calc(var(--upw-cursor-size, 8px) * 2); height: calc(var(--upw-cursor-size, 8px) * 2);
+	border: 2px solid var(--upw-cursor-color, #2f74e6); border-radius: 50%;
+	animation: upw-click-ripple .5s ease-out forwards;
+}
+@keyframes upw-click-ripple {
+	from { opacity: .7; transform: translate(-50%, -50%) scale(.3); }
+	to   { opacity: 0;  transform: translate(-50%, -50%) scale(4); }
+}
+.upw-cursor-click-spark {
+	width: calc(var(--upw-cursor-size, 8px) * 0.7); height: calc(var(--upw-cursor-size, 8px) * 0.7);
+	background: var(--upw-cursor-color, #2f74e6); border-radius: 50%;
+	animation: upw-click-spark .5s ease-out forwards;
+}
+@keyframes upw-click-spark {
+	from { opacity: 1; transform: translate(-50%, -50%); }
+	to   { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx, 0), var(--dy, 0)); }
+}
+
 /* ---- Spotlight (full-screen overlay, not a tracked element) ---- */
 .upw-cursor-spotlight {
 	position: fixed; inset: 0; pointer-events: none; z-index: 2147482000;
@@ -164,7 +282,15 @@ html.upw-cursor-hover .upw-cursor--brackets,
 html.upw-cursor-hover .upw-cursor--elastic,
 html.upw-cursor-hover .upw-cursor--arrow,
 html.upw-cursor-hover .upw-cursor--radar,
+html.upw-cursor-hover .upw-cursor--plus,
+html.upw-cursor-hover .upw-cursor--star,
+html.upw-cursor-hover .upw-cursor--diamond,
+html.upw-cursor-hover .upw-cursor--dual-ring,
+html.upw-cursor-hover .upw-cursor--bullseye,
+html.upw-cursor-hover .upw-cursor--reticle,
 html.upw-cursor-hover .upw-cursor--blob { width: calc(var(--s) * 6); height: calc(var(--s) * 6); }
+html.upw-cursor-hover .upw-cursor--invert,
+html.upw-cursor-hover .upw-cursor--streak { width: calc(var(--s) * 4.5); height: calc(var(--s) * 4.5); }
 html.upw-cursor-hover .upw-cursor--dot-ring { opacity: .6; }
 
 /* Hide the native pointer */
@@ -194,6 +320,8 @@ html.upw-cursor-blend .upw-cursor--brackets::before,
 html.upw-cursor-blend .upw-cursor--brackets::after { background: #fff; border-color: #fff; }
 
 @media (prefers-reduced-motion: reduce) {
-	.upw-cursor--dashed, .upw-cursor--blob { animation: none; }
-	.upw-cursor--radar::before, .upw-cursor--radar::after { animation: none; opacity: 0; }
+	.upw-cursor--dashed, .upw-cursor--blob, .upw-cursor--star { animation: none; }
+	.upw-cursor--radar::before, .upw-cursor--radar::after,
+	.upw-cursor--dual-ring::before, .upw-cursor--dual-ring::after { animation: none; }
+	.upw-cursor--radar::before, .upw-cursor--radar::after { opacity: 0; }
 }

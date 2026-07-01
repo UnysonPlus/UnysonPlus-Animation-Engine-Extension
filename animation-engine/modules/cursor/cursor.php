@@ -49,6 +49,21 @@ if ( ! function_exists( 'upw_cursor_styles' ) ) :
 			'lens'     => __( 'Glass Lens', 'fw' ),
 			'arrow'    => __( 'Directional Arrow', 'fw' ),
 			'radar'    => __( 'Radar Pulse', 'fw' ),
+			'plus'     => __( 'Plus', 'fw' ),
+			'star'     => __( 'Sparkle', 'fw' ),
+			'diamond'  => __( 'Diamond', 'fw' ),
+			'dual_ring'=> __( 'Dual Ring', 'fw' ),
+			'bullseye' => __( 'Bullseye', 'fw' ),
+			'reticle'  => __( 'Camera Reticle', 'fw' ),
+			'invert'   => __( 'Invert Disc', 'fw' ),
+			'echo'     => __( 'Afterimage', 'fw' ),
+			'firefly'  => __( 'Firefly', 'fw' ),
+			'confetti' => __( 'Confetti Trail', 'fw' ),
+			'bubble'   => __( 'Bubbles', 'fw' ),
+			'spring'   => __( 'Spring Dot', 'fw' ),
+			'streak'   => __( 'Motion Streak', 'fw' ),
+			'rope'     => __( 'Rubber Band', 'fw' ),
+			'metaball' => __( 'Gooey Metaball', 'fw' ),
 			'custom'   => __( 'Custom Image', 'fw' ),
 			'glyph'    => __( 'Glyph / Emoji', 'fw' ),
 		);
@@ -180,6 +195,48 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'properties' => array( 'min' => 0.6, 'max' => 3, 'step' => 0.1 ),
 										),
 									),
+									'echo' => array(
+										'count' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Echoes', 'fw' ),
+											'desc'       => __( 'How many fading copies trail behind.', 'fw' ),
+											'value'      => 8,
+											'properties' => array( 'min' => 3, 'max' => 20, 'step' => 1 ),
+										),
+									),
+									'firefly' => array(
+										'count' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Fireflies', 'fw' ),
+											'value'      => 10,
+											'properties' => array( 'min' => 4, 'max' => 24, 'step' => 1 ),
+										),
+									),
+									'confetti' => array(
+										'count' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Confetti', 'fw' ),
+											'value'      => 14,
+											'properties' => array( 'min' => 6, 'max' => 30, 'step' => 1 ),
+										),
+									),
+									'bubble' => array(
+										'count' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Bubbles', 'fw' ),
+											'value'      => 8,
+											'properties' => array( 'min' => 3, 'max' => 20, 'step' => 1 ),
+										),
+									),
+									'metaball' => array(
+										'trail' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Ring lag', 'fw' ),
+											'desc'       => __( 'How much the second blob lags (lower = more gooey stretch).', 'fw' ),
+											'value'      => 0.18,
+											'properties' => array( 'min' => 0.05, 'max' => 0.5, 'step' => 0.01 ),
+										),
+									),
 									'glyph' => array(
 										'glyph_char' => array(
 											'type'  => 'text',
@@ -222,6 +279,8 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 							'hover_grow'   => $sw( __( 'Grow on hover', 'fw' ), __( 'The cursor expands over links / buttons.', 'fw' ), true ),
 							'magnetic'     => $sw( __( 'Magnetic snap', 'fw' ), __( 'The cursor eases toward the center of the hovered button / link.', 'fw' ), false ),
 							'blend'        => $sw( __( 'Difference blend', 'fw' ), __( 'The cursor inverts against whatever is behind it.', 'fw' ), false ),
+							'click_ripple' => $sw( __( 'Click ripple', 'fw' ), __( 'Emit an expanding ring wherever you click. Works with any style.', 'fw' ), false ),
+							'click_burst'  => $sw( __( 'Click burst', 'fw' ), __( 'Spark a small particle burst on click. Works with any style.', 'fw' ), false ),
 							'hide_default' => $sw( __( 'Hide the native cursor', 'fw' ), __( 'Hide the OS pointer while the custom cursor is shown.', 'fw' ), true ),
 						),
 					),
@@ -280,6 +339,8 @@ add_action( 'wp_enqueue_scripts', function () {
 		'hoverGrow'     => upw_cursor_setting( 'hover_grow', 'yes' ) === 'yes',
 		'magnetic'      => upw_cursor_setting( 'magnetic', 'no' ) === 'yes',
 		'blend'         => upw_cursor_setting( 'blend', 'no' ) === 'yes',
+		'clickRipple'   => upw_cursor_setting( 'click_ripple', 'no' ) === 'yes',
+		'clickBurst'    => upw_cursor_setting( 'click_burst', 'no' ) === 'yes',
 		'hideDefault'   => upw_cursor_setting( 'hide_default', 'yes' ) === 'yes',
 		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
 	);
