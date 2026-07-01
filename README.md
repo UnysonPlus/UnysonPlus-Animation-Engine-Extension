@@ -67,6 +67,21 @@ Border**, **Underline Grow**, **Ripple**, **Lift**, **Color Shift** — chosen f
 animated-SVG image picker. The runtime (JS/CSS) is enqueued only on pages that actually
 use an effect.
 
+### Animated Backgrounds
+
+**8 animated backgrounds** addable to any **container** (section / bleed-section /
+masonry-section / row) via its *Styling* tab — the option only appears on containers,
+never on text/leaf elements. Chosen from an animated-SVG image picker (popover):
+
+- **CSS:** Aurora (drifting blurred blobs), Gradient (animated), Dot Grid.
+- **Canvas:** Particles, Constellation (linked network), Waves, Starfield (warp), Grain.
+
+The runtime injects a layer **behind** the container's content (content is lifted above it),
+with palette-preset colors and per-effect options (density, speed, colors, amplitude …).
+**Self-contained vanilla JS + canvas.** Loops **pause when the section is off-screen or the
+tab is hidden**, reduced-motion draws a single static frame, and the runtime loads only on
+pages that use a background. Global on/off lives in **Theme Settings → Animations → Backgrounds**.
+
 ### Text Effects
 
 **37 typographic animations** addable to any element's text via its *Animations* tab,
