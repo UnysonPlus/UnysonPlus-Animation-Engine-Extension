@@ -133,6 +133,16 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'value'      => 0.6,
 				'properties' => array( 'min' => 0.2, 'max' => 1.6, 'step' => 0.1 ),
 			),
+			'sequence' => array(
+				'type'    => 'select',
+				'label'   => __( 'Sequence', 'fw' ),
+				'desc'    => __( 'When the element has several paragraphs / lines: reveal them all at once, or one after another (the stagger cascades from the very first word to the last).', 'fw' ),
+				'value'   => 'together',
+				'choices' => array(
+					'together' => __( 'All together', 'fw' ),
+					'cascade'  => __( 'One after another', 'fw' ),
+				),
+			),
 			'trigger' => $trigger_view_load,
 		);
 		if ( $with_dir ) {
@@ -473,6 +483,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		$attr['data-text-stagger']  = esc_attr( (float) ( $o['stagger'] ?? 0.03 ) );
 		$attr['data-text-duration'] = esc_attr( (float) ( $o['duration'] ?? 0.6 ) );
 		$attr['data-text-trigger']  = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
+		$attr['data-text-seq']      = esc_attr( ( ( $o['sequence'] ?? 'together' ) === 'cascade' ) ? 'cascade' : 'together' );
 		if ( isset( $o['direction'] ) ) {
 			$attr['data-text-dir'] = esc_attr( in_array( $o['direction'], array( 'up', 'down', 'left', 'right' ), true ) ? $o['direction'] : 'left' );
 		}
