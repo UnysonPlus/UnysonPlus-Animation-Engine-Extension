@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Clip-path wipe on scroll">
+  <style>.c{animation:c 2.6s ease-in-out infinite}@keyframes c{0%{clip-path:inset(100% 0 0 0)}45%,80%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(100% 0 0 0)}}</style>
+  <rect class="c" x="42" y="20" width="48" height="34" rx="6" fill="#2f74e6"/>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Clip Wipe</text>
+</svg>

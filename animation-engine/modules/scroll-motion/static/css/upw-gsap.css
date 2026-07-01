@@ -1,0 +1,31 @@
+/**
+ * Failsafe styles for the GSAP "Scroll Motion" engine.
+ *
+ * Only the effects that START HIDDEN (reveal, stagger, scrub-fade) get the
+ * server-side `upw-g-pending` guard class. These rules pre-hide them so there
+ * is no flash of un-animated content before the initializer runs — exactly the
+ * pattern used by the Animate.css engine's `.sc-anim-pending`.
+ *
+ * IMPORTANT: no `!important` on the hide. GSAP sets opacity inline (which beats
+ * a class selector), so the reveal works; the initializer also strips the class
+ * once its tween's start-state is rendered. If JS never runs (error / blocked),
+ * the class lingers but degrades gracefully via the reduced-motion fallback and
+ * the initializer's own clear-on-bail path. Parallax and pin never pre-hide.
+ */
+
+.upw-g-pending {
+    opacity: 0;
+}
+
+.upw-g-pending[data-upw-g="stagger"] > * {
+    opacity: 0;
+}
+
+/* Respect the user's motion preference: reveal everything, no motion. */
+@media (prefers-reduced-motion: reduce) {
+    .upw-g-pending,
+    .upw-g-pending[data-upw-g="stagger"] > * {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}

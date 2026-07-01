@@ -25,6 +25,7 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/includes/theme-settings.php';
 
 		// Modules. Each plugs into the shared Animations tab / wrapper / Theme Settings.
-		require_once dirname( __FILE__ ) . '/modules/hover/hover.php'; // Hover Interactions
+		require_once dirname( __FILE__ ) . '/modules/scroll-motion/scroll-motion.php'; // Scroll Motion (GSAP)
+		require_once dirname( __FILE__ ) . '/modules/hover/hover.php';                  // Hover Interactions
 	}
 }

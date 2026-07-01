@@ -9,11 +9,14 @@ When active it lights up two things:
 
 1. A **WebGL Object** element under *Media Elements* in the page builder
    (`[webgl_object]`) — the engine's first module.
-2. A **Hover Interaction** group on **every** element's *Animations* tab, plus an
-   **Animations** section in *Appearance → Theme Settings* for global options.
+2. **Scroll Motion (GSAP)** + **Hover Interaction** groups on **every** element's
+   *Animations* tab, plus an **Animations** section in *Appearance → Theme Settings*
+   for global options.
 
 Deactivating the extension removes them; placed `[webgl_object]` instances then render
-empty (by design).
+empty (by design). The Animate.css **Entrance** animation stays in core (lightweight,
+always available) — only the heavier, growing GSAP/WebGL/Hover live here, so a minimalist
+site never ships them.
 
 ## Modules
 
@@ -29,6 +32,15 @@ Real-time Three.js, in two families:
   Distortion**.
 
 Pointer + optional scroll reaction; **Placement** is inline or *Section background*.
+
+### Scroll Motion (GSAP)
+
+Scroll-driven motion added to any element via its *Animations* tab — **Reveal**,
+**Stagger**, **Split Text**, **Parallax**, **Pin**, **Scrub**, plus entrance variants
+**Zoom In / Rotate In / Blur In / Clip Wipe / Skew Settle** — powered by GSAP +
+ScrollTrigger (bundled). Chosen from an animated-SVG image picker; GSAP + the runtime
+load only on pages that use an effect. (Moved here from core — Scroll Motion is a
+growing platform, so it belongs with the opt-in engine rather than the lightweight core.)
 
 ### Hover Interactions
 
@@ -57,6 +69,7 @@ animation-engine/                          ← the extension (slug "animation-en
 ├─ manifest.php                            ← requires shortcodes + page-builder
 ├─ class-fw-extension-animation-engine.php ← loads the modules
 ├─ includes/theme-settings.php             ← Theme Settings → Animations section
+├─ modules/scroll-motion/                  ← Scroll Motion module (GSAP + ScrollTrigger)
 ├─ modules/hover/                          ← Hover Interactions module
 └─ shortcodes/webgl-object/                ← the [webgl_object] leaf shortcode
 ```
