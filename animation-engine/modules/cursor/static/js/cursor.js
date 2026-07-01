@@ -195,6 +195,7 @@
 
 	/* Generic trailing swarm — one pool, per-kind spawn + physics (echo/firefly/confetti/bubble). */
 	function swarm(kind) {
+		var PALETTE = ['#2f74e6', '#e0447d', '#f5a524', '#17c964', '#9353d3', '#ff6b6b', '#00c2b2'];
 		var head = make('upw-cursor--dot upw-cursor-primary');
 		if (kind === 'firefly' || kind === 'bubble') { head.style.opacity = '0'; } // swarm is the star
 		var N = Math.max(3, Math.min(30, cfg.count || 10)), pool = [], i;
@@ -213,7 +214,10 @@
 					q.x = pp.x; q.y = pp.y; q.life = 1; q.rot = Math.random() * 360;
 					if (kind === 'echo') { q.vx = 0; q.vy = 0; q.vr = 0; }
 					else if (kind === 'firefly') { q.vx = (Math.random() - 0.5) * 1.2; q.vy = (Math.random() - 0.5) * 1.2; q.vr = 0; }
-					else if (kind === 'confetti') { q.vx = (Math.random() - 0.5) * 3; q.vy = -Math.random() * 2 - 0.5; q.vr = (Math.random() - 0.5) * 24; }
+					else if (kind === 'confetti') {
+						q.vx = (Math.random() - 0.5) * 3; q.vy = -Math.random() * 2 - 0.5; q.vr = (Math.random() - 0.5) * 24;
+						if (cfg.confettiMulti) { q.el.style.backgroundColor = PALETTE[(Math.random() * PALETTE.length) | 0]; }
+					}
 					else if (kind === 'bubble') { q.vx = (Math.random() - 0.5) * 0.8; q.vy = -Math.random() * 1.2 - 0.4; q.vr = 0; }
 				}
 			}

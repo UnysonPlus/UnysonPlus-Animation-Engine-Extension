@@ -253,6 +253,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'value'      => 14,
 											'properties' => array( 'min' => 6, 'max' => 30, 'step' => 1 ),
 										),
+										'multicolor' => $sw( __( 'Multi-colored', 'fw' ), __( 'Give each confetti piece a random festive color instead of the single cursor color.', 'fw' ), true ),
 									),
 									'bubble' => array(
 										'count' => array(
@@ -469,6 +470,7 @@ add_action( 'wp_enqueue_scripts', function () {
 		'spotRadius'    => (int) ( isset( $sub['spot_radius'] ) ? $sub['spot_radius'] : 160 ),
 		'spotDim'       => (float) ( isset( $sub['spot_dim'] ) ? $sub['spot_dim'] : 0.6 ),
 		'count'         => (int) ( isset( $sub['count'] ) ? $sub['count'] : 8 ),
+		'confettiMulti' => ( isset( $sub['multicolor'] ) ? $sub['multicolor'] : 'yes' ) === 'yes',
 		'elastic'       => (float) ( isset( $sub['elastic'] ) ? $sub['elastic'] : 0.5 ),
 		'lensRadius'    => (int) ( isset( $sub['lens_radius'] ) ? $sub['lens_radius'] : 70 ),
 		'lensBlur'      => (float) ( isset( $sub['lens_blur'] ) ? $sub['lens_blur'] : 4 ),
