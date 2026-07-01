@@ -13,9 +13,11 @@
 	var mql = window.matchMedia || function () { return { matches: false }; };
 	var reduce = cfg.reducedMotion && mql('(prefers-reduced-motion: reduce)').matches;
 
-	/* The element that actually holds the visible text inside a wrapper. */
-	function targetOf(el) {
-		return el.querySelector('h1,h2,h3,h4,h5,h6,p,.sc-text-target') || el;
+	/* Every element that holds visible text inside a wrapper (all paragraphs / headings,
+	   not just the first). Falls back to the wrapper itself when it has no text children. */
+	function targetsOf(el) {
+		var list = el.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,blockquote,.sc-text-target');
+		return list.length ? Array.prototype.slice.call(list) : [el];
 	}
 
 	function onView(el, cb) {
@@ -103,8 +105,7 @@
 		skew:   function () { return { tf: 'skewY(7deg) translateY(.5em)', ease: 'cubic-bezier(.2,.7,.2,1)' }; }
 	};
 
-	function doReveal(el, kind) {
-		var target = targetOf(el);
+	function doReveal(el, target, kind) {
 		var mode = el.getAttribute('data-text-split') || 'chars';
 		var dir = el.getAttribute('data-text-dir') || '';
 		var stagger = parseFloat(el.getAttribute('data-text-stagger')) || 0.03;
@@ -154,15 +155,15 @@
 	}
 
 	['split_reveal', 'blur', 'flip3d', 'scale', 'slide', 'bounce', 'random', 'skew'].forEach(function (k) {
-		H[k] = function (el) { doReveal(el, k); };
+		H[k] = function (el, target) { doReveal(el, target, k); };
 	});
-	H.mask = function (el) { doReveal(el, 'mask'); };
+	H.mask = function (el, target) { doReveal(el, target, 'mask'); };
 
 	/* --- Wave B: CSS-driven. Continuous = add a class; triggered = add is-on on view. --- */
-	function cssEffect(cls) { return function (el) { targetOf(el).classList.add(cls); }; }
+	function cssEffect(cls) { return function (el, target) { target.classList.add(cls); }; }
 	function cssTriggered(cls) {
-		return function (el) {
-			var t = targetOf(el); t.classList.add(cls);
+		return function (el, target) {
+			var t = target; t.classList.add(cls);
 			if ((el.getAttribute('data-text-trigger') || 'hover') === 'view') { onView(el, function () { t.classList.add('is-on'); }); }
 		};
 	}
@@ -176,8 +177,8 @@
 	H.marker = cssTriggered('upw-text-marker');
 	H.outline_fill = cssTriggered('upw-text-outline');
 	H.width_sweep = cssTriggered('upw-text-width');
-	H.strikebox = function (el) {
-		var t = targetOf(el);
+	H.strikebox = function (el, target) {
+		var t = target;
 		t.setAttribute('data-text-shape', el.getAttribute('data-text-shape') || 'strike');
 		t.classList.add('upw-text-strikebox');
 		if ((el.getAttribute('data-text-trigger') || 'view') === 'view') { onView(el, function () { t.classList.add('is-on'); }); }
@@ -187,8 +188,8 @@
 	var FLAP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 	var GLYPH = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿ0123456789ABCDEF';
 
-	H.rotating_words = function (el) {
-		var t = targetOf(el);
+	H.rotating_words = function (el, target) {
+		var t = target;
 		var extra = (el.getAttribute('data-text-words') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
 		var list = [t.textContent.trim()].concat(extra);
 		if (list.length < 2) { return; }
@@ -204,8 +205,8 @@
 		}, interval);
 	};
 
-	H.countup = function (el) {
-		var t = targetOf(el), raw = t.textContent.trim();
+	H.countup = function (el, target) {
+		var t = target, raw = t.textContent.trim();
 		var m = raw.match(/^([^\d-]*)(-?[\d.,]+)(.*)$/);
 		if (!m) { return; }
 		var pre = m[1], numStr = m[2], suf = m[3];
@@ -223,8 +224,8 @@
 		if ((el.getAttribute('data-text-trigger') || 'view') === 'load') { run(); } else { onView(el, run); }
 	};
 
-	H.splitflap = function (el) {
-		var pieces = wrapPieces(targetOf(el), 'chars');
+	H.splitflap = function (el, target) {
+		var pieces = wrapPieces(target, 'chars');
 		function run() {
 			pieces.forEach(function (p, idx) {
 				var fin = p.textContent, total = 8 + idx * 2, k = 0;
@@ -238,8 +239,8 @@
 		if ((el.getAttribute('data-text-trigger') || 'view') === 'load') { run(); } else { onView(el, run); }
 	};
 
-	H.matrix = function (el) {
-		var pieces = wrapPieces(targetOf(el), 'chars');
+	H.matrix = function (el, target) {
+		var pieces = wrapPieces(target, 'chars');
 		var dur = (parseFloat(el.getAttribute('data-text-duration')) || 1.4) * 1000;
 		for (var i = 0; i < pieces.length; i++) { pieces[i].setAttribute('data-f', pieces[i].textContent); }
 		function run() {
@@ -259,29 +260,29 @@
 		if ((el.getAttribute('data-text-trigger') || 'view') === 'load') { run(); } else { onView(el, run); }
 	};
 
-	H.fill_sweep = function (el) {
-		var t = targetOf(el);
+	H.fill_sweep = function (el, target) {
+		var t = target;
 		t.style.setProperty('--text-base', getComputedStyle(t).color);
 		t.classList.add('upw-text-fillsweep');
 		if ((el.getAttribute('data-text-trigger') || 'hover') === 'view') { onView(el, function () { t.classList.add('is-on'); }); }
 	};
 
-	H.letter_jump = function (el) {
-		var pieces = wrapPieces(targetOf(el), 'chars');
+	H.letter_jump = function (el, target) {
+		var pieces = wrapPieces(target, 'chars');
 		for (var i = 0; i < pieces.length; i++) { pieces[i].classList.add('upw-text-jump-ch'); pieces[i].style.setProperty('--i', i); }
 	};
 
-	H.expand_spacing = function (el) { targetOf(el).classList.add('upw-text-expand'); };
+	H.expand_spacing = function (el, target) { target.classList.add('upw-text-expand'); };
 
-	H.color_wave = function (el) {
-		var t = targetOf(el); t.classList.add('upw-text-cwave');
+	H.color_wave = function (el, target) {
+		var t = target; t.classList.add('upw-text-cwave');
 		var pieces = wrapPieces(t, 'chars');
 		for (var i = 0; i < pieces.length; i++) { pieces[i].classList.add('upw-text-cwave-ch'); pieces[i].style.setProperty('--i', i); }
 		if ((el.getAttribute('data-text-trigger') || 'hover') === 'view') { onView(el, function () { t.classList.add('is-on'); }); }
 	};
 
-	H.magnetic = function (el) {
-		var pieces = wrapPieces(targetOf(el), 'chars');
+	H.magnetic = function (el, target) {
+		var pieces = wrapPieces(target, 'chars');
 		var strength = parseFloat(el.getAttribute('data-text-strength')) || 0.4;
 		for (var i = 0; i < pieces.length; i++) { pieces[i].style.transition = 'transform .2s ease-out'; pieces[i].style.willChange = 'transform'; }
 		el.addEventListener('pointermove', function (e) {
@@ -295,14 +296,14 @@
 		el.addEventListener('pointerleave', function () { for (var k = 0; k < pieces.length; k++) { pieces[k].style.transform = 'none'; } }, { passive: true });
 	};
 
-	H.image_mask = function (el) {
-		var t = targetOf(el), img = el.getAttribute('data-text-img');
+	H.image_mask = function (el, target) {
+		var t = target, img = el.getAttribute('data-text-img');
 		if (img) { t.style.backgroundImage = 'url("' + img + '")'; }
 		t.classList.add('upw-text-imgmask');
 	};
 
-	H.kinetic = function (el) {
-		var pieces = wrapPieces(targetOf(el), 'chars');
+	H.kinetic = function (el, target) {
+		var pieces = wrapPieces(target, 'chars');
 		var intensity = parseFloat(getComputedStyle(el).getPropertyValue('--text-kinetic')) || 4;
 		for (var i = 0; i < pieces.length; i++) { pieces[i].style.transition = 'transform .35s cubic-bezier(.2,.7,.2,1)'; pieces[i].style.willChange = 'transform'; }
 		var lastY = window.pageYOffset || 0, settle = null;
@@ -315,8 +316,7 @@
 		}, { passive: true });
 	};
 
-	H.scramble = function (el) {
-		var target = targetOf(el);
+	H.scramble = function (el, target) {
 		var dur = (parseFloat(el.getAttribute('data-text-duration')) || 1.2) * 1000;
 		var trigger = el.getAttribute('data-text-trigger') || 'view';
 		var final = target.textContent, len = final.length;
@@ -338,8 +338,7 @@
 		if (trigger === 'load') { run(); } else { onView(el, run); }
 	};
 
-	H.typewriter = function (el) {
-		var target = targetOf(el);
+	H.typewriter = function (el, target) {
 		var speed = parseInt(el.getAttribute('data-text-speed'), 10) || 55;
 		var caret = el.getAttribute('data-text-caret') === '1';
 		var loop = el.getAttribute('data-text-loop') === '1';
@@ -353,25 +352,23 @@
 		if (trigger === 'load') { cycle(); } else { onView(el, cycle); }
 	};
 
-	H.shimmer = function (el) { targetOf(el).classList.add('upw-text-shimmer'); };
+	H.shimmer = function (el, target) { target.classList.add('upw-text-shimmer'); };
 
-	H.wave = function (el) {
-		var pieces = wrapPieces(targetOf(el), 'chars');
+	H.wave = function (el, target) {
+		var pieces = wrapPieces(target, 'chars');
 		for (var i = 0; i < pieces.length; i++) {
 			pieces[i].classList.add('upw-text-wave-ch');
 			pieces[i].style.animationDelay = (i * 0.06) + 's';
 		}
 	};
 
-	H.glitch = function (el) {
-		var target = targetOf(el);
+	H.glitch = function (el, target) {
 		target.setAttribute('data-text-content', target.textContent);
 		target.classList.add('upw-text-glitch');
 		if ((el.getAttribute('data-text-trigger') || 'hover') === 'always') { target.classList.add('is-always'); }
 	};
 
-	H.vf_weight = function (el) {
-		var target = targetOf(el);
+	H.vf_weight = function (el, target) {
 		target.classList.add('upw-text-vf');
 		if ((el.getAttribute('data-text-trigger') || 'hover') === 'view') {
 			onView(el, function () { target.classList.add('is-on'); });
@@ -381,10 +378,14 @@
 	function init() {
 		if (reduce) { return; } // leave all text exactly as authored
 		var nodes = document.querySelectorAll('[data-text]');
-		Array.prototype.forEach.call(nodes, function (el) {
-			if (el._upwText) { return; } el._upwText = true;
-			var fn = H[el.getAttribute('data-text')];
-			if (fn) { try { fn(el); } catch (e) { /* never break the page */ } }
+		Array.prototype.forEach.call(nodes, function (wrap) {
+			if (wrap._upwText) { return; } wrap._upwText = true;
+			var fn = H[wrap.getAttribute('data-text')];
+			if (!fn) { return; }
+			// Apply the effect to EVERY text element in the wrapper (each paragraph / heading).
+			targetsOf(wrap).forEach(function (target) {
+				try { fn(wrap, target); } catch (e) { /* never break the page */ }
+			});
 		});
 	}
 
