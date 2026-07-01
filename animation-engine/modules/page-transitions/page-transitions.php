@@ -197,7 +197,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 	$pt_base = $pt_ext ? $pt_ext->get_declared_URI( '/modules/page-transitions/static/img/transitions' ) : '';
 	$pt_tile = function ( $file, $label ) use ( $pt_base ) {
 		return array(
-			'small' => array( 'src' => $pt_base . '/' . $file . '.svg', 'height' => 60 ),
+			'small' => array( 'src' => $pt_base . '/' . $file . '.svg', 'height' => 66 ),
 			'large' => array( 'src' => $pt_base . '/' . $file . '.svg', 'height' => 120 ),
 			'label' => $label,
 		);

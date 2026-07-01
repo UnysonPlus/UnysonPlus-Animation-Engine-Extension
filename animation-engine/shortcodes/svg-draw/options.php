@@ -19,7 +19,7 @@ $svg_draw_ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : nu
 $svg_draw_base = $svg_draw_ext ? $svg_draw_ext->get_declared_URI( '/shortcodes/svg-draw/static/img/presets' ) : '';
 $svg_draw_tile = function ( $file, $label ) use ( $svg_draw_base ) {
 	return array(
-		'small' => array( 'src' => $svg_draw_base . '/' . $file . '.svg', 'height' => 60 ),
+		'small' => array( 'src' => $svg_draw_base . '/' . $file . '.svg', 'height' => 66 ),
 		'large' => array( 'src' => $svg_draw_base . '/' . $file . '.svg', 'height' => 120 ),
 		'label' => $label,
 	);
