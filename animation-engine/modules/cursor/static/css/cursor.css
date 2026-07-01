@@ -306,6 +306,12 @@ html.upw-cursor-active .upw-cursor-goo { opacity: 1; }
 .upw-cursor--magnify::before { width: 2px; height: 12px; transform: translate(-50%, -50%); }
 .upw-cursor--magnify::after  { width: 12px; height: 2px; transform: translate(-50%, -50%); }
 .upw-cursor--magnify.is-on::before, .upw-cursor--magnify.is-on::after { opacity: 0; }
+/* Total-maximization: a scaled clone of the page clipped to the lens circle */
+.upw-cursor--magnify-all { overflow: hidden; background: #fff; }
+.upw-magnify-clone {
+	position: absolute; top: 0; left: 0; width: 100vw;
+	transform-origin: 0 0; pointer-events: none;
+}
 
 /* ---- Canvas trails (ink / fluid / ripple) — full-viewport, JS-drawn ---- */
 .upw-cursor-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 2147483000; }

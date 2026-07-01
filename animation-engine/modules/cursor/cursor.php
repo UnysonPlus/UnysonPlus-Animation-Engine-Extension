@@ -289,10 +289,22 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 										),
 									),
 									'magnify' => array(
+										'magnify_scope' => array(
+											'type'    => 'select',
+											'label'   => __( 'Magnify', 'fw' ),
+											'desc'    => __( 'What the lens magnifies as it passes over the page.', 'fw' ),
+											'help'    => __( '“Everything (incl. text)” is the total-maximization mode: it clones the whole page into the lens and scales it, so text, buttons and backgrounds all magnify — not just images. Trade-offs: it roughly DOUBLES the page’s DOM in memory and works from a one-time snapshot, so dynamic/lazy content, videos, sliders and iframes won’t update inside the lens. Great for aesthetic / portfolio sites; heavier on very large pages. The two “light” modes only reposition an existing image, so they cost almost nothing but can’t magnify text.', 'fw' ),
+											'value'   => 'images',
+											'choices' => array(
+												'images' => __( 'Images only (light)', 'fw' ),
+												'media'  => __( 'Images + backgrounds (light)', 'fw' ),
+												'all'    => __( 'Everything, incl. text (heavy)', 'fw' ),
+											),
+										),
 										'zoom' => array(
 											'type'       => 'slider',
 											'label'      => __( 'Zoom', 'fw' ),
-											'desc'       => __( 'Magnification over images the pointer hovers.', 'fw' ),
+											'desc'       => __( 'Magnification factor inside the lens.', 'fw' ),
 											'value'      => 2,
 											'properties' => array( 'min' => 1.5, 'max' => 4, 'step' => 0.1 ),
 										),
@@ -431,6 +443,7 @@ add_action( 'wp_enqueue_scripts', function () {
 		'revealImage'   => $rimg,
 		'revealRadius'  => (int) ( isset( $sub['reveal_radius'] ) ? $sub['reveal_radius'] : 80 ),
 		'zoom'          => (float) ( isset( $sub['zoom'] ) ? $sub['zoom'] : 2 ),
+		'magnifyScope'  => (string) ( isset( $sub['magnify_scope'] ) ? $sub['magnify_scope'] : 'images' ),
 		'inkWidth'      => (int) ( isset( $sub['ink_width'] ) ? $sub['ink_width'] : 6 ),
 		'hoverGrow'     => upw_cursor_setting( 'hover_grow', 'yes' ) === 'yes',
 		'magnetic'      => upw_cursor_setting( 'magnetic', 'no' ) === 'yes',

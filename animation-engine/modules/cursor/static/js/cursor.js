@@ -379,26 +379,71 @@
 		(function loop() { x += (mx - x) * 0.25; y += (my - y) * 0.25; place(el, x, y); requestAnimationFrame(loop); })();
 	}
 
-	/* A lens that magnifies any <img> the pointer hovers. */
+	/* Magnify lens. Scope: 'images' / 'media' (img + background-image) = light image reposition;
+	   'all' = clone the whole page into the lens and scale it (magnifies text + everything). */
 	function magnify() {
+		var scope = cfg.magnifyScope || 'images';
+		if (scope === 'all') { return magnifyAll(); }
 		var el = make('upw-cursor--magnify upw-cursor-primary');
-		var zoom = cfg.zoom || 2, img = null;
+		var zoom = cfg.zoom || 2, srcEl = null;
+		function find(node) {
+			if (!node || !node.closest) { return null; }
+			var img = node.closest('img');
+			if (img && (img.currentSrc || img.src)) { return { el: img, url: img.currentSrc || img.src }; }
+			if (scope === 'media') {
+				var n = node;
+				while (n && n !== document.body) {
+					var m = ('' + getComputedStyle(n).backgroundImage).match(/url\((['"]?)(.*?)\1\)/);
+					if (m && m[2]) { return { el: n, url: m[2] }; }
+					n = n.parentElement;
+				}
+			}
+			return null;
+		}
 		document.addEventListener('pointerover', function (e) {
-			var t = e.target.closest ? e.target.closest('img') : null;
-			if (t && (t.currentSrc || t.src)) { img = t; el.style.backgroundImage = 'url("' + (t.currentSrc || t.src) + '")'; el.classList.add('is-on'); }
+			var f = find(e.target);
+			if (f) { srcEl = f.el; el.style.backgroundImage = 'url("' + f.url + '")'; el.classList.add('is-on'); }
 		}, { passive: true });
-		document.addEventListener('pointerout', function (e) {
-			var t = e.target.closest ? e.target.closest('img') : null;
-			if (t) { img = null; el.classList.remove('is-on'); el.style.backgroundImage = ''; }
+		document.addEventListener('pointerout', function () {
+			if (srcEl) { srcEl = null; el.classList.remove('is-on'); el.style.backgroundImage = ''; }
 		}, { passive: true });
 		(function loop() {
 			place(el, mx, my);
-			if (img) {
-				var r = img.getBoundingClientRect(), d = el.getBoundingClientRect();
+			if (srcEl) {
+				var r = srcEl.getBoundingClientRect(), d = el.getBoundingClientRect();
 				var bw = r.width * zoom, bh = r.height * zoom;
 				el.style.backgroundSize = bw + 'px ' + bh + 'px';
 				el.style.backgroundPosition = (-((mx - r.left) / r.width) * bw + d.width / 2) + 'px ' + (-((my - r.top) / r.height) * bh + d.height / 2) + 'px';
 			}
+			requestAnimationFrame(loop);
+		})();
+	}
+
+	/* Total-maximization lens: a scaled clone of the whole page, clipped to the lens circle.
+	   The clone is a one-time snapshot (dynamic/lazy/video/iframe content won't update in it). */
+	function magnifyAll() {
+		var el = make('upw-cursor--magnify upw-cursor--magnify-all upw-cursor-primary is-on');
+		var stage = document.createElement('div'); stage.className = 'upw-magnify-clone'; el.appendChild(stage);
+		var zoom = cfg.zoom || 2, clone = null;
+		function build() {
+			if (clone) { clone.remove(); }
+			clone = document.body.cloneNode(true);
+			// Drop our own cursor DOM from the clone so it doesn't recurse / show stray bits.
+			var junk = clone.querySelectorAll('[class*="upw-cursor"], [class*="upw-goo"], [class*="upw-magnify"], canvas.upw-cursor-canvas, script, noscript');
+			for (var i = 0; i < junk.length; i++) { junk[i].parentNode && junk[i].parentNode.removeChild(junk[i]); }
+			clone.style.margin = '0';
+			stage.appendChild(clone);
+		}
+		build();
+		// Re-snapshot on resize (layout changes); cheap enough vs. per-frame.
+		window.addEventListener('resize', build, { passive: true });
+		var R = 0;
+		(function loop() {
+			place(el, mx, my);
+			if (!R) { R = (el.offsetWidth || 80) / 2; }
+			var sx = window.pageXOffset || 0, sy = window.pageYOffset || 0;
+			var docX = (mx + sx) * zoom, docY = (my + sy) * zoom;
+			stage.style.transform = 'translate(' + (R - docX) + 'px,' + (R - docY) + 'px) scale(' + zoom + ')';
 			requestAnimationFrame(loop);
 		})();
 	}
