@@ -95,7 +95,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 						'inner-options' => array(
 							'enable' => $sw(
 								__( 'Enable custom cursor', 'fw' ),
-								__( 'Replace the pointer with a custom cursor site-wide. Automatically disabled on touch screens.', 'fw' ),
+								__( 'Replace the pointer with a custom cursor site-wide. Automatically disabled on touch screens.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note( 'site' ) : '' ),
 								false
 							),
 							'style' => array(

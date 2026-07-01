@@ -123,7 +123,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$fields['interaction'] = array(
 		'type'         => 'multi-picker',
 		'label'        => __( 'Hover Interaction', 'fw' ),
-		'desc'         => __( 'A pointer-driven effect applied while hovering this element.', 'fw' ),
+		'desc'         => __( 'A pointer-driven effect applied while hovering this element.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'help'         => __( 'Hover Interactions (Animation Engine): magnetic pull, 3D tilt, cursor spotlight, image reveal or text scramble. Honours "reduce motion" and is pointer-only (skipped on touch screens). The runtime loads only on pages that use an effect.', 'fw' ),
 		'popover'      => true,
 		'show_borders' => false,

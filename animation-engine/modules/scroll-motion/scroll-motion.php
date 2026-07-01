@@ -144,7 +144,7 @@ function sc_get_gsap_fields() {
         'gsap_motion' => [
             'type'         => 'multi-picker',
             'label'        => __( 'Scroll Effect', 'fw' ),
-            'desc'         => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads).', 'fw' ),
+            'desc'         => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads).', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
             'help'         => __( 'Scroll Motion (GSAP): scroll-driven motion powered by GSAP + ScrollTrigger. Independent of the entrance animation above — GSAP loads only on pages that use it.', 'fw' ),
             'popover'      => true,
             'show_borders' => false,

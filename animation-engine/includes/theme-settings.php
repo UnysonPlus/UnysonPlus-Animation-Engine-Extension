@@ -16,6 +16,23 @@
 // settings.php of its own, so the Animations section always has a host.
 add_filter( 'fw_theme_settings_menu_register', '__return_true' );
 
+if ( ! function_exists( 'upw_perf_note' ) ) :
+	/**
+	 * Shared "only loads when used" reassurance, surfaced on the animation pickers so
+	 * users see — at the point of choice — that the engine won't bloat their pages.
+	 * Kept HONEST: the runtime is enqueued per-PAGE (not per-effect — one file carries a
+	 * category's effects, and shared libraries like GSAP load for any effect), so the
+	 * accurate promise is "loads only on pages that use it", not "only the selected one".
+	 *
+	 * @param string $scope 'page' (per-element effects) | 'site' (site-wide, e.g. cursor)
+	 */
+	function upw_perf_note( $scope = 'page' ) {
+		return $scope === 'site'
+			? __( '⚡ Loads only when enabled — on the front end, never in admin.', 'fw' )
+			: __( '⚡ Loads only on pages that use it — pages without it ship none of this code.', 'fw' );
+	}
+endif;
+
 if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 	/**
 	 * The "Animations" nav section: a box → group of global engine options, plus a
@@ -33,6 +50,14 @@ if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 						'title'   => __( 'Animation Engine', 'fw' ),
 						'type'    => 'box',
 						'options' => array(
+							'engine_perf_note' => array(
+								'type'  => 'html',
+								'label' => false,
+								'html'  => '<div style="padding:12px 14px;border:1px dashed #c3d9f0;border-radius:6px;background:#f4f9ff;color:#3a4a5c;font-size:13px;line-height:1.55;">'
+									. '<strong style="color:#2f74e6;">' . esc_html__( 'Built for performance', 'fw' ) . '</strong><br>'
+									. esc_html__( 'Every effect — Scroll Motion, Hover, WebGL, Cursor — is loaded only on the pages that actually use it; pages without it ship none of its code. Whatever a page does use is combined into one minified file by the Asset Optimizer. Activating the engine adds capabilities, not weight.', 'fw' )
+									. '</div>',
+							),
 							'animation_engine' => array(
 								'type'          => 'multi',
 								'label'         => false,
