@@ -40,6 +40,68 @@
 }
 @keyframes upw-bg-dots { from { background-position: 0 0; } to { background-position: var(--bg-gap, 26px) var(--bg-gap, 26px); } }
 
+/* ---- Mesh gradient (morphing multi-point radial blobs) ---- */
+.upw-bg-mesh {
+	background:
+		radial-gradient(35% 45% at 25% 30%, var(--bg-c1, #6a8dff) 0%, transparent 55%),
+		radial-gradient(40% 45% at 75% 25%, var(--bg-c2, #ff6ac1) 0%, transparent 55%),
+		radial-gradient(45% 50% at 30% 80%, var(--bg-c3, #ffd36a) 0%, transparent 55%),
+		radial-gradient(45% 50% at 80% 75%, var(--bg-c4, #00d4c8) 0%, transparent 55%);
+	background-size: 200% 200%;
+	animation: upw-bg-mesh var(--bg-speed, 12s) ease-in-out infinite alternate;
+}
+@keyframes upw-bg-mesh { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+
+/* ---- Grid lines (scrolling graph paper) ---- */
+.upw-bg-grid {
+	background-image:
+		linear-gradient(var(--bg-color, #94a3b8) 1px, transparent 1px),
+		linear-gradient(90deg, var(--bg-color, #94a3b8) 1px, transparent 1px);
+	background-size: var(--bg-gap, 40px) var(--bg-gap, 40px);
+	opacity: .35; animation: upw-bg-grid var(--bg-speed, 12s) linear infinite;
+}
+@keyframes upw-bg-grid { from { background-position: 0 0; } to { background-position: 0 var(--bg-gap, 40px); } }
+
+/* ---- Glow orbs (pulsing blurred lights) ---- */
+.upw-bg-orbs { filter: blur(30px); }
+.upw-bg-orbs > i {
+	position: absolute; border-radius: 50%; opacity: .6;
+	animation: upw-bg-orb var(--bg-speed, 10s) ease-in-out infinite alternate;
+}
+.upw-bg-orbs > i:nth-child(1) { width: 45%; padding-bottom: 45%; left: 8%; top: 10%; background: var(--bg-c1, #6a8dff); }
+.upw-bg-orbs > i:nth-child(2) { width: 50%; padding-bottom: 50%; right: 6%; top: 20%; background: var(--bg-c2, #c56cff); animation-delay: -3s; }
+.upw-bg-orbs > i:nth-child(3) { width: 40%; padding-bottom: 40%; left: 35%; bottom: 4%; background: var(--bg-c1, #6a8dff); animation-delay: -6s; }
+@keyframes upw-bg-orb { 0% { transform: translate(-8%, -6%) scale(1); } 100% { transform: translate(10%, 8%) scale(1.25); } }
+
+/* ---- Conic (rotating conic gradient) ---- */
+.upw-bg-conic {
+	background: conic-gradient(from 0deg, var(--bg-c1, #2f74e6), var(--bg-c2, #7a3cff), var(--bg-c3, #00b2b2), var(--bg-c1, #2f74e6));
+	animation: upw-bg-conic var(--bg-speed, 12s) linear infinite; opacity: .9;
+}
+@keyframes upw-bg-conic { to { transform: rotate(360deg) scale(1.6); } }
+.upw-bg-conic { transform: scale(1.6); }
+
+/* ---- Scanlines (CRT) ---- */
+.upw-bg-scanlines {
+	background-image: repeating-linear-gradient(0deg,
+		color-mix(in srgb, var(--bg-color, #000) calc(var(--bg-opacity, .12) * 100%), transparent) 0 1px,
+		transparent 1px 3px);
+	animation: upw-bg-scan var(--bg-speed, 6s) linear infinite;
+}
+@keyframes upw-bg-scan { from { background-position: 0 0; } to { background-position: 0 100px; } }
+
+/* ---- Light rays (soft sweeping beams) ---- */
+.upw-bg-rays {
+	background: repeating-linear-gradient(var(--bg-angle, 25deg),
+		transparent 0 40px,
+		color-mix(in srgb, var(--bg-color, #fff) 14%, transparent) 40px 80px);
+	background-size: 200% 200%;
+	animation: upw-bg-rays var(--bg-speed, 10s) linear infinite; mix-blend-mode: screen;
+}
+@keyframes upw-bg-rays { from { background-position: 0 0; } to { background-position: 200% 0; } }
+
 @media (prefers-reduced-motion: reduce) {
-	.upw-bg-aurora, .upw-bg-gradient, .upw-bg-dots { animation: none; }
+	.upw-bg-aurora, .upw-bg-gradient, .upw-bg-dots,
+	.upw-bg-mesh, .upw-bg-grid, .upw-bg-orbs > i, .upw-bg-conic,
+	.upw-bg-scanlines, .upw-bg-rays { animation: none; }
 }

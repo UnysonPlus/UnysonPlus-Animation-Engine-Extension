@@ -55,6 +55,12 @@
 	BG.aurora = function (host) { cssLayer(host, 'upw-bg-aurora'); };
 	BG.gradient = function (host) { cssLayer(host, 'upw-bg-gradient'); };
 	BG.dots = function (host) { cssLayer(host, 'upw-bg-dots'); };
+	BG.mesh = function (host) { cssLayer(host, 'upw-bg-mesh'); };
+	BG.grid = function (host) { cssLayer(host, 'upw-bg-grid'); };
+	BG.orbs = function (host) { var l = cssLayer(host, 'upw-bg-orbs'); l.innerHTML = '<i></i><i></i><i></i>'; };
+	BG.conic = function (host) { cssLayer(host, 'upw-bg-conic'); };
+	BG.scanlines = function (host) { cssLayer(host, 'upw-bg-scanlines'); };
+	BG.rays = function (host) { cssLayer(host, 'upw-bg-rays'); };
 
 	BG.particles = function (host) {
 		var L = canvasLayer(host), color = host.getAttribute('data-bg-color') || '#6aa6ff';
