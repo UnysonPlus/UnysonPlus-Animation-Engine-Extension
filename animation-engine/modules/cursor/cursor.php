@@ -5,11 +5,12 @@
 /**
  * Animation Engine — Cursor module.
  *
- * A site-wide custom cursor (dot / ring / dot+trailing-ring) with optional
- * hover-grow, difference blend, and native-cursor hiding. Because it's global (not
- * per-element), its config lives in Theme Settings → Animations → Cursor (added via
- * the engine's upw_anim_engine_module_tabs hook), and the runtime enqueues on the
- * front end ONLY when enabled. Skips touch devices; honours reduced motion.
+ * A site-wide custom cursor with a rich set of styles (dot / ring / crosshair /
+ * brackets / dashed / glow / gradient / blob / spotlight / comet / custom image /
+ * glyph …) picked from an image grid, plus cross-cutting modifiers (grow-on-hover,
+ * magnetic snap, difference blend, hide-native). Config lives in Theme Settings →
+ * Animations → Cursor; the runtime enqueues on the front end ONLY when enabled.
+ * Skips touch devices; honours reduced motion.
  */
 
 if ( ! function_exists( 'upw_cursor_setting' ) ) :
@@ -23,6 +24,29 @@ if ( ! function_exists( 'upw_cursor_setting' ) ) :
 			return is_bool( $v[ $key ] ) ? ( $v[ $key ] ? 'yes' : 'no' ) : $v[ $key ];
 		}
 		return $default;
+	}
+endif;
+
+if ( ! function_exists( 'upw_cursor_styles' ) ) :
+	/** style-id => label. Single source of truth for the picker + validation. */
+	function upw_cursor_styles() {
+		return array(
+			'none'     => __( 'None', 'fw' ),
+			'dot'      => __( 'Dot', 'fw' ),
+			'ring'     => __( 'Ring', 'fw' ),
+			'dot_ring' => __( 'Dot + Ring', 'fw' ),
+			'crosshair'=> __( 'Crosshair', 'fw' ),
+			'brackets' => __( 'Brackets', 'fw' ),
+			'square'   => __( 'Square', 'fw' ),
+			'dashed'   => __( 'Dashed Ring', 'fw' ),
+			'glow'     => __( 'Glow', 'fw' ),
+			'gradient' => __( 'Gradient', 'fw' ),
+			'blob'     => __( 'Blob', 'fw' ),
+			'spotlight'=> __( 'Spotlight', 'fw' ),
+			'comet'    => __( 'Comet', 'fw' ),
+			'custom'   => __( 'Custom Image', 'fw' ),
+			'glyph'    => __( 'Glyph / Emoji', 'fw' ),
+		);
 	}
 endif;
 
@@ -40,6 +64,18 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 			'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
 		);
 	};
+
+	// Style picker — an image grid (animated SVG tiles per style).
+	$ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	$base = $ext ? $ext->get_declared_URI( '/modules/cursor/static/img/cursors' ) : '';
+	$choices = array();
+	foreach ( upw_cursor_styles() as $id => $label ) {
+		$choices[ $id ] = array(
+			'small' => array( 'src' => $base . '/' . str_replace( '_', '-', $id ) . '.svg', 'height' => 66 ),
+			'large' => array( 'src' => $base . '/' . str_replace( '_', '-', $id ) . '.svg', 'height' => 132 ),
+			'label' => $label,
+		);
+	}
 
 	$color = function_exists( 'sc_color_field_compact' )
 		? sc_color_field_compact( array( 'label' => __( 'Cursor color', 'fw' ), 'kind' => 'bg', 'value' => array( 'predefined' => '', 'custom' => '#2f74e6' ) ) )
@@ -63,31 +99,53 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 								false
 							),
 							'style' => array(
-								'type'    => 'select',
+								'type'    => 'image-picker',
 								'label'   => __( 'Style', 'fw' ),
+								'desc'    => __( 'The cursor shape / effect. Hover a tile to preview it larger.', 'fw' ),
 								'value'   => 'dot_ring',
-								'choices' => array(
-									'dot'      => __( 'Dot', 'fw' ),
-									'ring'     => __( 'Ring', 'fw' ),
-									'dot_ring' => __( 'Dot + trailing ring', 'fw' ),
-								),
+								'choices' => $choices,
 							),
-							'color'    => $color,
-							'size'     => array(
+							'color'  => $color,
+							'size'   => array(
 								'type'       => 'slider',
-								'label'      => __( 'Dot size (px)', 'fw' ),
+								'label'      => __( 'Size (px)', 'fw' ),
 								'value'      => 8,
-								'properties' => array( 'min' => 4, 'max' => 20, 'step' => 1 ),
+								'properties' => array( 'min' => 4, 'max' => 28, 'step' => 1 ),
 							),
-							'ring_lag' => array(
+							'trail'  => array(
 								'type'       => 'slider',
 								'label'      => __( 'Trail', 'fw' ),
-								'desc'       => __( 'How much the ring lags behind the dot (lower = more trailing).', 'fw' ),
+								'desc'       => __( 'Lag/tail amount for Dot + Ring, Comet and Blob (lower = more trailing).', 'fw' ),
 								'value'      => 0.18,
 								'properties' => array( 'min' => 0.05, 'max' => 0.5, 'step' => 0.01 ),
 							),
-							'hover_grow'   => $sw( __( 'Grow on hover', 'fw' ), __( 'The ring expands over links / buttons.', 'fw' ), true ),
-							'blend'        => $sw( __( 'Difference blend', 'fw' ), __( 'The cursor inverts against whatever is behind it (looks best on strong colors).', 'fw' ), false ),
+							'glyph_char' => array(
+								'type'  => 'text',
+								'label' => __( 'Glyph / emoji', 'fw' ),
+								'desc'  => __( 'Used by the Glyph style — any character or emoji (e.g. → ✦ ✌ 🎯).', 'fw' ),
+								'value' => '→',
+							),
+							'custom_image' => array(
+								'type'  => 'upload',
+								'label' => __( 'Custom image', 'fw' ),
+								'desc'  => __( 'Used by the Custom Image style — a small PNG/SVG.', 'fw' ),
+							),
+							'spot_radius' => array(
+								'type'       => 'slider',
+								'label'      => __( 'Spotlight radius (px)', 'fw' ),
+								'value'      => 160,
+								'properties' => array( 'min' => 60, 'max' => 400, 'step' => 10 ),
+							),
+							'spot_dim' => array(
+								'type'       => 'slider',
+								'label'      => __( 'Spotlight dim', 'fw' ),
+								'desc'       => __( 'How dark the rest of the page gets (0 = none).', 'fw' ),
+								'value'      => 0.6,
+								'properties' => array( 'min' => 0, 'max' => 0.9, 'step' => 0.05 ),
+							),
+							'hover_grow'   => $sw( __( 'Grow on hover', 'fw' ), __( 'The cursor expands over links / buttons.', 'fw' ), true ),
+							'magnetic'     => $sw( __( 'Magnetic snap', 'fw' ), __( 'The cursor eases toward the center of the hovered button / link.', 'fw' ), false ),
+							'blend'        => $sw( __( 'Difference blend', 'fw' ), __( 'The cursor inverts against whatever is behind it.', 'fw' ), false ),
 							'hide_default' => $sw( __( 'Hide the native cursor', 'fw' ), __( 'Hide the OS pointer while the custom cursor is shown.', 'fw' ), true ),
 						),
 					),
@@ -105,6 +163,10 @@ add_action( 'wp_enqueue_scripts', function () {
 	if ( is_admin() || upw_cursor_setting( 'enable', 'no' ) !== 'yes' ) {
 		return;
 	}
+	$style = (string) upw_cursor_setting( 'style', 'dot_ring' );
+	if ( ! array_key_exists( $style, upw_cursor_styles() ) || $style === 'none' ) {
+		return;
+	}
 	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
 	if ( ! $ext ) {
 		return;
@@ -118,16 +180,21 @@ add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style( 'upw-cursor', $base . '/static/css/cursor.css', array(), $cssv );
 	wp_enqueue_script( 'upw-cursor', $base . '/static/js/cursor.js', array(), $jsv, true );
 
-	$color = function_exists( 'sc_color_to_css' )
-		? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6' )
-		: '#2f74e6';
+	$color = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6' ) : '#2f74e6';
+	$img   = upw_cursor_setting( 'custom_image', array() );
+	$img   = ( is_array( $img ) && ! empty( $img['url'] ) ) ? esc_url_raw( $img['url'] ) : '';
 
 	$cfg = array(
-		'style'         => (string) upw_cursor_setting( 'style', 'dot_ring' ),
+		'style'         => $style,
 		'color'         => $color !== '' ? $color : '#2f74e6',
 		'size'          => (int) upw_cursor_setting( 'size', 8 ),
-		'ringLag'       => (float) upw_cursor_setting( 'ring_lag', 0.18 ),
+		'trail'         => (float) upw_cursor_setting( 'trail', 0.18 ),
+		'glyph'         => (string) upw_cursor_setting( 'glyph_char', '→' ),
+		'image'         => $img,
+		'spotRadius'    => (int) upw_cursor_setting( 'spot_radius', 160 ),
+		'spotDim'       => (float) upw_cursor_setting( 'spot_dim', 0.6 ),
 		'hoverGrow'     => upw_cursor_setting( 'hover_grow', 'yes' ) === 'yes',
+		'magnetic'      => upw_cursor_setting( 'magnetic', 'no' ) === 'yes',
 		'blend'         => upw_cursor_setting( 'blend', 'no' ) === 'yes',
 		'hideDefault'   => upw_cursor_setting( 'hide_default', 'yes' ) === 'yes',
 		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

@@ -44,11 +44,13 @@ growing platform, so it belongs with the opt-in engine rather than the lightweig
 
 ### Cursor (site-wide)
 
-A custom cursor — **dot**, **ring**, or **dot + trailing ring** — with optional
-hover-grow over interactive elements, difference blend, and native-cursor hiding.
-Configured in **Theme Settings → Animations → Cursor** (site-wide, not per-element);
-the runtime loads on the front end **only when enabled**. Skips touch screens; honours
-reduced motion. Cursor color uses the theme color-preset selector.
+A custom cursor with **14 styles** — dot · ring · dot+trailing-ring · crosshair ·
+brackets · square · dashed · glow · gradient · blob · spotlight · comet · custom image ·
+glyph/emoji — chosen from an image grid, plus modifiers: **grow on hover**, **magnetic
+snap**, **difference blend**, **hide native cursor**. Configured in **Theme Settings →
+Animations → Cursor** (site-wide, not per-element); the runtime loads on the front end
+**only when enabled**, and only the chosen style's code runs. Skips touch screens;
+honours reduced motion. Cursor color uses the theme color-preset selector.
 
 ### Hover Interactions
 
