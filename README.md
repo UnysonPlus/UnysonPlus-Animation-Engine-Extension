@@ -33,6 +33,17 @@ Real-time Three.js, in two families:
 
 Pointer + optional scroll reaction; **Placement** is inline or *Section background*.
 
+### SVG Draw (`[svg_draw]`)
+
+A **self-drawing SVG** element under *Media Elements* — line art, a signature, an animated
+divider or icon that traces itself. Source it from a **built-in preset** (signature,
+underline, arrow, checkmark, wave, star, heart, circle), **pasted SVG code** (scripts /
+event handlers stripped), or an **uploaded .svg** (inlined so its paths can animate). The
+runtime measures every path and animates `stroke-dashoffset` on the chosen trigger
+(**scroll into view / on load / on hover**), with per-path **stagger**, **duration**,
+**reverse**, **loop**, stroke width + preset colour, and an optional **fill-after** fade.
+Self-contained vanilla JS; reduced-motion shows the art fully drawn.
+
 ### Scroll Motion (GSAP)
 
 Scroll-driven motion added to any element via its *Animations* tab — **Reveal**,

@@ -1,0 +1,12 @@
+/**
+ * Animation Engine — SVG Draw shortcode. Paired with svg-draw.js.
+ * The runtime owns stroke-dashoffset per element; this handles layout + the inline SVG box.
+ */
+.sc-svg-draw { display: block; width: 100%; }
+.sc-svg-draw--left { text-align: left; }
+.sc-svg-draw--center { text-align: center; }
+.sc-svg-draw--right { text-align: right; }
+.sc-svg-draw svg {
+	display: inline-block; width: 100%; height: auto; max-width: 100%;
+	overflow: visible; vertical-align: middle;
+}
