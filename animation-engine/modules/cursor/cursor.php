@@ -249,7 +249,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 										'default_label' => array(
 											'type'  => 'text',
 											'label' => __( 'Default label', 'fw' ),
-											'desc'  => __( 'Shown on links / buttons. Any element can override it with a <code>data-cursor-label="…"</code> attribute (Advanced → CSS on an element, or theme markup). Leave blank to show the label only where a data-cursor-label is set.', 'fw' ),
+											'desc'  => __( 'Text shown persistently in the pill as it follows the pointer. Any element can override it on hover with a <code>data-cursor-label="…"</code> attribute (e.g. “View” on a gallery, “Drag” on a slider). <strong>Leave blank</strong> to show just a small dot that expands into a label only over elements that set data-cursor-label.', 'fw' ),
 											'value' => 'View',
 										),
 									),

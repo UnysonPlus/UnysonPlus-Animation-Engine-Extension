@@ -297,19 +297,21 @@
 
 	var LABEL_SEL = '[data-cursor-label], a, button, [role="button"], .btn, .sc-btn';
 
-	/* A pill that follows the pointer and shows a contextual label over interactive elements. */
+	/* A pill following the pointer. Shows the default label persistently; any element with a
+	   data-cursor-label overrides it on hover. Blank default => dot until over such an element. */
 	function label() {
 		var el = make('upw-cursor--label upw-cursor-primary');
 		var txt = document.createElement('span'); txt.className = 'upw-cursor-label-txt'; el.appendChild(txt);
-		function set(t) {
-			var l = t ? (t.getAttribute('data-cursor-label') || cfg.label || '') : '';
-			txt.textContent = l; el.classList.toggle('is-shown', !!l);
-		}
+		var def = cfg.label || '', current = def;
+		function render() { txt.textContent = current; el.classList.toggle('is-shown', !!current); }
+		render(); // baseline: default label shows right away (if set)
 		document.addEventListener('pointerover', function (e) {
-			var t = e.target.closest ? e.target.closest(LABEL_SEL) : null; if (t) { set(t); }
+			var t = e.target.closest ? e.target.closest('[data-cursor-label]') : null;
+			if (t) { current = t.getAttribute('data-cursor-label') || def; render(); }
 		}, { passive: true });
 		document.addEventListener('pointerout', function (e) {
-			var t = e.target.closest ? e.target.closest(LABEL_SEL) : null; if (t) { set(null); }
+			var t = e.target.closest ? e.target.closest('[data-cursor-label]') : null;
+			if (t) { current = def; render(); }
 		}, { passive: true });
 		var x = mx, y = my;
 		(function loop() { x += (mx - x) * 0.2; y += (my - y) * 0.2; place(el, x, y); requestAnimationFrame(loop); })();
