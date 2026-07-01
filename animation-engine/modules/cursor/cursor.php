@@ -64,6 +64,14 @@ if ( ! function_exists( 'upw_cursor_styles' ) ) :
 			'streak'   => __( 'Motion Streak', 'fw' ),
 			'rope'     => __( 'Rubber Band', 'fw' ),
 			'metaball' => __( 'Gooey Metaball', 'fw' ),
+			'label'    => __( 'Contextual Label', 'fw' ),
+			'sticky'   => __( 'Sticky Cursor', 'fw' ),
+			'word_trail' => __( 'Word Trail', 'fw' ),
+			'reveal'   => __( 'Image Reveal', 'fw' ),
+			'magnify'  => __( 'Magnify Lens', 'fw' ),
+			'ink'      => __( 'Ink Brush', 'fw' ),
+			'fluid'    => __( 'Fluid Smear', 'fw' ),
+			'distort'  => __( 'Ripple Trail', 'fw' ),
 			'custom'   => __( 'Custom Image', 'fw' ),
 			'glyph'    => __( 'Glyph / Emoji', 'fw' ),
 		);
@@ -237,6 +245,52 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'properties' => array( 'min' => 0.05, 'max' => 0.5, 'step' => 0.01 ),
 										),
 									),
+									'label' => array(
+										'default_label' => array(
+											'type'  => 'text',
+											'label' => __( 'Default label', 'fw' ),
+											'desc'  => __( 'Shown on links / buttons. Any element can override it with a <code>data-cursor-label="…"</code> attribute (Advanced → CSS on an element, or theme markup). Leave blank to show the label only where a data-cursor-label is set.', 'fw' ),
+											'value' => 'View',
+										),
+									),
+									'word_trail' => array(
+										'word' => array(
+											'type'  => 'text',
+											'label' => __( 'Word', 'fw' ),
+											'desc'  => __( 'The word that trails the pointer.', 'fw' ),
+											'value' => 'scroll',
+										),
+									),
+									'reveal' => array(
+										'reveal_image' => array(
+											'type'  => 'upload',
+											'label' => __( 'Reveal image', 'fw' ),
+											'desc'  => __( 'The image the cursor window reveals as it moves (it stays fixed to the viewport).', 'fw' ),
+										),
+										'reveal_radius' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Window radius (px)', 'fw' ),
+											'value'      => 80,
+											'properties' => array( 'min' => 40, 'max' => 160, 'step' => 5 ),
+										),
+									),
+									'magnify' => array(
+										'zoom' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Zoom', 'fw' ),
+											'desc'       => __( 'Magnification over images the pointer hovers.', 'fw' ),
+											'value'      => 2,
+											'properties' => array( 'min' => 1.5, 'max' => 4, 'step' => 0.1 ),
+										),
+									),
+									'ink' => array(
+										'ink_width' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Brush width (px)', 'fw' ),
+											'value'      => 6,
+											'properties' => array( 'min' => 2, 'max' => 18, 'step' => 1 ),
+										),
+									),
 									'glyph' => array(
 										'glyph_char' => array(
 											'type'  => 'text',
@@ -321,6 +375,8 @@ add_action( 'wp_enqueue_scripts', function () {
 	$color = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6' ) : '#2f74e6';
 	$img   = isset( $sub['custom_image'] ) ? $sub['custom_image'] : array();
 	$img   = ( is_array( $img ) && ! empty( $img['url'] ) ) ? esc_url_raw( $img['url'] ) : '';
+	$rimg  = isset( $sub['reveal_image'] ) ? $sub['reveal_image'] : array();
+	$rimg  = ( is_array( $rimg ) && ! empty( $rimg['url'] ) ) ? esc_url_raw( $rimg['url'] ) : '';
 
 	$cfg = array(
 		'style'         => $style,
@@ -336,6 +392,12 @@ add_action( 'wp_enqueue_scripts', function () {
 		'lensRadius'    => (int) ( isset( $sub['lens_radius'] ) ? $sub['lens_radius'] : 70 ),
 		'lensBlur'      => (float) ( isset( $sub['lens_blur'] ) ? $sub['lens_blur'] : 4 ),
 		'radarSpeed'    => (float) ( isset( $sub['radar_speed'] ) ? $sub['radar_speed'] : 1.6 ),
+		'label'         => (string) ( isset( $sub['default_label'] ) ? $sub['default_label'] : 'View' ),
+		'word'          => (string) ( isset( $sub['word'] ) ? $sub['word'] : 'scroll' ),
+		'revealImage'   => $rimg,
+		'revealRadius'  => (int) ( isset( $sub['reveal_radius'] ) ? $sub['reveal_radius'] : 80 ),
+		'zoom'          => (float) ( isset( $sub['zoom'] ) ? $sub['zoom'] : 2 ),
+		'inkWidth'      => (int) ( isset( $sub['ink_width'] ) ? $sub['ink_width'] : 6 ),
 		'hoverGrow'     => upw_cursor_setting( 'hover_grow', 'yes' ) === 'yes',
 		'magnetic'      => upw_cursor_setting( 'magnetic', 'no' ) === 'yes',
 		'blend'         => upw_cursor_setting( 'blend', 'no' ) === 'yes',

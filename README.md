@@ -44,17 +44,20 @@ growing platform, so it belongs with the opt-in engine rather than the lightweig
 
 ### Cursor (site-wide)
 
-A custom cursor with **34 styles** — dot · ring · dot+trailing-ring · crosshair · brackets ·
+A custom cursor with **42 styles** — dot · ring · dot+trailing-ring · crosshair · brackets ·
 square · dashed · glow · gradient · blob · spotlight · comet · particle trail · elastic ring ·
 glass lens · directional arrow · radar pulse · plus · sparkle · diamond · dual ring · bullseye ·
 camera reticle · invert disc · afterimage · firefly · confetti · bubbles · spring dot · motion
-streak · rubber band · gooey metaball · custom image · glyph/emoji — chosen from an image grid,
-each revealing its own options (trail, density, stretchiness, lens radius/blur, pulse interval …)
-in a popover, plus modifiers that work with any style: **grow on hover**, **magnetic snap**,
-**difference blend**, **click ripple**, **click burst**, **hide native cursor**. Configured in
-**Theme Settings → Animations → Cursor** (site-wide, not per-element); the runtime loads on the
-front end **only when enabled**. Skips touch screens; honours reduced motion. Cursor color uses
-the theme color-preset selector.
+streak · rubber band · gooey metaball · contextual label · sticky cursor · word trail · image
+reveal · magnify lens · ink brush · fluid smear · ripple trail · custom image · glyph/emoji —
+chosen from an image grid, each revealing its own options (trail, density, stretchiness, lens
+radius/blur, label text, reveal image, zoom, brush width …) in a popover, plus modifiers that
+work with any style: **grow on hover**, **magnetic snap**, **difference blend**, **click
+ripple**, **click burst**, **hide native cursor**. The **Contextual Label** and **Sticky
+Cursor** styles read an optional **`data-cursor-label="…"`** attribute on any element (with a
+configurable fallback). Configured in **Theme Settings → Animations → Cursor** (site-wide, not
+per-element); the runtime loads on the front end **only when enabled**. Skips touch screens;
+honours reduced motion. Cursor color uses the theme color-preset selector.
 
 ### Hover Interactions
 

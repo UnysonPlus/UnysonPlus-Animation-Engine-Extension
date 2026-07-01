@@ -258,6 +258,52 @@ html.upw-cursor-active .upw-cursor-goo { opacity: 1; }
 	to   { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx, 0), var(--dy, 0)); }
 }
 
+/* ---- Contextual label — collapses to a dot, expands to a pill over links ---- */
+.upw-cursor--label {
+	width: var(--s); height: var(--s); padding: 0; overflow: hidden;
+	background: var(--c); color: #fff; border-radius: 999px; white-space: nowrap;
+	display: flex; align-items: center; justify-content: center;
+	font: 600 12px/1 -apple-system, "Segoe UI", Roboto, sans-serif;
+	transition: width .2s ease, height .2s ease, padding .2s ease;
+}
+.upw-cursor--label.is-shown { width: auto; height: auto; padding: 7px 12px; }
+.upw-cursor-label-txt { opacity: 0; transition: opacity .15s ease; }
+.upw-cursor--label.is-shown .upw-cursor-label-txt { opacity: 1; }
+
+/* ---- Sticky cursor — a ring that wraps the hovered element (JS sets size inline) ---- */
+.upw-cursor--sticky {
+	width: calc(var(--s) * 4); height: calc(var(--s) * 4);
+	border: 1.5px solid var(--c); border-radius: 50%;
+	transition: width .2s ease, height .2s ease, border-radius .2s ease, background-color .2s ease;
+}
+.upw-cursor--sticky.is-stuck { background: color-mix(in srgb, var(--c) 12%, transparent); }
+
+/* ---- Word trail ---- */
+.upw-cursor--wordseg {
+	font: 700 13px/1 -apple-system, "Segoe UI", Roboto, sans-serif;
+	color: var(--c); white-space: nowrap;
+}
+
+/* ---- Image reveal — bg fixed to viewport, so moving the window reveals the image ---- */
+.upw-cursor--reveal {
+	width: calc(var(--upw-reveal-r, 80px) * 2); height: calc(var(--upw-reveal-r, 80px) * 2);
+	border-radius: 50%;
+	background-size: cover; background-position: center; background-attachment: fixed;
+	border: 2px solid rgba(255, 255, 255, .6); box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+}
+
+/* ---- Magnify lens — hidden until it hovers an image ---- */
+.upw-cursor--magnify {
+	width: calc(var(--s) * 10); height: calc(var(--s) * 10); border-radius: 50%;
+	border: 2px solid rgba(255, 255, 255, .7); background-repeat: no-repeat; background-color: rgba(0, 0, 0, .02);
+	box-shadow: 0 6px 24px rgba(0, 0, 0, .3), inset 0 0 0 1px rgba(0, 0, 0, .08);
+}
+html.upw-cursor-active .upw-cursor--magnify { opacity: 0; }
+html.upw-cursor-active .upw-cursor--magnify.is-on { opacity: 1; }
+
+/* ---- Canvas trails (ink / fluid / ripple) — full-viewport, JS-drawn ---- */
+.upw-cursor-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 2147483000; }
+
 /* ---- Spotlight (full-screen overlay, not a tracked element) ---- */
 .upw-cursor-spotlight {
 	position: fixed; inset: 0; pointer-events: none; z-index: 2147482000;
