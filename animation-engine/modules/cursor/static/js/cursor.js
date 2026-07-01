@@ -302,6 +302,13 @@
 	function label() {
 		var el = make('upw-cursor--label upw-cursor-primary');
 		var txt = document.createElement('span'); txt.className = 'upw-cursor-label-txt'; el.appendChild(txt);
+		var lf = cfg.labelFont || {}; // typography-v2 props (inherited by the text span)
+		if (lf.family) { el.style.fontFamily = lf.family; }
+		if (lf.weight) { el.style.fontWeight = lf.weight; }
+		if (lf.size) { el.style.fontSize = lf.size + 'px'; }
+		if (lf.lineHeight) { el.style.lineHeight = lf.lineHeight + 'px'; }
+		if (lf.letterSpacing) { el.style.letterSpacing = lf.letterSpacing + 'px'; }
+		if (lf.style) { el.style.fontStyle = lf.style; }
 		var def = cfg.label || '', current = def;
 		function render() { txt.textContent = current; el.classList.toggle('is-shown', !!current); }
 		render(); // baseline: default label shows right away (if set)

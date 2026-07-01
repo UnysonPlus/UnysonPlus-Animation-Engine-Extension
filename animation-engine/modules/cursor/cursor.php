@@ -78,6 +78,32 @@ if ( ! function_exists( 'upw_cursor_styles' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'upw_cursor_font_props' ) ) :
+	/**
+	 * A typography-v2 value → JS style props, and enqueue its Google font if one is chosen.
+	 * Shared by the Word Trail and Contextual Label styles.
+	 */
+	function upw_cursor_font_props( $wf ) {
+		$wf = is_array( $wf ) ? $wf : array();
+		if ( ! empty( $wf['google_font'] ) && ! empty( $wf['family'] ) ) {
+			wp_enqueue_style(
+				'upw-cursor-font-' . sanitize_title( $wf['family'] . ( isset( $wf['weight'] ) ? $wf['weight'] : '' ) ),
+				'https://fonts.googleapis.com/css?family=' . str_replace( ' ', '+', $wf['family'] ) . ( ! empty( $wf['weight'] ) ? ':' . $wf['weight'] : '' ) . '&display=swap',
+				array(),
+				null
+			);
+		}
+		return array(
+			'family'        => isset( $wf['family'] ) ? (string) $wf['family'] : '',
+			'weight'        => isset( $wf['weight'] ) ? (string) $wf['weight'] : '',
+			'size'          => isset( $wf['size'] ) ? (int) $wf['size'] : 0,
+			'lineHeight'    => ( isset( $wf['line-height'] ) && (int) $wf['line-height'] > 0 ) ? (int) $wf['line-height'] : 0,
+			'letterSpacing' => isset( $wf['letter-spacing'] ) ? (int) $wf['letter-spacing'] : 0,
+			'style'         => isset( $wf['style'] ) ? (string) $wf['style'] : '',
+		);
+	}
+endif;
+
 /* ------------------------------------------------------------------ *
  * 1) Theme Settings → Animations → Cursor sub-tab.
  * ------------------------------------------------------------------ */
@@ -252,6 +278,20 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'desc'  => __( 'Text shown persistently in the pill as it follows the pointer. Any element can override it on hover with a <code>data-cursor-label="…"</code> attribute (e.g. “View” on a gallery, “Drag” on a slider). <strong>Leave blank</strong> to show just a small dot that expands into a label only over elements that set data-cursor-label.', 'fw' ),
 											'value' => 'View',
 										),
+										'label_font' => array(
+											'type'       => 'typography-v2',
+											'label'      => __( 'Font', 'fw' ),
+											'desc'       => __( 'Family, weight, size, line-height & letter-spacing for the label. The pill background uses the Cursor color option above; label text stays white.', 'fw' ),
+											'components' => array( 'subset' => false, 'color' => false ),
+											'value'      => array(
+												'family'         => '',
+												'style'          => 'normal',
+												'weight'         => '600',
+												'size'           => 12,
+												'line-height'    => 12,
+												'letter-spacing' => 0,
+											),
+										),
 									),
 									'word_trail' => array(
 										'word' => array(
@@ -413,24 +453,9 @@ add_action( 'wp_enqueue_scripts', function () {
 	$rimg  = isset( $sub['reveal_image'] ) ? $sub['reveal_image'] : array();
 	$rimg  = ( is_array( $rimg ) && ! empty( $rimg['url'] ) ) ? esc_url_raw( $rimg['url'] ) : '';
 
-	// Word Trail typography (typography-v2 → JS style props + Google-font enqueue).
-	$wf       = ( isset( $sub['word_font'] ) && is_array( $sub['word_font'] ) ) ? $sub['word_font'] : array();
-	$word_font = array(
-		'family'        => isset( $wf['family'] ) ? (string) $wf['family'] : '',
-		'weight'        => isset( $wf['weight'] ) ? (string) $wf['weight'] : '',
-		'size'          => isset( $wf['size'] ) ? (int) $wf['size'] : 13,
-		'lineHeight'    => ( isset( $wf['line-height'] ) && (int) $wf['line-height'] > 0 ) ? (int) $wf['line-height'] : 0,
-		'letterSpacing' => isset( $wf['letter-spacing'] ) ? (int) $wf['letter-spacing'] : 0,
-		'style'         => isset( $wf['style'] ) ? (string) $wf['style'] : '',
-	);
-	if ( ! empty( $wf['google_font'] ) && ! empty( $wf['family'] ) ) {
-		wp_enqueue_style(
-			'upw-cursor-word-font-' . sanitize_title( $wf['family'] . ( isset( $wf['weight'] ) ? $wf['weight'] : '' ) ),
-			'https://fonts.googleapis.com/css?family=' . str_replace( ' ', '+', $wf['family'] ) . ( ! empty( $wf['weight'] ) ? ':' . $wf['weight'] : '' ) . '&display=swap',
-			array(),
-			null
-		);
-	}
+	// Word Trail + Label typography (typography-v2 → JS style props + Google-font enqueue).
+	$word_font  = upw_cursor_font_props( isset( $sub['word_font'] ) ? $sub['word_font'] : array() );
+	$label_font = upw_cursor_font_props( isset( $sub['label_font'] ) ? $sub['label_font'] : array() );
 
 	$cfg = array(
 		'style'         => $style,
@@ -451,6 +476,7 @@ add_action( 'wp_enqueue_scripts', function () {
 		'label'         => (string) ( isset( $sub['default_label'] ) ? $sub['default_label'] : 'View' ),
 		'word'          => (string) ( isset( $sub['word'] ) ? $sub['word'] : 'scroll' ),
 		'wordFont'      => $word_font,
+		'labelFont'     => $label_font,
 		'revealImage'   => $rimg,
 		'revealRadius'  => (int) ( isset( $sub['reveal_radius'] ) ? $sub['reveal_radius'] : 80 ),
 		'zoom'          => (float) ( isset( $sub['zoom'] ) ? $sub['zoom'] : 2 ),
