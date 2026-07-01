@@ -50,6 +50,9 @@ if ( ! function_exists( 'upw_text_effects' ) ) :
 			// Wave B — CSS-driven (continuous + emphasis)
 			'gradient_flow', 'rainbow', 'neon', 'breathing', 'jitter', 'float',
 			'marker', 'strikebox', 'outline_fill', 'chromatic', 'width_sweep',
+			// Wave C — JS-driven (type/decode + interactive + media)
+			'rotating_words', 'countup', 'splitflap', 'matrix', 'fill_sweep',
+			'letter_jump', 'expand_spacing', 'color_wave', 'magnetic', 'image_mask', 'kinetic',
 		);
 	}
 endif;
@@ -190,6 +193,17 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'outline_fill' => $tx( 'outline-fill', __( 'Outline → Fill', 'fw' ) ),
 					'chromatic'    => $tx( 'chromatic',    __( 'Chromatic', 'fw' ) ),
 					'width_sweep'  => $tx( 'width-sweep',  __( 'Width Sweep', 'fw' ) ),
+					'rotating_words' => $tx( 'rotating-words', __( 'Rotating Words', 'fw' ) ),
+					'countup'      => $tx( 'countup',      __( 'Count Up', 'fw' ) ),
+					'splitflap'    => $tx( 'splitflap',    __( 'Split-Flap', 'fw' ) ),
+					'matrix'       => $tx( 'matrix',       __( 'Matrix Decode', 'fw' ) ),
+					'fill_sweep'   => $tx( 'fill-sweep',   __( 'Fill Sweep', 'fw' ) ),
+					'letter_jump'  => $tx( 'letter-jump',  __( 'Letter Jump', 'fw' ) ),
+					'expand_spacing' => $tx( 'expand-spacing', __( 'Expand Spacing', 'fw' ) ),
+					'color_wave'   => $tx( 'color-wave',   __( 'Color Wave', 'fw' ) ),
+					'magnetic'     => $tx( 'magnetic',     __( 'Magnetic Letters', 'fw' ) ),
+					'image_mask'   => $tx( 'image-mask',   __( 'Image Mask', 'fw' ) ),
+					'kinetic'      => $tx( 'kinetic',      __( 'Kinetic Scroll', 'fw' ) ),
 				),
 			),
 		),
@@ -380,6 +394,45 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'to'      => array( 'type' => 'slider', 'label' => __( 'To width', 'fw' ), 'value' => 125, 'properties' => array( 'min' => 25, 'max' => 200, 'step' => 5 ) ),
 				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
 			),
+			'rotating_words' => array(
+				'words'    => array( 'type' => 'text', 'label' => __( 'Words', 'fw' ), 'desc' => __( 'Comma-separated words to cycle through, after the element’s own text. e.g. <em>designer, developer, dreamer</em>', 'fw' ), 'value' => '' ),
+				'interval' => array( 'type' => 'slider', 'label' => __( 'Interval (s)', 'fw' ), 'value' => 1.8, 'properties' => array( 'min' => 0.6, 'max' => 5, 'step' => 0.2 ) ),
+			),
+			'countup' => array(
+				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.6, 'properties' => array( 'min' => 0.5, 'max' => 5, 'step' => 0.1 ) ),
+				'trigger'  => $trigger_view_load,
+			),
+			'splitflap' => array(
+				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.4, 'properties' => array( 'min' => 0.4, 'max' => 3, 'step' => 0.1 ) ),
+				'trigger'  => $trigger_view_load,
+			),
+			'matrix' => array(
+				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.4, 'properties' => array( 'min' => 0.6, 'max' => 3, 'step' => 0.1 ) ),
+				'trigger'  => $trigger_view_load,
+			),
+			'fill_sweep' => array(
+				'color'   => upw_text_color_field( __( 'Fill color', 'fw' ), 'text', '#2f74e6' ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+			),
+			'letter_jump' => array(
+				'height' => array( 'type' => 'slider', 'label' => __( 'Jump height (px)', 'fw' ), 'desc' => __( 'Each letter hops on hover.', 'fw' ), 'value' => 6, 'properties' => array( 'min' => 2, 'max' => 18, 'step' => 1 ) ),
+			),
+			'expand_spacing' => array(
+				'amount' => array( 'type' => 'slider', 'label' => __( 'Extra spacing (px)', 'fw' ), 'desc' => __( 'Letter-spacing widens on hover.', 'fw' ), 'value' => 6, 'properties' => array( 'min' => 1, 'max' => 20, 'step' => 1 ) ),
+			),
+			'color_wave' => array(
+				'color'   => upw_text_color_field( __( 'Wave color', 'fw' ), 'text', '#2f74e6' ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+			),
+			'magnetic' => array(
+				'strength' => array( 'type' => 'slider', 'label' => __( 'Strength', 'fw' ), 'desc' => __( 'How far each letter nudges toward the pointer.', 'fw' ), 'value' => 0.4, 'properties' => array( 'min' => 0.1, 'max' => 1, 'step' => 0.05 ) ),
+			),
+			'image_mask' => array(
+				'image' => array( 'type' => 'upload', 'label' => __( 'Image', 'fw' ), 'desc' => __( 'The text becomes a window onto this image. Use bold, large text for the best effect.', 'fw' ) ),
+			),
+			'kinetic' => array(
+				'intensity' => array( 'type' => 'slider', 'label' => __( 'Intensity', 'fw' ), 'desc' => __( 'How much the letters spread/skew with scroll speed.', 'fw' ), 'value' => 4, 'properties' => array( 'min' => 1, 'max' => 10, 'step' => 1 ) ),
+			),
 		),
 	);
 
@@ -513,6 +566,49 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'width_sweep':
 			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'hover' ) === 'view' ) ? 'view' : 'hover' );
 			$add_style( '--text-wdth-from:' . (int) ( $o['from'] ?? 75 ) . '; --text-wdth-to:' . (int) ( $o['to'] ?? 125 ) . ';' );
+			break;
+
+		case 'rotating_words':
+			$attr['data-text-words']    = esc_attr( (string) ( $o['words'] ?? '' ) );
+			$attr['data-text-interval'] = esc_attr( (float) ( $o['interval'] ?? 1.8 ) );
+			break;
+
+		case 'countup':
+		case 'splitflap':
+		case 'matrix':
+			$attr['data-text-duration'] = esc_attr( (float) ( $o['duration'] ?? 1.4 ) );
+			$attr['data-text-trigger']  = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
+			break;
+
+		case 'fill_sweep':
+			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'hover' ) === 'view' ) ? 'view' : 'hover' );
+			$add_style( '--text-fill:' . upw_text_color( $o['color'] ?? '', '#2f74e6' ) . ';' );
+			break;
+
+		case 'letter_jump':
+			$add_style( '--text-jump:' . (int) ( $o['height'] ?? 6 ) . 'px;' );
+			break;
+
+		case 'expand_spacing':
+			$add_style( '--text-spacing:' . (int) ( $o['amount'] ?? 6 ) . 'px;' );
+			break;
+
+		case 'color_wave':
+			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'hover' ) === 'view' ) ? 'view' : 'hover' );
+			$add_style( '--text-wavecolor:' . upw_text_color( $o['color'] ?? '', '#2f74e6' ) . ';' );
+			break;
+
+		case 'magnetic':
+			$attr['data-text-strength'] = esc_attr( (float) ( $o['strength'] ?? 0.4 ) );
+			break;
+
+		case 'image_mask':
+			$mi = ( isset( $o['image'] ) && is_array( $o['image'] ) && ! empty( $o['image']['url'] ) ) ? esc_url_raw( $o['image']['url'] ) : '';
+			if ( $mi !== '' ) { $attr['data-text-img'] = esc_url( $mi ); }
+			break;
+
+		case 'kinetic':
+			$add_style( '--text-kinetic:' . (int) ( $o['intensity'] ?? 4 ) . ';' );
 			break;
 	}
 

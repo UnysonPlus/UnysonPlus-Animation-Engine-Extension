@@ -69,15 +69,24 @@ use an effect.
 
 ### Text Effects
 
-A typographic animation addable to any element's text via its *Animations* tab —
-**Split Reveal** (by characters / words / lines, with direction + stagger), **Scramble**
-(decode-in), **Typewriter** (with caret + optional loop), **Shimmer** (animated gradient
-sheen), **Wave** (per-character bob), **Glitch** (RGB-split on hover / always), and
-**Weight Sweep** (variable-font `wght` on hover / in view) — chosen from an animated-SVG
-image picker. Reveal-type effects trigger on scroll-into-view or on load. **Self-contained
-vanilla JS — no GSAP** — and the runtime (JS/CSS) is enqueued only on pages that actually
-use an effect. Shimmer colors use the theme color-preset selector. Global on/off lives in
-**Theme Settings → Animations → Text**.
+**37 typographic animations** addable to any element's text via its *Animations* tab,
+chosen from an animated-SVG image picker (popover), each with its own options:
+
+- **Reveal:** Split Reveal, Blur, Mask, Flip 3D, Scale Pop, Slide, Bounce In, Random Order,
+  Skew — by characters / words / lines, with stagger, duration and view/load triggers.
+- **Type / decode:** Typewriter (caret + loop), Scramble, Split-Flap, Matrix Decode,
+  Rotating Words, Count Up (numeric odometer).
+- **Continuous:** Shimmer, Gradient Flow, Rainbow, Neon Flicker, Wave, Breathing, Jitter,
+  Float, Chromatic.
+- **Emphasis / hover:** Glitch, Weight Sweep, Width Sweep, Marker Highlight, Strike / Box,
+  Outline → Fill, Fill Sweep, Letter Jump, Expand Spacing, Color Wave.
+- **Interactive / media:** Magnetic Letters, Image Mask, Kinetic Scroll.
+
+**Self-contained vanilla JS — no GSAP.** Reveal/decode effects trigger on scroll-into-view
+or on load; hover effects trigger on hover or in view. Waits for `document.fonts.ready` so
+line-splitting is accurate. Colors use the theme color-preset selector, reduced-motion
+leaves text exactly as authored, and the runtime (JS/CSS) is enqueued only on pages that
+actually use an effect. Global on/off lives in **Theme Settings → Animations → Text**.
 
 ### Shared guards
 
