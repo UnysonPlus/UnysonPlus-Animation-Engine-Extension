@@ -157,6 +157,26 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 } );
 
 /* ------------------------------------------------------------------ *
+ * 1b) Admin: reveal only the sub-options that apply to the picked style.
+ *     Pure client-side — with JS off, all rows stay visible (their descs
+ *     already say which style they serve), so nothing is ever lost.
+ * ------------------------------------------------------------------ */
+add_action( 'admin_enqueue_scripts', function () {
+	$slug = function_exists( 'apply_filters' ) ? apply_filters( 'fw_get_settings_page_slug', 'fw-settings' ) : 'fw-settings';
+	if ( ! isset( $_GET['page'] ) || $_GET['page'] !== $slug ) {
+		return;
+	}
+	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	if ( ! $ext ) {
+		return;
+	}
+	$file = __DIR__ . '/static/js/cursor-settings.js';
+	$ver  = $ext->manifest->get_version();
+	$v    = file_exists( $file ) ? $ver . '.' . filemtime( $file ) : $ver;
+	wp_enqueue_script( 'upw-cursor-settings', $ext->get_declared_URI( '/modules/cursor/static/js/cursor-settings.js' ), array( 'jquery' ), $v, true );
+} );
+
+/* ------------------------------------------------------------------ *
  * 2) Enqueue the runtime — front end, only when the cursor is enabled.
  * ------------------------------------------------------------------ */
 add_action( 'wp_enqueue_scripts', function () {
