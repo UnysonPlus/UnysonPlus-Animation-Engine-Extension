@@ -68,13 +68,14 @@ html.upw-cursor-active .upw-cursor { opacity: 1; }
 .upw-cursor--brackets::before { top: 0; left: 0; border-top: 1.5px solid var(--c); border-left: 1.5px solid var(--c); }
 .upw-cursor--brackets::after { bottom: 0; right: 0; border-bottom: 1.5px solid var(--c); border-right: 1.5px solid var(--c); }
 
-/* Dashed rotating ring */
-.upw-cursor--dashed {
-	width: calc(var(--s) * 4); height: calc(var(--s) * 4);
+/* Dashed rotating ring — spin a pseudo so the element's transform stays free for
+   JS positioning (animating transform on the element itself would clobber place()). */
+.upw-cursor--dashed { width: calc(var(--s) * 4); height: calc(var(--s) * 4); }
+.upw-cursor--dashed::before {
+	content: ""; position: absolute; inset: 0;
 	border: 1.5px dashed var(--c); border-radius: 50%;
-	animation: upw-cursor-spin 4s linear infinite;
+	animation: upw-cursor-rot 4s linear infinite;
 }
-@keyframes upw-cursor-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
 /* Blob — morphing organic shape */
 .upw-cursor--blob {
@@ -371,14 +372,15 @@ html.upw-cursor-blend .upw-cursor--elastic,
 html.upw-cursor-blend .upw-cursor--radar,
 html.upw-cursor-blend .upw-cursor--radar::before,
 html.upw-cursor-blend .upw-cursor--radar::after,
-html.upw-cursor-blend .upw-cursor--dashed { border-color: #fff; }
+html.upw-cursor-blend .upw-cursor--dashed::before { border-color: #fff; }
 html.upw-cursor-blend .upw-cursor--crosshair::before,
 html.upw-cursor-blend .upw-cursor--crosshair::after,
 html.upw-cursor-blend .upw-cursor--brackets::before,
 html.upw-cursor-blend .upw-cursor--brackets::after { background: #fff; border-color: #fff; }
 
 @media (prefers-reduced-motion: reduce) {
-	.upw-cursor--dashed, .upw-cursor--blob, .upw-cursor--star { animation: none; }
+	.upw-cursor--blob, .upw-cursor--star { animation: none; }
+	.upw-cursor--dashed::before,
 	.upw-cursor--radar::before, .upw-cursor--radar::after,
 	.upw-cursor--dual-ring::before, .upw-cursor--dual-ring::after { animation: none; }
 	.upw-cursor--radar::before, .upw-cursor--radar::after { opacity: 0; }
