@@ -107,7 +107,10 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 		return array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => $default, 'properties' => array( 'min' => $min, 'max' => $max, 'step' => 0.5 ) );
 	};
 
-	$options['tab_styling']['options']['bg_effect'] = array(
+	$options['tab_styling']['options']['group_bg_effect'] = array(
+		'type'    => 'group',
+		'options' => array(
+	'bg_effect' => array(
 		'type'         => 'multi-picker',
 		'label'        => __( 'Background Effect', 'fw' ),
 		'desc'         => __( 'An animated background layered behind this container’s content.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
@@ -177,6 +180,8 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 				'opacity' => array( 'type' => 'slider', 'label' => __( 'Opacity', 'fw' ), 'value' => 0.06, 'properties' => array( 'min' => 0.02, 'max' => 0.25, 'step' => 0.01 ) ),
 				'speed'   => $speed( 1, 0.5, 4 ),
 			),
+		),
+		),
 		),
 	);
 
