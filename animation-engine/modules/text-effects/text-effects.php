@@ -45,6 +45,8 @@ if ( ! function_exists( 'upw_text_effects' ) ) :
 	function upw_text_effects() {
 		return array(
 			'split_reveal', 'scramble', 'typewriter', 'shimmer', 'wave', 'glitch', 'vf_weight',
+			// Wave A — reveal variants
+			'blur', 'mask', 'flip3d', 'scale', 'slide', 'bounce', 'random', 'skew',
 		);
 	}
 endif;
@@ -100,6 +102,49 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		),
 	);
 
+	// Shared option group for the reveal-family effects (split_reveal + Wave-A variants).
+	$reveal_group = function ( $split = 'chars', $with_dir = false ) use ( $trigger_view_load ) {
+		$g = array(
+			'split_by' => array(
+				'type'    => 'select',
+				'label'   => __( 'Split by', 'fw' ),
+				'value'   => $split,
+				'choices' => array(
+					'chars' => __( 'Characters', 'fw' ),
+					'words' => __( 'Words', 'fw' ),
+					'lines' => __( 'Lines', 'fw' ),
+				),
+			),
+			'stagger' => array(
+				'type'       => 'slider',
+				'label'      => __( 'Stagger (s)', 'fw' ),
+				'value'      => 0.03,
+				'properties' => array( 'min' => 0.005, 'max' => 0.12, 'step' => 0.005 ),
+			),
+			'duration' => array(
+				'type'       => 'slider',
+				'label'      => __( 'Duration (s)', 'fw' ),
+				'value'      => 0.6,
+				'properties' => array( 'min' => 0.2, 'max' => 1.6, 'step' => 0.1 ),
+			),
+			'trigger' => $trigger_view_load,
+		);
+		if ( $with_dir ) {
+			$g = array( 'direction' => array(
+				'type'    => 'select',
+				'label'   => __( 'From', 'fw' ),
+				'value'   => 'left',
+				'choices' => array(
+					'left'  => __( 'Left', 'fw' ),
+					'right' => __( 'Right', 'fw' ),
+					'up'    => __( 'Below', 'fw' ),
+					'down'  => __( 'Above', 'fw' ),
+				),
+			) ) + $g;
+		}
+		return $g;
+	};
+
 	$fields['text_effect'] = array(
 		'type'         => 'multi-picker',
 		'label'        => __( 'Text Effect', 'fw' ),
@@ -117,6 +162,14 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'choices' => array(
 					'none'         => $tx( 'none',         __( 'None', 'fw' ) ),
 					'split_reveal' => $tx( 'split-reveal', __( 'Split Reveal', 'fw' ) ),
+					'blur'         => $tx( 'blur',         __( 'Blur Reveal', 'fw' ) ),
+					'mask'         => $tx( 'mask',         __( 'Mask Reveal', 'fw' ) ),
+					'flip3d'       => $tx( 'flip3d',       __( 'Flip 3D', 'fw' ) ),
+					'scale'        => $tx( 'scale',        __( 'Scale Pop', 'fw' ) ),
+					'slide'        => $tx( 'slide',        __( 'Slide', 'fw' ) ),
+					'bounce'       => $tx( 'bounce',       __( 'Bounce In', 'fw' ) ),
+					'random'       => $tx( 'random',       __( 'Random Order', 'fw' ) ),
+					'skew'         => $tx( 'skew',         __( 'Skew Reveal', 'fw' ) ),
 					'scramble'     => $tx( 'scramble',     __( 'Scramble', 'fw' ) ),
 					'typewriter'   => $tx( 'typewriter',   __( 'Typewriter', 'fw' ) ),
 					'shimmer'      => $tx( 'shimmer',      __( 'Shimmer', 'fw' ) ),
@@ -164,6 +217,14 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				),
 				'trigger' => $trigger_view_load,
 			),
+			'blur'   => $reveal_group( 'chars' ),
+			'mask'   => $reveal_group( 'lines' ),
+			'flip3d' => $reveal_group( 'chars' ),
+			'scale'  => $reveal_group( 'chars' ),
+			'slide'  => $reveal_group( 'words', true ),
+			'bounce' => $reveal_group( 'chars' ),
+			'random' => $reveal_group( 'chars' ),
+			'skew'   => $reveal_group( 'words' ),
 			'scramble' => array(
 				'duration' => array(
 					'type'       => 'slider',
@@ -293,15 +354,22 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		$attr['style'] = esc_attr( $existing . $css );
 	};
 
-	switch ( $effect ) {
-		case 'split_reveal':
-			$attr['data-text-split']    = esc_attr( in_array( ( $o['split_by'] ?? 'words' ), array( 'chars', 'words', 'lines' ), true ) ? $o['split_by'] : 'words' );
-			$attr['data-text-dir']      = esc_attr( in_array( ( $o['direction'] ?? 'up' ), array( 'up', 'down', 'left', 'right' ), true ) ? $o['direction'] : 'up' );
-			$attr['data-text-stagger']  = esc_attr( (float) ( $o['stagger'] ?? 0.03 ) );
-			$attr['data-text-duration'] = esc_attr( (float) ( $o['duration'] ?? 0.6 ) );
-			$attr['data-text-trigger']  = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
-			break;
+	// The reveal family (split_reveal + Wave-A variants) all emit the same attrs;
+	// the JS routes by the effect id to the right initial state.
+	$reveal_ids = array( 'split_reveal', 'blur', 'mask', 'flip3d', 'scale', 'slide', 'bounce', 'random', 'skew' );
+	if ( in_array( $effect, $reveal_ids, true ) ) {
+		$attr['data-text-split']    = esc_attr( in_array( ( $o['split_by'] ?? 'chars' ), array( 'chars', 'words', 'lines' ), true ) ? $o['split_by'] : 'chars' );
+		$attr['data-text-stagger']  = esc_attr( (float) ( $o['stagger'] ?? 0.03 ) );
+		$attr['data-text-duration'] = esc_attr( (float) ( $o['duration'] ?? 0.6 ) );
+		$attr['data-text-trigger']  = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
+		if ( isset( $o['direction'] ) ) {
+			$attr['data-text-dir'] = esc_attr( in_array( $o['direction'], array( 'up', 'down', 'left', 'right' ), true ) ? $o['direction'] : 'left' );
+		}
+		upw_text_flag( true );
+		return $attr;
+	}
 
+	switch ( $effect ) {
 		case 'scramble':
 			$attr['data-text-duration'] = esc_attr( (float) ( $o['duration'] ?? 1.2 ) );
 			$attr['data-text-trigger']  = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
