@@ -3,8 +3,9 @@
  *
  * Builds a custom cursor from window.upwCursorCfg. Most styles are a single element
  * tracking the pointer (CSS does the shape); dot_ring adds a lagging ring; comet spawns
- * a fading trail; spotlight is a full-screen mask. Modifiers (grow, magnetic, blend,
- * hide-native) layer on top. Skips touch; under reduced motion, trailing stops. No deps.
+ * a fading trail; particles emit a decaying swarm; elastic squashes with velocity; arrow
+ * rotates toward motion; radar pulses; spotlight is a full-screen mask. Modifiers (grow,
+ * magnetic, blend, hide-native) layer on top. Skips touch; reduced motion stops trailing.
  */
 (function () {
 	'use strict';
@@ -20,6 +21,9 @@
 	var root = document.documentElement;
 	root.style.setProperty('--upw-cursor-color', cfg.color || '#2f74e6');
 	root.style.setProperty('--upw-cursor-size', (cfg.size || 8) + 'px');
+	root.style.setProperty('--upw-lens-r', (cfg.lensRadius || 70) + 'px');
+	root.style.setProperty('--upw-lens-blur', (cfg.lensBlur != null ? cfg.lensBlur : 4) + 'px');
+	root.style.setProperty('--upw-radar-speed', (cfg.radarSpeed || 1.6) + 's');
 	root.classList.add('upw-cursor-on', 'upw-cursor-style-' + style.replace(/_/g, '-'));
 	if (cfg.hideDefault) { root.classList.add('upw-cursor-hide-default'); }
 	if (cfg.blend) { root.classList.add('upw-cursor-blend'); }
@@ -66,6 +70,9 @@
 
 	if (style === 'spotlight') { spotlight(); }
 	else if (style === 'comet') { comet(); }
+	else if (style === 'particles') { particles(); }
+	else if (style === 'elastic') { elastic(); }
+	else if (style === 'arrow') { arrow(); }
 	else { shapes(); }
 
 	/* Single element (+ lagging ring for dot_ring). */
@@ -102,6 +109,69 @@
 				place(segs[i].el, segs[i].x, segs[i].y);
 				px = segs[i].x; py = segs[i].y;
 			}
+			requestAnimationFrame(loop);
+		})();
+	}
+
+	/* Swarm of small dots spawned at the head that drift + fade, recycled from a pool. */
+	function particles() {
+		var head = make('upw-cursor--dot upw-cursor-primary');
+		var N = Math.max(3, Math.min(24, cfg.count || 8)), pool = [], i;
+		for (i = 0; i < N; i++) {
+			var p = make('upw-cursor-particle');
+			pool.push({ el: p, life: 0, x: mx, y: my, vx: 0, vy: 0 });
+		}
+		var idx = 0, last = 0;
+		(function loop(t) {
+			var pp = pos(); place(head, pp.x, pp.y);
+			if (!reduce) {
+				if (!last) { last = t; }
+				if (t - last > 38) {
+					last = t;
+					var q = pool[idx % N]; idx++;
+					q.x = pp.x; q.y = pp.y; q.life = 1;
+					q.vx = (Math.random() - 0.5) * 0.7; q.vy = (Math.random() - 0.5) * 0.7 - 0.15;
+				}
+			}
+			for (i = 0; i < N; i++) {
+				var s = pool[i];
+				if (s.life > 0) {
+					s.life = Math.max(0, s.life - 0.03);
+					s.x += s.vx; s.y += s.vy;
+					s.el.style.opacity = String(s.life * 0.8);
+					s.el.style.transform = 'translate(' + s.x.toFixed(1) + 'px,' + s.y.toFixed(1) + 'px) translate(-50%,-50%) scale(' + (0.3 + s.life * 0.7).toFixed(2) + ')';
+				}
+			}
+			requestAnimationFrame(loop);
+		})(0);
+	}
+
+	/* A ring that squashes & stretches along its velocity vector (gooey feel). */
+	function elastic() {
+		var el = make('upw-cursor--elastic upw-cursor-primary');
+		var cx = mx, cy = my, px = mx, py = my;
+		var amt = cfg.elastic != null ? cfg.elastic : 0.5;
+		(function loop() {
+			var p = pos();
+			cx += (p.x - cx) * 0.2; cy += (p.y - cy) * 0.2;
+			var dx = cx - px, dy = cy - py; px = cx; py = cy;
+			var d = reduce ? 0 : Math.min(0.6, (Math.sqrt(dx * dx + dy * dy) / 40) * (0.5 + amt));
+			var ang = Math.atan2(dy, dx) * 180 / Math.PI;
+			el.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px) translate(-50%,-50%) rotate(' + ang.toFixed(1) + 'deg) scale(' + (1 + d).toFixed(2) + ',' + (1 - d * 0.6).toFixed(2) + ')';
+			requestAnimationFrame(loop);
+		})();
+	}
+
+	/* A triangle that eases toward the pointer and rotates to face the travel direction. */
+	function arrow() {
+		var el = make('upw-cursor--arrow upw-cursor-primary');
+		var cx = mx, cy = my, ang = 0;
+		(function loop() {
+			var p = pos();
+			var dx = p.x - cx, dy = p.y - cy;
+			cx += dx * 0.25; cy += dy * 0.25;
+			if (!reduce && Math.abs(dx) + Math.abs(dy) > 0.6) { ang = Math.atan2(dy, dx) * 180 / Math.PI; }
+			el.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px) translate(-50%,-50%) rotate(' + ang.toFixed(1) + 'deg)';
 			requestAnimationFrame(loop);
 		})();
 	}

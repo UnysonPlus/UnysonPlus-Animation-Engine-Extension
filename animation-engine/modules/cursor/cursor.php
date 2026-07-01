@@ -44,6 +44,11 @@ if ( ! function_exists( 'upw_cursor_styles' ) ) :
 			'blob'     => __( 'Blob', 'fw' ),
 			'spotlight'=> __( 'Spotlight', 'fw' ),
 			'comet'    => __( 'Comet', 'fw' ),
+			'particles'=> __( 'Particle Trail', 'fw' ),
+			'elastic'  => __( 'Elastic Ring', 'fw' ),
+			'lens'     => __( 'Glass Lens', 'fw' ),
+			'arrow'    => __( 'Directional Arrow', 'fw' ),
+			'radar'    => __( 'Radar Pulse', 'fw' ),
 			'custom'   => __( 'Custom Image', 'fw' ),
 			'glyph'    => __( 'Glyph / Emoji', 'fw' ),
 		);
@@ -131,6 +136,48 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'desc'       => __( 'How tightly the tail follows (lower = longer tail).', 'fw' ),
 											'value'      => 0.18,
 											'properties' => array( 'min' => 0.05, 'max' => 0.5, 'step' => 0.01 ),
+										),
+									),
+									'particles' => array(
+										'count' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Density', 'fw' ),
+											'desc'       => __( 'How many particles trail the pointer.', 'fw' ),
+											'value'      => 8,
+											'properties' => array( 'min' => 3, 'max' => 24, 'step' => 1 ),
+										),
+									),
+									'elastic' => array(
+										'elastic' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Stretchiness', 'fw' ),
+											'desc'       => __( 'How much the ring squashes & stretches with speed.', 'fw' ),
+											'value'      => 0.5,
+											'properties' => array( 'min' => 0.1, 'max' => 1, 'step' => 0.05 ),
+										),
+									),
+									'lens' => array(
+										'lens_radius' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Lens radius (px)', 'fw' ),
+											'value'      => 70,
+											'properties' => array( 'min' => 30, 'max' => 140, 'step' => 5 ),
+										),
+										'lens_blur' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Blur (px)', 'fw' ),
+											'desc'       => __( 'Frosted-glass blur of whatever is behind the lens.', 'fw' ),
+											'value'      => 4,
+											'properties' => array( 'min' => 0, 'max' => 10, 'step' => 0.5 ),
+										),
+									),
+									'radar' => array(
+										'radar_speed' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Pulse interval (s)', 'fw' ),
+											'desc'       => __( 'Seconds between emitted rings (lower = faster).', 'fw' ),
+											'value'      => 1.6,
+											'properties' => array( 'min' => 0.6, 'max' => 3, 'step' => 0.1 ),
 										),
 									),
 									'glyph' => array(
@@ -225,6 +272,11 @@ add_action( 'wp_enqueue_scripts', function () {
 		'image'         => $img,
 		'spotRadius'    => (int) ( isset( $sub['spot_radius'] ) ? $sub['spot_radius'] : 160 ),
 		'spotDim'       => (float) ( isset( $sub['spot_dim'] ) ? $sub['spot_dim'] : 0.6 ),
+		'count'         => (int) ( isset( $sub['count'] ) ? $sub['count'] : 8 ),
+		'elastic'       => (float) ( isset( $sub['elastic'] ) ? $sub['elastic'] : 0.5 ),
+		'lensRadius'    => (int) ( isset( $sub['lens_radius'] ) ? $sub['lens_radius'] : 70 ),
+		'lensBlur'      => (float) ( isset( $sub['lens_blur'] ) ? $sub['lens_blur'] : 4 ),
+		'radarSpeed'    => (float) ( isset( $sub['radar_speed'] ) ? $sub['radar_speed'] : 1.6 ),
 		'hoverGrow'     => upw_cursor_setting( 'hover_grow', 'yes' ) === 'yes',
 		'magnetic'      => upw_cursor_setting( 'magnetic', 'no' ) === 'yes',
 		'blend'         => upw_cursor_setting( 'blend', 'no' ) === 'yes',
