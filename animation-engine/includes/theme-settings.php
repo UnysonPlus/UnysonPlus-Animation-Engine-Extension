@@ -64,11 +64,22 @@ if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 		// Modules append their own sub-tabs after the Engine tab.
 		$sub_tabs = array_merge( $engine_tab, is_array( $module_tabs ) ? $module_tabs : array() );
 
+		// Wrap the sub-tabs in a titled box so this section matches the theme's other
+		// functional settings tabs (General / Header / Blog / Social / Footer), which
+		// all use tab → box("… Settings") → sub-tabs. (Demo Options is the intentional
+		// heading-less exception; the Animations tab is real settings, so it follows
+		// the rest.)
 		return array(
 			'animation_engine_container' => array(
 				'title'   => __( 'Animations', 'fw' ),
 				'type'    => 'tab',
-				'options' => $sub_tabs,
+				'options' => array(
+					'animation_settings_box' => array(
+						'title'   => __( 'Animation Settings', 'fw' ),
+						'type'    => 'box',
+						'options' => $sub_tabs,
+					),
+				),
 			),
 		);
 	}
