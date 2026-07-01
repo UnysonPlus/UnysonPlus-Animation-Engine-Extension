@@ -211,16 +211,16 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 
 	$pt_transition = array(
 		'type'         => 'multi-picker',
-		'label'        => false,
-		'desc'         => false,
+		'label'        => __( 'Transition', 'fw' ),
+		'desc'         => __( 'How pages reveal on load and cover when you navigate.', 'fw' ),
 		'popover'      => true,
 		'show_borders' => false,
 		'value'        => array( 'transition' => 'fade' ),
 		'picker'       => array(
 			'transition' => array(
 				'type'    => 'image-picker',
-				'label'   => __( 'Transition', 'fw' ),
-				'desc'    => __( 'How pages reveal on load and cover when you navigate.', 'fw' ),
+				'label'   => false,
+				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'   => 'fade',
 				'choices' => array(
 					'fade'         => $pt_tile( 'fade',         __( 'Fade', 'fw' ) ),
