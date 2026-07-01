@@ -124,7 +124,7 @@ actually use an effect. Global on/off lives in **Theme Settings → Animations �
 Smooth transitions between pages. A full-screen overlay injected at `wp_body_open` **reveals
 each page on load** (pure CSS, so it runs even without JS) and **covers it when you navigate**
 to another internal page, then the destination reveals — so multi-page navigation feels
-connected. Five transitions: **Fade**, **Slide up**, **Curtain (split)**, **Wipe**, **Circle
+connected. **23 transitions** — chosen from an image-picker with per-transition options (direction, origin, split, count) — including Fade, Slide, Zoom, Rotate, Curtain, Doors, Split, Wipe, Diagonal, Bars, Stripes, Blinds, Circle
 reveal**, with an overlay colour (palette preset) + duration. An optional **first-visit
 loader** (spinner / bar / dots) shows until the first page finishes loading. Skips new-tab /
 download / hash / external / modified clicks (and any link with `data-no-transition`); honours

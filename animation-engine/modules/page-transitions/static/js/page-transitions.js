@@ -12,12 +12,14 @@
 	var cfg = window.upwPtCfg || {};
 	var mql = window.matchMedia || function () { return { matches: false }; };
 	var reduce = cfg.reducedMotion && mql('(prefers-reduced-motion: reduce)').matches;
-	var dur = (cfg.duration || 0.6) * 1000;
 
 	if (cfg.loader) { loader(); }
 
 	var overlay = document.querySelector('.upw-pt');
 	if (!overlay || reduce) { return; }
+	// Total covers the slowest case (staggered strips / grid cells); PHP computes it.
+	var totalMs = (parseFloat(overlay.getAttribute('data-pt-total')) || cfg.duration || 0.6) * 1000;
+	var isRipple = overlay.getAttribute('data-pt-type') === 'ripple';
 
 	document.addEventListener('click', function (e) {
 		if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) { return; }
@@ -34,11 +36,14 @@
 		if (url.href === location.href) { return; }
 
 		e.preventDefault();
+		if (isRipple) {
+			overlay.style.setProperty('--px', ((e.clientX / (window.innerWidth || 1)) * 100).toFixed(1) + '%');
+			overlay.style.setProperty('--py', ((e.clientY / (window.innerHeight || 1)) * 100).toFixed(1) + '%');
+		}
 		overlay.classList.add('is-exiting');
 		var done = false;
 		function go() { if (done) { return; } done = true; location.href = a.href; }
-		overlay.addEventListener('animationend', go, { once: true });
-		setTimeout(go, dur + 250);
+		setTimeout(go, totalMs + 120);
 	}, false);
 
 	// Browsers restore the page from bfcache on back/forward with .is-exiting still applied —
