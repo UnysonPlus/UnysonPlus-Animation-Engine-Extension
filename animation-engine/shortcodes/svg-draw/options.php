@@ -14,6 +14,17 @@ if ( ! function_exists( 'sc_svg_draw_color' ) ) {
 	}
 }
 
+// Preset image-picker tiles (line-art previews).
+$svg_draw_ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+$svg_draw_base = $svg_draw_ext ? $svg_draw_ext->get_declared_URI( '/shortcodes/svg-draw/static/img/presets' ) : '';
+$svg_draw_tile = function ( $file, $label ) use ( $svg_draw_base ) {
+	return array(
+		'small' => array( 'src' => $svg_draw_base . '/' . $file . '.svg', 'height' => 60 ),
+		'large' => array( 'src' => $svg_draw_base . '/' . $file . '.svg', 'height' => 120 ),
+		'label' => $label,
+	);
+};
+
 $options = array(
 	'tab_content' => array(
 		'title'   => __( 'Content', 'fw' ),
@@ -22,16 +33,19 @@ $options = array(
 			'group_source' => array(
 				'type'    => 'group',
 				'options' => array(
+					// Canonical multi-picker shape (see CLAUDE.md / demo.php): top-level
+					// label/desc are false; the label/desc live on the PICKER sub-option.
 					'svg' => array(
 						'type'         => 'multi-picker',
-						'label'        => __( 'SVG source', 'fw' ),
-						'desc'         => __( 'Where the artwork comes from. For the cleanest draw, use single-colour outline (stroke) SVGs.', 'fw' ),
+						'label'        => false,
+						'desc'         => false,
 						'show_borders' => false,
 						'value'        => array( 'source' => 'preset' ),
 						'picker'       => array(
 							'source' => array(
 								'type'    => 'select',
-								'label'   => false,
+								'label'   => __( 'SVG source', 'fw' ),
+								'desc'    => __( 'Where the artwork comes from. For the cleanest draw, use single-colour outline (stroke) SVGs.', 'fw' ),
 								'choices' => array(
 									'preset' => __( 'Built-in preset', 'fw' ),
 									'code'   => __( 'Paste SVG code', 'fw' ),
@@ -42,18 +56,19 @@ $options = array(
 						'choices' => array(
 							'preset' => array(
 								'preset' => array(
-									'type'    => 'select',
+									'type'    => 'image-picker',
 									'label'   => __( 'Preset', 'fw' ),
+									'desc'    => __( 'Pick a line-art preset — it draws itself on the front end.', 'fw' ),
 									'value'   => 'signature',
 									'choices' => array(
-										'signature' => __( 'Signature', 'fw' ),
-										'underline' => __( 'Underline flourish', 'fw' ),
-										'arrow'     => __( 'Arrow', 'fw' ),
-										'check'     => __( 'Checkmark', 'fw' ),
-										'wave'      => __( 'Wave divider', 'fw' ),
-										'star'      => __( 'Star', 'fw' ),
-										'heart'     => __( 'Heart', 'fw' ),
-										'circle'    => __( 'Circle', 'fw' ),
+										'signature' => $svg_draw_tile( 'signature', __( 'Signature', 'fw' ) ),
+										'underline'  => $svg_draw_tile( 'underline', __( 'Underline', 'fw' ) ),
+										'arrow'      => $svg_draw_tile( 'arrow',     __( 'Arrow', 'fw' ) ),
+										'check'      => $svg_draw_tile( 'check',     __( 'Checkmark', 'fw' ) ),
+										'wave'       => $svg_draw_tile( 'wave',      __( 'Wave', 'fw' ) ),
+										'star'       => $svg_draw_tile( 'star',      __( 'Star', 'fw' ) ),
+										'heart'      => $svg_draw_tile( 'heart',     __( 'Heart', 'fw' ) ),
+										'circle'     => $svg_draw_tile( 'circle',    __( 'Circle', 'fw' ) ),
 									),
 								),
 							),
