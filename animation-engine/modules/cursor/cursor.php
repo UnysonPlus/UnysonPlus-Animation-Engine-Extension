@@ -99,11 +99,71 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 								false
 							),
 							'style' => array(
-								'type'    => 'image-picker',
-								'label'   => __( 'Style', 'fw' ),
-								'desc'    => __( 'The cursor shape / effect. Hover a tile to preview it larger.', 'fw' ),
-								'value'   => 'dot_ring',
-								'choices' => $choices,
+								'type'         => 'multi-picker',
+								'label'        => __( 'Style', 'fw' ),
+								'desc'         => __( 'The cursor shape / effect — pick one and its options appear below.', 'fw' ),
+								'popover'      => true,
+								'show_borders' => false,
+								'value'        => array( 'shape' => 'dot_ring' ),
+								'picker'       => array(
+									'shape' => array(
+										'type'    => 'image-picker',
+										'label'   => false,
+										'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
+										'value'   => 'dot_ring',
+										'choices' => $choices,
+									),
+								),
+								'choices' => array(
+									'dot_ring' => array(
+										'trail' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Ring trail', 'fw' ),
+											'desc'       => __( 'How much the ring lags behind the dot (lower = more trailing).', 'fw' ),
+											'value'      => 0.18,
+											'properties' => array( 'min' => 0.05, 'max' => 0.5, 'step' => 0.01 ),
+										),
+									),
+									'comet' => array(
+										'trail' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Tail follow', 'fw' ),
+											'desc'       => __( 'How tightly the tail follows (lower = longer tail).', 'fw' ),
+											'value'      => 0.18,
+											'properties' => array( 'min' => 0.05, 'max' => 0.5, 'step' => 0.01 ),
+										),
+									),
+									'glyph' => array(
+										'glyph_char' => array(
+											'type'  => 'text',
+											'label' => __( 'Glyph / emoji', 'fw' ),
+											'desc'  => __( 'Any character or emoji (e.g. → ✦ ✌ 🎯).', 'fw' ),
+											'value' => '→',
+										),
+									),
+									'custom' => array(
+										'custom_image' => array(
+											'type'  => 'upload',
+											'label' => __( 'Custom image', 'fw' ),
+											'desc'  => __( 'A small PNG / SVG.', 'fw' ),
+										),
+									),
+									'spotlight' => array(
+										'spot_radius' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Spotlight radius (px)', 'fw' ),
+											'value'      => 160,
+											'properties' => array( 'min' => 60, 'max' => 400, 'step' => 10 ),
+										),
+										'spot_dim' => array(
+											'type'       => 'slider',
+											'label'      => __( 'Spotlight dim', 'fw' ),
+											'desc'       => __( 'How dark the rest of the page gets (0 = none).', 'fw' ),
+											'value'      => 0.6,
+											'properties' => array( 'min' => 0, 'max' => 0.9, 'step' => 0.05 ),
+										),
+									),
+								),
 							),
 							'color'  => $color,
 							'size'   => array(
@@ -111,37 +171,6 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 								'label'      => __( 'Size (px)', 'fw' ),
 								'value'      => 8,
 								'properties' => array( 'min' => 4, 'max' => 28, 'step' => 1 ),
-							),
-							'trail'  => array(
-								'type'       => 'slider',
-								'label'      => __( 'Trail', 'fw' ),
-								'desc'       => __( 'Lag/tail amount for Dot + Ring, Comet and Blob (lower = more trailing).', 'fw' ),
-								'value'      => 0.18,
-								'properties' => array( 'min' => 0.05, 'max' => 0.5, 'step' => 0.01 ),
-							),
-							'glyph_char' => array(
-								'type'  => 'text',
-								'label' => __( 'Glyph / emoji', 'fw' ),
-								'desc'  => __( 'Used by the Glyph style — any character or emoji (e.g. → ✦ ✌ 🎯).', 'fw' ),
-								'value' => '→',
-							),
-							'custom_image' => array(
-								'type'  => 'upload',
-								'label' => __( 'Custom image', 'fw' ),
-								'desc'  => __( 'Used by the Custom Image style — a small PNG/SVG.', 'fw' ),
-							),
-							'spot_radius' => array(
-								'type'       => 'slider',
-								'label'      => __( 'Spotlight radius (px)', 'fw' ),
-								'value'      => 160,
-								'properties' => array( 'min' => 60, 'max' => 400, 'step' => 10 ),
-							),
-							'spot_dim' => array(
-								'type'       => 'slider',
-								'label'      => __( 'Spotlight dim', 'fw' ),
-								'desc'       => __( 'How dark the rest of the page gets (0 = none).', 'fw' ),
-								'value'      => 0.6,
-								'properties' => array( 'min' => 0, 'max' => 0.9, 'step' => 0.05 ),
 							),
 							'hover_grow'   => $sw( __( 'Grow on hover', 'fw' ), __( 'The cursor expands over links / buttons.', 'fw' ), true ),
 							'magnetic'     => $sw( __( 'Magnetic snap', 'fw' ), __( 'The cursor eases toward the center of the hovered button / link.', 'fw' ), false ),
@@ -157,36 +186,19 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 } );
 
 /* ------------------------------------------------------------------ *
- * 1b) Admin: reveal only the sub-options that apply to the picked style.
- *     Pure client-side — with JS off, all rows stay visible (their descs
- *     already say which style they serve), so nothing is ever lost.
- * ------------------------------------------------------------------ */
-add_action( 'admin_enqueue_scripts', function () {
-	$slug = function_exists( 'apply_filters' ) ? apply_filters( 'fw_get_settings_page_slug', 'fw-settings' ) : 'fw-settings';
-	if ( ! isset( $_GET['page'] ) || $_GET['page'] !== $slug ) {
-		return;
-	}
-	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
-	if ( ! $ext ) {
-		return;
-	}
-	$file = __DIR__ . '/static/js/cursor-settings.js';
-	$ver  = $ext->manifest->get_version();
-	$v    = file_exists( $file ) ? $ver . '.' . filemtime( $file ) : $ver;
-	wp_enqueue_script( 'upw-cursor-settings', $ext->get_declared_URI( '/modules/cursor/static/js/cursor-settings.js' ), array( 'jquery' ), $v, true );
-} );
-
-/* ------------------------------------------------------------------ *
  * 2) Enqueue the runtime — front end, only when the cursor is enabled.
  * ------------------------------------------------------------------ */
 add_action( 'wp_enqueue_scripts', function () {
 	if ( is_admin() || upw_cursor_setting( 'enable', 'no' ) !== 'yes' ) {
 		return;
 	}
-	$style = (string) upw_cursor_setting( 'style', 'dot_ring' );
+	// Style is a multi-picker: { shape: 'dot_ring', dot_ring: {trail}, glyph: {glyph_char}, … }.
+	$style_mp = upw_cursor_setting( 'style', array() );
+	$style    = ( is_array( $style_mp ) && ! empty( $style_mp['shape'] ) ) ? (string) $style_mp['shape'] : 'dot_ring';
 	if ( ! array_key_exists( $style, upw_cursor_styles() ) || $style === 'none' ) {
 		return;
 	}
+	$sub = ( is_array( $style_mp ) && isset( $style_mp[ $style ] ) && is_array( $style_mp[ $style ] ) ) ? $style_mp[ $style ] : array();
 	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
 	if ( ! $ext ) {
 		return;
@@ -201,18 +213,18 @@ add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_script( 'upw-cursor', $base . '/static/js/cursor.js', array(), $jsv, true );
 
 	$color = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6' ) : '#2f74e6';
-	$img   = upw_cursor_setting( 'custom_image', array() );
+	$img   = isset( $sub['custom_image'] ) ? $sub['custom_image'] : array();
 	$img   = ( is_array( $img ) && ! empty( $img['url'] ) ) ? esc_url_raw( $img['url'] ) : '';
 
 	$cfg = array(
 		'style'         => $style,
 		'color'         => $color !== '' ? $color : '#2f74e6',
 		'size'          => (int) upw_cursor_setting( 'size', 8 ),
-		'trail'         => (float) upw_cursor_setting( 'trail', 0.18 ),
-		'glyph'         => (string) upw_cursor_setting( 'glyph_char', '→' ),
+		'trail'         => (float) ( isset( $sub['trail'] ) ? $sub['trail'] : 0.18 ),
+		'glyph'         => (string) ( isset( $sub['glyph_char'] ) ? $sub['glyph_char'] : '→' ),
 		'image'         => $img,
-		'spotRadius'    => (int) upw_cursor_setting( 'spot_radius', 160 ),
-		'spotDim'       => (float) upw_cursor_setting( 'spot_dim', 0.6 ),
+		'spotRadius'    => (int) ( isset( $sub['spot_radius'] ) ? $sub['spot_radius'] : 160 ),
+		'spotDim'       => (float) ( isset( $sub['spot_dim'] ) ? $sub['spot_dim'] : 0.6 ),
 		'hoverGrow'     => upw_cursor_setting( 'hover_grow', 'yes' ) === 'yes',
 		'magnetic'      => upw_cursor_setting( 'magnetic', 'no' ) === 'yes',
 		'blend'         => upw_cursor_setting( 'blend', 'no' ) === 'yes',
