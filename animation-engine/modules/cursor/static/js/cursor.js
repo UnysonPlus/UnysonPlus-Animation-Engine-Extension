@@ -386,7 +386,8 @@
 			if (t && (t.currentSrc || t.src)) { img = t; el.style.backgroundImage = 'url("' + (t.currentSrc || t.src) + '")'; el.classList.add('is-on'); }
 		}, { passive: true });
 		document.addEventListener('pointerout', function (e) {
-			var t = e.target.closest ? e.target.closest('img') : null; if (t) { img = null; el.classList.remove('is-on'); }
+			var t = e.target.closest ? e.target.closest('img') : null;
+			if (t) { img = null; el.classList.remove('is-on'); el.style.backgroundImage = ''; }
 		}, { passive: true });
 		(function loop() {
 			place(el, mx, my);
