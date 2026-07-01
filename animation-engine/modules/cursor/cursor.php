@@ -316,6 +316,13 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'value'      => 6,
 											'properties' => array( 'min' => 2, 'max' => 18, 'step' => 1 ),
 										),
+										'follow_scroll' => $sw( __( 'Follow page scroll', 'fw' ), __( 'Ink sticks to the page and scrolls with it. Off = fixed to the screen.', 'fw' ), true ),
+									),
+									'fluid' => array(
+										'follow_scroll' => $sw( __( 'Follow page scroll', 'fw' ), __( 'The smear sticks to the page and scrolls with it. Off = fixed to the screen.', 'fw' ), true ),
+									),
+									'distort' => array(
+										'follow_scroll' => $sw( __( 'Follow page scroll', 'fw' ), __( 'Ripples stick to the page and scroll with it. Off = fixed to the screen.', 'fw' ), true ),
 									),
 									'glyph' => array(
 										'glyph_char' => array(
@@ -398,7 +405,9 @@ add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style( 'upw-cursor', $base . '/static/css/cursor.css', array(), $cssv );
 	wp_enqueue_script( 'upw-cursor', $base . '/static/js/cursor.js', array(), $jsv, true );
 
-	$color = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6' ) : '#2f74e6';
+	$color     = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6' ) : '#2f74e6';
+	// Canvas (2D context) can't use a CSS var() — resolve a real hex for ink/fluid/ripple.
+	$color_hex = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6', true ) : '#2f74e6';
 	$img   = isset( $sub['custom_image'] ) ? $sub['custom_image'] : array();
 	$img   = ( is_array( $img ) && ! empty( $img['url'] ) ) ? esc_url_raw( $img['url'] ) : '';
 	$rimg  = isset( $sub['reveal_image'] ) ? $sub['reveal_image'] : array();
@@ -426,6 +435,8 @@ add_action( 'wp_enqueue_scripts', function () {
 	$cfg = array(
 		'style'         => $style,
 		'color'         => $color !== '' ? $color : '#2f74e6',
+		'colorHex'      => $color_hex !== '' ? $color_hex : '#2f74e6',
+		'canvasFollowScroll' => ( isset( $sub['follow_scroll'] ) ? $sub['follow_scroll'] : 'yes' ) === 'yes',
 		'size'          => (int) upw_cursor_setting( 'size', 8 ),
 		'trail'         => (float) ( isset( $sub['trail'] ) ? $sub['trail'] : 0.18 ),
 		'glyph'         => (string) ( isset( $sub['glyph_char'] ) ? $sub['glyph_char'] : '→' ),

@@ -448,7 +448,10 @@
 		})();
 	}
 
-	/* Shared full-viewport canvas trail — ink stroke / fluid smear / ripple rings. */
+	/* Shared full-viewport canvas trail — ink stroke / fluid smear / ripple rings.
+	   Colour is a resolved hex (canvas can't use var()). When "follow page scroll" is on:
+	   ink/fluid persist as pixels and are shifted by the scroll delta each frame; ripple is
+	   procedural, so its origins are stored in DOCUMENT coords and drawn offset by scroll. */
 	function canvasFx(mode) {
 		var cv = document.createElement('canvas'); cv.className = 'upw-cursor-canvas'; cv.setAttribute('aria-hidden', 'true');
 		document.body.appendChild(cv);
@@ -459,27 +462,47 @@
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 		}
 		resize(); window.addEventListener('resize', resize, { passive: true });
-		var col = cfg.color || '#2f74e6', px = mx, py = my, ripples = [], lastEmit = 0;
+		var col = cfg.colorHex || cfg.color || '#2f74e6', px = mx, py = my, ripples = [], lastEmit = 0;
+		var follow = cfg.canvasFollowScroll !== false, persistent = (mode === 'ink' || mode === 'fluid');
+		var lastSX = window.pageXOffset || 0, lastSY = window.pageYOffset || 0, i;
 		(function loop(t) {
+			var sx = window.pageXOffset || 0, sy = window.pageYOffset || 0;
+			// Persistent pixels: slide them with the page so ink/fluid stick to content.
+			if (follow && persistent) {
+				var dsx = sx - lastSX, dsy = sy - lastSY;
+				if (dsx || dsy) {
+					ctx.setTransform(1, 0, 0, 1, 0, 0);
+					ctx.globalCompositeOperation = 'copy';
+					ctx.drawImage(cv, -dsx * dpr, -dsy * dpr);
+					ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+				}
+			}
+			lastSX = sx; lastSY = sy;
+
 			ctx.globalCompositeOperation = 'destination-out';
-			ctx.fillStyle = 'rgba(0,0,0,' + (mode === 'ink' ? 0.07 : 0.12) + ')';
+			ctx.fillStyle = 'rgba(0,0,0,' + (mode === 'ink' ? 0.06 : 0.1) + ')';
 			ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-			ctx.globalCompositeOperation = (mode === 'fluid') ? 'lighter' : 'source-over';
+			ctx.globalCompositeOperation = 'source-over';
 			if (!reduce) {
 				if (mode === 'ink') {
 					ctx.strokeStyle = col; ctx.lineWidth = cfg.inkWidth || 6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
 					ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(mx, my); ctx.stroke();
 				} else if (mode === 'fluid') {
-					var g = ctx.createRadialGradient(mx, my, 0, mx, my, 28);
-					g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)');
-					ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mx, my, 28, 0, 6.2832); ctx.fill();
+					// Solid-core soft blobs interpolated along the move = a clearly-visible liquid smear.
+					var steps = Math.max(1, Math.round(Math.sqrt((mx - px) * (mx - px) + (my - py) * (my - py)) / 6));
+					for (i = 0; i <= steps; i++) {
+						var ix = px + (mx - px) * (i / steps), iy = py + (my - py) * (i / steps);
+						var g = ctx.createRadialGradient(ix, iy, 0, ix, iy, 24);
+						g.addColorStop(0, col); g.addColorStop(0.5, col); g.addColorStop(1, 'rgba(0,0,0,0)');
+						ctx.fillStyle = g; ctx.beginPath(); ctx.arc(ix, iy, 24, 0, 6.2832); ctx.fill();
+					}
 				} else {
-					if (t - lastEmit > 90) { lastEmit = t; ripples.push({ x: mx, y: my, r: 2 }); }
+					if (t - lastEmit > 90) { lastEmit = t; ripples.push({ x: mx + (follow ? sx : 0), y: my + (follow ? sy : 0), r: 2 }); }
 					ctx.strokeStyle = col; ctx.lineWidth = 2;
-					for (var i = ripples.length - 1; i >= 0; i--) {
+					for (i = ripples.length - 1; i >= 0; i--) {
 						var rp = ripples[i]; rp.r += 2.3;
 						ctx.globalAlpha = Math.max(0, 1 - rp.r / 80);
-						ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, 6.2832); ctx.stroke();
+						ctx.beginPath(); ctx.arc(follow ? rp.x - sx : rp.x, follow ? rp.y - sy : rp.y, rp.r, 0, 6.2832); ctx.stroke();
 						if (rp.r > 80) { ripples.splice(i, 1); }
 					}
 					ctx.globalAlpha = 1;
