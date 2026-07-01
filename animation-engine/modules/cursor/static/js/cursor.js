@@ -345,8 +345,16 @@
 	/* A word repeated down a fading trail behind the pointer. */
 	function wordTrail() {
 		var word = cfg.word || 'scroll', N = reduce ? 1 : 9, segs = [], i;
+		var wf = cfg.wordFont || {};
 		for (i = 0; i < N; i++) {
 			var s = make('upw-cursor--wordseg'); s.textContent = word;
+			// Typography-v2 props applied once (transform is set per-frame, so keep them separate).
+			if (wf.family) { s.style.fontFamily = wf.family; }
+			if (wf.weight) { s.style.fontWeight = wf.weight; }
+			if (wf.size) { s.style.fontSize = wf.size + 'px'; }
+			if (wf.lineHeight) { s.style.lineHeight = wf.lineHeight + 'px'; }
+			if (wf.letterSpacing) { s.style.letterSpacing = wf.letterSpacing + 'px'; }
+			if (wf.style) { s.style.fontStyle = wf.style; }
 			s.style.opacity = String((1 - i / N) * 0.9);
 			segs.push({ el: s, x: mx, y: my });
 		}

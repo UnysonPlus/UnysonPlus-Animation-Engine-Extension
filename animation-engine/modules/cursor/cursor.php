@@ -260,6 +260,20 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'desc'  => __( 'The word that trails the pointer.', 'fw' ),
 											'value' => 'scroll',
 										),
+										'word_font' => array(
+											'type'       => 'typography-v2',
+											'label'      => __( 'Font', 'fw' ),
+											'desc'       => __( 'Family, weight, size, line-height & letter-spacing for the trailing word. Colour comes from the Cursor color option above.', 'fw' ),
+											'components' => array( 'subset' => false, 'color' => false ),
+											'value'      => array(
+												'family'         => '',
+												'style'          => 'normal',
+												'weight'         => '700',
+												'size'           => 13,
+												'line-height'    => 13,
+												'letter-spacing' => 0,
+											),
+										),
 									),
 									'reveal' => array(
 										'reveal_image' => array(
@@ -378,6 +392,25 @@ add_action( 'wp_enqueue_scripts', function () {
 	$rimg  = isset( $sub['reveal_image'] ) ? $sub['reveal_image'] : array();
 	$rimg  = ( is_array( $rimg ) && ! empty( $rimg['url'] ) ) ? esc_url_raw( $rimg['url'] ) : '';
 
+	// Word Trail typography (typography-v2 → JS style props + Google-font enqueue).
+	$wf       = ( isset( $sub['word_font'] ) && is_array( $sub['word_font'] ) ) ? $sub['word_font'] : array();
+	$word_font = array(
+		'family'        => isset( $wf['family'] ) ? (string) $wf['family'] : '',
+		'weight'        => isset( $wf['weight'] ) ? (string) $wf['weight'] : '',
+		'size'          => isset( $wf['size'] ) ? (int) $wf['size'] : 13,
+		'lineHeight'    => ( isset( $wf['line-height'] ) && (int) $wf['line-height'] > 0 ) ? (int) $wf['line-height'] : 0,
+		'letterSpacing' => isset( $wf['letter-spacing'] ) ? (int) $wf['letter-spacing'] : 0,
+		'style'         => isset( $wf['style'] ) ? (string) $wf['style'] : '',
+	);
+	if ( ! empty( $wf['google_font'] ) && ! empty( $wf['family'] ) ) {
+		wp_enqueue_style(
+			'upw-cursor-word-font-' . sanitize_title( $wf['family'] . ( isset( $wf['weight'] ) ? $wf['weight'] : '' ) ),
+			'https://fonts.googleapis.com/css?family=' . str_replace( ' ', '+', $wf['family'] ) . ( ! empty( $wf['weight'] ) ? ':' . $wf['weight'] : '' ) . '&display=swap',
+			array(),
+			null
+		);
+	}
+
 	$cfg = array(
 		'style'         => $style,
 		'color'         => $color !== '' ? $color : '#2f74e6',
@@ -394,6 +427,7 @@ add_action( 'wp_enqueue_scripts', function () {
 		'radarSpeed'    => (float) ( isset( $sub['radar_speed'] ) ? $sub['radar_speed'] : 1.6 ),
 		'label'         => (string) ( isset( $sub['default_label'] ) ? $sub['default_label'] : 'View' ),
 		'word'          => (string) ( isset( $sub['word'] ) ? $sub['word'] : 'scroll' ),
+		'wordFont'      => $word_font,
 		'revealImage'   => $rimg,
 		'revealRadius'  => (int) ( isset( $sub['reveal_radius'] ) ? $sub['reveal_radius'] : 80 ),
 		'zoom'          => (float) ( isset( $sub['zoom'] ) ? $sub['zoom'] : 2 ),
