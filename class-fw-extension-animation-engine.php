@@ -38,6 +38,7 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/backgrounds/backgrounds.php';      // Animated Backgrounds (sections/rows)
 		require_once dirname( __FILE__ ) . '/modules/page-transitions/page-transitions.php'; // Page Transitions (site-wide)
 		require_once dirname( __FILE__ ) . '/modules/scroll-loop/scroll-loop.php';      // Seamless / Infinite Scroll Loop (Lenis)
+		require_once dirname( __FILE__ ) . '/modules/scroll-progress/scroll-progress.php'; // Scroll Progress indicator (site-wide)
 
 		// Central effects control — consolidates the per-module enable switches into one
 		// "Effects" tab and hides a disabled module's options. Loaded last (after modules).

@@ -1,0 +1,27 @@
+/* Scroll Progress indicator. */
+.upw-sp { position: fixed; z-index: 9998; transition: opacity .3s ease; }
+.upw-sp.is-hidden { opacity: 0; pointer-events: none; }
+
+/* Bars */
+.upw-sp--bar { left: 0; width: 100%; }
+.upw-sp--top { top: 0; }
+.upw-sp--bottom { bottom: 0; }
+.upw-sp-fill { height: 100%; transition: width .08s linear; }
+
+/* Corner ring */
+.upw-sp--circle {
+	display: grid;
+	place-items: center;
+	background: #fff;
+	border-radius: 50%;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, .16);
+}
+.upw-sp--br { right: 22px; bottom: 22px; }
+.upw-sp--bl { left: 22px; bottom: 22px; }
+.upw-sp--circle svg { position: absolute; inset: 0; }
+.upw-sp-track { stroke: rgba(0, 0, 0, .12); }
+.upw-sp-arrow { font-size: 15px; line-height: 1; color: currentColor; }
+
+@media (prefers-reduced-motion: reduce) {
+	.upw-sp, .upw-sp-fill { transition: none; }
+}
