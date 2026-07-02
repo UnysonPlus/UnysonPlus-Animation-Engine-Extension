@@ -31,9 +31,15 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/scroll-motion/scroll-motion.php'; // Scroll Motion (GSAP)
 		require_once dirname( __FILE__ ) . '/modules/hover/hover.php';                  // Hover Interactions
 		require_once dirname( __FILE__ ) . '/modules/physics/physics.php';              // Physics Effects (per-element)
+		require_once dirname( __FILE__ ) . '/modules/parallax/parallax.php';            // Parallax Depth Layers (per-element)
 		require_once dirname( __FILE__ ) . '/modules/cursor/cursor.php';                // Custom Cursor (site-wide)
 		require_once dirname( __FILE__ ) . '/modules/text-effects/text-effects.php';    // Text Effects (per-element)
 		require_once dirname( __FILE__ ) . '/modules/backgrounds/backgrounds.php';      // Animated Backgrounds (sections/rows)
 		require_once dirname( __FILE__ ) . '/modules/page-transitions/page-transitions.php'; // Page Transitions (site-wide)
+		require_once dirname( __FILE__ ) . '/modules/scroll-loop/scroll-loop.php';      // Seamless / Infinite Scroll Loop (Lenis)
+
+		// Central effects control — consolidates the per-module enable switches into one
+		// "Effects" tab and hides a disabled module's options. Loaded last (after modules).
+		require_once dirname( __FILE__ ) . '/includes/effects-control.php';
 	}
 }

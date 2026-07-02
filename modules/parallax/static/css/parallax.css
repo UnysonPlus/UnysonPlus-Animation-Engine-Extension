@@ -1,0 +1,11 @@
+/* Parallax Depth Layers — minimal support styles.
+ * The scene is a positioning context so absolutely-positioned layers anchor to it (for
+ * overlapping hero scenes). Layers get GPU-friendly compositing hints. Actual movement is
+ * applied inline by parallax.js. Under reduced motion the runtime never runs, so layers stay put.
+ */
+.sc-parallax-scene { position: relative; }
+.sc-parallax-layer { will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-parallax-layer { transform: none !important; filter: none !important; }
+}

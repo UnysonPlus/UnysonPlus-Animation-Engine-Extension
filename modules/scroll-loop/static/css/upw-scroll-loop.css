@@ -1,0 +1,44 @@
+/**
+ * UnysonPlus — Seamless / Infinite Scroll Loop styles.
+ *
+ * Loaded only on pages with a loop group. Two jobs: (1) the small stylesheet Lenis
+ * needs to smooth-scroll the window, and (2) a full-height fallback + overflow clamp
+ * for the marked sections and their appended clone.
+ */
+
+/* --- Lenis base (recommended) ------------------------------------------- */
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+
+.lenis.lenis-smooth {
+	scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+	overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+	overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+	pointer-events: none;
+}
+
+/* --- Loop sections + clone ---------------------------------------------- */
+/* Full-height fallback: applies only when the section has no explicit inline
+   min-height (inline styles win), so the loop reads as one screen per section.
+   svh dodges the iOS Safari toolbar resize. */
+[data-upw-loop="1"],
+[data-upw-loop-clone="1"] {
+	min-height: 100svh;
+}
+
+/* The appended clone stays visible (it IS the seam) but must never introduce a
+   horizontal scrollbar from parallax overflow, and is hidden from assistive tech. */
+[data-upw-loop-clone="1"] {
+	overflow-x: clip;
+}

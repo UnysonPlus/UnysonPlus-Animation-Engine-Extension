@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Infinite scroll loop: sections cycle forever"><g transform="translate(66,34) scale(1.3) translate(-66,-34)">
+  <style>
+    .lp-dot{animation:lp-dot 2.4s cubic-bezier(.5,0,.5,1) infinite}
+    @keyframes lp-dot{0%{transform:translateY(-16px);opacity:0}12%{opacity:1}50%{transform:translateY(16px);opacity:1}62%{opacity:0}63%{transform:translateY(-16px);opacity:0}100%{transform:translateY(-16px);opacity:0}}
+  </style>
+  <!-- viewport / section frame -->
+  <rect x="50" y="16" width="32" height="40" rx="5" fill="none" stroke="#cbd5e1" stroke-width="3"/>
+  <!-- travelling section content (loops top->bottom forever) -->
+  <g class="lp-dot"><rect x="58" y="32" width="16" height="8" rx="2" fill="#2f74e6"/></g>
+  <!-- return arc suggesting the seamless wrap -->
+  <path d="M86 24 a20 20 0 0 1 0 24" fill="none" stroke="#2f74e6" stroke-width="3" stroke-linecap="round"/>
+  <path d="M86 48 l-4 -6 M86 48 l5 -3" fill="none" stroke="#2f74e6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Infinite Loop</text>
+</svg>
