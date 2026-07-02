@@ -1,0 +1,18 @@
+/* Image Sequence — scroll-scrubbed frames on a canvas. */
+.sc-seq { position: relative; }
+
+/* Pin & scrub: a tall wrapper provides the scroll distance; the inner sticks full-screen. */
+.sc-seq--pin { height: calc(var(--seq-screens, 3) * 100vh); }
+.sc-seq__pin {
+	position: -webkit-sticky;
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	overflow: hidden;
+	background: var(--seq-bg, #0b0f1a);
+}
+
+/* Scrub in view: a fixed-height media box. */
+.sc-seq--inview { overflow: hidden; background: var(--seq-bg, #0b0f1a); }
+
+.sc-seq__canvas { display: block; width: 100%; height: 100%; }
