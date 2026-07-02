@@ -164,8 +164,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$fields['text_effect'] = array(
 		'type'         => 'multi-picker',
 		'label'        => __( 'Text Effect', 'fw' ),
-		'desc'         => __( 'A typographic animation applied to this element’s text.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
-		'help'         => __( 'Text Effects (Animation Engine): split-text reveal, scramble/decode, typewriter, gradient shimmer, wave, glitch and variable-font weight. Self-contained (no GSAP), honours "reduce motion", and the runtime loads only on pages that use an effect.', 'fw' ),
+		'desc'         => __( 'A typographic animation applied to this element’s text.', 'fw' ),
+		'help'         => __( 'Text Effects (Animation Engine): split-text reveal, scramble/decode, typewriter, gradient shimmer, wave, glitch and variable-font weight. Self-contained (no GSAP), honours "reduce motion".', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'popover'      => true,
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),

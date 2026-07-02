@@ -144,8 +144,8 @@ function sc_get_gsap_fields() {
         'gsap_motion' => [
             'type'         => 'multi-picker',
             'label'        => __( 'Scroll Effect', 'fw' ),
-            'desc'         => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads).', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
-            'help'         => __( 'Scroll Motion (GSAP): scroll-driven motion powered by GSAP + ScrollTrigger. Independent of the entrance animation above — GSAP loads only on pages that use it.', 'fw' ),
+            'desc'         => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads).', 'fw' ),
+            'help'         => __( 'Scroll Motion (GSAP): scroll-driven motion powered by GSAP + ScrollTrigger. Independent of the entrance animation above.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
             'popover'      => true,
             'show_borders' => false,
             'value'        => [ 'effect' => 'none' ],
@@ -214,6 +214,16 @@ function sc_get_gsap_fields() {
                         'type'    => 'group',
                         'options' => array_merge(
                             [
+                                'scope' => [
+                                    'type'    => 'select',
+                                    'label'   => __( 'Apply to', 'fw' ),
+                                    'desc'    => __( 'Which pieces cascade in. "Grid items" auto-detects the repeated items inside a grid/gallery/masonry wrapper (drills through the layout container for you); "Direct children only" staggers this element\'s immediate children as-is.', 'fw' ),
+                                    'value'   => 'auto',
+                                    'choices' => [
+                                        'auto'   => __( 'Grid items (auto-detect)', 'fw' ),
+                                        'direct' => __( 'Direct children only', 'fw' ),
+                                    ],
+                                ],
                                 'direction' => [
                                     'type'    => 'select',
                                     'label'   => __( 'Direction', 'fw' ),
@@ -586,6 +596,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             $data['data-upw-g-distance'] = $num( 'distance', 50 );
             $data['data-upw-g-each']     = $num( 'stagger_each', 0.12 );
             $data['data-upw-g-from']     = $pick( 'stagger_from', [ 'start', 'end', 'center', 'edges' ], 'start' );
+            if ( $pick( 'scope', [ 'auto', 'direct' ], 'auto' ) === 'direct' ) $data['data-upw-g-scope'] = 'direct';
             if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
             $data['data-upw-g-start']    = $pick( 'start', $start_allow, 'top 85%' );
             if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';

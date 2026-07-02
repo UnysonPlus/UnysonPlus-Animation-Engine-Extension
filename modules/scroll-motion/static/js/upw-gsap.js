@@ -114,8 +114,42 @@
             el.classList.remove('upw-g-pending');
         }
 
+        // Resolve which elements a stagger cascades. "direct" = this element's immediate
+        // children as-is (good for a row of columns / a column of blocks). Default
+        // ("auto") finds the REAL grid items: a gallery/masonry/grid renders
+        // wrapper > [title?] > .grid-container > items (possibly with a heading sibling
+        // or extra nesting), so el.children is NOT the items. We scan the subtree and
+        // pick the largest group of same-tag siblings — that IS the grid row — shallowest
+        // wins ties, so a title/container beside the grid never fools it. Falls back to
+        // direct children if nothing repeats (e.g. a single-item element).
+        function staggerTargets(el) {
+            var direct = Array.prototype.slice.call(el.children);
+            if (attr(el, 'data-upw-g-scope') === 'direct') return direct;
+
+            var best = null, bestScore = 1, queue = [el], guard = 0;
+            while (queue.length && guard < 4000) {
+                guard++;
+                var kids = Array.prototype.slice.call(queue.shift().children);
+                // Largest group of same-tag children in this container.
+                var counts = {}, topTag = null, topCount = 0, i;
+                for (i = 0; i < kids.length; i++) {
+                    var t = kids[i].tagName;
+                    counts[t] = (counts[t] || 0) + 1;
+                    if (counts[t] > topCount) { topCount = counts[t]; topTag = t; }
+                }
+                if (topCount > bestScore) { // strictly greater => shallowest max wins (BFS)
+                    bestScore = topCount;
+                    best = kids.filter(function (c) { return c.tagName === topTag; });
+                }
+                for (i = 0; i < kids.length; i++) {
+                    if (kids[i].children && kids[i].children.length) queue.push(kids[i]);
+                }
+            }
+            return best || direct;
+        }
+
         function stagger(el) {
-            var kids = Array.prototype.slice.call(el.children);
+            var kids = staggerTargets(el);
             if (!kids.length) { el.classList.remove('upw-g-pending'); return; }
 
             var st = styleOf(el);

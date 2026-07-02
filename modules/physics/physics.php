@@ -96,8 +96,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$fields['physics'] = array(
 		'type'         => 'multi-picker',
 		'label'        => __( 'Physics', 'fw' ),
-		'desc'         => __( 'A physics-driven motion applied to this element.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
-		'help'         => __( 'Physics Effects (Animation Engine): a catalog of spring/verlet motions — drag & throw, cursor spring/attract/repel/orbit, float/sway/pendulum/breathe, gravity drop/rise/sag/ragdoll, pop, jelly/squash/recoil/shake/spin. No library. Honours "reduce motion"; pointer-following effects are skipped on touch. The runtime loads only on pages that use an effect.', 'fw' ),
+		'desc'         => __( 'A physics-driven motion applied to this element.', 'fw' ),
+		'help'         => __( 'Physics Effects (Animation Engine): a catalog of spring/verlet motions — drag & throw, cursor spring/attract/repel/orbit, float/sway/pendulum/breathe, gravity drop/rise/sag/ragdoll, pop, jelly/squash/recoil/shake/spin. No library. Honours "reduce motion"; pointer-following effects are skipped on touch.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'popover'      => true,
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),

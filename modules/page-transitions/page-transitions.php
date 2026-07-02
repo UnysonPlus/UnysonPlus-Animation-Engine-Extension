@@ -178,11 +178,12 @@ add_action( 'wp_enqueue_scripts', function () {
  * 3) Theme Settings → Animations → Page Transitions sub-tab.
  * ------------------------------------------------------------------ */
 add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
-	$sw = function ( $label, $desc, $default_yes ) {
+	$sw = function ( $label, $desc, $default_yes, $help = '' ) {
 		return array(
 			'type'         => 'switch',
 			'label'        => $label,
 			'desc'         => $desc,
+			'help'         => $help,
 			'value'        => $default_yes ? 'yes' : 'no',
 			'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
 			'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
@@ -281,8 +282,9 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 						'inner-options' => array(
 							'enable' => $sw(
 								__( 'Enable page transitions', 'fw' ),
-								__( 'A full-screen overlay reveals each page on load and covers it when you navigate — so pages feel connected. Front end only.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note( 'site' ) : '' ),
-								false
+								__( 'A full-screen overlay reveals each page on load and covers it when you navigate — so pages feel connected. Front end only.', 'fw' ),
+								false,
+								function_exists( 'upw_perf_note' ) ? upw_perf_note( 'site' ) : ''
 							),
 							'transition' => $pt_transition,
 							'color'    => $color,

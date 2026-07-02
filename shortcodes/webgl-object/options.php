@@ -41,7 +41,8 @@ $options = [
 							'preset' => [
 								'type'    => 'select',
 								'label'   => __( 'Style', 'fw' ),
-								'desc'    => __( 'The look of the WebGL element — a 3D object or a full-screen shader.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
+								'desc'    => __( 'The look of the WebGL element — a 3D object or a full-screen shader.', 'fw' ),
+								'help'    => function_exists( 'upw_perf_note' ) ? upw_perf_note() : '',
 								'choices' => [
 									[
 										'attr'    => [ 'label' => __( '3D Objects', 'fw' ) ],

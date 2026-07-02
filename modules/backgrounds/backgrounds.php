@@ -118,8 +118,8 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 	$bg_field = array(
 		'type'         => 'multi-picker',
 		'label'        => __( 'Background Effect', 'fw' ),
-		'desc'         => __( 'An animated background layered behind this container’s content.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
-		'help'         => __( 'Animated Backgrounds (Animation Engine): aurora, gradient, dot grid, floating particles, constellation, waves, starfield or grain — rendered behind the section content. Honours "reduce motion" (static frame), pauses when off-screen, and the runtime loads only on pages that use a background.', 'fw' ),
+		'desc'         => __( 'An animated background layered behind this container’s content.', 'fw' ),
+		'help'         => __( 'Animated Backgrounds (Animation Engine): aurora, gradient, dot grid, floating particles, constellation, waves, starfield or grain — rendered behind the section content. Honours "reduce motion" (static frame), pauses when off-screen.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'popover'      => true,
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),
