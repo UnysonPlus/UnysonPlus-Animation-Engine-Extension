@@ -1,9 +1,10 @@
 # UnysonPlus Animation Engine
 
-A standalone **UnysonPlus extension** that is the home for UnysonPlus's animation
-capabilities, organised as **modules**. It is **not** part of the UnysonPlus plugin —
-install it from **UnysonPlus → Extensions → Install Extension** (upload this repo's
-`.zip`, or paste this repo's GitHub URL), then activate it.
+The home for UnysonPlus's animation capabilities, organised as **modules**. It ships
+**bundled with the UnysonPlus plugin** but is **inactive by default** — activate it under
+**UnysonPlus → Extensions** (it is not downloaded or enabled automatically, so a minimalist
+site never pays for it until the user opts in). This repo is the extension's source /
+update repo; the plugin bundles a copy at `framework/extensions/animation-engine/`.
 
 When active it lights up two things:
 
@@ -165,11 +166,16 @@ the DOM. Hover/WebGL honour the engine's global *Respect reduce motion* /
 
 ## Layout
 
+The repo root **is** the extension folder — it's copied verbatim to
+`framework/extensions/animation-engine/` inside the plugin, so the slug is always
+**`animation-engine`** (the plugin folder name is fixed).
+
 ```
-animation-engine/                          ← the extension (slug "animation-engine")
+<repo root> = framework/extensions/animation-engine/   ← slug "animation-engine"
 ├─ manifest.php                            ← requires shortcodes + page-builder
 ├─ class-fw-extension-animation-engine.php ← loads the modules
 ├─ includes/theme-settings.php             ← Theme Settings → Animations section
+├─ includes/glb-upload.php                 ← allows .glb/.gltf Media uploads (for [model_viewer])
 ├─ modules/scroll-motion/                  ← Scroll Motion module (GSAP + ScrollTrigger)
 ├─ modules/cursor/                         ← Cursor module (site-wide custom cursor)
 ├─ modules/hover/                          ← Hover Interactions module
@@ -177,10 +183,10 @@ animation-engine/                          ← the extension (slug "animation-en
 └─ shortcodes/model-viewer/                ← the [model_viewer] leaf shortcode (<model-viewer>)
 ```
 
-The installer derives the extension slug from the folder that contains `manifest.php`.
-This repo nests the extension under `animation-engine/`, so installing from a GitHub
-repo of any name still yields the slug **`animation-engine`**. (Earlier releases used
-the slug `webgl`; the WebGL element is now the engine's first module.)
+(Earlier releases used the slug `webgl`, and this repo previously nested the extension
+under an inner `animation-engine/` folder for standalone zip installs; now that it ships
+bundled with the plugin, the repo root is the extension root — matching the other
+`UnysonPlus-<Name>-Extension` repos.)
 
 ## Three.js
 
