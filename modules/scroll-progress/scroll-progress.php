@@ -89,15 +89,19 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 						),
 					),
 					'scrollprog' => array(
+						// Inline (non-popover) multi-picker → label/desc live on the PICKER
+						// sub-option, top-level false (CLAUDE.md rule #1). Putting them on the
+						// top level makes the desc float to the bottom, below the revealed rows.
 						'type'         => 'multi-picker',
-						'label'        => __( 'Style', 'fw' ),
-						'desc'         => __( 'How the progress reads.', 'fw' ),
+						'label'        => false,
+						'desc'         => false,
 						'show_borders' => false,
 						'value'        => array( 'kind' => 'bar_top' ),
 						'picker'       => array(
 							'kind' => array(
 								'type'    => 'select',
-								'label'   => false,
+								'label'   => __( 'Style', 'fw' ),
+								'desc'    => __( 'How the progress reads.', 'fw' ),
 								'value'   => 'bar_top',
 								'choices' => array(
 									'bar_top'    => __( 'Bar — top of page', 'fw' ),
