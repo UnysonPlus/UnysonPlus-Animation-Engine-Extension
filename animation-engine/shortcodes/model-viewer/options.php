@@ -37,12 +37,11 @@ $options = [
 						'value' => '',
 					],
 					'model_file' => [
-						'type'             => 'upload',
-						'images_only'      => false, // a FILE picker (a .glb/.gltf is not an image — avoids the broken-thumbnail preview)
-						'files_ext'        => [ 'glb', 'gltf' ],
-						'extra_mime_types' => [ 'model/gltf-binary', 'model/gltf+json' ],
-						'label'            => __( '…or pick from Media', 'fw' ),
-						'desc'             => __( 'Alternative to the URL above — filters the media library to .glb / .gltf files. If both are set, this wins.', 'fw' ),
+						'type'        => 'upload',
+						'images_only' => false, // a FILE picker (a .glb/.gltf is not an image — avoids the broken-thumbnail preview)
+						'files_ext'   => [ 'glb', 'gltf' ], // filters the media library to these; mime resolved via the engine's mime_types filter
+						'label'       => __( '…or pick from Media', 'fw' ),
+						'desc'        => __( 'Alternative to the URL above — opens the media library filtered to .glb / .gltf files. If both are set, this wins.', 'fw' ),
 					],
 					'alt' => [
 						'type'  => 'text',

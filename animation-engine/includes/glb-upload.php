@@ -40,6 +40,23 @@ add_filter(
 	}
 );
 
+// `upload_mimes` only allows the UPLOAD; the media-library type filter and
+// fw_get_mime_type_by_ext() read the GLOBAL map from wp_get_mime_types() (the `mime_types`
+// filter). Without registering them there, the [model_viewer] "pick from Media" frame is
+// handed an empty `library.type` and renders a blank modal. Register them in both.
+add_filter(
+	'mime_types',
+	function ( $mimes ) {
+		if ( ! apply_filters( 'fw_model_allow_uploads', true ) ) {
+			return $mimes;
+		}
+		foreach ( fw_model_allowed_mimes() as $ext => $type ) {
+			$mimes[ $ext ] = $type;
+		}
+		return $mimes;
+	}
+);
+
 add_filter(
 	'wp_check_filetype_and_ext',
 	function ( $data, $file, $filename, $mimes ) {
