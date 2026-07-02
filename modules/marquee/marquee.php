@@ -82,6 +82,22 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
 			'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
 		),
+		'scroll_reactive' => array(
+			'type'         => 'switch',
+			'label'        => __( 'React to scroll', 'fw' ),
+			'desc'         => __( 'Speed up as the visitor scrolls faster (settles back when they stop).', 'fw' ),
+			'value'        => 'no',
+			'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
+			'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
+		),
+		'draggable' => array(
+			'type'         => 'switch',
+			'label'        => __( 'Draggable', 'fw' ),
+			'desc'         => __( 'Let visitors grab and flick the ticker (with momentum).', 'fw' ),
+			'value'        => 'no',
+			'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
+			'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
+		),
 		'custom_speed' => array(
 			'type'         => 'number',
 			'label'        => __( 'Custom speed (px/s)', 'fw' ),
@@ -107,7 +123,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'skew_h' => upw_mq_slider( __( 'Skew horizontal', 'fw' ), 0, -100, 100, 1, __( 'Slant the ticker left / right.', 'fw' ) ),
 		'skew_v' => upw_mq_slider( __( 'Skew vertical', 'fw' ), 0, -100, 100, 1, __( 'Slant the ticker up / down.', 'fw' ) ),
 		'tilt'   => upw_mq_slider( __( 'Tilt (angle)', 'fw' ), 0, -100, 100, 1, __( 'Rotate the whole ticker — an angled banner.', 'fw' ) ),
-		'bend'   => upw_mq_slider( __( 'Bend (3D)', 'fw' ), 0, -100, 100, 1, __( 'Curve the ticker in 3D, like text wrapped on a drum.', 'fw' ) ),
+		'bend'   => upw_mq_slider( __( 'Bend (3D tilt)', 'fw' ), 0, -100, 100, 1, __( 'Tilt the ticker in 3D perspective. Works on any content.', 'fw' ) ),
+		'curve'  => upw_mq_slider( __( 'Curve (arc text)', 'fw' ), 0, -100, 100, 1, __( 'Bend the TEXT along a real arc — a true curve (like on a circle). Text content only; overrides Bend for text.', 'fw' ) ),
 		'wave'   => upw_mq_slider( __( 'Wave', 'fw' ), 0, 0, 100, 1, __( 'Make the content undulate up / down as it scrolls.', 'fw' ) ),
 	);
 
@@ -196,8 +213,15 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		$attr['data-mq-cspeed'] = esc_attr( (string) $cs );
 	}
 
+	if ( isset( $o['scroll_reactive'] ) && $o['scroll_reactive'] === 'yes' ) {
+		$attr['data-mq-scrollreact'] = '1';
+	}
+	if ( isset( $o['draggable'] ) && $o['draggable'] === 'yes' ) {
+		$attr['data-mq-drag'] = '1';
+	}
+
 	// Warp / distortion — stamp only the non-zero values.
-	foreach ( array( 'skew_h' => 'skewh', 'skew_v' => 'skewv', 'tilt' => 'tilt', 'bend' => 'bend', 'wave' => 'wave' ) as $key => $suffix ) {
+	foreach ( array( 'skew_h' => 'skewh', 'skew_v' => 'skewv', 'tilt' => 'tilt', 'bend' => 'bend', 'curve' => 'curve', 'wave' => 'wave' ) as $key => $suffix ) {
 		$v = isset( $o[ $key ] ) ? (float) $o[ $key ] : 0;
 		if ( $v != 0.0 ) {
 			$attr[ 'data-mq-' . $suffix ] = esc_attr( rtrim( rtrim( number_format( $v, 2, '.', '' ), '0' ), '.' ) );

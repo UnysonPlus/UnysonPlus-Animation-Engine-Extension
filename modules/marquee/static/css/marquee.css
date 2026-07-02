@@ -35,6 +35,13 @@
  * track's scroll transform. */
 .sc-mq-warp { transform-origin: center center; will-change: transform; }
 
+/* Curved (arc) text mode. */
+.sc-mq-svg { display: block; max-width: 100%; overflow: visible; }
+
+/* Draggable. */
+.sc-marquee.sc-mq-grab { cursor: grab; }
+.sc-marquee.sc-mq-grabbing { cursor: grabbing; user-select: none; }
+
 .sc-marquee.sc-mq--outline .sc-mq-unit {
 	-webkit-text-fill-color: transparent; /* inherits to descendant text */
 	-webkit-text-stroke: 1px currentColor;
