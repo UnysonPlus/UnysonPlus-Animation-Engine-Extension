@@ -114,14 +114,20 @@
 
     function buildCurved(m, el, text, sep, curve, fade) {
       var cs = getComputedStyle(el);
-      var W = el.clientWidth || 600, H = Math.max(el.clientHeight || 0, parseFloat(cs.fontSize) * 1.8, 100);
-      var mid = H / 2, arc = curve / 100 * (H * 0.5), id = 'mqpath' + (++uid);
+      var fs = parseFloat(cs.fontSize) || 32, W = el.clientWidth || 600;
+      var peak = curve / 100 * (W * 0.32);            // sagitta — scaled off the WIDTH so the arc is round
+      var absP = Math.abs(peak), up = peak >= 0;
+      var H = Math.ceil(absP + fs * 1.7 + 16);        // vertical room for the arc + the text
+      var y0 = up ? (H - fs * 0.9) : (fs * 0.9);       // chord baseline (bottom for an up-curve, top for down)
+      var s = Math.max(1, absP), R = (W * W / 4 + s * s) / (2 * s); // circle radius for chord W, sagitta s
+      var id = 'mqpath' + (++uid);
       var svg = document.createElementNS(SVGNS, 'svg');
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
       svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('class', 'sc-mq-svg');
+      el.style.minHeight = H + 'px';                   // give the container room for the taller arc
       var defs = document.createElementNS(SVGNS, 'defs'), path = document.createElementNS(SVGNS, 'path');
       path.setAttribute('id', id); path.setAttribute('fill', 'none');
-      path.setAttribute('d', 'M 0 ' + mid + ' Q ' + (W / 2) + ' ' + (mid - arc) + ' ' + W + ' ' + mid);
+      path.setAttribute('d', 'M 0 ' + y0.toFixed(1) + ' A ' + R.toFixed(2) + ' ' + R.toFixed(2) + ' 0 0 ' + (up ? 1 : 0) + ' ' + W + ' ' + y0.toFixed(1));
       defs.appendChild(path); svg.appendChild(defs);
       var t = document.createElementNS(SVGNS, 'text');
       t.setAttribute('fill', cs.color); t.setAttribute('font-family', cs.fontFamily);
