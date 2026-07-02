@@ -33,6 +33,20 @@ Real-time Three.js, in two families:
 
 Pointer + optional scroll reaction; **Placement** is inline or *Section background*.
 
+### Model Viewer (`[model_viewer]`)
+
+An interactive **3D model** element (glTF / GLB) under *Media Elements* — the visitor can
+**orbit, zoom and inspect** a real model, with **auto-rotate** (speed + resume delay),
+**image-based lighting** (Neutral / Legacy / custom HDR / none) + exposure, a soft **ground
+shadow**, a **poster** placeholder while it streams in, embedded-**animation** playback, a
+starting camera angle / field-of-view, an optional solid background, and optional **AR**
+("View in your space" on supporting phones). Built on Google's self-contained
+**`<model-viewer>`** web component (vendored UMD 3.5.0 — it bundles its own Three.js, since
+r0.149's UMD `GLTFLoader` global was dropped upstream). Loads only on pages that use it;
+strips auto-rotate under reduced motion; falls back to the poster when 3D isn't supported.
+Paste a **Model URL** (`.glb` recommended) — WordPress blocks `.glb` uploads by default, so a
+URL is the reliable source.
+
 ### SVG Draw (`[svg_draw]`)
 
 A **self-drawing SVG** element under *Media Elements* — line art, a signature, an animated
@@ -157,7 +171,8 @@ animation-engine/                          ← the extension (slug "animation-en
 ├─ modules/scroll-motion/                  ← Scroll Motion module (GSAP + ScrollTrigger)
 ├─ modules/cursor/                         ← Cursor module (site-wide custom cursor)
 ├─ modules/hover/                          ← Hover Interactions module
-└─ shortcodes/webgl-object/                ← the [webgl_object] leaf shortcode
+├─ shortcodes/webgl-object/                ← the [webgl_object] leaf shortcode
+└─ shortcodes/model-viewer/                ← the [model_viewer] leaf shortcode (<model-viewer>)
 ```
 
 The installer derives the extension slug from the folder that contains `manifest.php`.

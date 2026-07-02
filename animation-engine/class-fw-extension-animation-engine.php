@@ -24,6 +24,9 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		// is consumed on the front end too, not just in admin.
 		require_once dirname( __FILE__ ) . '/includes/theme-settings.php';
 
+		// Allow .glb / .gltf model uploads in the Media Library (for [model_viewer]).
+		require_once dirname( __FILE__ ) . '/includes/glb-upload.php';
+
 		// Modules. Each plugs into the shared Animations tab / wrapper / Theme Settings.
 		require_once dirname( __FILE__ ) . '/modules/scroll-motion/scroll-motion.php'; // Scroll Motion (GSAP)
 		require_once dirname( __FILE__ ) . '/modules/hover/hover.php';                  // Hover Interactions

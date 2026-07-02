@@ -1,0 +1,60 @@
+/* Model Viewer element — sizing + poster + progress bar for <model-viewer>. */
+
+.fw-model {
+	position: relative;
+	width: 100%;
+	height: var(--model-h, 520px);
+	max-width: 100%;
+}
+
+.fw-model model-viewer {
+	width: 100%;
+	height: 100%;
+	display: block;
+	/* transparent by default; a solid background is set inline when chosen */
+	--poster-color: transparent;
+	background-color: var(--model-bg, transparent);
+	border-radius: inherit;
+}
+
+/* The poster image model-viewer shows before the model is revealed. */
+.fw-model model-viewer::part(default-poster) {
+	background-size: cover;
+	background-position: center;
+	border-radius: inherit;
+}
+
+/* Slim progress bar while the model streams in. */
+.fw-model .fw-model__bar {
+	position: absolute;
+	inset: auto 0 0 0;
+	height: 3px;
+	background: rgba(0, 0, 0, .08);
+	overflow: hidden;
+	opacity: 1;
+	transition: opacity .3s ease;
+}
+.fw-model .fw-model__bar > i {
+	display: block;
+	height: 100%;
+	width: 0;
+	background: var(--model-accent, #4f46e5);
+	transition: width .2s ease;
+}
+.fw-model.is-loaded .fw-model__bar { opacity: 0; }
+
+/* No-JS / unsupported fallback: show the poster image if one was provided. */
+.fw-model__fallback {
+	display: none;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: inherit;
+}
+.fw-model.is-unsupported model-viewer { display: none; }
+.fw-model.is-unsupported .fw-model__fallback { display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+	/* auto-rotate is stripped in JS; nothing else to animate here. */
+	.fw-model .fw-model__bar > i { transition: none; }
+}
