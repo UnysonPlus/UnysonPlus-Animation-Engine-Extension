@@ -1,0 +1,52 @@
+/* Marquee — seamless ticker. The clip + track are applied only once the runtime marks the
+ * element `.sc-mq-live`, so under reduced motion (runtime bails) the content shows normally,
+ * unclipped. */
+.sc-marquee.sc-mq-live { overflow: hidden; display: block; }
+
+.sc-mq-track {
+	display: flex;
+	flex-wrap: nowrap;
+	width: max-content;
+	will-change: transform;
+}
+.sc-mq-track.is-vertical {
+	flex-direction: column;
+	width: auto;
+	height: max-content;
+}
+
+.sc-mq-unit,
+.sc-mq-sep {
+	flex: 0 0 auto;
+	white-space: nowrap;
+}
+.sc-mq-sep {
+	display: flex;
+	align-items: center;
+	opacity: .55;
+}
+/* Editor content inside a unit shouldn't add its own vertical rhythm that breaks the row. */
+.sc-mq-unit > :first-child { margin-top: 0; }
+.sc-mq-unit > :last-child { margin-bottom: 0; }
+
+.sc-marquee.sc-mq-pausable:hover .sc-mq-track { animation-play-state: paused; }
+
+/* Warp / distortion wrapper — carries skew / tilt / bend so it doesn't collide with the
+ * track's scroll transform. */
+.sc-mq-warp { transform-origin: center center; will-change: transform; }
+
+.sc-marquee.sc-mq--outline .sc-mq-unit {
+	-webkit-text-fill-color: transparent; /* inherits to descendant text */
+	-webkit-text-stroke: 1px currentColor;
+}
+
+@keyframes sc-mq-h { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes sc-mq-v { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+@keyframes sc-mq-bob {
+	0%, 100% { transform: translateY(calc(-1 * var(--mq-amp, 0px))); }
+	50%      { transform: translateY(var(--mq-amp, 0px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-mq-track, .sc-mq-unit { animation: none !important; transform: none !important; }
+}

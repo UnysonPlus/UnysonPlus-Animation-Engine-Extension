@@ -93,7 +93,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 
 	// The enable switches we pull into the shared tab. Cursor / Page Transitions have full
 	// config tabs (not just an enable), and Scroll Loop belongs to another module — all left as-is.
-	$ids = array( 'animation_hover', 'animation_physics', 'animation_parallax', 'animation_text', 'animation_bg' );
+	$ids = array( 'animation_hover', 'animation_physics', 'animation_parallax', 'animation_marquee', 'animation_text', 'animation_bg' );
 
 	$collected = array();
 	foreach ( $tabs as $tab_key => &$tab ) {
@@ -129,7 +129,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 			__( 'Scroll-driven GSAP motion (reveal, stagger, parallax, pin, scrub…). Off hides the Scroll Effect picker.', 'fw' )
 		),
 	);
-	foreach ( array( 'animation_hover', 'animation_physics', 'animation_parallax', 'animation_text', 'animation_bg' ) as $id ) {
+	foreach ( array( 'animation_hover', 'animation_physics', 'animation_parallax', 'animation_marquee', 'animation_text', 'animation_bg' ) as $id ) {
 		if ( isset( $collected[ $id ] ) ) {
 			$effects[ $id ] = $collected[ $id ];
 		}
@@ -175,6 +175,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'interaction' => 'upw_hover_enabled',
 		'physics'     => 'upw_physics_enabled',
 		'parallax'    => 'upw_parallax_enabled',
+		'marquee'     => 'upw_marquee_enabled',
 		'text_effect' => 'upw_text_enabled',
 	);
 	foreach ( $map as $key => $fn ) {

@@ -70,24 +70,35 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		return $fields;
 	}
 
+	$ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	$base = $ext ? $ext->get_declared_URI( '/modules/parallax/static/img/roles' ) : '';
+	$tile = function ( $file, $label ) use ( $base ) {
+		return array(
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 96 ),
+			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 150 ),
+			'label' => $label,
+		);
+	};
+
 	$fields['parallax'] = array(
 		'type'         => 'multi-picker',
-		'label'        => false,
-		'desc'         => false,
+		'popover'      => true,
+		// Popover multi-picker → the user-visible label lives on the TOP level.
+		'label'        => __( 'Parallax Layers', 'fw' ),
+		'desc'         => __( 'Multi-layer depth parallax. Set a container to Scene, then give each child a Layer depth — they drift at different speeds as the pointer moves (and/or on scroll). A Layer with no Scene tracks the whole window.', 'fw' ),
+		'help'         => __( 'Parallax Depth Layers (Animation Engine): pointer- and scroll-driven multi-layer depth. Mark the stage as a Scene; mark each moving element as a Layer and give it a Depth. One shared render loop, no library. Honours "reduce motion" and is skipped on touch for the pointer source (scroll layers still move).', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'role' => 'none' ),
 		'picker'       => array(
-			// Inline (non-popover) multi-picker → the label lives on the picker sub-option.
 			'role' => array(
-				'type'    => 'select',
-				'label'   => __( 'Parallax Layers', 'fw' ),
-				'desc'    => __( 'Multi-layer depth parallax. Set a container to Scene, then give each child a Layer depth — they drift at different speeds as the pointer moves (and/or on scroll). A Layer with no Scene tracks the whole window.', 'fw' ),
-				'help'    => __( 'Parallax Depth Layers (Animation Engine): pointer- and scroll-driven multi-layer depth. Mark the stage as a Scene; mark each moving element as a Layer and give it a Depth. One shared render loop, no library. Honours "reduce motion" and is skipped on touch for the pointer source (scroll layers still move).', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
+				'type'    => 'image-picker',
+				'label'   => false,
+				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'   => 'none',
 				'choices' => array(
-					'none'  => __( 'None', 'fw' ),
-					'scene' => __( 'Scene — the parallax stage', 'fw' ),
-					'layer' => __( 'Layer — moves with depth', 'fw' ),
+					'none'  => $tile( 'none',  __( 'None', 'fw' ) ),
+					'scene' => $tile( 'scene', __( 'Scene', 'fw' ) ),
+					'layer' => $tile( 'layer', __( 'Layer', 'fw' ) ),
 				),
 			),
 		),
@@ -236,4 +247,16 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 		),
 	);
 	return $tabs;
+} );
+
+/* Parallax picker tile size (admin only, parallax-scoped) — the role swatches bake a label,
+ * so bump them past the core 72px popover cap. Mirrors the physics module's approach. */
+add_action( 'admin_head', function () {
+	$sel = 'ul.thumbnails.image_picker_selector li .thumbnail img[src*="/parallax/static/img/roles/"]';
+	echo '<style id="upw-parallax-picker-size">'
+		. '.fw-mp-pop ' . $sel . ','
+		. '.fw-modal-large .fw-mp-pop ' . $sel . ','
+		. '.appearance_page_fw-settings .fw-mp-pop ' . $sel
+		. '{height:96px !important;width:auto !important;}'
+		. "</style>\n";
 } );
