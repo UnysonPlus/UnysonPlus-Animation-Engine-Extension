@@ -1,0 +1,14 @@
+/* Animation Engine — Physics Effects base styles. The motion is JS-driven (physics.js);
+   here we only set the drag affordances. `will-change` is applied inline by the runtime. */
+
+.sc-phys--draggable {
+	cursor: grab;
+	-webkit-user-select: none;
+	user-select: none;
+	touch-action: none;
+}
+.sc-phys--draggable:active {
+	cursor: grabbing;
+}
+
+/* Reduced motion: the runtime skips physics entirely, so nothing to animate here. */

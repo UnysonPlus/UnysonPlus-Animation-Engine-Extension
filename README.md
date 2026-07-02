@@ -95,6 +95,23 @@ Border**, **Underline Grow**, **Ripple**, **Lift**, **Color Shift** — chosen f
 animated-SVG image picker. The runtime (JS/CSS) is enqueued only on pages that actually
 use an effect.
 
+### Physics Effects
+
+**27 physics-driven motions** addable to any element via its *Animations* tab, chosen from an
+animated-SVG image picker (popover, with the effect name on each tile), grouped:
+
+- **Drag** — Draggable (grab & throw, spring back or glide to a stop), Slingshot.
+- **Pointer** — Spring (lean toward cursor), Attract, Repel, Orbit Cursor, Rubber Band, Inertia Tilt.
+- **Ambient** — Float, Levitate, Wind Sway, Pendulum, Wobble, Breathing, Drift, Orbit Point.
+- **Entrance** — Gravity Drop, Gravity Rise, Weight Sag, Ragdoll, Pop In.
+- **Container** — Bounce Box (bounces around its parent).
+- **Reaction** — Jelly, Squash & Stretch, Recoil, Shake, Momentum Spin.
+
+A tiny built-in **spring/verlet integrator — no library**. One shared render loop drives every
+element; continuous effects pause off-screen and when the tab is hidden; reduced motion skips them
+all and pointer-following effects are skipped on touch. Loads only on pages that use an effect.
+Global on/off lives in **Theme Settings → Animations → Physics**.
+
 ### Animated Backgrounds
 
 **35 animated backgrounds** addable to any **container** (section / bleed-section /
@@ -179,6 +196,7 @@ The repo root **is** the extension folder — it's copied verbatim to
 ├─ modules/scroll-motion/                  ← Scroll Motion module (GSAP + ScrollTrigger)
 ├─ modules/cursor/                         ← Cursor module (site-wide custom cursor)
 ├─ modules/hover/                          ← Hover Interactions module
+├─ modules/physics/                        ← Physics Effects module (per-element)
 ├─ shortcodes/webgl-object/                ← the [webgl_object] leaf shortcode
 └─ shortcodes/model-viewer/                ← the [model_viewer] leaf shortcode (<model-viewer>)
 ```
