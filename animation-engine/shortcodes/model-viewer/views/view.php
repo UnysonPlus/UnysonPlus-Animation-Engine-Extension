@@ -138,6 +138,57 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 			}
 		}
 
+		// --- Material variants: flag the wrapper (JS builds the swatch row) + preselect. ---
+		$variants_show = sc_get( 'variants_show', $atts, 'no' ) === 'yes';
+		if ( $variants_show ) {
+			$variant_default = trim( (string) sc_get( 'variant_default', $atts, '' ) );
+			if ( $variant_default !== '' ) {
+				$mv['variant-name'] = $variant_default;
+			}
+		}
+
+		// --- Hotspots: slotted <button> children pinned to 3D points on the model. ---
+		$hotspots     = sc_get( 'hotspots', $atts, array() );
+		$hotspot_html = '';
+		if ( is_array( $hotspots ) ) {
+			$home_host = function_exists( 'wp_parse_url' ) ? wp_parse_url( home_url(), PHP_URL_HOST ) : '';
+			$i = 0;
+			foreach ( $hotspots as $h ) {
+				$pos = isset( $h['position'] ) ? trim( (string) $h['position'] ) : '';
+				if ( $pos === '' ) {
+					continue; // a hotspot without a position can't be placed
+				}
+				$i++;
+				$h_attr = ' slot="hotspot-' . $i . '" data-position="' . esc_attr( $pos ) . '"';
+				$normal = isset( $h['normal'] ) ? trim( (string) $h['normal'] ) : '';
+				if ( $normal !== '' ) {
+					$h_attr .= ' data-normal="' . esc_attr( $normal ) . '"';
+				}
+				$label  = isset( $h['label'] ) ? (string) $h['label'] : '';
+				$detail = isset( $h['detail'] ) ? (string) $h['detail'] : '';
+				$link   = isset( $h['link'] ) ? trim( (string) $h['link'] ) : '';
+
+				$inner = '';
+				if ( $label !== '' ) {
+					$inner .= '<span class="fw-model__hotspot-title">' . esc_html( $label ) . '</span>';
+				}
+				if ( $detail !== '' ) {
+					$inner .= '<span class="fw-model__hotspot-detail">' . nl2br( esc_html( $detail ) ) . '</span>';
+				}
+				if ( $link !== '' ) {
+					$is_ext = $home_host && wp_parse_url( $link, PHP_URL_HOST ) && wp_parse_url( $link, PHP_URL_HOST ) !== $home_host;
+					$rel    = $is_ext ? ' target="_blank" rel="noopener noreferrer"' : '';
+					$ann    = '<a class="fw-model__hotspot-annotation is-link" href="' . esc_url( $link ) . '"' . $rel . '>' . $inner . '</a>';
+				} else {
+					$ann = '<div class="fw-model__hotspot-annotation">' . $inner . '</div>';
+				}
+				$hotspot_html .= '<button class="fw-model__hotspot" type="button"' . $h_attr . '>' . $ann . '</button>';
+			}
+			if ( $hotspot_html !== '' && sc_get( 'hotspot_hide_backside', $atts, 'yes' ) === 'yes' ) {
+				$mv['min-hotspot-opacity'] = '0';
+			}
+		}
+
 		// --- Wrapper: height + solid background via CSS vars. ---
 		$height = trim( (string) sc_get( 'height', $atts, '520' ) );
 		$style  = '';
@@ -153,6 +204,9 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 		}
 
 		$classes = array( 'fw-model', 'fw-model--bg-' . sanitize_html_class( $background ) );
+		if ( $variants_show ) {
+			$classes[] = 'fw-model--has-variants';
+		}
 
 		if ( function_exists( 'sc_build_wrapper_attr' ) ) {
 			$atts['base_class']       = 'model';
@@ -163,8 +217,12 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 			$attr = array( 'class' => implode( ' ', $classes ) );
 		}
 		$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style;
+		if ( $variants_show ) {
+			$attr['data-variants'] = '1';
+		}
 
-		// --- Render the <model-viewer> tag (boolean attrs = bare presence). ---
+		// --- Render the <model-viewer> tag (boolean attrs = bare presence); hotspots are
+		// slotted children so <model-viewer> positions them on the model. ---
 		$mv_html = '<model-viewer';
 		foreach ( $mv as $k => $v ) {
 			if ( $v === true ) {
@@ -173,18 +231,19 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 				$mv_html .= ' ' . $k . '="' . esc_attr( $v ) . '"';
 			}
 		}
-		$mv_html .= '></model-viewer>';
+		$mv_html .= '>' . $hotspot_html . '</model-viewer>';
 
-		// A slim load-progress bar (driven by the JS `progress` event) and the poster
-		// fallback shown when 3D isn't supported (.is-unsupported) — both siblings of
-		// <model-viewer> inside the positioned .fw-model wrapper.
-		$bar      = '<div class="fw-model__bar" aria-hidden="true"><i></i></div>';
-		$fallback = '';
+		// A slim load-progress bar (driven by the JS `progress` event), an (optional)
+		// variant swatch row the JS fills from the model, and the poster fallback shown
+		// when 3D isn't supported (.is-unsupported) — all inside the .fw-model wrapper.
+		$bar       = '<div class="fw-model__bar" aria-hidden="true"><i></i></div>';
+		$variants_ui = $variants_show ? '<div class="fw-model__variants" role="group" aria-label="' . esc_attr__( 'Model variants', 'fw' ) . '"></div>' : '';
+		$fallback  = '';
 		if ( $poster_url !== '' ) {
 			$fallback = '<img class="fw-model__fallback" src="' . esc_url( $poster_url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" />';
 		}
 
-		return '<div ' . fw_attr_to_html( $attr ) . '>' . $mv_html . $bar . $fallback . '</div>';
+		return '<div ' . fw_attr_to_html( $attr ) . '>' . $mv_html . $bar . $variants_ui . $fallback . '</div>';
 	}
 }
 

@@ -16,11 +16,24 @@ lazy-load, off-screen pausing, embedded-clip playback and AR — so our code sta
 ## Files (mirrors the `webgl-object` shortcode shape)
 
 - `config.php` — page-builder title/description/tab (`Media Elements`) + `title_template`.
-- `options.php` — tabs: **Model** (URL / media pick / alt / poster / height), **Camera**
-  (orbit, zoom, auto-rotate + speed/delay, starting angle, FOV), **Lighting** (environment
-  IBL, exposure, ground shadow + softness), **Playback & AR** (embedded clips, interaction
-  hint, AR), **Styling** (background + spacing), **Animations** (`sc_get_animation_fields()`),
+- `options.php` — tabs: **Model** (URL / media pick / alt / poster / height + material-variant
+  switcher), **Camera** (orbit, zoom, auto-rotate + speed/delay, starting angle, FOV, pan +
+  zoom/orbit limits), **Lighting** (environment IBL, skybox, tone mapping, exposure, ground
+  shadow + softness), **Playback & AR** (embedded clips, interaction hint, AR + scale),
+  **Hotspots** (an `addable-popup` repeater — per hotspot: label / detail / link / position /
+  normal), **Styling** (background + spacing), **Animations** (`sc_get_animation_fields()`),
   **Advanced** (`sc_get_advanced_tab()`).
+
+## Variants & hotspots
+
+- **Material variants** (`variants_show`): the glTF's built-in `KHR_materials_variants` names
+  aren't known at build time, so the JS reads `mv.availableVariants` on `load` and renders the
+  swatch row (`.fw-model__variants`); clicking sets `mv.variantName`. `variant_default` maps to
+  the `variant-name` attribute.
+- **Hotspots**: rendered as slotted `<button slot="hotspot-N" data-position data-normal>`
+  children of `<model-viewer>` (it positions them). Each needs a 3D **position** (from the
+  model-viewer editor). "Fade behind the model" sets `min-hotspot-opacity="0"` (only affects
+  hotspots that carry a `data-normal`).
 - `static.php` — enqueues the vendored `<model-viewer>` bundle (`google-model-viewer`
   handle), the element CSS and the thin harness JS. mtime cache-busting like `webgl-object`.
   Loads **only on pages that use the shortcode** (opt-in), so the ~900 KB bundle never ships

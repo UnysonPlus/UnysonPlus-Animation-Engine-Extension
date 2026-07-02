@@ -54,7 +54,90 @@
 .fw-model.is-unsupported model-viewer { display: none; }
 .fw-model.is-unsupported .fw-model__fallback { display: block; }
 
+/* ---- Hotspots (slotted <button> markers <model-viewer> pins on the model) ---- */
+.fw-model__hotspot {
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: 2px solid #fff;
+	border-radius: 50%;
+	background: var(--model-accent, #4f46e5);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+	cursor: pointer;
+	transition: transform .15s ease;
+}
+.fw-model__hotspot:hover,
+.fw-model__hotspot:focus-visible {
+	transform: scale(1.18);
+	outline: none;
+}
+.fw-model__hotspot-annotation {
+	position: absolute;
+	left: 50%;
+	bottom: 28px;
+	transform: translateX(-50%);
+	display: block;
+	min-width: 110px;
+	max-width: 220px;
+	padding: 8px 11px;
+	border-radius: 7px;
+	background: #1d2327;
+	color: #fff;
+	font-size: 12px;
+	line-height: 1.45;
+	text-align: left;
+	text-decoration: none;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity .15s ease;
+}
+.fw-model__hotspot:hover .fw-model__hotspot-annotation,
+.fw-model__hotspot:focus-within .fw-model__hotspot-annotation {
+	opacity: 1;
+	pointer-events: auto;
+}
+.fw-model__hotspot-annotation.is-link:hover { text-decoration: underline; }
+.fw-model__hotspot-title { display: block; font-weight: 600; }
+.fw-model__hotspot-detail { display: block; margin-top: 2px; opacity: .8; }
+
+/* ---- Material / color variant switcher (JS fills it from availableVariants) ---- */
+.fw-model__variants {
+	position: absolute;
+	left: 50%;
+	bottom: 12px;
+	transform: translateX(-50%);
+	z-index: 2;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 6px;
+	max-width: 90%;
+}
+.fw-model__variants:empty { display: none; }
+.fw-model__variant-btn {
+	padding: 5px 12px;
+	border: 1px solid rgba(0, 0, 0, .15);
+	border-radius: 999px;
+	background: rgba(255, 255, 255, .9);
+	color: #1d2327;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.2;
+	cursor: pointer;
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+	transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.fw-model__variant-btn:hover { border-color: var(--model-accent, #4f46e5); }
+.fw-model__variant-btn.is-active {
+	background: var(--model-accent, #4f46e5);
+	border-color: var(--model-accent, #4f46e5);
+	color: #fff;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	/* auto-rotate is stripped in JS; nothing else to animate here. */
 	.fw-model .fw-model__bar > i { transition: none; }
+	.fw-model__hotspot { transition: none; }
 }

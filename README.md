@@ -39,8 +39,10 @@ An interactive **3D model** element (glTF / GLB) under *Media Elements* — the 
 **orbit, zoom and inspect** a real model, with **auto-rotate** (speed + resume delay),
 **image-based lighting** (Neutral / Legacy / custom HDR / none) + exposure, a soft **ground
 shadow**, a **poster** placeholder while it streams in, embedded-**animation** playback, a
-starting camera angle / field-of-view, an optional solid background, and optional **AR**
-("View in your space" on supporting phones). Built on Google's self-contained
+starting camera angle / field-of-view, camera **limits** (pan / zoom / orbit), **tone mapping**
++ **skybox**, a **material / color variant switcher** (for models with `KHR_materials_variants`),
+pinned **hotspots** (label / detail / link callouts), an optional solid background, and optional
+**AR** ("View in your space" on supporting phones). Built on Google's self-contained
 **`<model-viewer>`** web component (vendored UMD 3.5.0 — it bundles its own Three.js, since
 r0.149's UMD `GLTFLoader` global was dropped upstream). Loads only on pages that use it;
 strips auto-rotate under reduced motion; falls back to the poster when 3D isn't supported.

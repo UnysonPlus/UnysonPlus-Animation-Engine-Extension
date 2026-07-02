@@ -62,6 +62,25 @@ $options = [
 					],
 				],
 			],
+			'group_variants' => [
+				'type'    => 'group',
+				'options' => [
+					'variants_show' => [
+						'type'         => 'switch',
+						'label'        => __( 'Material / color switcher', 'fw' ),
+						'desc'         => __( 'If the model ships built-in material variants (glTF <code>KHR_materials_variants</code> — e.g. colorways), show a row of swatches so visitors can switch between them.', 'fw' ),
+						'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+						'left-choice'  => [ 'value' => 'no', 'label' => __( 'No', 'fw' ) ],
+						'value'        => 'no',
+					],
+					'variant_default' => [
+						'type'  => 'text',
+						'label' => __( 'Default variant', 'fw' ),
+						'desc'  => __( 'Optional. The variant name to show first (must match a name baked into the model). Blank = the model\'s default.', 'fw' ),
+						'value' => '',
+					],
+				],
+			],
 		],
 	],
 
@@ -299,6 +318,62 @@ $options = [
 							'auto'  => __( 'Auto (resizable)', 'fw' ),
 							'fixed' => __( 'Fixed (real size)', 'fw' ),
 						],
+					],
+				],
+			],
+		],
+	],
+
+	/* ============================= HOTSPOTS ============================= */
+	'tab_hotspots' => [
+		'title'   => __( 'Hotspots', 'fw' ),
+		'type'    => 'tab',
+		'options' => [
+			'group_hotspots' => [
+				'type'    => 'group',
+				'options' => [
+					'hotspots' => [
+						'type'          => 'addable-popup',
+						'label'         => __( 'Hotspots', 'fw' ),
+						'popup-title'   => __( 'Add / Edit Hotspot', 'fw' ),
+						'size'          => 'medium',
+						'desc'          => __( 'Pinned callouts on the model (e.g. feature markers). Each needs a 3D <strong>position</strong> — get one by opening your model in the free <a href="https://modelviewer.dev/editor/" target="_blank" rel="noopener noreferrer">model-viewer editor</a>, clicking the surface, and copying the <code>data-position</code> (and optional <code>data-normal</code>) values.', 'fw' ),
+						'template'      => '{{=label}}',
+						'popup-options' => [
+							'label' => [
+								'type'  => 'text',
+								'label' => __( 'Label', 'fw' ),
+								'desc'  => __( 'Short caption shown in the callout.', 'fw' ),
+							],
+							'detail' => [
+								'type'  => 'textarea',
+								'label' => __( 'Detail', 'fw' ),
+								'desc'  => __( 'Optional longer text under the label.', 'fw' ),
+							],
+							'link' => [
+								'type'  => 'text',
+								'label' => __( 'Link URL', 'fw' ),
+								'desc'  => __( 'Optional. Makes the callout clickable.', 'fw' ),
+							],
+							'position' => [
+								'type'  => 'text',
+								'label' => __( 'Position (x y z)', 'fw' ),
+								'desc'  => __( 'Required. e.g. <code>0.1 0.25 0.05</code> — from the model-viewer editor.', 'fw' ),
+							],
+							'normal' => [
+								'type'  => 'text',
+								'label' => __( 'Normal (x y z)', 'fw' ),
+								'desc'  => __( 'Optional. Lets the hotspot hide when it faces away from the camera.', 'fw' ),
+							],
+						],
+					],
+					'hotspot_hide_backside' => [
+						'type'         => 'switch',
+						'label'        => __( 'Fade hotspots behind the model', 'fw' ),
+						'desc'         => __( 'Dim hotspots that rotate to the far side (needs a Normal on each). Off keeps them fully visible.', 'fw' ),
+						'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+						'left-choice'  => [ 'value' => 'no', 'label' => __( 'No', 'fw' ) ],
+						'value'        => 'yes',
 					],
 				],
 			],
