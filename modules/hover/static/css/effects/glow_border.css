@@ -1,0 +1,6 @@
+/* Animation Engine — Hover: "glow_border" effect (on-demand partial). */
+/* Glow Border */
+.sc-hover--glow_border { transition: box-shadow .3s ease; border-radius: inherit; }
+.sc-hover--glow_border:hover {
+	box-shadow: 0 0 0 1px var(--hover-glow, #6aa6ff), 0 0 18px 2px var(--hover-glow, #6aa6ff);
+}

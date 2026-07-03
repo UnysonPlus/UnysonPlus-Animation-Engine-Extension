@@ -1,0 +1,6 @@
+/* Animation Engine — Hover: "push" effect (on-demand partial). */
+/* Push (press-in) */
+.sc-hover--push { transition: transform .18s ease; }
+.sc-hover--push:hover { transform: translateY(var(--hover-push, 5px)); }
+.sc-hover--push:active { transform: translateY(calc(var(--hover-push, 5px) * 1.4)); }
+@media (prefers-reduced-motion: reduce) { .sc-hover--push:hover { transform: none; } }

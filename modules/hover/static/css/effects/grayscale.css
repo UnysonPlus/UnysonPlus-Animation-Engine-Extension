@@ -1,0 +1,4 @@
+/* Animation Engine — Hover: "grayscale" effect (on-demand partial). */
+/* Grayscale (desaturated at rest → full color on hover) */
+.sc-hover--grayscale { filter: grayscale(var(--hover-gray, 100%)); transition: filter .35s ease; }
+.sc-hover--grayscale:hover { filter: grayscale(0); }

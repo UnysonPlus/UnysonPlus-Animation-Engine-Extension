@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Four corner brackets draw in on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+  <style>.cb{animation:cb 2s ease-in-out infinite}@keyframes cb{0%,100%{opacity:.25;transform:translate(0,0)}50%{opacity:1;transform:translate(0,0)}}</style>
+  <rect x="46" y="20" width="40" height="34" rx="3" fill="#bcd3f7" opacity="0.5"/>
+  <g class="cb" fill="none" stroke="#2f74e6" stroke-width="4" stroke-linecap="round">
+    <path d="M44 27 v-6 h6"/>
+    <path d="M88 27 v-6 h-6"/>
+    <path d="M44 47 v6 h6"/>
+    <path d="M88 47 v6 h-6"/>
+  </g>
+  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Corner Brackets</text>
+</svg>

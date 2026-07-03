@@ -1,0 +1,13 @@
+/* Animation Engine — Hover: "corner_brackets" effect (on-demand partial). */
+/* Corner Brackets (four L-shaped corners draw in) */
+.sc-hover--corner_brackets { position: relative; }
+.sc-hover--corner_brackets::before,
+.sc-hover--corner_brackets::after {
+	content: ""; position: absolute; width: var(--hover-bracket-size, 18px); height: var(--hover-bracket-size, 18px);
+	border: 2px solid var(--hover-bracket, #6aa6ff); pointer-events: none;
+	opacity: 0; transition: opacity .3s ease, transform .3s ease;
+}
+.sc-hover--corner_brackets::before { top: 4px; left: 4px; border-right: 0; border-bottom: 0; transform: translate(-4px, -4px); }
+.sc-hover--corner_brackets::after { bottom: 4px; right: 4px; border-left: 0; border-top: 0; transform: translate(4px, 4px); }
+.sc-hover--corner_brackets:hover::before,
+.sc-hover--corner_brackets:hover::after { opacity: 1; transform: translate(0, 0); }

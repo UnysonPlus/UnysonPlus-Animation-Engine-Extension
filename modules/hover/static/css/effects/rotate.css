@@ -1,0 +1,5 @@
+/* Animation Engine — Hover: "rotate" effect (on-demand partial). */
+/* Rotate */
+.sc-hover--rotate { transition: transform .3s cubic-bezier(.22, .61, .36, 1); }
+.sc-hover--rotate:hover { transform: rotate(var(--hover-rotate, 6deg)); }
+@media (prefers-reduced-motion: reduce) { .sc-hover--rotate:hover { transform: none; } }

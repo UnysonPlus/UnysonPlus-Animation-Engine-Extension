@@ -311,15 +311,3 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 	);
 	return $tabs;
 } );
-
-/* Marquee picker tile size (admin only, marquee-scoped) — the swatches bake a direction label,
- * so bump them past the core 72px popover cap. Mirrors the physics module's approach. */
-add_action( 'admin_head', function () {
-	$sel = 'ul.thumbnails.image_picker_selector li .thumbnail img[src*="/marquee/static/img/directions/"]';
-	echo '<style id="upw-marquee-picker-size">'
-		. '.fw-mp-pop ' . $sel . ','
-		. '.fw-modal-large .fw-mp-pop ' . $sel . ','
-		. '.appearance_page_fw-settings .fw-mp-pop ' . $sel
-		. '{height:96px !important;width:auto !important;}'
-		. "</style>\n";
-} );

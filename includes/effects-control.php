@@ -5,19 +5,23 @@
 /**
  * Animation Engine — central Effects control.
  *
- * Two jobs, done centrally so no per-module file is touched:
+ * The per-element "Add Animation" inserter is now the control surface, and every module's assets
+ * already load only on pages that use them — so the old global enable/disable "Effects" Theme
+ * Settings tab was redundant and has been removed. This file now, centrally (no per-module file
+ * touched):
  *
- *  1. CONSOLIDATE the scattered per-module "Enable X" switches into a single
- *     Theme Settings → Animations → **Effects** sub-tab (the enable-only effect modules:
- *     Scroll Motion, Hover, Physics, Parallax, Text, Backgrounds). The full-config tabs
- *     (Cursor, Page Transitions) and the other session's Scroll Loop keep their own tabs.
+ *  1. STRIPS the enable-only module tabs from Theme Settings → Animations (they used to be folded
+ *     into the "Effects" tab; now nothing is built). The full-config site-wide tabs (Cursor, Page
+ *     Transitions, Scroll Progress, Engine) keep their own tabs — they carry real settings.
  *
- *  2. HIDE a module's options when its effect is disabled — so a switched-off module no
- *     longer clutters the element Animations tab (or the Styling tab, for Backgrounds).
- *     Previously the enable only gated the runtime; the picker still showed. Now it's gone.
+ *  2. Keeps the `upw_*_enabled()` helpers (defaulting to "yes"), plus the field-hide and runtime-
+ *     gate passes below, as harmless no-op safety nets: with no UI to turn anything off they always
+ *     report enabled, so nothing is hidden or stripped. They remain the single choke point should a
+ *     programmatic disable (filter/constant) ever be reintroduced.
  *
- * Scroll Motion had no enable of its own (always on) — this file gives it one (`animation_scroll`)
- * and gates both its field and its runtime, matching every other module.
+ * Scroll Motion and Infinite Scroll Loop ship without an enable of their own — this file defines
+ * `upw_scroll_enabled()` / `upw_scroll_loop_enabled()` so the gate passes below have something to
+ * call (both default to enabled).
  */
 
 /* Scroll Motion enable (it ships without one). Mirrors the other modules' `upw_*_enabled()`. */
@@ -120,46 +124,15 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 		}
 	}
 	unset( $tab );
+	unset( $collected );
 
-	// Build the Effects box: Scroll Motion first (freshly added), then the collected switches
-	// in a stable order. Skip any that weren't present (module inactive).
-	$effects = array(
-		'animation_scroll' => upw_effects_enable_multi(
-			__( 'Enable Scroll Motion', 'fw' ),
-			__( 'Scroll-driven GSAP motion (reveal, stagger, parallax, pin, scrub…). Off hides the Scroll Effect picker.', 'fw' )
-		),
-	);
-	foreach ( array( 'animation_hover', 'animation_physics', 'animation_parallax', 'animation_marquee', 'animation_text', 'animation_bg' ) as $id ) {
-		if ( isset( $collected[ $id ] ) ) {
-			$effects[ $id ] = $collected[ $id ];
-		}
-	}
-	// Infinite Scroll Loop has no tab of its own (it's a per-section control) — add its switch here.
-	$effects['animation_scroll_loop'] = upw_effects_enable_multi(
-		__( 'Enable Infinite Scroll Loop', 'fw' ),
-		__( 'The seamless / infinite scroll loop for full-height sections. Off hides the Scroll Loop control on sections.', 'fw' )
-	);
-
-	$effects_tab = array(
-		'title'   => __( 'Effects', 'fw' ),
-		'type'    => 'tab',
-		'options' => array(
-			'upw_effects_box' => array(
-				'title'   => __( 'Enable / disable effects', 'fw' ),
-				'desc'    => __( 'Turn each engine effect on or off. A disabled effect is removed from every element\'s Animations tab and loads nothing on the front end.', 'fw' ),
-				'type'    => 'box',
-				// A `group` wraps the switches so they read as one borderless set (house style).
-				'options' => array(
-					'group_effects' => array(
-						'type'    => 'group',
-						'options' => $effects,
-					),
-				),
-			),
-		),
-	);
-
-	return array_merge( array( 'upw_effects' => $effects_tab ), $tabs );
+	// The "Add Animation" inserter (per-element) is now the control surface, and every module's
+	// assets already load only on pages that use them, so a global enable/disable Effects tab is
+	// redundant. We therefore DROP the enable-only module tabs (stripped above) and DON'T build an
+	// Effects tab. The `upw_*_enabled()` helpers stay and default to "yes", so every module remains
+	// active. The full-config site-wide tabs (Cursor, Page Transitions, Scroll Progress, Engine)
+	// are untouched — they carry real settings, not just an enable switch.
+	return $tabs;
 }, 100 );
 
 /* ------------------------------------------------------------------ *

@@ -1,0 +1,10 @@
+/* Animation Engine — Hover: "text_swap" effect (on-demand partial). */
+/* Text Swap (the label slides out, a second line slides in) */
+.sc-hover--text_swap { position: relative; display: inline-block; overflow: hidden; vertical-align: bottom; }
+.sc-hover--text_swap .sc-hover-swap-a,
+.sc-hover--text_swap .sc-hover-swap-b { display: block; transition: transform .3s cubic-bezier(.22, .61, .36, 1); }
+.sc-hover--text_swap .sc-hover-swap-b { position: absolute; top: 0; left: 0; width: 100%; transform: translateY(100%); }
+.sc-hover--text_swap[data-hover-swap-dir="down"] .sc-hover-swap-b { transform: translateY(-100%); }
+.sc-hover--text_swap:hover .sc-hover-swap-a { transform: translateY(-100%); }
+.sc-hover--text_swap[data-hover-swap-dir="down"]:hover .sc-hover-swap-a { transform: translateY(100%); }
+.sc-hover--text_swap:hover .sc-hover-swap-b { transform: translateY(0); }

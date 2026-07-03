@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Blurred at rest, sharp on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+  <defs><filter id="hbf" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>
+  <style>.bl{animation:bl 2.6s ease-in-out infinite}@keyframes bl{0%,40%{opacity:1}60%,100%{opacity:0}}.bs{animation:bs 2.6s ease-in-out infinite}@keyframes bs{0%,40%{opacity:0}60%,100%{opacity:1}}</style>
+  <rect class="bl" x="44" y="20" width="44" height="34" rx="6" fill="#2f74e6" filter="url(#hbf)"/>
+  <rect class="bs" x="44" y="20" width="44" height="34" rx="6" fill="#2f74e6"/>
+  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Blur Focus</text>
+</svg>

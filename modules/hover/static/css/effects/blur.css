@@ -1,0 +1,6 @@
+/* Animation Engine — Hover: "blur" effect (on-demand partial). */
+/* Blur Focus */
+.sc-hover--blur { transition: filter .35s ease; }
+.sc-hover--blur[data-hover-blur="rest"] { filter: blur(var(--hover-blur, 4px)); }
+.sc-hover--blur[data-hover-blur="rest"]:hover { filter: blur(0); }
+.sc-hover--blur[data-hover-blur="hover"]:hover { filter: blur(var(--hover-blur, 4px)); }

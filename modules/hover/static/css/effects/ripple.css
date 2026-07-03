@@ -1,0 +1,11 @@
+/* Animation Engine — Hover: "ripple" effect (on-demand partial). */
+/* Ripple (the .sc-hover-ripple span is injected by hover.js) */
+.sc-hover--ripple { position: relative; overflow: hidden; }
+.sc-hover-ripple {
+	position: absolute; border-radius: 50%; pointer-events: none;
+	background: var(--hover-ripple, #6aa6ff); opacity: .45;
+	transform: translate(-50%, -50%) scale(0);
+	animation: sc-hover-ripple .6s ease-out forwards;
+}
+@keyframes sc-hover-ripple { to { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--ripple .sc-hover-ripple { display: none; } }

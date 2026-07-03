@@ -1,0 +1,9 @@
+/* Animation Engine — Hover: "lift" effect (on-demand partial). */
+/* Lift */
+.sc-hover--lift { transition: transform .25s ease, box-shadow .25s ease; }
+.sc-hover--lift:hover { transform: translateY(calc(var(--hover-lift, 6px) * -1)); }
+.sc-hover--lift:not([data-hover-noshadow]):hover { box-shadow: 0 12px 28px rgba(0, 0, 0, .18); }
+@media (prefers-reduced-motion: reduce) {
+	.sc-hover--lift { transition: none; }
+	.sc-hover--lift:hover { transform: none; }
+}

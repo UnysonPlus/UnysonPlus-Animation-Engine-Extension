@@ -1,0 +1,10 @@
+/* Animation Engine — Hover: "shake" effect (on-demand partial). */
+/* Shake / Buzz (horizontal jitter) */
+.sc-hover--shake:hover { animation: sc-hover-shake .4s cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes sc-hover-shake {
+	10%, 90% { transform: translateX(calc(-1px * var(--hover-shake, 1))); }
+	20%, 80% { transform: translateX(calc(2px * var(--hover-shake, 1))); }
+	30%, 50%, 70% { transform: translateX(calc(-4px * var(--hover-shake, 1))); }
+	40%, 60% { transform: translateX(calc(4px * var(--hover-shake, 1))); }
+}
+@media (prefers-reduced-motion: reduce) { .sc-hover--shake:hover { animation: none; } }

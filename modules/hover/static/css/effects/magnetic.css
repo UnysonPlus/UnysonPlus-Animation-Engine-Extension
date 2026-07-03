@@ -1,0 +1,4 @@
+/* Animation Engine — Hover: "magnetic" effect (on-demand partial). */
+/* Magnetic — JS sets the live transform; this only smooths the return. */
+.sc-hover--magnetic { transition: transform .25s cubic-bezier(.22, .61, .36, 1); will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .sc-hover--magnetic { transition: none; } }

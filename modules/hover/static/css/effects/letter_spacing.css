@@ -1,0 +1,4 @@
+/* Animation Engine — Hover: "letter_spacing" effect (on-demand partial). */
+/* Letter Spacing (text tracking expands on hover) */
+.sc-hover--letter_spacing { transition: letter-spacing .3s ease; }
+.sc-hover--letter_spacing:hover { letter-spacing: var(--hover-letter, 3px); }

@@ -1,0 +1,4 @@
+/* Animation Engine — Hover: "color_shift" effect (on-demand partial). */
+/* Color Shift */
+.sc-hover--color_shift { transition: background-color .3s ease, color .3s ease; }
+.sc-hover--color_shift:hover { background-color: var(--hover-shift, #6aa6ff); }

@@ -1,0 +1,11 @@
+/* Animation Engine — Hover: "shine" effect (on-demand partial). */
+/* Shine Sweep (a diagonal light band sweeps across on hover) */
+.sc-hover--shine { position: relative; overflow: hidden; }
+.sc-hover--shine::before {
+	content: ""; position: absolute; top: 0; left: -150%; width: 60%; height: 100%;
+	background: linear-gradient(115deg, transparent 0%, var(--hover-shine, rgba(255,255,255,.55)) 50%, transparent 100%);
+	transform: skewX(-18deg); pointer-events: none; transition: none;
+}
+.sc-hover--shine:hover::before { animation: sc-hover-shine .85s ease; }
+@keyframes sc-hover-shine { from { left: -150%; } to { left: 150%; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--shine:hover::before { animation: none; } }

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Card Stack">
+  <rect x="52" y="10" width="28" height="11" rx="3" fill="#bcd3f7"/>
+  <rect x="47" y="24" width="38" height="12" rx="3" fill="#7aa9ee"/>
+  <rect x="42" y="39" width="48" height="14" rx="3" fill="#2f74e6"/>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Card Stack</text>
+</svg>

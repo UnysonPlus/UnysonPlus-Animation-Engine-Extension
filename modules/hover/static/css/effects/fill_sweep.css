@@ -1,0 +1,11 @@
+/* Animation Engine — Hover: "fill_sweep" effect (on-demand partial). */
+/* Fill Sweep (a color wipes across the element) */
+.sc-hover--fill_sweep { position: relative; z-index: 0; overflow: hidden; }
+.sc-hover--fill_sweep::before {
+	content: ""; position: absolute; inset: 0; z-index: -1; background: var(--hover-fill, #2f74e6);
+	transform: scaleX(0); transform-origin: left center; transition: transform .35s cubic-bezier(.22, .61, .36, 1); pointer-events: none;
+}
+.sc-hover--fill_sweep[data-hover-fill="right"]::before { transform-origin: right center; }
+.sc-hover--fill_sweep[data-hover-fill="up"]::before { transform: scaleY(0); transform-origin: bottom center; }
+.sc-hover--fill_sweep[data-hover-fill="center"]::before { transform: scale(0); transform-origin: center; }
+.sc-hover--fill_sweep:hover::before { transform: scale(1); }

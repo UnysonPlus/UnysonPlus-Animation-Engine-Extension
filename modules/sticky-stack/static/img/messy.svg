@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Rotate Messy">
+  <rect x="46" y="14" width="40" height="26" rx="4" fill="#bcd3f7" transform="rotate(-10 66 27)"/>
+  <rect x="46" y="20" width="40" height="26" rx="4" fill="#7aa9ee" transform="rotate(8 66 33)"/>
+  <rect x="46" y="26" width="40" height="26" rx="4" fill="#2f74e6" transform="rotate(-3 66 39)"/>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Rotate Messy</text>
+</svg>

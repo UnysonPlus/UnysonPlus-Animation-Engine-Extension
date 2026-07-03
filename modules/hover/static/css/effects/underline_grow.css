@@ -1,0 +1,11 @@
+/* Animation Engine — Hover: "underline_grow" effect (on-demand partial). */
+/* Underline Grow (text / links) */
+.sc-hover--underline_grow { position: relative; }
+.sc-hover--underline_grow::after {
+	content: ""; position: absolute; left: 0; bottom: -2px; width: 100%; height: 2px;
+	background: var(--hover-line, currentColor);
+	transform: scaleX(0); transform-origin: left center;
+	transition: transform .3s ease; pointer-events: none;
+}
+.sc-hover--underline_grow[data-hover-style="center"]::after { transform-origin: center; }
+.sc-hover--underline_grow:hover::after { transform: scaleX(1); }

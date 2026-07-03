@@ -1,0 +1,8 @@
+/* Animation Engine — Hover: "tilt" effect (on-demand partial). */
+/* 3D Tilt — JS sets rotateX/Y; the glare span is added by JS when enabled. */
+.sc-hover--tilt { transition: transform .25s cubic-bezier(.22, .61, .36, 1); will-change: transform; }
+.sc-hover-glare {
+	position: absolute; inset: 0; pointer-events: none; opacity: 0;
+	transition: opacity .3s ease; mix-blend-mode: overlay; border-radius: inherit; z-index: 2;
+}
+@media (prefers-reduced-motion: reduce) { .sc-hover--tilt { transition: none; } }

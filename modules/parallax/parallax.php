@@ -249,15 +249,3 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 	);
 	return $tabs;
 } );
-
-/* Parallax picker tile size (admin only, parallax-scoped) — the role swatches bake a label,
- * so bump them past the core 72px popover cap. Mirrors the physics module's approach. */
-add_action( 'admin_head', function () {
-	$sel = 'ul.thumbnails.image_picker_selector li .thumbnail img[src*="/parallax/static/img/roles/"]';
-	echo '<style id="upw-parallax-picker-size">'
-		. '.fw-mp-pop ' . $sel . ','
-		. '.fw-modal-large .fw-mp-pop ' . $sel . ','
-		. '.appearance_page_fw-settings .fw-mp-pop ' . $sel
-		. '{height:96px !important;width:auto !important;}'
-		. "</style>\n";
-} );

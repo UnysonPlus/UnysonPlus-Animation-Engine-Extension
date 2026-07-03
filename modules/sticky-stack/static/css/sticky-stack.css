@@ -1,0 +1,14 @@
+/* UnysonPlus Animation Engine — Sticky Card Stack (11 styles). Sticky tops + transforms set by JS. */
+.upw-sticky-stack .upw-ss-card {
+	transition: transform .12s linear, opacity .12s linear, filter .12s linear;
+	will-change: transform, opacity, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.upw-sticky-stack .upw-ss-card {
+		position: static !important;
+		transform: none !important;
+		opacity: 1 !important;
+		filter: none !important;
+	}
+}

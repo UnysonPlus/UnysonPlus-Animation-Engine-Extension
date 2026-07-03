@@ -157,14 +157,6 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 	return $tabs;
 } );
 
-/* Picker tile size (admin only, scoped) — the swatches bake a style label. */
-add_action( 'admin_head', function () {
-	$sel = 'ul.thumbnails.image_picker_selector li .thumbnail img[src*="/scroll-progress/static/img/styles/"]';
-	echo '<style id="upw-sp-picker-size">'
-		. '.fw-mp-pop ' . $sel . ',.fw-modal-large .fw-mp-pop ' . $sel . ',.appearance_page_fw-settings .fw-mp-pop ' . $sel
-		. '{height:96px !important;width:auto !important;}</style>' . "\n";
-} );
-
 /* ------------------------------------------------------------------ *
  * 2) Enqueue site-wide (front end only) when enabled.
  * ------------------------------------------------------------------ */

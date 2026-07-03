@@ -1,0 +1,11 @@
+/* Animation Engine — Hover: "bg_pan" effect (on-demand partial). */
+/* Background Pan (animated gradient background slides across on hover) */
+.sc-hover--bg_pan {
+	background-image: linear-gradient(120deg, var(--hover-pan-a, #2f74e6), var(--hover-pan-b, #a06bff), var(--hover-pan-a, #2f74e6));
+	background-size: 200% 100%;
+	background-position: 0% 0%;
+	transition: background-position .1s linear;
+}
+.sc-hover--bg_pan:hover { animation: sc-hover-pan var(--hover-pan-speed, 3s) linear infinite; }
+@keyframes sc-hover-pan { to { background-position: -200% 0%; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--bg_pan:hover { animation: none; } }

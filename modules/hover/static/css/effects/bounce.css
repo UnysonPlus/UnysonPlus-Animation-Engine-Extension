@@ -1,0 +1,10 @@
+/* Animation Engine — Hover: "bounce" effect (on-demand partial). */
+/* Bounce (one-shot vertical bounce) */
+.sc-hover--bounce:hover { animation: sc-hover-bounce .6s cubic-bezier(.28, .84, .42, 1); }
+@keyframes sc-hover-bounce {
+	0%, 100% { transform: translateY(0); }
+	40% { transform: translateY(calc(var(--hover-bounce, 10px) * -1)); }
+	60% { transform: translateY(calc(var(--hover-bounce, 10px) * -0.4)); }
+	80% { transform: translateY(calc(var(--hover-bounce, 10px) * -0.15)); }
+}
+@media (prefers-reduced-motion: reduce) { .sc-hover--bounce:hover { animation: none; } }

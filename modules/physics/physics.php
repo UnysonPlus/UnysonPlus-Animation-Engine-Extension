@@ -85,10 +85,10 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$base = $ext ? $ext->get_declared_URI( '/modules/physics/static/img/effects' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			// Tiles are taller than usual (viewBox 100×118 with a baked-in name label), so
-			// use a bigger height so the label reads clearly (~1.5× the 66–78px picker norm).
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 117 ),
-			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 225 ),
+			// These swatches use the taller viewBox 100×118 with a baked-in name label; 107px reads
+			// clearly at 5-per-row in the medium modal.
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 107 ),
+			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 190 ),
 			'label' => $label,
 		);
 	};
@@ -366,27 +366,4 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 		),
 	);
 	return $tabs;
-} );
-
-/* ------------------------------------------------------------------
- * 5) Physics picker tile size (admin builder ONLY, physics-scoped).
- *
- * The physics swatches bake the effect NAME into the SVG (viewBox 100×118), so they need
- * to render taller than the usual engine popover tiles for the label to read. The core
- * multi-picker CSS caps ALL popover tiles at 72px in the large modal / Theme Settings
- * (`.fw-modal-large … img { height:72px !important }`), which overrides the picker's own
- * per-choice height — that cap is intentional for the OTHER popovers and must stay.
- *
- * So rather than change that global rule, the physics module owns its own tile size here,
- * targeting only its swatches by their `/physics/…/effects/` src path (higher specificity
- * than the cap, so it wins without touching any other popover). Printed on admin pages only.
- * ------------------------------------------------------------------ */
-add_action( 'admin_head', function () {
-	$sel = 'ul.thumbnails.image_picker_selector li .thumbnail img[src*="/physics/static/img/effects/"]';
-	echo '<style id="upw-physics-picker-size">'
-		. '.fw-mp-pop ' . $sel . ','
-		. '.fw-modal-large .fw-mp-pop ' . $sel . ','
-		. '.appearance_page_fw-settings .fw-mp-pop ' . $sel
-		. '{height:117px !important;width:auto !important;}'
-		. "</style>\n";
 } );

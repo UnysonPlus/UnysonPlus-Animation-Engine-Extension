@@ -1,0 +1,8 @@
+/* Animation Engine — Hover: "pulse" effect (on-demand partial). */
+/* Pulse (continuous scale pulse while hovered) */
+.sc-hover--pulse:hover { animation: sc-hover-pulse 1s ease-in-out infinite; }
+@keyframes sc-hover-pulse {
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(calc(1 + .06 * var(--hover-pulse, 1))); }
+}
+@media (prefers-reduced-motion: reduce) { .sc-hover--pulse:hover { animation: none; } }

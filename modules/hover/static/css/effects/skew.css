@@ -1,0 +1,5 @@
+/* Animation Engine — Hover: "skew" effect (on-demand partial). */
+/* Skew */
+.sc-hover--skew { transition: transform .3s cubic-bezier(.22, .61, .36, 1); }
+.sc-hover--skew:hover { transform: skewX(var(--hover-skew, -6deg)); }
+@media (prefers-reduced-motion: reduce) { .sc-hover--skew:hover { transform: none; } }

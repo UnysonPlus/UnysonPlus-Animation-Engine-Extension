@@ -1,0 +1,42 @@
+/* UnysonPlus Animation Engine — Horizontal Scroll Section (8 styles). */
+.upw-hs-pin {
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	overflow: hidden;
+	display: flex;
+	align-items: stretch;
+}
+.upw-hs-track {
+	display: flex;
+	flex-wrap: nowrap;
+	height: 100%;
+	align-items: stretch;
+	will-change: transform;
+}
+.upw-hs-panel {
+	flex: 0 0 auto;
+	min-width: 0;
+	will-change: transform, opacity;
+}
+
+/* Panel sizing driven by the section's data-hs-panel. "auto" keeps natural width. */
+.upw-hscroll[data-hs-panel="60vw"]  .upw-hs-panel { flex-basis: 60vw; }
+.upw-hscroll[data-hs-panel="80vw"]  .upw-hs-panel { flex-basis: 80vw; }
+.upw-hscroll[data-hs-panel="100vw"] .upw-hs-panel { flex-basis: 100vw; }
+
+/* Drag / Flick — not pinned: a panel-height strip you grab and throw. */
+.upw-hs-pin.upw-hs-drag {
+	position: relative;
+	height: auto;
+	overflow: hidden;
+	touch-action: pan-y;
+}
+.upw-hs-drag .upw-hs-track { cursor: grab; }
+.upw-hs-drag .upw-hs-track.is-grabbing { cursor: grabbing; }
+
+@media (prefers-reduced-motion: reduce) {
+	.upw-hs-pin { position: static; height: auto; overflow: visible; }
+	.upw-hs-track { transform: none !important; flex-wrap: wrap; }
+	.upw-hs-panel { transform: none !important; opacity: 1 !important; }
+}

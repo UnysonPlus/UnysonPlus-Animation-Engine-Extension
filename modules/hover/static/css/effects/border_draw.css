@@ -1,0 +1,20 @@
+/* Animation Engine — Hover: "border_draw" effect (on-demand partial). */
+/* Border Draw (top+right then bottom+left strokes trace the box) */
+.sc-hover--border_draw { position: relative; }
+.sc-hover--border_draw::before,
+.sc-hover--border_draw::after {
+	content: ""; position: absolute; inset: 0; pointer-events: none;
+	transition: transform .22s ease; transition-delay: 0s;
+}
+.sc-hover--border_draw::before {
+	border-top: var(--hover-line-w, 2px) solid var(--hover-line, #6aa6ff);
+	border-right: var(--hover-line-w, 2px) solid var(--hover-line, #6aa6ff);
+	transform: scale(0, 1); transform-origin: left top;
+}
+.sc-hover--border_draw::after {
+	border-bottom: var(--hover-line-w, 2px) solid var(--hover-line, #6aa6ff);
+	border-left: var(--hover-line-w, 2px) solid var(--hover-line, #6aa6ff);
+	transform: scale(1, 0); transform-origin: left bottom;
+}
+.sc-hover--border_draw:hover::before { transform: scale(1, 1); }
+.sc-hover--border_draw:hover::after { transform: scale(1, 1); transition-delay: .2s; }

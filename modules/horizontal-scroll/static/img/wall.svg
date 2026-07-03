@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Perspective Wall">
+  <rect x="10" y="12" width="30" height="44" rx="4" fill="#2f74e6"/>
+  <path d="M48 16 L74 20 L74 52 L48 56 Z" fill="#7aa9ee"/>
+  <path d="M82 22 L104 26 L104 46 L82 50 Z" fill="#bcd3f7"/>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Perspective Wall</text>
+</svg>

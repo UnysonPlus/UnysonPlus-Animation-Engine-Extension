@@ -1,0 +1,11 @@
+/* Animation Engine — Hover: "jelly" effect (on-demand partial). */
+/* Pop / Jelly */
+.sc-hover--jelly:hover { animation: sc-hover-jelly calc(.5s / var(--hover-jelly, 1)) both; }
+@keyframes sc-hover-jelly {
+	0% { transform: scale(1, 1); }
+	30% { transform: scale(calc(1 + .18 * var(--hover-jelly, 1)), calc(1 - .14 * var(--hover-jelly, 1))); }
+	50% { transform: scale(calc(1 - .12 * var(--hover-jelly, 1)), calc(1 + .12 * var(--hover-jelly, 1))); }
+	70% { transform: scale(calc(1 + .06 * var(--hover-jelly, 1)), calc(1 - .05 * var(--hover-jelly, 1))); }
+	100% { transform: scale(1, 1); }
+}
+@media (prefers-reduced-motion: reduce) { .sc-hover--jelly:hover { animation: none; } }

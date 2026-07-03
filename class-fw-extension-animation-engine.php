@@ -27,6 +27,10 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		// Allow .glb / .gltf model uploads in the Media Library (for [model_viewer]).
 		require_once dirname( __FILE__ ) . '/includes/glb-upload.php';
 
+		// Shared on-demand, per-style asset loader (a style's CSS/JS ships only on
+		// pages that use it). Loaded before modules so they can register at load.
+		require_once dirname( __FILE__ ) . '/includes/asset-loader.php';
+
 		// Modules. Each plugs into the shared Animations tab / wrapper / Theme Settings.
 		require_once dirname( __FILE__ ) . '/modules/scroll-motion/scroll-motion.php'; // Scroll Motion (GSAP)
 		require_once dirname( __FILE__ ) . '/modules/hover/hover.php';                  // Hover Interactions
@@ -39,6 +43,10 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/page-transitions/page-transitions.php'; // Page Transitions (site-wide)
 		require_once dirname( __FILE__ ) . '/modules/scroll-loop/scroll-loop.php';      // Seamless / Infinite Scroll Loop (Lenis)
 		require_once dirname( __FILE__ ) . '/modules/scroll-progress/scroll-progress.php'; // Scroll Progress indicator (site-wide)
+		require_once dirname( __FILE__ ) . '/modules/sticky-stack/sticky-stack.php';    // Sticky Card Stack (Section-level, scroll)
+		require_once dirname( __FILE__ ) . '/modules/horizontal-scroll/horizontal-scroll.php'; // Horizontal Scroll Section (Section-level, scroll)
+		require_once dirname( __FILE__ ) . '/modules/scroll-reveal/scroll-reveal.php';    // Scroll Reveal (per-element clip wipe)
+		require_once dirname( __FILE__ ) . '/modules/flip-card/flip-card.php';          // 3D Flip Card (per-element, pointer)
 
 		// Central effects control — consolidates the per-module enable switches into one
 		// "Effects" tab and hides a disabled module's options. Loaded last (after modules).
