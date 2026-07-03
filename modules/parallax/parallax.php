@@ -89,6 +89,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'help'         => __( 'Parallax Depth Layers (Animation Engine): pointer- and scroll-driven multi-layer depth. Mark the stage as a Scene; mark each moving element as a Layer and give it a Depth. One shared render loop, no library. Honours "reduce motion" and is skipped on touch for the pointer source (scroll layers still move).', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'role' => 'none' ),
+		'anim_meta'    => array( 'category' => __( 'Scroll', 'fw' ), 'icon' => '&#127748;' ), // 🌄 (Animations-tab inserter)
 		'picker'       => array(
 			'role' => array(
 				'type'    => 'image-picker',

@@ -148,6 +148,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'help'         => __( 'Marquee (Animation Engine): a self-running seamless ticker for any element. The content is doubled and translated by exactly one set (no jump), pauses on hover, and honours "reduce motion". Pure CSS animation, no library; loads only on pages that use it.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'mode' => 'none' ),
+		'anim_meta'    => array( 'category' => __( 'Motion', 'fw' ), 'icon' => '&#127916;' ), // 🎞 (Animations-tab inserter)
 		'picker'       => array(
 			'mode' => array(
 				'type'    => 'image-picker',

@@ -149,6 +149,7 @@ function sc_get_gsap_fields() {
             'popover'      => true,
             'show_borders' => false,
             'value'        => [ 'effect' => 'none' ],
+            'anim_meta'    => [ 'category' => __( 'Scroll', 'fw' ), 'icon' => '&#128220;' ], // 📜 (Animations-tab inserter)
             'picker' => [
                 'effect' => [
                     'type'    => 'image-picker',

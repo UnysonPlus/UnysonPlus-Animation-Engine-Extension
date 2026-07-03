@@ -128,6 +128,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'popover'      => true,
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),
+		'anim_meta'    => array( 'category' => __( 'Pointer', 'fw' ), 'icon' => '&#127919;' ), // 🎯 (Animations-tab inserter)
 		'picker'       => array(
 			'effect' => array(
 				'type'    => 'image-picker',
