@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -80,7 +81,7 @@
 		var col = cfg.colorHex || cfg.color || '#2f74e6', px = mx, py = my, ripples = [], lastEmit = 0;
 		var follow = cfg.canvasFollowScroll !== false, persistent = (mode === 'ink' || mode === 'fluid');
 		var lastSX = window.pageXOffset || 0, lastSY = window.pageYOffset || 0, i;
-		(function loop(t) {
+		RAF.add(function (t) {
 			var sx = window.pageXOffset || 0, sy = window.pageYOffset || 0;
 			// Persistent pixels: slide them with the page so ink/fluid stick to content.
 			if (follow && persistent) {
@@ -123,8 +124,8 @@
 					ctx.globalAlpha = 1;
 				}
 			}
-			px = mx; py = my; requestAnimationFrame(loop);
-		})(0);
+			px = mx; py = my;
+		});
 	}
 
 	function clickFx() {

@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -79,7 +80,7 @@
 			var t = e.target.closest ? e.target.closest(LABEL_SEL) : null; if (t) { target = null; }
 		}, { passive: true });
 		var x = mx, y = my;
-		(function loop() {
+		RAF.add(function () {
 			if (target) {
 				var r = target.getBoundingClientRect();
 				x += (r.left + r.width / 2 - x) * 0.2; y += (r.top + r.height / 2 - y) * 0.2;
@@ -91,8 +92,8 @@
 				el.style.width = ''; el.style.height = ''; el.style.borderRadius = '';
 				el.classList.remove('is-stuck');
 			}
-			place(el, x, y); requestAnimationFrame(loop);
-		})();
+			place(el, x, y);
+		});
 	}
 
 	function clickFx() {

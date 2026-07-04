@@ -16,15 +16,11 @@
 	var isTouch = mql('(hover: none), (pointer: coarse)').matches;
 	var isMobile = (window.innerWidth || 1024) < 768;
 
-	/* ---- Shared ticker ---- */
-	var running = [], raf = 0;
-	function tick(t) {
-		raf = 0;
-		for (var i = running.length - 1; i >= 0; i--) { if (running[i](t) === false) { running.splice(i, 1); } }
-		if (running.length) { raf = requestAnimationFrame(tick); }
-	}
-	function add(fn) { if (running.indexOf(fn) < 0) { running.push(fn); if (!raf) { raf = requestAnimationFrame(tick); } } }
-	function remove(fn) { var i = running.indexOf(fn); if (i >= 0) { running.splice(i, 1); } }
+	/* ---- Shared frame scheduler (window.upwAnimRaf): one rAF loop for every engine module,
+	   paused while the tab is hidden. Enqueued as a dependency by the loader (needs_raf). ---- */
+	var RAF = window.upwAnimRaf;
+	function add(fn) { if (RAF) { RAF.add(fn); } }
+	function remove(fn) { if (RAF) { RAF.remove(fn); } }
 
 	function num(el, attr, dflt) { var v = parseFloat(el.getAttribute('data-phys-' + attr)); return isNaN(v) ? dflt : v; }
 	function TF(el, s) { el.style.transform = s; }

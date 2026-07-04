@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -75,7 +76,7 @@
 			pool.push({ el: p, life: 0, x: mx, y: my, vx: 0, vy: 0 });
 		}
 		var idx = 0, last = 0;
-		(function loop(t) {
+		RAF.add(function (t) {
 			var pp = pos(); place(head, pp.x, pp.y);
 			if (!reduce) {
 				if (!last) { last = t; }
@@ -95,8 +96,7 @@
 					s.el.style.transform = 'translate(' + s.x.toFixed(1) + 'px,' + s.y.toFixed(1) + 'px) translate(-50%,-50%) scale(' + (0.3 + s.life * 0.7).toFixed(2) + ')';
 				}
 			}
-			requestAnimationFrame(loop);
-		})(0);
+		});
 	}
 
 	function clickFx() {

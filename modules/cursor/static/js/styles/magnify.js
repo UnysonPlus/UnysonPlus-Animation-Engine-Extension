@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -93,7 +94,7 @@
 		document.addEventListener('pointerout', function () {
 			if (srcEl) { srcEl = null; el.classList.remove('is-on'); el.style.backgroundImage = ''; }
 		}, { passive: true });
-		(function loop() {
+		RAF.add(function () {
 			place(el, mx, my);
 			if (srcEl) {
 				var r = srcEl.getBoundingClientRect(), d = el.getBoundingClientRect();
@@ -101,8 +102,7 @@
 				el.style.backgroundSize = bw + 'px ' + bh + 'px';
 				el.style.backgroundPosition = (-((mx - r.left) / r.width) * bw + d.width / 2) + 'px ' + (-((my - r.top) / r.height) * bh + d.height / 2) + 'px';
 			}
-			requestAnimationFrame(loop);
-		})();
+		});
 	}
 
 	function magnifyAll() {
@@ -122,14 +122,13 @@
 		// Re-snapshot on resize (layout changes); cheap enough vs. per-frame.
 		window.addEventListener('resize', build, { passive: true });
 		var R = 0;
-		(function loop() {
+		RAF.add(function () {
 			place(el, mx, my);
 			if (!R) { R = (el.offsetWidth || 80) / 2; }
 			var sx = window.pageXOffset || 0, sy = window.pageYOffset || 0;
 			var docX = (mx + sx) * zoom, docY = (my + sy) * zoom;
 			stage.style.transform = 'translate(' + (R - docX) + 'px,' + (R - docY) + 'px) scale(' + zoom + ')';
-			requestAnimationFrame(loop);
-		})();
+		});
 	}
 
 	function clickFx() {

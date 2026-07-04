@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -91,7 +92,7 @@
 			if (t) { current = def; render(); }
 		}, { passive: true });
 		var x = mx, y = my;
-		(function loop() { x += (mx - x) * 0.2; y += (my - y) * 0.2; place(el, x, y); requestAnimationFrame(loop); })();
+		RAF.add(function () { x += (mx - x) * 0.2; y += (my - y) * 0.2; place(el, x, y); });
 	}
 
 	function clickFx() {

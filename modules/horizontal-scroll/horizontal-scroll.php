@@ -207,6 +207,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_dir'    => 'static/js/effects',
 			'base_css'  => 'static/css/horizontal-scroll.css', // small, all-base (pin/track/panel) — no per-style CSS
 			'base_js'   => 'static/js/horizontal-scroll-core.js',
+			'needs_raf' => true,
 			// All styles trigger the core; only the 9 per-panel styles have a partial file (the
 			// track-level standard/reverse/snap/wall/skew/drag are handled inside the core).
 			'js_styles' => upw_hscroll_styles(),

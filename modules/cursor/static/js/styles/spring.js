@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -70,12 +71,11 @@
 	function spring() {
 		var el = make('upw-cursor--dot upw-cursor-primary');
 		var x = mx, y = my, vx = 0, vy = 0, k = reduce ? 1 : 0.18, damp = 0.72;
-		(function loop() {
+		RAF.add(function () {
 			var p = pos();
 			vx = (vx + (p.x - x) * k) * damp; vy = (vy + (p.y - y) * k) * damp;
 			x += vx; y += vy; place(el, x, y);
-			requestAnimationFrame(loop);
-		})();
+		});
 	}
 
 	function clickFx() {

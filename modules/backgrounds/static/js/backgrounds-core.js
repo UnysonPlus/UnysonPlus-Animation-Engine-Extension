@@ -36,16 +36,16 @@
 		return L;
 	}
 
-	// RAF loop that pauses when the host is off-screen or the tab is hidden.
+	// Subscribe to the shared frame scheduler (window.upwAnimRaf): one rAF loop for all engine
+	// modules that pauses while the tab is hidden. The callback also no-ops while its host is
+	// off-screen. Enqueued as a dependency by the loader (needs_raf).
+	var RAF = window.upwAnimRaf;
 	function loop(host, cb) {
 		var visible = true;
 		if ('IntersectionObserver' in window) {
 			new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0, rootMargin: '120px' }).observe(host);
 		}
-		(function frame(t) {
-			if (visible && !document.hidden) { cb(t); }
-			requestAnimationFrame(frame);
-		})(0);
+		if (RAF) { RAF.add(function (t) { if (visible) { cb(t); } }); }
 	}
 
 	function num(host, attr, def) { var v = parseFloat(host.getAttribute(attr)); return isNaN(v) ? def : v; }

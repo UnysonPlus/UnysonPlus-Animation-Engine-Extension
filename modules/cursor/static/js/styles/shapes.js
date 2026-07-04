@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -73,12 +74,11 @@
 		if (style === 'glyph') { primary.textContent = cfg.glyph || '→'; }
 		var ring = (style === 'dot_ring') ? make('upw-cursor-ring upw-cursor-secondary') : null;
 		var rx = mx, ry = my;
-		(function loop() {
+		RAF.add(function () {
 			var p = pos();
 			place(primary, p.x, p.y);
 			if (ring) { rx += (p.x - rx) * trail; ry += (p.y - ry) * trail; place(ring, rx, ry); }
-			requestAnimationFrame(loop);
-		})();
+		});
 	}
 
 	function clickFx() {

@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -80,11 +81,10 @@
 		var a = document.createElement('div'); a.className = 'upw-goo-ball upw-goo-a'; wrap.appendChild(a);
 		var b = document.createElement('div'); b.className = 'upw-goo-ball upw-goo-b'; wrap.appendChild(b);
 		var rx = mx, ry = my, lag = reduce ? 1 : (cfg.trail != null ? cfg.trail : 0.18);
-		(function loop() {
+		RAF.add(function () {
 			var p = pos(); place(a, p.x, p.y);
 			rx += (p.x - rx) * lag; ry += (p.y - ry) * lag; place(b, rx, ry);
-			requestAnimationFrame(loop);
-		})();
+		});
 	}
 
 	function clickFx() {

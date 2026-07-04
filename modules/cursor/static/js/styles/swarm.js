@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -77,7 +78,7 @@
 			pool.push({ el: el, life: 0, x: mx, y: my, vx: 0, vy: 0, rot: 0, vr: 0 });
 		}
 		var idx = 0, last = 0, spawnMs = (kind === 'confetti') ? 30 : 45;
-		(function loop(t) {
+		RAF.add(function (t) {
 			var pp = pos(); if (kind === 'echo') { place(head, pp.x, pp.y); }
 			if (!reduce) {
 				if (!last) { last = t; }
@@ -105,8 +106,7 @@
 				s.el.style.opacity = String(s.life * (kind === 'echo' ? 0.55 : 0.85) * flick);
 				s.el.style.transform = 'translate(' + s.x.toFixed(1) + 'px,' + s.y.toFixed(1) + 'px) translate(-50%,-50%) rotate(' + s.rot.toFixed(0) + 'deg) scale(' + sc.toFixed(2) + ')';
 			}
-			requestAnimationFrame(loop);
-		})(0);
+		});
 	}
 
 	function clickFx() {

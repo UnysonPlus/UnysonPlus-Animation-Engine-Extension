@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -71,11 +72,10 @@
 		var ov = make('upw-cursor-spotlight', false);
 		ov.style.setProperty('--spot-r', (cfg.spotRadius || 160) + 'px');
 		ov.style.setProperty('--spot-dim', String(cfg.spotDim != null ? cfg.spotDim : 0.6));
-		(function loop() {
+		RAF.add(function () {
 			ov.style.setProperty('--spot-x', mx + 'px');
 			ov.style.setProperty('--spot-y', my + 'px');
-			requestAnimationFrame(loop);
-		})();
+		});
 	}
 
 	function clickFx() {

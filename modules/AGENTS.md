@@ -180,11 +180,40 @@ Per-style files are independently cacheable; the asset-optimizer extension can c
 
 ---
 
+## 3d. Continuous animation loops — use the shared frame scheduler (REQUIRED)
+
+**Never start your own `requestAnimationFrame` loop for a CONTINUOUS animation.** The engine ships
+one shared scheduler — **`window.upwAnimRaf`** (`static/js/upw-raf.js`) — that drives every
+subscribed animation from a *single* rAF loop and, crucially, **pauses the whole loop while the tab
+is hidden** (`visibilitychange`), so background tabs cost zero CPU. Rolling your own `(function
+loop(){ …; requestAnimationFrame(loop); })()` keeps burning CPU in a backgrounded tab and adds
+another independent rAF — exactly the waste this removes.
+
+API: `window.upwAnimRaf.add(fn)` / `.remove(fn)` — `fn` receives the rAF timestamp; **return `false`
+from `fn` to auto-unsubscribe** (one-shot / self-terminating animations). A callback that throws is
+auto-removed (one broken effect can't kill the loop).
+
+Wiring:
+- **Loader modules:** set **`'needs_raf' => true`** in `upw_anim_register_assets(...)`. The loader
+  then enqueues `upw-anim-raf` as a dependency of your core/partials, so `window.upwAnimRaf` is
+  defined before your JS runs. In your core: `var RAF = window.upwAnimRaf; …; RAF.add(fn);`.
+- **Site-wide modules** (own `wp_enqueue_scripts`): add the scheduler as a script dep —
+  `array( upw_anim_raf_handle() )` (see cursor.php).
+- **This does NOT apply to scroll/pointer-driven rAF** (a `requestAnimationFrame` used to *throttle*
+  a `scroll`/`pointermove` handler, e.g. sticky-stack / scroll-progress). Those are idle when nothing
+  happens, so they stay as-is. Only CONTINUOUS per-frame loops migrate. Reference migrations:
+  physics-core (the model), backgrounds-core `loop()`, cursor's per-style loops.
+- **User-facing:** the "pauses in background tabs / never wastes CPU" benefit is surfaced in every
+  module's help text via `upw_perf_note()` — keep using it.
+
+---
+
 ## 4. JS / CSS conventions
 
 - **No libraries** unless unavoidable (the four scroll/pointer modules are pure CSS + one passive,
   rAF-throttled `scroll` listener). Honour `prefers-reduced-motion` (gated by `cfg.reducedMotion`)
   and skip pointer effects on touch when `cfg.disableMobile`.
+- **Continuous rAF loops → `window.upwAnimRaf`, never a bare `requestAnimationFrame` loop** (see §3d).
 - **`clip-path` + IntersectionObserver don't mix:** Chromium counts the target's own `clip-path` in
   the intersection ratio, so a fully-clipped element reports ratio 0 and never fires. Use a
   `getBoundingClientRect` scroll check instead (see `scroll-reveal`).

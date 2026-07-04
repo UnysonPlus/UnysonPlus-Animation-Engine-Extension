@@ -64,7 +64,31 @@ if ( ! function_exists( 'upw_anim_register_assets' ) ) :
 			                          // false (default): partials load first, core depends on them
 			                          // (core runs the dispatch last — the hover model).
 			'handle'    => 'upw-' . $module,
+			'needs_raf' => false,  // true: this module's JS uses the shared frame scheduler
+			                       // (window.upwAnimRaf) — the loader adds upw-anim-raf as a dep.
 		), (array) $args );
+	}
+endif;
+
+if ( ! function_exists( 'upw_anim_raf_handle' ) ) :
+	/**
+	 * Register + enqueue the shared frame scheduler (static/js/upw-raf.js) once per request and
+	 * return its handle, so modules whose JS uses window.upwAnimRaf can depend on it. One rAF loop
+	 * drives every subscribed animation and pauses while the tab is hidden.
+	 */
+	function upw_anim_raf_handle() {
+		$h   = 'upw-anim-raf';
+		$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+		if ( ! $ext ) {
+			return $h;
+		}
+		if ( ! wp_script_is( $h, 'registered' ) ) {
+			$abs = $ext->get_declared_path( '/static/js/upw-raf.js' );
+			$ver = $ext->manifest->get_version();
+			wp_register_script( $h, $ext->get_declared_URI( '/static/js/upw-raf.js' ), array(), upw_anim_asset_ver( $ver, $abs ), true );
+		}
+		wp_enqueue_script( $h );
+		return $h;
 	}
 endif;
 
@@ -95,13 +119,58 @@ if ( ! function_exists( 'upw_anim_asset_ver' ) ) :
 endif;
 
 /**
- * The single footer pass: enqueue exactly the used styles' partials for every module.
+ * Keep the asset-optimizer's SITE-WIDE CSS combiner from absorbing our on-demand
+ * per-style partials (and our own per-page combined output). Its site-wide bundle
+ * is built from every handle ever discovered, so absorbing these would ship every
+ * style on every page - exactly the bloat the on-demand loader exists to avoid.
+ * We fold our partials PER-PAGE ourselves (in the footer pass below), so the
+ * generic combiner must leave every `upw-<module>-…` handle alone. (JS needs no
+ * such guard: the optimizer's JS pass runs at wp_enqueue_scripts:99999, long
+ * before this footer:5 enqueue, so it never sees our scripts.)
+ */
+add_filter( 'fw:ext:asset-optimizer:css_exclude_handles', function ( $excluded, $known ) {
+	$r =& upw_anim_asset_registry();
+	if ( empty( $r['modules'] ) || ! is_array( $known ) ) {
+		return $excluded;
+	}
+	$prefixes = array();
+	foreach ( $r['modules'] as $m ) {
+		if ( ! empty( $m['handle'] ) ) {
+			$prefixes[] = $m['handle'] . '-';
+		}
+	}
+	foreach ( array_keys( $known ) as $handle ) {
+		foreach ( $prefixes as $p ) {
+			if ( strpos( $handle, $p ) === 0 ) {
+				$excluded[] = $handle;
+				break;
+			}
+		}
+	}
+	return $excluded;
+}, 10, 2 );
+
+/**
+ * The single footer pass: enqueue exactly the used styles' partials for every
+ * module. When the asset-optimizer is active AND combining is enabled (honoring
+ * its master switches / logged-out-only / URL exclusions), each module's used
+ * partials are folded into ONE combined CSS + ONE combined JS (cache-keyed by the
+ * used-style set, so pages with different styles still get correct files, and only
+ * the page's used styles are ever included). Otherwise the partials load
+ * individually, exactly as before. Load order, the inline cfg and the shared rAF
+ * dependency are preserved either way.
  */
 add_action( 'wp_footer', function () {
 	$r =& upw_anim_asset_registry();
 	if ( empty( $r['used'] ) ) {
 		return;
 	}
+
+	// Ask the asset-optimizer (if active) whether to fold our per-page partials.
+	$ao          = function_exists( 'fw' ) ? fw()->extensions->get( 'asset-optimizer' ) : null;
+	$can_combine = $ao && method_exists( $ao, 'is_combine_enabled' ) && method_exists( $ao, 'combine_files' );
+	$combine_css = $can_combine && $ao->is_combine_enabled( 'css' );
+	$combine_js  = $can_combine && $ao->is_combine_enabled( 'js' );
 
 	foreach ( $r['used'] as $module => $styles_map ) {
 		if ( empty( $r['modules'][ $module ] ) ) {
@@ -113,18 +182,27 @@ add_action( 'wp_footer', function () {
 		$uri    = rtrim( (string) $m['uri'], '/' );
 		$h      = $m['handle'];
 
-		/* ---- CSS: optional shared base, then one partial per used style ---- */
+		/* ---- CSS file list: optional shared base, then one partial per used style ---- */
+		$css_files = array();
 		if ( $m['base_css'] ) {
 			$abs = $path . '/' . $m['base_css'];
 			if ( file_exists( $abs ) ) {
-				wp_enqueue_style( $h . '-base', $uri . '/' . $m['base_css'], array(), upw_anim_asset_ver( $m['ver'], $abs ) );
+				$css_files[] = array( 'handle' => $h . '-base', 'abs' => $abs, 'src' => $uri . '/' . $m['base_css'], 'ver' => upw_anim_asset_ver( $m['ver'], $abs ) );
 			}
 		}
 		foreach ( $styles as $s ) {
 			$rel = $m['css_dir'] . '/' . $s . '.css';
 			$abs = $path . '/' . $rel;
 			if ( file_exists( $abs ) ) {
-				wp_enqueue_style( $h . '-' . $s, $uri . '/' . $rel, array(), upw_anim_asset_ver( $m['ver'], $abs ) );
+				$css_files[] = array( 'handle' => $h . '-' . $s, 'abs' => $abs, 'src' => $uri . '/' . $rel, 'ver' => upw_anim_asset_ver( $m['ver'], $abs ) );
+			}
+		}
+
+		if ( $combine_css && count( $css_files ) >= 2 && ( $url = $ao->combine_files( $css_files, 'css' ) ) ) {
+			wp_enqueue_style( $h . '-combined', $url, array(), null );
+		} else {
+			foreach ( $css_files as $f ) {
+				wp_enqueue_style( $f['handle'], $f['src'], array(), $f['ver'] );
 			}
 		}
 
@@ -134,18 +212,56 @@ add_action( 'wp_footer', function () {
 			continue; // CSS-only page for this module → NO JavaScript at all.
 		}
 
+		// Modules whose JS uses the shared frame scheduler depend on it (loads once per page).
+		$base_deps = (array) $m['js_deps'];
+		if ( $m['needs_raf'] ) {
+			$base_deps[] = upw_anim_raf_handle();
+		}
+
 		$core_handle = $h . '-core';
 		$has_core    = $m['base_js'] && file_exists( $path . '/' . $m['base_js'] );
+		$core_abs    = $has_core ? $path . '/' . $m['base_js'] : '';
+		$core_src    = $has_core ? $uri . '/' . $m['base_js'] : '';
+		$cfg         = is_callable( $m['js_cfg'] ) ? call_user_func( $m['js_cfg'] ) : '';
+		if ( ! is_string( $cfg ) ) {
+			$cfg = '';
+		}
 
+		// Ordered JS file list, matching the separate-enqueue order exactly:
+		//   core_first: [core, …partials]   |   default: […partials, core]
+		$js_files = array();
 		if ( $m['js_core_first'] && $has_core ) {
-			// Core FIRST: it defines the shared helpers/registry; each per-style partial then
-			// loads after it (depends on it) and aliases those helpers at load time.
-			wp_enqueue_script( $core_handle, $uri . '/' . $m['base_js'], (array) $m['js_deps'], upw_anim_asset_ver( $m['ver'], $path . '/' . $m['base_js'] ), true );
-			if ( is_callable( $m['js_cfg'] ) ) {
-				$cfg = call_user_func( $m['js_cfg'] );
-				if ( is_string( $cfg ) && $cfg !== '' ) {
-					wp_add_inline_script( $core_handle, $cfg, 'before' );
+			$js_files[] = array( 'handle' => $core_handle, 'abs' => $core_abs, 'src' => $core_src );
+			foreach ( $js_used as $s ) {
+				$abs = $path . '/' . $m['js_dir'] . '/' . $s . '.js';
+				if ( file_exists( $abs ) ) {
+					$js_files[] = array( 'handle' => $h . '-js-' . $s, 'abs' => $abs, 'src' => $uri . '/' . $m['js_dir'] . '/' . $s . '.js' );
 				}
+			}
+		} else {
+			foreach ( $js_used as $s ) {
+				$abs = $path . '/' . $m['js_dir'] . '/' . $s . '.js';
+				if ( file_exists( $abs ) ) {
+					$js_files[] = array( 'handle' => $h . '-js-' . $s, 'abs' => $abs, 'src' => $uri . '/' . $m['js_dir'] . '/' . $s . '.js' );
+				}
+			}
+			if ( $has_core ) {
+				$js_files[] = array( 'handle' => $core_handle, 'abs' => $core_abs, 'src' => $core_src );
+			}
+		}
+
+		if ( $combine_js && count( $js_files ) >= 2 && ( $url = $ao->combine_files( $js_files, 'js' ) ) ) {
+			// One combined script; the inline cfg rides on it (kept inline, never cached).
+			wp_enqueue_script( $h . '-js-combined', $url, $base_deps, null, true );
+			if ( $cfg !== '' ) {
+				wp_add_inline_script( $h . '-js-combined', $cfg, 'before' );
+			}
+		} elseif ( $m['js_core_first'] && $has_core ) {
+			// Separate — Core FIRST: it defines the shared helpers/registry; each per-style
+			// partial then loads after it (depends on it) and aliases those helpers.
+			wp_enqueue_script( $core_handle, $core_src, $base_deps, upw_anim_asset_ver( $m['ver'], $core_abs ), true );
+			if ( $cfg !== '' ) {
+				wp_add_inline_script( $core_handle, $cfg, 'before' );
 			}
 			foreach ( $js_used as $s ) {
 				$rel = $m['js_dir'] . '/' . $s . '.js';
@@ -154,26 +270,22 @@ add_action( 'wp_footer', function () {
 					wp_enqueue_script( $h . '-js-' . $s, $uri . '/' . $rel, array( $core_handle ), upw_anim_asset_ver( $m['ver'], $abs ), true );
 				}
 			}
-			continue;
-		}
-
-		// Default (hover model): partials first (they register into the runtime registry),
-		// then the core dispatcher last (depends on them, so it can init immediately).
-		$eff_handles = array();
-		foreach ( $js_used as $s ) {
-			$rel = $m['js_dir'] . '/' . $s . '.js';
-			$abs = $path . '/' . $rel;
-			if ( file_exists( $abs ) ) {
-				$eh = $h . '-js-' . $s;
-				wp_enqueue_script( $eh, $uri . '/' . $rel, (array) $m['js_deps'], upw_anim_asset_ver( $m['ver'], $abs ), true );
-				$eff_handles[] = $eh;
+		} else {
+			// Separate — Default (hover model): partials first (they register into the runtime
+			// registry), then the core dispatcher last (depends on them, so it inits immediately).
+			$eff_handles = array();
+			foreach ( $js_used as $s ) {
+				$rel = $m['js_dir'] . '/' . $s . '.js';
+				$abs = $path . '/' . $rel;
+				if ( file_exists( $abs ) ) {
+					$eh = $h . '-js-' . $s;
+					wp_enqueue_script( $eh, $uri . '/' . $rel, $base_deps, upw_anim_asset_ver( $m['ver'], $abs ), true );
+					$eff_handles[] = $eh;
+				}
 			}
-		}
-		if ( $has_core ) {
-			wp_enqueue_script( $core_handle, $uri . '/' . $m['base_js'], array_merge( (array) $m['js_deps'], $eff_handles ), upw_anim_asset_ver( $m['ver'], $path . '/' . $m['base_js'] ), true );
-			if ( is_callable( $m['js_cfg'] ) ) {
-				$cfg = call_user_func( $m['js_cfg'] );
-				if ( is_string( $cfg ) && $cfg !== '' ) {
+			if ( $has_core ) {
+				wp_enqueue_script( $core_handle, $core_src, array_merge( $base_deps, $eff_handles ), upw_anim_asset_ver( $m['ver'], $core_abs ), true );
+				if ( $cfg !== '' ) {
 					wp_add_inline_script( $core_handle, $cfg, 'before' );
 				}
 			}

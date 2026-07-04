@@ -459,7 +459,10 @@ add_action( 'wp_enqueue_scripts', function () {
 	if ( file_exists( $dir . $style_css ) ) {
 		wp_enqueue_style( 'upw-cursor-' . sanitize_html_class( $style ), $base . $style_css, array( 'upw-cursor-base' ), $fver( $style_css ) );
 	}
-	wp_enqueue_script( 'upw-cursor', $base . '/static/js/styles/' . $group . '.js', array(), $fver( '/static/js/styles/' . $group . '.js' ), true );
+	// The cursor loop runs on the shared frame scheduler (window.upwAnimRaf) so it pauses while
+	// the tab is hidden instead of burning CPU in a background tab.
+	$cur_deps = function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array();
+	wp_enqueue_script( 'upw-cursor', $base . '/static/js/styles/' . $group . '.js', $cur_deps, $fver( '/static/js/styles/' . $group . '.js' ), true );
 
 	$color     = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6' ) : '#2f74e6';
 	// Canvas (2D context) can't use a CSS var() — resolve a real hex for ink/fluid/ripple.

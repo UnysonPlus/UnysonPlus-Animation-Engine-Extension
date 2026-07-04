@@ -27,9 +27,10 @@ if ( ! function_exists( 'upw_perf_note' ) ) :
 	 * @param string $scope 'page' (per-element effects) | 'site' (site-wide, e.g. cursor)
 	 */
 	function upw_perf_note( $scope = 'page' ) {
-		return $scope === 'site'
+		$pause = __( ' Running animations also pause automatically in background tabs, so they never waste CPU when the page isn\'t visible.', 'fw' );
+		return ( $scope === 'site'
 			? __( '⚡ Loads only when enabled — on the front end, never in admin.', 'fw' )
-			: __( '⚡ Loads only on pages that use it — pages without it ship none of this code.', 'fw' );
+			: __( '⚡ Loads only on pages that use it — pages without it ship none of this code.', 'fw' ) ) . $pause;
 	}
 endif;
 

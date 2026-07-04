@@ -329,6 +329,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_dir'        => 'static/js/effects',
 			'base_css'      => 'static/css/physics.css',   // tiny, all-base (drag affordances) — no per-effect CSS
 			'base_js'       => 'static/js/physics-core.js',
+			'needs_raf'     => true,                        // uses the shared frame scheduler (window.upwAnimRaf)
 			'js_core_first' => true,                        // core (integrator) loads before the effect partials
 			'js_styles'     => upw_physics_effects(),       // every effect ships a JS partial (registers into window.upwPhys)
 			'js_cfg'        => function () {

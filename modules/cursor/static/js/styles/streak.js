@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -70,15 +71,14 @@
 	function streak() {
 		var el = make('upw-cursor--streak upw-cursor-primary');
 		var cx = mx, cy = my, px = mx, py = my;
-		(function loop() {
+		RAF.add(function () {
 			var p = pos();
 			cx += (p.x - cx) * 0.25; cy += (p.y - cy) * 0.25;
 			var dx = cx - px, dy = cy - py; px = cx; py = cy;
 			var spd = reduce ? 0 : Math.min(1.4, Math.sqrt(dx * dx + dy * dy) / 22);
 			var ang = Math.atan2(dy, dx) * 180 / Math.PI;
 			el.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px) translate(-50%,-50%) rotate(' + ang.toFixed(1) + 'deg) scale(' + (1 + spd).toFixed(2) + ',' + (1 - spd * 0.4).toFixed(2) + ')';
-			requestAnimationFrame(loop);
-		})();
+		});
 	}
 
 	function clickFx() {

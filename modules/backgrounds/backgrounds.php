@@ -560,6 +560,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_dir'        => 'static/js/effects',
 			'base_css'      => 'static/css/base.css',   // the injected layer + canvas, always needed
 			'base_js'       => 'static/js/backgrounds-core.js',
+			'needs_raf'     => true,                    // uses the shared frame scheduler (window.upwAnimRaf)
 			'js_core_first' => true,                    // core (engine) loads before the style partials
 			'js_styles'     => upw_bg_effects(),        // every style ships a JS partial (dispatch injects the layer)
 			'js_cfg'        => function () {

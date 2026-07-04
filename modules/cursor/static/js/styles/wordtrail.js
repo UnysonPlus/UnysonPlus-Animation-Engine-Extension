@@ -3,6 +3,7 @@
  */
 (function () {
 	'use strict';
+	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
 
 
 	var cfg = window.upwCursorCfg || {};
@@ -82,15 +83,14 @@
 			s.style.opacity = String((1 - i / N) * 0.9);
 			segs.push({ el: s, x: mx, y: my });
 		}
-		(function loop() {
+		RAF.add(function () {
 			var px = pos().x, py = pos().y;
 			for (i = 0; i < N; i++) {
 				var k = Math.max(0.12, 0.4 - i * 0.03);
 				segs[i].x += (px - segs[i].x) * k; segs[i].y += (py - segs[i].y) * k;
 				place(segs[i].el, segs[i].x, segs[i].y); px = segs[i].x; py = segs[i].y;
 			}
-			requestAnimationFrame(loop);
-		})();
+		});
 	}
 
 	function clickFx() {

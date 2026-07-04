@@ -91,17 +91,19 @@
 		}
 
 		if (style === 'skew') {
-			// Continuous loop so the skew eases back to 0 when scrolling stops.
+			// Continuous loop so the skew eases back to 0 when scrolling stops. Driven by the
+			// shared frame scheduler (window.upwAnimRaf) — pauses while the tab is hidden.
 			var curSkew = 0;
-			(function loop() {
-				var s = scrolledNow();
-				var target = clamp(vel * intensity * 3, -16, 16);
-				vel *= 0.8;
-				curSkew += (target - curSkew) * 0.15;
-				if (Math.abs(curSkew) < 0.02) curSkew = 0;
-				paintTrack(s, curSkew);
-				requestAnimationFrame(loop);
-			})();
+			if (window.upwAnimRaf) {
+				window.upwAnimRaf.add(function () {
+					var s = scrolledNow();
+					var target = clamp(vel * intensity * 3, -16, 16);
+					vel *= 0.8;
+					curSkew += (target - curSkew) * 0.15;
+					if (Math.abs(curSkew) < 0.02) curSkew = 0;
+					paintTrack(s, curSkew);
+				});
+			}
 		} else {
 			var pending = false;
 			function tick() { pending = false; var s = scrolledNow(); paintTrack(s, 0); paintPanels(); }
