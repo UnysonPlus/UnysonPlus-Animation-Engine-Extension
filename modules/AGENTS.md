@@ -3,6 +3,11 @@
 Read this **before** creating or editing an engine module. It captures the conventions that keep
 every module (and its picker swatches) consistent, so we stop re-solving the same issues.
 
+> **Before building anything new, check [`../CATALOG.md`](../CATALOG.md)** — the inventory of every
+> module, style/effect, and shortcode that already exists. A new module/effect/shortcode must be
+> genuinely **distinct** from what's there; if a request maps onto an existing module, extend that
+> module's style list instead of creating a parallel one.
+
 A "module" adds one effect to the per-element **Animations** tab (via the `animation-stack`
 "Add Animation" inserter). Reference modules: **`hover`** (per-element, the canonical multi-style
 picker) and **`scroll-loop`** / **`sticky-stack`** (Section-only).

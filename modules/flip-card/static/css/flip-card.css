@@ -1,25 +1,31 @@
-/* UnysonPlus Animation Engine — 3D Flip Card. */
+/* UnysonPlus Animation Engine — 3D Flip Card. Seven styles: flip · cube · fold ·
+ * door · diagonal · pop · carousel. Front-face = the element's content; back-face
+ * is built by flip-card.js. Custom-property driven: each style/direction sets
+ * --flip-t (flipped transform) / --flip-back-t / --flip-front-t and one rule applies it. */
+
 .sc-flip {
-	perspective: 1400px;
+	perspective: var(--flip-persp, 1400px);
 	position: relative;
+	border-radius: var(--flip-radius, 0);
 }
 .sc-flip-inner {
 	position: relative;
 	width: 100%;
 	min-height: inherit;
 	transform-style: preserve-3d;
-	transition: transform var(--flip-dur, 0.6s) cubic-bezier(0.4, 0.2, 0.2, 1);
+	transition: transform var(--flip-dur, 0.6s) var(--flip-ease, cubic-bezier(0.4, 0.2, 0.2, 1));
 }
 .sc-flip-front,
-.sc-flip-back {
-	-webkit-backface-visibility: hidden;
-	backface-visibility: hidden;
-	border-radius: inherit;
+.sc-flip-back { border-radius: inherit; }
+.sc-flip-front {
+	position: relative;
+	min-height: inherit;
+	transform: var(--flip-front-t, none);
 }
-.sc-flip-front { position: relative; min-height: inherit; }
 .sc-flip-back {
 	position: absolute;
 	inset: 0;
+	transform: var(--flip-back-t, none);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -27,23 +33,111 @@
 	text-align: center;
 	padding: 24px;
 	box-sizing: border-box;
+	background-size: cover;
+	background-position: center;
+	overflow: hidden;
 }
+.sc-flip--balign-top    .sc-flip-back { justify-content: flex-start; }
+.sc-flip--balign-center .sc-flip-back { justify-content: center; }
+.sc-flip--balign-bottom .sc-flip-back { justify-content: flex-end; }
+
+/* Back image scrim (added by JS when a back image is set) + keep content above it. */
+.sc-flip-back-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, .34); z-index: 0; }
+.sc-flip-back > .sc-flip-back-title,
+.sc-flip-back > .sc-flip-back-text,
+.sc-flip-back > .sc-flip-back-btn { position: relative; z-index: 1; }
+
 .sc-flip-back-title { margin: 0 0 8px; font-size: 20px; line-height: 1.25; color: inherit; }
-.sc-flip-back-text { font-size: 15px; line-height: 1.55; color: inherit; opacity: .95; }
+.sc-flip-back-text  { font-size: 15px; line-height: 1.55; color: inherit; opacity: .95; }
+.sc-flip-back-btn {
+	display: inline-block;
+	margin-top: 16px;
+	padding: 9px 20px;
+	border: 1px solid currentColor;
+	border-radius: 6px;
+	color: inherit;
+	text-decoration: none;
+	font-size: 14px;
+	line-height: 1.2;
+	transition: background-color .2s ease;
+}
+.sc-flip-back-btn:hover { background: rgba(255, 255, 255, .16); }
 
-/* Back face pre-rotation, per axis. */
-.sc-flip--h .sc-flip-back { transform: rotateY(180deg); }
-.sc-flip--v .sc-flip-back { transform: rotateX(180deg); }
+/* ===== Family A — the INNER rotates (flip · cube · diagonal · pop · carousel) ===== */
+.sc-flip--flip .sc-flip-front,     .sc-flip--flip .sc-flip-back,
+.sc-flip--cube .sc-flip-front,     .sc-flip--cube .sc-flip-back,
+.sc-flip--diagonal .sc-flip-front, .sc-flip--diagonal .sc-flip-back,
+.sc-flip--pop .sc-flip-front,      .sc-flip--pop .sc-flip-back,
+.sc-flip--carousel .sc-flip-front, .sc-flip--carousel .sc-flip-back {
+	-webkit-backface-visibility: hidden;
+	        backface-visibility: hidden;
+}
+.sc-flip--flip.sc-flip-hover:hover .sc-flip-inner,     .sc-flip--flip.is-flipped .sc-flip-inner,
+.sc-flip--cube.sc-flip-hover:hover .sc-flip-inner,     .sc-flip--cube.is-flipped .sc-flip-inner,
+.sc-flip--diagonal.sc-flip-hover:hover .sc-flip-inner, .sc-flip--diagonal.is-flipped .sc-flip-inner,
+.sc-flip--pop.sc-flip-hover:hover .sc-flip-inner,      .sc-flip--pop.is-flipped .sc-flip-inner,
+.sc-flip--carousel.sc-flip-hover:hover .sc-flip-inner, .sc-flip--carousel.is-flipped .sc-flip-inner {
+	transform: var(--flip-t, none);
+}
 
-/* Flipped state — hover (CSS) or click (JS toggles .is-flipped). */
-.sc-flip--h.sc-flip-hover:hover .sc-flip-inner,
-.sc-flip--h.sc-flip-click.is-flipped .sc-flip-inner { transform: rotateY(180deg); }
-.sc-flip--v.sc-flip-hover:hover .sc-flip-inner,
-.sc-flip--v.sc-flip-click.is-flipped .sc-flip-inner { transform: rotateX(180deg); }
+/* flip */
+.sc-flip--flip.sc-flip--h { --flip-back-t: rotateY(180deg); --flip-t: rotateY(180deg); }
+.sc-flip--flip.sc-flip--v { --flip-back-t: rotateX(180deg); --flip-t: rotateX(180deg); }
 
-.sc-flip-click { cursor: pointer; }
-.sc-flip-click:focus-visible { outline: 2px solid #2f74e6; outline-offset: 2px; }
+/* diagonal (ignores direction) */
+.sc-flip--diagonal { --flip-back-t: rotate3d(1, 1, 0, 180deg); --flip-t: rotate3d(1, 1, 0, 180deg); }
+
+/* pop = flip + slight scale, forced spring easing for a punchy overshoot */
+.sc-flip--pop .sc-flip-inner { transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+.sc-flip--pop.sc-flip--h { --flip-back-t: rotateY(180deg); --flip-t: rotateY(180deg) scale(1.06); }
+.sc-flip--pop.sc-flip--v { --flip-back-t: rotateX(180deg); --flip-t: rotateX(180deg) scale(1.06); }
+
+/* carousel = flip with a Z thickness so it reads as a slab turning on a stand */
+.sc-flip--carousel.sc-flip--h { --flip-front-t: translateZ(26px); --flip-back-t: rotateY(180deg) translateZ(26px); --flip-t: rotateY(180deg); }
+.sc-flip--carousel.sc-flip--v { --flip-front-t: translateZ(26px); --flip-back-t: rotateX(180deg) translateZ(26px); --flip-t: rotateX(180deg); }
+
+/* cube = a solid quarter-turn; --flip-w / --flip-h are the card size (set by JS) */
+.sc-flip--cube.sc-flip--h {
+	--flip-front-t: translateZ(calc(var(--flip-w, 320px) / 2));
+	--flip-back-t: rotateY(90deg) translateZ(calc(var(--flip-w, 320px) / 2));
+	--flip-t: rotateY(-90deg);
+}
+.sc-flip--cube.sc-flip--v {
+	--flip-front-t: translateZ(calc(var(--flip-h, 260px) / 2));
+	--flip-back-t: rotateX(-90deg) translateZ(calc(var(--flip-h, 260px) / 2));
+	--flip-t: rotateX(90deg);
+}
+
+/* ===== Family B — the FRONT rotates on a hinge, back sits static behind (fold · door) ===== */
+.sc-flip--fold .sc-flip-back,
+.sc-flip--door .sc-flip-back { --flip-back-t: translateZ(-2px); }          /* keep back behind the front */
+.sc-flip--fold .sc-flip-front { -webkit-backface-visibility: hidden; backface-visibility: hidden; } /* front vanishes past 90deg */
+.sc-flip--door .sc-flip-front { box-shadow: 0 0 24px rgba(0, 0, 0, .18); } /* door panel keeps a little depth */
+.sc-flip--fold .sc-flip-front,
+.sc-flip--door .sc-flip-front { transition: transform var(--flip-dur, 0.6s) var(--flip-ease, cubic-bezier(0.4, 0.2, 0.2, 1)); }
+
+.sc-flip--fold.sc-flip--h .sc-flip-front,
+.sc-flip--door.sc-flip--h .sc-flip-front { transform-origin: left center; }
+.sc-flip--fold.sc-flip--v .sc-flip-front,
+.sc-flip--door.sc-flip--v .sc-flip-front { transform-origin: center top; }
+
+.sc-flip--fold.sc-flip-hover:hover .sc-flip-front, .sc-flip--fold.is-flipped .sc-flip-front,
+.sc-flip--door.sc-flip-hover:hover .sc-flip-front, .sc-flip--door.is-flipped .sc-flip-front {
+	transform: var(--flip-ft, none);
+}
+.sc-flip--fold.sc-flip--h { --flip-ft: rotateY(-180deg); }
+.sc-flip--fold.sc-flip--v { --flip-ft: rotateX(180deg); }
+.sc-flip--door.sc-flip--h { --flip-ft: rotateY(-158deg); }
+.sc-flip--door.sc-flip--v { --flip-ft: rotateX(158deg); }
+
+/* ===== Triggers ===== */
+.sc-flip-click,
+.sc-flip-auto { cursor: pointer; }
+.sc-flip-click:focus-visible,
+.sc-flip-auto:focus-visible { outline: 2px solid #2f74e6; outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
-	.sc-flip-inner { transition: none; }
+	.sc-flip-inner,
+	.sc-flip--fold .sc-flip-front,
+	.sc-flip--door .sc-flip-front { transition: none; }
 }

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Pop">
+  <rect x="50" y="20" width="32" height="30" rx="4" fill="#2f74e6" opacity="0.85"/>
+  <g stroke="#2f74e6" stroke-width="3" stroke-linecap="round">
+    <path d="M42 16 l-5 -5"/><path d="M90 16 l5 -5"/><path d="M42 54 l-5 5"/><path d="M90 54 l5 5"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Pop</text>
+</svg>
