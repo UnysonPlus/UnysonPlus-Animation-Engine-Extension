@@ -1,0 +1,2 @@
+.sc-sth--fill .sth-w { color: inherit; opacity: .26; }
+.sc-sth--fill .sth-w.is-on { opacity: 1; color: var(--sth-active, inherit); }

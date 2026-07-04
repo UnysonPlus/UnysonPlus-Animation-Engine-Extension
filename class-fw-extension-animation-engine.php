@@ -47,6 +47,9 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/horizontal-scroll/horizontal-scroll.php'; // Horizontal Scroll Section (Section-level, scroll)
 		require_once dirname( __FILE__ ) . '/modules/scroll-reveal/scroll-reveal.php';    // Scroll Reveal (per-element clip wipe)
 		require_once dirname( __FILE__ ) . '/modules/flip-card/flip-card.php';          // 3D Flip Card (per-element, pointer)
+		require_once dirname( __FILE__ ) . '/modules/scroll-text-highlight/scroll-text-highlight.php'; // Scroll Text Highlight (per-element, scroll)
+		require_once dirname( __FILE__ ) . '/modules/scroll-color-shift/scroll-color-shift.php'; // Scroll Color Shift (Section-level, scroll)
+		require_once dirname( __FILE__ ) . '/modules/preloader/preloader.php';                 // Preloader / Page Loader (site-wide)
 
 		// Central effects control — consolidates the per-module enable switches into one
 		// "Effects" tab and hides a disabled module's options. Loaded last (after modules).

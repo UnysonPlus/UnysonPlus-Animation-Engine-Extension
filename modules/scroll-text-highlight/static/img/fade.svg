@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Fade">
+  <g fill="#2f74e6">
+    <rect x="30" y="20" width="18" height="9" rx="3" opacity="1"/>
+    <rect x="52" y="20" width="26" height="9" rx="3" opacity="0.8"/>
+    <rect x="82" y="20" width="20" height="9" rx="3" opacity="0.55"/>
+    <rect x="30" y="36" width="24" height="9" rx="3" opacity="0.4"/>
+    <rect x="58" y="36" width="16" height="9" rx="3" opacity="0.25"/>
+    <rect x="78" y="36" width="24" height="9" rx="3" opacity="0.15"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Fade</text>
+</svg>

@@ -7,7 +7,7 @@ shortcode, check this list first: a new one must be genuinely DISTINCT from ever
 rename or a near-duplicate of an existing style). Keep this file updated when styles/modules are
 added or removed.
 
-_Engine version at last update: 1.1.20._
+_Engine version at last update: 1.1.21._
 
 ---
 
@@ -26,6 +26,7 @@ the styles it uses.
 | **text-effects** (Text Effects) | Text | 37 | split_reveal · scramble · typewriter · shimmer · wave · glitch · vf_weight · blur · mask · flip3d · scale · slide · bounce · random · skew · gradient_flow · rainbow · neon · breathing · jitter · float · marker · strikebox · outline_fill · chromatic · width_sweep · rotating_words · countup · splitflap · matrix · fill_sweep · letter_jump · expand_spacing · color_wave · magnetic · image_mask · kinetic |
 | **scroll-motion** (Scroll Motion, GSAP) | Scroll | 4×3 | Effect types: fade · slide · scale · rotate — each at intensity subtle / standard / dramatic. Scroll-triggered entrance. |
 | **scroll-reveal** (Scroll Reveal / clip wipe) | Scroll | 6 | left · right · up · down · iris · diagonal (clip-path wipe on scroll-in) |
+| **scroll-text-highlight** (Scroll Text Highlight) | Scroll | 4 | fill · fade · blur · marker — word/char scrolly-telling reveal (each word lights up as it scrolls through the viewport) |
 | **parallax** (Parallax Depth Layers) | Pointer/Scroll | 1 | Single behavior — mark a Scene, give each child a **Depth**; pointer/scroll multi-layer depth |
 | **marquee** (Marquee) | Motion | 1 | Single behavior — seamless ticker; directions left/right/up/down + **curve/arc** path; options: speed, drag, fade, curve |
 | **flip-card** (3D Flip Card) | Pointer | 7 | Flip styles: flip · cube · fold · door · diagonal · pop · carousel — each Horizontal/Vertical, trigger hover/click/scroll/auto; back face (bg / color / image / heading / text / button, align) |
@@ -38,6 +39,7 @@ the styles it uses.
 | **sticky-stack** (Sticky Card Stack) | 11 | stack · scale_fade · fade · blur · tilt · fan · messy · side · peel · push · grow |
 | **horizontal-scroll** (Horizontal Scroll Section) | 15 | standard · reverse · snap · parallax · fade · coverflow · blur · grow · arc · wave · zigzag · rotate3d · wall · skew · drag |
 | **scroll-loop** (Infinite / Seamless Scroll Loop, Lenis) | 1 | Single behavior — turns a run of full-height sections into a never-ending, snapping scroll |
+| **scroll-color-shift** (Scroll Color Shift) | 1 | Single behavior — give each Section a target colour; the page background morphs section-to-section as you scroll |
 
 ### Site-wide (Theme Settings → Animations)
 
@@ -46,6 +48,7 @@ the styles it uses.
 | **cursor** (Custom Cursor) | 42 | dot · ring · dot_ring · crosshair · brackets · square · dashed · glow · gradient · blob · spotlight · comet · particles · elastic · lens · arrow · radar · plus · star · diamond · dual_ring · bullseye · reticle · invert · echo · firefly · confetti · bubble · spring · streak · rope · metaball · label · sticky · word_trail · reveal · magnify · ink · fluid · distort · custom · glyph |
 | **page-transitions** (Page Transitions) | 23 | fade · slide · zoom · rotate · curtain · doors · split · wipe · diagonal · bars · stripes · blinds · reveal · shape · iris · glitch · flip · checkerboard · pixels · ripple · conic · morph · contentfade |
 | **scroll-progress** (Scroll Progress indicator) | 16 | bar · gradient · glow · segments · pill · labeled · under_nav · liquid · edge · ring · ring_number · gauge · battery · counter · reading_time · dots |
+| **preloader** (Preloader / Page Loader) | 6 | spinner · bar · dots · counter · curtain · logo — full-screen loading screen shown until the page is ready, then animated away (distinct from Page Transitions, which animate route changes) |
 
 **Also in Theme Settings (not a style list):** the Entrance Animation (Animate.css, ~56 effects —
 lives in the **shortcodes** extension core, available even with the engine off).

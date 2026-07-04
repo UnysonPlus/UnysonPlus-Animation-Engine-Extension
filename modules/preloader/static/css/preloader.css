@@ -1,0 +1,57 @@
+/* Animation Engine — Preloader. Full-screen overlay printed at wp_body_open; JS removes on load. */
+html.upw-pl-lock { overflow: hidden; }
+.upw-preloader {
+	position: fixed;
+	inset: 0;
+	z-index: 999999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--pl-bg, #0b1220);
+	opacity: 1;
+	visibility: visible;
+	transition: opacity var(--pl-fade, .5s) ease, visibility var(--pl-fade, .5s) ease;
+}
+.upw-preloader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+.upw-pl-center { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.upw-pl-logo { max-width: 170px; max-height: 92px; height: auto; width: auto; display: block; }
+
+/* spinner */
+.upw-pl-spinner { width: 46px; height: 46px; border: 4px solid rgba(255, 255, 255, .18); border-top-color: var(--pl-accent, #2f74e6); border-radius: 50%; animation: upw-pl-spin .8s linear infinite; }
+@keyframes upw-pl-spin { to { transform: rotate(360deg); } }
+
+/* bar */
+.upw-pl-track { width: 210px; height: 4px; border-radius: 4px; background: rgba(255, 255, 255, .16); overflow: hidden; }
+.upw-pl-bar { width: 40%; height: 100%; border-radius: 4px; background: var(--pl-accent, #2f74e6); animation: upw-pl-bar 1.1s ease-in-out infinite; }
+@keyframes upw-pl-bar { 0% { transform: translateX(-120%); } 100% { transform: translateX(320%); } }
+
+/* dots */
+.upw-pl-dots { display: flex; gap: 11px; }
+.upw-pl-dots span { width: 12px; height: 12px; border-radius: 50%; background: var(--pl-accent, #2f74e6); animation: upw-pl-dot .6s ease-in-out infinite; }
+.upw-pl-dots span:nth-child(2) { animation-delay: .12s; }
+.upw-pl-dots span:nth-child(3) { animation-delay: .24s; }
+@keyframes upw-pl-dot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-13px); opacity: 1; } }
+
+/* counter */
+.upw-pl-count { color: #fff; font: 700 clamp(40px, 9vw, 84px)/1 -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: baseline; }
+.upw-pl-count .upw-pl-num { font-variant-numeric: tabular-nums; }
+.upw-pl-count .upw-pl-pct { font-size: .42em; margin-left: 4px; color: var(--pl-accent, #2f74e6); }
+
+/* curtain */
+.upw-pl--curtain { background: transparent; }
+.upw-pl-panel { position: fixed; left: 0; width: 100%; height: 50%; background: var(--pl-bg, #0b1220); transition: transform var(--pl-fade, .5s) cubic-bezier(.7, 0, .3, 1); }
+.upw-pl-panel--a { top: 0; }
+.upw-pl-panel--b { bottom: 0; }
+.upw-preloader.is-done .upw-pl-panel--a { transform: translateY(-100%); }
+.upw-preloader.is-done .upw-pl-panel--b { transform: translateY(100%); }
+.upw-pl--curtain.is-done { opacity: 1; }
+.upw-pl--curtain .upw-pl-center { position: relative; z-index: 1; transition: opacity var(--pl-fade, .5s) ease; }
+.upw-pl--curtain.is-done .upw-pl-center { opacity: 0; }
+
+/* logo pulse */
+.upw-pl--logo .upw-pl-logo { animation: upw-pl-pulse 1.2s ease-in-out infinite; }
+@keyframes upw-pl-pulse { 0%, 100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.06); opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+	.upw-pl-spinner, .upw-pl-bar, .upw-pl-dots span, .upw-pl--logo .upw-pl-logo { animation: none; }
+}

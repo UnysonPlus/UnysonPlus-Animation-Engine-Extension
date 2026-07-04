@@ -1,0 +1,9 @@
+.sc-sth--marker .sth-w {
+	background-image: linear-gradient(var(--sth-active, #ffe08a), var(--sth-active, #ffe08a));
+	background-repeat: no-repeat;
+	background-position: 0 86%;
+	background-size: 0% 34%;
+	border-radius: 2px;
+	padding: 0 1px;
+}
+.sc-sth--marker .sth-w.is-on { background-size: 100% 34%; }

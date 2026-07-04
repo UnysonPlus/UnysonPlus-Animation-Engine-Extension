@@ -1,0 +1,2 @@
+.sc-sth--blur .sth-w { opacity: .4; filter: blur(5px); }
+.sc-sth--blur .sth-w.is-on { opacity: 1; filter: blur(0); }

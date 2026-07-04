@@ -1,0 +1,7 @@
+/* Scroll Color Shift — the runtime toggles body.upw-cs-on and animates its bg/text colour. */
+body.upw-cs-on {
+	transition: background-color var(--cs-dur, .6s) ease, color var(--cs-dur, .6s) ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	body.upw-cs-on { transition: none; }
+}

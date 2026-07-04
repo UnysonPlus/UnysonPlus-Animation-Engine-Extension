@@ -1,0 +1,15 @@
+/* Scroll Text Highlight — shared base. The runtime wraps words/chars in .sth-w spans
+ * and toggles .is-on as they scroll into the reveal zone. Per-style CSS defines the look. */
+.sc-sth .sth-w {
+	display: inline-block;
+	transition:
+		color var(--sth-dur, .5s) ease,
+		opacity var(--sth-dur, .5s) ease,
+		filter var(--sth-dur, .5s) ease,
+		background-size var(--sth-dur, .5s) ease;
+	will-change: opacity, filter;
+}
+.sc-sth .sth-sp { display: inline-block; white-space: pre; } /* preserved whitespace between spans */
+@media (prefers-reduced-motion: reduce) {
+	.sc-sth .sth-w { transition: none; }
+}

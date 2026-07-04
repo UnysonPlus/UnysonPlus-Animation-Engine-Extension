@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Color Shift">
+  <rect x="46" y="12" width="40" height="14" rx="3" fill="#bcd3f7"/>
+  <rect x="46" y="28" width="40" height="14" rx="3" fill="#7aa9ee"/>
+  <rect x="46" y="44" width="40" height="14" rx="3" fill="#2f74e6"/>
+  <path d="M96 20 L96 50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+  <path d="M92 44 l4 6 4 -6" fill="none" stroke="#475569" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Shift</text>
+</svg>
