@@ -1,0 +1,8 @@
+/* Animation Engine — Background "dots" (CSS-only style). */
+.upw-bg-dots {
+	background-image: radial-gradient(var(--bg-color, #94a3b8) var(--bg-dot, 2px), transparent var(--bg-dot, 2px));
+	background-size: var(--bg-gap, 26px) var(--bg-gap, 26px);
+	opacity: .5; animation: upw-bg-dots 22s linear infinite;
+}
+@keyframes upw-bg-dots { from { background-position: 0 0; } to { background-position: var(--bg-gap, 26px) var(--bg-gap, 26px); } }
+@media (prefers-reduced-motion: reduce) { .upw-bg-dots { animation: none; } }

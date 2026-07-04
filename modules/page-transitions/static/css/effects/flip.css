@@ -1,0 +1,10 @@
+/* Animation Engine — Page transition "flip". */
+[data-pt-type="flip"] { perspective: 1600px; }
+[data-pt-type="flip"] .upw-pt__p1 { opacity: 1; backface-visibility: hidden; transform: rotateY(-95deg); animation: pt-flip-y-in var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="flip"][data-pt-dir="x"] .upw-pt__p1 { transform: rotateX(95deg); animation-name: pt-flip-x-in; }
+.is-exiting[data-pt-type="flip"] .upw-pt__p1 { animation: pt-flip-y-out var(--pt-dur, .6s) var(--e) forwards; }
+.is-exiting[data-pt-type="flip"][data-pt-dir="x"] .upw-pt__p1 { animation-name: pt-flip-x-out; }
+@keyframes pt-flip-y-in { from { transform: rotateY(0); } }
+@keyframes pt-flip-x-in { from { transform: rotateX(0); } }
+@keyframes pt-flip-y-out { from { transform: rotateY(95deg); } to { transform: rotateY(0); } }
+@keyframes pt-flip-x-out { from { transform: rotateX(-95deg); } to { transform: rotateX(0); } }

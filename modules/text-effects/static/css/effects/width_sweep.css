@@ -1,0 +1,3 @@
+/* Animation Engine — Text effect "width_sweep". */
+.upw-text-width { font-variation-settings: 'wdth' var(--text-wdth-from, 75); transition: font-variation-settings .5s ease; }
+.sc-text--width_sweep:hover .upw-text-width, .upw-text-width.is-on { font-variation-settings: 'wdth' var(--text-wdth-to, 125); }

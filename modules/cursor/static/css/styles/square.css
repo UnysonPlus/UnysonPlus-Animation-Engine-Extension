@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "square" shape. */
+.upw-cursor--square {
+	width: calc(var(--s) * 3); height: calc(var(--s) * 3);
+	border: 1.5px solid var(--c); border-radius: 4px;
+}

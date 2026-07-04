@@ -442,11 +442,24 @@ add_action( 'wp_enqueue_scripts', function () {
 	$base = $ext->get_declared_URI( '/modules/cursor' );
 	$ver  = $ext->manifest->get_version();
 	$dir  = __DIR__;
-	$jsv  = file_exists( "$dir/static/js/cursor.js" )  ? $ver . '.' . filemtime( "$dir/static/js/cursor.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/cursor.css" ) ? $ver . '.' . filemtime( "$dir/static/css/cursor.css" ) : $ver;
+	// On-demand assets (site-wide single choice): ship the shared base CSS + ONLY the chosen
+	// style's shape CSS + the one JS group file that implements it (was 44 KB → ~5-11 KB).
+	$fver = function ( $rel ) use ( $dir, $ver ) { $abs = $dir . $rel; return file_exists( $abs ) ? $ver . '.' . filemtime( $abs ) : $ver; };
+	// Map each style to its JS group file (many simple styles share the "shapes" builder).
+	$js_group_map = array(
+		'echo' => 'swarm', 'firefly' => 'swarm', 'confetti' => 'swarm', 'bubble' => 'swarm',
+		'ink' => 'canvasfx', 'fluid' => 'canvasfx', 'distort' => 'canvasfx',
+		'word_trail' => 'wordtrail',
+	);
+	$singles = array( 'comet', 'particles', 'elastic', 'arrow', 'spring', 'streak', 'rope', 'metaball', 'label', 'sticky', 'reveal', 'magnify', 'spotlight' );
+	$group   = isset( $js_group_map[ $style ] ) ? $js_group_map[ $style ] : ( in_array( $style, $singles, true ) ? $style : 'shapes' );
 
-	wp_enqueue_style( 'upw-cursor', $base . '/static/css/cursor.css', array(), $cssv );
-	wp_enqueue_script( 'upw-cursor', $base . '/static/js/cursor.js', array(), $jsv, true );
+	wp_enqueue_style( 'upw-cursor-base', $base . '/static/css/base.css', array(), $fver( '/static/css/base.css' ) );
+	$style_css = "/static/css/styles/$style.css";
+	if ( file_exists( $dir . $style_css ) ) {
+		wp_enqueue_style( 'upw-cursor-' . sanitize_html_class( $style ), $base . $style_css, array( 'upw-cursor-base' ), $fver( $style_css ) );
+	}
+	wp_enqueue_script( 'upw-cursor', $base . '/static/js/styles/' . $group . '.js', array(), $fver( '/static/js/styles/' . $group . '.js' ), true );
 
 	$color     = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( upw_cursor_setting( 'color', '' ), '#2f74e6' ) : '#2f74e6';
 	// Canvas (2D context) can't use a CSS var() — resolve a real hex for ink/fluid/ripple.

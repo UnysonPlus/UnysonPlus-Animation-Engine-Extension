@@ -58,6 +58,11 @@ if ( ! function_exists( 'upw_anim_register_assets' ) ) :
 			'js_styles' => array(),
 			'js_cfg'    => null,   // callable() => string of inline JS, printed before the core script
 			'js_deps'   => array(),
+			'js_core_first' => false, // true: core loads BEFORE partials (partials depend on it) —
+			                          // for modules whose per-style partials alias shared helpers the
+			                          // core defines at load time (e.g. backgrounds' canvas engine).
+			                          // false (default): partials load first, core depends on them
+			                          // (core runs the dispatch last — the hover model).
 			'handle'    => 'upw-' . $module,
 		), (array) $args );
 	}
@@ -129,7 +134,30 @@ add_action( 'wp_footer', function () {
 			continue; // CSS-only page for this module → NO JavaScript at all.
 		}
 
-		// Load each used effect partial first (they register into a runtime registry),
+		$core_handle = $h . '-core';
+		$has_core    = $m['base_js'] && file_exists( $path . '/' . $m['base_js'] );
+
+		if ( $m['js_core_first'] && $has_core ) {
+			// Core FIRST: it defines the shared helpers/registry; each per-style partial then
+			// loads after it (depends on it) and aliases those helpers at load time.
+			wp_enqueue_script( $core_handle, $uri . '/' . $m['base_js'], (array) $m['js_deps'], upw_anim_asset_ver( $m['ver'], $path . '/' . $m['base_js'] ), true );
+			if ( is_callable( $m['js_cfg'] ) ) {
+				$cfg = call_user_func( $m['js_cfg'] );
+				if ( is_string( $cfg ) && $cfg !== '' ) {
+					wp_add_inline_script( $core_handle, $cfg, 'before' );
+				}
+			}
+			foreach ( $js_used as $s ) {
+				$rel = $m['js_dir'] . '/' . $s . '.js';
+				$abs = $path . '/' . $rel;
+				if ( file_exists( $abs ) ) {
+					wp_enqueue_script( $h . '-js-' . $s, $uri . '/' . $rel, array( $core_handle ), upw_anim_asset_ver( $m['ver'], $abs ), true );
+				}
+			}
+			continue;
+		}
+
+		// Default (hover model): partials first (they register into the runtime registry),
 		// then the core dispatcher last (depends on them, so it can init immediately).
 		$eff_handles = array();
 		foreach ( $js_used as $s ) {
@@ -141,16 +169,12 @@ add_action( 'wp_footer', function () {
 				$eff_handles[] = $eh;
 			}
 		}
-		if ( $m['base_js'] ) {
-			$abs = $path . '/' . $m['base_js'];
-			if ( file_exists( $abs ) ) {
-				$ch = $h . '-core';
-				wp_enqueue_script( $ch, $uri . '/' . $m['base_js'], array_merge( (array) $m['js_deps'], $eff_handles ), upw_anim_asset_ver( $m['ver'], $abs ), true );
-				if ( is_callable( $m['js_cfg'] ) ) {
-					$cfg = call_user_func( $m['js_cfg'] );
-					if ( is_string( $cfg ) && $cfg !== '' ) {
-						wp_add_inline_script( $ch, $cfg, 'before' );
-					}
+		if ( $has_core ) {
+			wp_enqueue_script( $core_handle, $uri . '/' . $m['base_js'], array_merge( (array) $m['js_deps'], $eff_handles ), upw_anim_asset_ver( $m['ver'], $path . '/' . $m['base_js'] ), true );
+			if ( is_callable( $m['js_cfg'] ) ) {
+				$cfg = call_user_func( $m['js_cfg'] );
+				if ( is_string( $cfg ) && $cfg !== '' ) {
+					wp_add_inline_script( $core_handle, $cfg, 'before' );
 				}
 			}
 		}

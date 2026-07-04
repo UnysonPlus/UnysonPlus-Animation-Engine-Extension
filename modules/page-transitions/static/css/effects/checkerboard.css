@@ -1,0 +1,2 @@
+/* Animation Engine — Page transition "checkerboard". */
+[data-pt-type="checkerboard"], [data-pt-type="pixels"] { display: grid; grid-template-columns: repeat(var(--pt-cols, 12), 1fr); grid-template-rows: repeat(var(--pt-rows, 7), 1fr); }

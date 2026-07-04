@@ -1,0 +1,5 @@
+/* Animation Engine — Page transition "conic". */
+[data-pt-type="conic"] .upw-pt__p1 { --pt-ang: 0deg; -webkit-mask: conic-gradient(from -90deg, #000 var(--pt-ang), transparent 0); mask: conic-gradient(from -90deg, #000 var(--pt-ang), transparent 0); animation: pt-conic-in var(--pt-dur, .6s) linear backwards; }
+.is-exiting[data-pt-type="conic"] .upw-pt__p1 { animation: pt-conic-out var(--pt-dur, .6s) linear forwards; }
+@keyframes pt-conic-in { from { --pt-ang: 360deg; } to { --pt-ang: 0deg; } }
+@keyframes pt-conic-out { from { --pt-ang: 0deg; } to { --pt-ang: 360deg; } }

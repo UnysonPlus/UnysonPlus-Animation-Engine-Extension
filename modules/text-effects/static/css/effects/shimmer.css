@@ -1,0 +1,13 @@
+/* Animation Engine — Text effect "shimmer". */
+.upw-text-shimmer {
+	background: linear-gradient(100deg,
+		var(--text-c1, #8a8f98) 0%, var(--text-c1, #8a8f98) 40%,
+		var(--text-c2, #fff) 50%,
+		var(--text-c1, #8a8f98) 60%, var(--text-c1, #8a8f98) 100%);
+	background-size: 200% 100%;
+	-webkit-background-clip: text; background-clip: text;
+	-webkit-text-fill-color: transparent; color: transparent;
+	animation: upw-text-shimmer var(--text-speed, 3s) linear infinite;
+}
+@keyframes upw-text-shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .upw-text-shimmer { animation: none; -webkit-text-fill-color: currentColor; color: inherit; background: none; } }

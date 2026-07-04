@@ -1,0 +1,7 @@
+/* Animation Engine — Text effect "neon". */
+.upw-text-neon {
+	text-shadow: 0 0 4px var(--text-neon, #6aa6ff), 0 0 10px var(--text-neon, #6aa6ff), 0 0 22px var(--text-neon, #6aa6ff);
+	animation: upw-text-neon var(--text-speed, 2.5s) linear infinite;
+}
+@keyframes upw-text-neon { 0%, 18%, 22%, 55%, 57%, 100% { opacity: 1; } 20%, 56% { opacity: .72; } }
+@media (prefers-reduced-motion: reduce) { .upw-text-neon { animation: none; } }

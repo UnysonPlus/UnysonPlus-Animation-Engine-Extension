@@ -1,0 +1,5 @@
+/* Animation Engine — Page transition "stripes". */
+[data-pt-type="stripes"] .upw-pt__p1 { top: -10%; bottom: -10%; left: -10%; right: -10%; width: auto; background: repeating-linear-gradient(45deg, var(--pt-color, #0e1524) 0 22px, color-mix(in srgb, var(--pt-color, #0e1524) 62%, #000) 22px 44px); transform: translateX(0); animation: pt-stripe-in var(--pt-dur, .6s) var(--e) backwards; }
+.is-exiting[data-pt-type="stripes"] .upw-pt__p1 { animation: pt-stripe-out var(--pt-dur, .6s) var(--e) forwards; }
+@keyframes pt-stripe-in { from { transform: translateX(0); } to { transform: translateX(-130%); } }
+@keyframes pt-stripe-out { from { transform: translateX(130%); } to { transform: translateX(0); } }

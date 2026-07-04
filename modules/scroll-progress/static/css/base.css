@@ -1,0 +1,13 @@
+/* Scroll Progress — base (container, positions, reduced-motion). */
+.upw-sp { position: fixed; z-index: 9998; transition: opacity .3s ease; }
+.upw-sp.is-hidden { opacity: 0; pointer-events: none; }
+.upw-sp--top { top: 0; }
+.upw-sp--bottom { bottom: 0; }
+.upw-sp--br { right: 22px; bottom: 22px; }
+.upw-sp--bl { left: 22px; bottom: 22px; }
+.upw-sp--tr { right: 22px; top: 22px; }
+.upw-sp--tl { left: 22px; top: 22px; }
+@media (prefers-reduced-motion: reduce) {
+	.upw-sp, .upw-sp-fill, .upw-sp-fill-v, .upw-sp-bat-fill, .upw-sp-dot { transition: none; }
+	.upw-sp--liquid .upw-sp-fill::after { animation: none; }
+}

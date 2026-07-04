@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "invert" shape. */
+.upw-cursor--invert {
+	width: calc(var(--s) * 3); height: calc(var(--s) * 3);
+	background: #fff; border-radius: 50%; mix-blend-mode: difference;
+}

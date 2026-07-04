@@ -1,0 +1,6 @@
+/* Animation Engine — Cursor "glow" shape. */
+.upw-cursor--glow {
+	width: calc(var(--s) * 1.6); height: calc(var(--s) * 1.6); border-radius: 50%;
+	background: var(--c);
+	box-shadow: 0 0 10px 4px var(--c), 0 0 20px 8px color-mix(in srgb, var(--c) 45%, transparent);
+}

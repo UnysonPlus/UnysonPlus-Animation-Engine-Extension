@@ -293,6 +293,11 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	}
 
 	upw_physics_flag( true );
+	// On-demand assets: record this effect so ONLY its JS partial (+ the tiny base CSS) is
+	// enqueued, not the whole 27-effect bundle.
+	if ( function_exists( 'upw_anim_use_asset' ) ) {
+		upw_anim_use_asset( 'physics', $effect );
+	}
 	return $attr;
 }, 22, 2 );
 
@@ -309,31 +314,34 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
 }, 10, 2 );
 
 /* ------------------------------------------------------------------ *
- * 3) Enqueue the runtime — only on pages that actually used an effect.
+ * 3) On-demand assets. Register the module's per-effect partial layout with the shared
+ *    loader; a page ships ONLY the shared core (integrator) + the used effects' partials
+ *    — recorded per element in the wrapper filter via upw_anim_use_asset(). js_core_first:
+ *    the core defines the shared integrator/helpers that each effect partial aliases.
  * ------------------------------------------------------------------ */
-add_action( 'wp_footer', function () {
-	if ( ! upw_physics_flag() ) {
-		return;
+if ( function_exists( 'upw_anim_register_assets' ) ) {
+	$upw_phys_ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	if ( $upw_phys_ext ) {
+		upw_anim_register_assets( 'physics', array(
+			'path'          => __DIR__,
+			'uri'           => $upw_phys_ext->get_declared_URI( '/modules/physics' ),
+			'ver'           => $upw_phys_ext->manifest->get_version(),
+			'js_dir'        => 'static/js/effects',
+			'base_css'      => 'static/css/physics.css',   // tiny, all-base (drag affordances) — no per-effect CSS
+			'base_js'       => 'static/js/physics-core.js',
+			'js_core_first' => true,                        // core (integrator) loads before the effect partials
+			'js_styles'     => upw_physics_effects(),       // every effect ships a JS partial (registers into window.upwPhys)
+			'js_cfg'        => function () {
+				$cfg = array(
+					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
+					'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
+				);
+				return 'window.upwPhysicsCfg=' . wp_json_encode( $cfg ) . ';';
+			},
+		) );
 	}
-	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
-	if ( ! $ext ) {
-		return;
-	}
-	$base = $ext->get_declared_URI( '/modules/physics' );
-	$ver  = $ext->manifest->get_version();
-	$dir  = __DIR__;
-	$jsv  = file_exists( "$dir/static/js/physics.js" )  ? $ver . '.' . filemtime( "$dir/static/js/physics.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/physics.css" ) ? $ver . '.' . filemtime( "$dir/static/css/physics.css" ) : $ver;
-
-	wp_enqueue_style( 'upw-physics', $base . '/static/css/physics.css', array(), $cssv );
-	wp_enqueue_script( 'upw-physics', $base . '/static/js/physics.js', array(), $jsv, true );
-
-	$cfg = array(
-		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
-		'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
-	);
-	wp_add_inline_script( 'upw-physics', 'window.upwPhysicsCfg=' . wp_json_encode( $cfg ) . ';', 'before' );
-}, 5 );
+	unset( $upw_phys_ext );
+}
 
 /* ------------------------------------------------------------------ *
  * 4) Global on/off → Theme Settings → Animations → Physics sub-tab.

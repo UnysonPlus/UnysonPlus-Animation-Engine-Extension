@@ -1,0 +1,11 @@
+/* Animation Engine — Page transition "shape". */
+[data-pt-type="shape"][data-pt-dir="circle"]  .upw-pt__p1 { clip-path: circle(0% at 50% 50%); animation: pt-rev-in var(--pt-dur, .6s) ease backwards; }
+[data-pt-type="shape"][data-pt-dir="circle"].is-exiting .upw-pt__p1 { animation: pt-rev-out var(--pt-dur, .6s) ease forwards; }
+[data-pt-type="shape"][data-pt-dir="square"]  .upw-pt__p1 { clip-path: inset(50% 50%); animation: pt-sq-in var(--pt-dur, .6s) ease backwards; }
+[data-pt-type="shape"][data-pt-dir="square"].is-exiting .upw-pt__p1 { animation: pt-sq-out var(--pt-dur, .6s) ease forwards; }
+[data-pt-type="shape"][data-pt-dir="diamond"] .upw-pt__p1 { clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); animation: pt-di-in var(--pt-dur, .6s) ease backwards; }
+[data-pt-type="shape"][data-pt-dir="diamond"].is-exiting .upw-pt__p1 { animation: pt-di-out var(--pt-dur, .6s) ease forwards; }
+@keyframes pt-sq-in { from { clip-path: inset(0 0); } }
+@keyframes pt-sq-out { from { clip-path: inset(50% 50%); } to { clip-path: inset(0 0); } }
+@keyframes pt-di-in { from { clip-path: polygon(50% -60%, 160% 50%, 50% 160%, -60% 50%); } }
+@keyframes pt-di-out { from { clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); } to { clip-path: polygon(50% -60%, 160% 50%, 50% 160%, -60% 50%); } }

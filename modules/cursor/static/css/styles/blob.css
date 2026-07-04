@@ -1,0 +1,7 @@
+/* Animation Engine — Cursor "blob" shape. */
+.upw-cursor--blob {
+	width: calc(var(--s) * 3); height: calc(var(--s) * 3);
+	background: var(--c);
+	border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+	animation: upw-cursor-blob 6s ease-in-out infinite;
+}

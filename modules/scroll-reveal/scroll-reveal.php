@@ -154,6 +154,11 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	}
 
 	upw_scroll_reveal_flag( true );
+	// On-demand assets: record this direction so ONLY its clip CSS partial loads (+ the shared
+	// base + the single scroll runtime). The runtime itself is one generic behavior.
+	if ( function_exists( 'upw_anim_use_asset' ) ) {
+		upw_anim_use_asset( 'scroll-reveal', $mode );
+	}
 	return $attr;
 }, 22, 2 );
 
@@ -167,26 +172,27 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
 	return in_array( $mode, array( 'left', 'right', 'up', 'down', 'iris', 'diagonal' ), true );
 }, 10, 2 );
 
-/* 3) Enqueue the runtime — only on pages that actually used it. */
-add_action( 'wp_footer', function () {
-	if ( ! upw_scroll_reveal_flag() ) {
-		return;
+/* 3) On-demand assets — register with the shared loader; a page ships the shared base CSS + the
+ *    single scroll runtime + ONLY the used directions' clip CSS partials. The runtime is one
+ *    generic behavior (no per-direction JS), so js_styles just ensures it loads when used. */
+if ( function_exists( 'upw_anim_register_assets' ) ) {
+	$upw_sr_ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	if ( $upw_sr_ext ) {
+		upw_anim_register_assets( 'scroll-reveal', array(
+			'path'      => __DIR__,
+			'uri'       => $upw_sr_ext->get_declared_URI( '/modules/scroll-reveal' ),
+			'ver'       => $upw_sr_ext->manifest->get_version(),
+			'css_dir'   => 'static/css/effects',
+			'base_css'  => 'static/css/base.css',
+			'base_js'   => 'static/js/scroll-reveal.js', // one generic runtime; no per-direction JS partials
+			'js_styles' => array( 'left', 'right', 'up', 'down', 'iris', 'diagonal' ), // ensures the runtime loads when a direction is used
+			'js_cfg'    => function () {
+				$cfg = array(
+					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
+				);
+				return 'window.upwScrollRevealCfg=' . wp_json_encode( $cfg ) . ';';
+			},
+		) );
 	}
-	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
-	if ( ! $ext ) {
-		return;
-	}
-	$base = $ext->get_declared_URI( '/modules/scroll-reveal' );
-	$ver  = $ext->manifest->get_version();
-	$dir  = __DIR__;
-	$jsv  = file_exists( "$dir/static/js/scroll-reveal.js" )  ? $ver . '.' . filemtime( "$dir/static/js/scroll-reveal.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/scroll-reveal.css" ) ? $ver . '.' . filemtime( "$dir/static/css/scroll-reveal.css" ) : $ver;
-
-	wp_enqueue_style( 'upw-scroll-reveal', $base . '/static/css/scroll-reveal.css', array(), $cssv );
-	wp_enqueue_script( 'upw-scroll-reveal', $base . '/static/js/scroll-reveal.js', array(), $jsv, true );
-
-	$cfg = array(
-		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
-	);
-	wp_add_inline_script( 'upw-scroll-reveal', 'window.upwScrollRevealCfg=' . wp_json_encode( $cfg ) . ';', 'before' );
-}, 5 );
+	unset( $upw_sr_ext );
+}

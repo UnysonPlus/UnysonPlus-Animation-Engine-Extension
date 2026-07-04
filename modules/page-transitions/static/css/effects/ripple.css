@@ -1,0 +1,5 @@
+/* Animation Engine — Page transition "ripple". */
+[data-pt-type="ripple"] .upw-pt__p1 { clip-path: circle(0% at var(--px, 50%) var(--py, 50%)); animation: pt-ripple-in var(--pt-dur, .6s) ease backwards; }
+.is-exiting[data-pt-type="ripple"] .upw-pt__p1 { animation: pt-ripple-out var(--pt-dur, .6s) ease forwards; }
+@keyframes pt-ripple-in { from { clip-path: circle(160% at 50% 50%); } }
+@keyframes pt-ripple-out { from { clip-path: circle(0% at var(--px, 50%) var(--py, 50%)); } to { clip-path: circle(160% at var(--px, 50%) var(--py, 50%)); } }

@@ -1,0 +1,10 @@
+/* Scroll Reveal (Clip Wipe) — base. Element starts clipped; JS adds .is-in to reveal. */
+.sc-clip-reveal {
+	transition: clip-path var(--cr-dur, 0.7s) var(--cr-ease, cubic-bezier(0.22, 1, 0.36, 1)) var(--cr-delay, 0s),
+	            -webkit-clip-path var(--cr-dur, 0.7s) var(--cr-ease, cubic-bezier(0.22, 1, 0.36, 1)) var(--cr-delay, 0s);
+	will-change: clip-path;
+}
+.sc-clip-reveal.is-in { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); }
+@media (prefers-reduced-motion: reduce) {
+	.sc-clip-reveal { clip-path: none !important; -webkit-clip-path: none !important; transition: none !important; }
+}

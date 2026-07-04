@@ -1,0 +1,7 @@
+/* Animation Engine — Page transition "reveal". */
+[data-pt-type="reveal"] .upw-pt__p1 { clip-path: circle(0% at var(--o, 50% 50%)); animation: pt-rev-in var(--pt-dur, .6s) ease backwards; }
+[data-pt-type="reveal"][data-pt-dir="tl"] { --o: 0% 0%; }
+[data-pt-type="reveal"][data-pt-dir="tr"] { --o: 100% 0%; }
+[data-pt-type="reveal"][data-pt-dir="bl"] { --o: 0% 100%; }
+[data-pt-type="reveal"][data-pt-dir="br"] { --o: 100% 100%; }
+.is-exiting[data-pt-type="reveal"] .upw-pt__p1 { animation: pt-rev-out var(--pt-dur, .6s) ease forwards; }

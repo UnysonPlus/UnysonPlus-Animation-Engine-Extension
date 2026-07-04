@@ -1,0 +1,9 @@
+/* Animation Engine — Cursor "comet" shape. */
+.upw-cursor--dot, .upw-cursor--dot-ring {
+	width: var(--s); height: var(--s);
+	background: var(--c); border-radius: 50%;
+}
+.upw-cursor-comet-seg {
+	width: calc(var(--s) * 0.8); height: calc(var(--s) * 0.8);
+	background: var(--c); border-radius: 50%;
+}

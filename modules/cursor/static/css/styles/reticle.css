@@ -1,0 +1,14 @@
+/* Animation Engine — Cursor "reticle" shape. */
+.upw-cursor--reticle {
+	width: calc(var(--s) * 4); height: calc(var(--s) * 4);
+	--rt: linear-gradient(var(--c), var(--c));
+	background:
+		var(--rt) left top / 30% 2px no-repeat, var(--rt) left top / 2px 30% no-repeat,
+		var(--rt) right top / 30% 2px no-repeat, var(--rt) right top / 2px 30% no-repeat,
+		var(--rt) left bottom / 30% 2px no-repeat, var(--rt) left bottom / 2px 30% no-repeat,
+		var(--rt) right bottom / 30% 2px no-repeat, var(--rt) right bottom / 2px 30% no-repeat;
+}
+.upw-cursor--reticle::after {
+	content: ""; position: absolute; left: 50%; top: 50%; width: 3px; height: 3px;
+	background: var(--c); border-radius: 50%; transform: translate(-50%, -50%);
+}

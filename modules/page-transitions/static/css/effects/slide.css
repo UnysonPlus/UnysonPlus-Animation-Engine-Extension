@@ -1,0 +1,9 @@
+/* Animation Engine — Page transition "slide". */
+[data-pt-type="slide"] .upw-pt__p1 { transform: translate(var(--sx, 0), var(--sy, -101%)); animation: pt-slide-in var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="slide"][data-pt-dir="up"]    { --sx: 0; --sy: -101%; --ex: 0; --ey: 101%; }
+[data-pt-type="slide"][data-pt-dir="down"]  { --sx: 0; --sy: 101%;  --ex: 0; --ey: -101%; }
+[data-pt-type="slide"][data-pt-dir="left"]  { --sx: -101%; --sy: 0; --ex: 101%; --ey: 0; }
+[data-pt-type="slide"][data-pt-dir="right"] { --sx: 101%; --sy: 0;  --ex: -101%; --ey: 0; }
+.is-exiting[data-pt-type="slide"] .upw-pt__p1 { animation: pt-slide-out var(--pt-dur, .6s) var(--e) forwards; }
+@keyframes pt-slide-in { from { transform: translate(0, 0); } }
+@keyframes pt-slide-out { from { transform: translate(var(--ex, 0), var(--ey, 101%)); } to { transform: translate(0, 0); } }

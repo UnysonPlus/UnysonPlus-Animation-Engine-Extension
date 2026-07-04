@@ -1,0 +1,3 @@
+/* Animation Engine — Text Effects base (the split-piece / line spans). */
+.upw-text-piece { display: inline-block; }
+.upw-text-line { display: block; }

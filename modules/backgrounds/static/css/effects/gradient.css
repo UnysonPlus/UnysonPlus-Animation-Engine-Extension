@@ -1,0 +1,8 @@
+/* Animation Engine — Background "gradient" (CSS-only style). */
+.upw-bg-gradient {
+	background: linear-gradient(var(--bg-angle, 120deg), var(--bg-c1, #2f74e6), var(--bg-c2, #7a3cff), var(--bg-c3, #00b2b2), var(--bg-c1, #2f74e6));
+	background-size: 300% 300%;
+	animation: upw-bg-gradient var(--bg-speed, 10s) ease infinite;
+}
+@keyframes upw-bg-gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@media (prefers-reduced-motion: reduce) { .upw-bg-gradient { animation: none; } }

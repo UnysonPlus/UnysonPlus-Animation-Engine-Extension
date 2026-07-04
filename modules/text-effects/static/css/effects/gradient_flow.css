@@ -1,0 +1,10 @@
+/* Animation Engine — Text effect "gradient_flow". */
+.upw-text-gradflow, .upw-text-rainbow {
+	background-size: 300% 100%;
+	-webkit-background-clip: text; background-clip: text;
+	-webkit-text-fill-color: transparent; color: transparent;
+	animation: upw-text-gradflow var(--text-speed, 4s) linear infinite;
+}
+.upw-text-gradflow { background-image: linear-gradient(100deg, var(--text-c1, #ff6b6b), var(--text-c2, #6a8dff), var(--text-c3, #17c964), var(--text-c1, #ff6b6b)); }
+@keyframes upw-text-gradflow { to { background-position: -300% 0; } }
+@media (prefers-reduced-motion: reduce) { .upw-text-gradflow { animation: none; -webkit-text-fill-color: currentColor; color: inherit; background: none; } }

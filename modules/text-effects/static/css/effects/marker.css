@@ -1,0 +1,8 @@
+/* Animation Engine — Text effect "marker". */
+.upw-text-marker {
+	background-image: linear-gradient(var(--text-marker, #ffe066), var(--text-marker, #ffe066));
+	background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 42%;
+	transition: background-size .6s cubic-bezier(.5, 0, .1, 1);
+	-webkit-box-decoration-break: clone; box-decoration-break: clone; padding: 0 .05em;
+}
+.upw-text-marker.is-on, .sc-text--marker:hover .upw-text-marker { background-size: 100% 42%; }

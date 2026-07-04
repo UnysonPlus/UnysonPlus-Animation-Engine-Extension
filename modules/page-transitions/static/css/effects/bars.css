@@ -1,0 +1,7 @@
+/* Animation Engine — Page transition "bars". */
+[data-pt-type="bars"] .upw-pt__p2 { display: block; }
+[data-pt-type="bars"] .upw-pt__p1 { top: 0; bottom: 0; left: 0; width: 50.5%; transform-origin: left; transform: scaleX(0); animation: pt-bar var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="bars"] .upw-pt__p2 { top: 0; bottom: 0; right: 0; width: 50.5%; transform-origin: right; transform: scaleX(0); animation: pt-bar var(--pt-dur, .6s) var(--e) backwards; }
+.is-exiting[data-pt-type="bars"] .upw-pt__p { animation: pt-bar-o var(--pt-dur, .6s) var(--e) forwards; }
+@keyframes pt-bar { from { transform: scaleX(1); } }
+@keyframes pt-bar-o { from { transform: scaleX(0); } to { transform: scaleX(1); } }

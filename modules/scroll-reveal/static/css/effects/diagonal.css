@@ -1,0 +1,2 @@
+.sc-clip--diagonal { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); -webkit-clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+.sc-clip--diagonal.is-in { clip-path: polygon(0 0, 140% 0, 0 140%, 0 100%); -webkit-clip-path: polygon(0 0, 140% 0, 0 140%, 0 100%); }

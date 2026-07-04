@@ -1,0 +1,7 @@
+/* Animation Engine — Cursor "sticky" shape. */
+.upw-cursor--sticky {
+	width: calc(var(--s) * 4); height: calc(var(--s) * 4);
+	border: 1.5px solid var(--c); border-radius: 50%;
+	transition: width .2s ease, height .2s ease, border-radius .2s ease, background-color .2s ease;
+}
+.upw-cursor--sticky.is-stuck { background: color-mix(in srgb, var(--c) 12%, transparent); }

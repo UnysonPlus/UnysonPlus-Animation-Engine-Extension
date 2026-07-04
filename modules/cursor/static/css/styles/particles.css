@@ -1,0 +1,10 @@
+/* Animation Engine — Cursor "particles" shape. */
+.upw-cursor--dot, .upw-cursor--dot-ring {
+	width: var(--s); height: var(--s);
+	background: var(--c); border-radius: 50%;
+}
+.upw-cursor-particle {
+	width: calc(var(--s) * 0.75); height: calc(var(--s) * 0.75);
+	background: var(--c); border-radius: 50%;
+	transition: none; opacity: 0;
+}

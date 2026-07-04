@@ -1,0 +1,3 @@
+/* Animation Engine — Text effect "expand_spacing". */
+.upw-text-expand { transition: letter-spacing .4s ease; }
+.sc-text--expand_spacing:hover .upw-text-expand { letter-spacing: var(--text-spacing, 6px); }

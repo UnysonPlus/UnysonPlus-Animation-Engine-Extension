@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "crosshair" shape. */
+.upw-cursor--crosshair { width: calc(var(--s) * 3); height: calc(var(--s) * 3); }
+.upw-cursor--crosshair::before, .upw-cursor--crosshair::after { content: ""; position: absolute; background: var(--c); }
+.upw-cursor--crosshair::before { left: 50%; top: 0; width: 1.5px; height: 100%; transform: translateX(-50%); }
+.upw-cursor--crosshair::after { top: 50%; left: 0; height: 1.5px; width: 100%; transform: translateY(-50%); }

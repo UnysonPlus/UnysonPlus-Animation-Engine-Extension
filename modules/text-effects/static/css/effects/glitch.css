@@ -1,0 +1,30 @@
+/* Animation Engine — Text effect "glitch". */
+.upw-text-glitch { position: relative; }
+.upw-text-glitch::before, .upw-text-glitch::after {
+	content: attr(data-text-content);
+	position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+	pointer-events: none; opacity: 0; overflow: hidden;
+}
+.upw-text-glitch::before { color: #ff00e6; }
+.upw-text-glitch::after  { color: #00fff0; }
+.upw-text-glitch:hover::before, .upw-text-glitch.is-always::before {
+	opacity: .85; animation: upw-text-glitch-a .38s steps(2, end) infinite;
+}
+.upw-text-glitch:hover::after, .upw-text-glitch.is-always::after {
+	opacity: .85; animation: upw-text-glitch-b .38s steps(2, end) infinite;
+}
+@keyframes upw-text-glitch-a {
+	0%   { transform: translate(0); clip-path: inset(0 0 0 0); }
+	25%  { transform: translate(calc(var(--text-glitch, 3px) * -1), 1px); clip-path: inset(18% 0 46% 0); }
+	50%  { transform: translate(var(--text-glitch, 3px), -1px); clip-path: inset(58% 0 12% 0); }
+	75%  { transform: translate(calc(var(--text-glitch, 3px) * -0.6), 0); clip-path: inset(8% 0 70% 0); }
+	100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+}
+@keyframes upw-text-glitch-b {
+	0%   { transform: translate(0); clip-path: inset(0 0 0 0); }
+	25%  { transform: translate(var(--text-glitch, 3px), -1px); clip-path: inset(52% 0 20% 0); }
+	50%  { transform: translate(calc(var(--text-glitch, 3px) * -1), 1px); clip-path: inset(10% 0 60% 0); }
+	75%  { transform: translate(calc(var(--text-glitch, 3px) * 0.6), 0); clip-path: inset(70% 0 8% 0); }
+	100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce) { .upw-text-glitch::before, .upw-text-glitch::after { animation: none; } }

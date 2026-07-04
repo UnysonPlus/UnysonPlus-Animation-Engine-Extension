@@ -1,0 +1,6 @@
+/* Animation Engine — Text effect "letter_jump". */
+.upw-text-jump-ch { transition: transform .25s cubic-bezier(.34, 1.56, .64, 1); }
+.sc-text--letter_jump:hover .upw-text-jump-ch {
+	transform: translateY(calc(var(--text-jump, 6px) * -1));
+	transition-delay: calc(var(--i, 0) * 30ms);
+}

@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "diamond" shape. */
+.upw-cursor--diamond {
+	width: calc(var(--s) * 2.6); height: calc(var(--s) * 2.6); background: var(--c);
+	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}

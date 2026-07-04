@@ -1,0 +1,14 @@
+/* Animation Engine — Background "aurora" (CSS-only style). */
+.upw-bg-aurora {
+	background:
+		radial-gradient(40% 50% at 20% 30%, var(--bg-c1, #6a8dff) 0%, transparent 60%),
+		radial-gradient(45% 55% at 80% 25%, var(--bg-c2, #c56cff) 0%, transparent 60%),
+		radial-gradient(50% 60% at 50% 80%, var(--bg-c3, #00d4c8) 0%, transparent 60%);
+	filter: blur(40px) saturate(1.15); opacity: .7;
+	animation: upw-bg-aurora var(--bg-speed, 8s) ease-in-out infinite alternate;
+}
+@keyframes upw-bg-aurora {
+	0%   { transform: translate3d(-4%, -3%, 0) scale(1.1); }
+	100% { transform: translate3d(4%, 3%, 0) scale(1.25); }
+}
+@media (prefers-reduced-motion: reduce) { .upw-bg-aurora { animation: none; } }

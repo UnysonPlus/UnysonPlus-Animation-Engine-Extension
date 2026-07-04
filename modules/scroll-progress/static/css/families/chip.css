@@ -1,0 +1,5 @@
+/* Scroll Progress — chip family (counter / reading_time). */
+.upw-sp--chip { display: inline-flex; align-items: center; gap: 6px; color: #fff; font: 700 12px/1 -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 7px 12px; border-radius: 999px; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.upw-sp--time { font-weight: 600; }
+.upw-sp-clock { width: 12px; height: 12px; border: 2px solid currentColor; border-radius: 50%; position: relative; opacity: .85; }
+.upw-sp-clock::after { content: ''; position: absolute; left: 50%; top: 2px; width: 1.5px; height: 4px; background: currentColor; }

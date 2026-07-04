@@ -1,0 +1,7 @@
+/* Animation Engine — Text effect "jitter". */
+.upw-text-jitter { animation: upw-text-jitter .2s steps(2, end) infinite; }
+@keyframes upw-text-jitter {
+	0% { transform: translate(0); } 25% { transform: translate(calc(var(--text-jitter, 2px) * -1), 1px); }
+	50% { transform: translate(var(--text-jitter, 2px), -1px); } 75% { transform: translate(-1px, 0); } 100% { transform: translate(0); }
+}
+@media (prefers-reduced-motion: reduce) { .upw-text-jitter { animation: none; } }

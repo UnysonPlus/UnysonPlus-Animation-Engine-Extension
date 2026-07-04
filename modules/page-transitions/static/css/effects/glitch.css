@@ -1,0 +1,8 @@
+/* Animation Engine — Page transition "glitch". */
+[data-pt-type="glitch"] .upw-pt__p2 { display: block; inset: 0; background: #ff00e6; mix-blend-mode: screen; opacity: 0; }
+[data-pt-type="glitch"] .upw-pt__p1 { opacity: 0; animation: pt-glitch-in var(--pt-dur, .6s) steps(1) backwards; }
+[data-pt-type="glitch"] .upw-pt__p2 { animation: pt-glitch-g var(--pt-dur, .6s) steps(1) backwards; }
+.is-exiting[data-pt-type="glitch"] .upw-pt__p1 { animation: pt-glitch-out var(--pt-dur, .6s) steps(1) forwards; }
+@keyframes pt-glitch-in { 0% { opacity: 1; transform: translateX(0); } 20% { opacity: 1; transform: translateX(-6px); } 40% { opacity: .8; transform: translateX(5px); } 60% { opacity: .6; } 80% { opacity: .3; transform: translateX(-3px); } 100% { opacity: 0; } }
+@keyframes pt-glitch-g { 0%, 100% { opacity: 0; } 25% { opacity: .5; transform: translateX(8px); } 55% { opacity: .35; transform: translateX(-6px); } }
+@keyframes pt-glitch-out { 0% { opacity: 0; } 40% { opacity: .4; transform: translateX(6px); } 70% { opacity: .8; transform: translateX(-5px); } 100% { opacity: 1; transform: translateX(0); } }

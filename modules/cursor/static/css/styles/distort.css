@@ -1,0 +1,2 @@
+/* Animation Engine — Cursor "distort" shape. */
+.upw-cursor-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 2147483000; }

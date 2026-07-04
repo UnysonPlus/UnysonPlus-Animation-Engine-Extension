@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "glyph" shape. */
+.upw-cursor--glyph {
+	font-size: calc(var(--s) * 2.5); line-height: 1; color: var(--c);
+	font-family: -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 700;
+}

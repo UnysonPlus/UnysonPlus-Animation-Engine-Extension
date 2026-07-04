@@ -1,0 +1,9 @@
+/* Animation Engine — Text effect "fill_sweep". */
+.upw-text-fillsweep {
+	background-image: linear-gradient(90deg, var(--text-fill, #2f74e6) 0 50%, var(--text-base, #111) 50% 100%);
+	background-size: 200% 100%; background-position: 100% 0;
+	-webkit-background-clip: text; background-clip: text;
+	-webkit-text-fill-color: transparent; color: transparent;
+	transition: background-position .5s ease;
+}
+.upw-text-fillsweep.is-on, .sc-text--fill_sweep:hover .upw-text-fillsweep { background-position: 0 0; }

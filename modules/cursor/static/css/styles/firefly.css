@@ -1,0 +1,10 @@
+/* Animation Engine — Cursor "firefly" shape. */
+.upw-cursor--dot, .upw-cursor--dot-ring {
+	width: var(--s); height: var(--s);
+	background: var(--c); border-radius: 50%;
+}
+.upw-cursor-p { transition: none; opacity: 0; }
+.upw-cursor-p-firefly {
+	width: calc(var(--s) * 0.8); height: calc(var(--s) * 0.8); background: var(--c); border-radius: 50%;
+	box-shadow: 0 0 6px 2px var(--c), 0 0 12px 4px color-mix(in srgb, var(--c) 45%, transparent);
+}

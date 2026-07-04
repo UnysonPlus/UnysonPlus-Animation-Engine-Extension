@@ -1,0 +1,2 @@
+/* Animation Engine — Text effect "chromatic". */
+.upw-text-chromatic { text-shadow: var(--text-chroma, 2px) 0 rgba(255, 0, 80, .6), calc(var(--text-chroma, 2px) * -1) 0 rgba(0, 200, 255, .6); }

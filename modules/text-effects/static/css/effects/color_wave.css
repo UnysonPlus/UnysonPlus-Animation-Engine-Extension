@@ -1,0 +1,5 @@
+/* Animation Engine — Text effect "color_wave". */
+.upw-text-cwave-ch { transition: color .3s ease; }
+.sc-text--color_wave:hover .upw-text-cwave-ch, .upw-text-cwave.is-on .upw-text-cwave-ch {
+	color: var(--text-wavecolor, #2f74e6); transition-delay: calc(var(--i, 0) * 40ms);
+}

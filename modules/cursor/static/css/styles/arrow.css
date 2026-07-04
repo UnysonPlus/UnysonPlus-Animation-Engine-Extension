@@ -1,0 +1,6 @@
+/* Animation Engine — Cursor "arrow" shape. */
+.upw-cursor--arrow {
+	width: calc(var(--s) * 3.4); height: calc(var(--s) * 3.4);
+	background: var(--c);
+	clip-path: polygon(0 0, 100% 50%, 0 100%, 28% 50%);
+}

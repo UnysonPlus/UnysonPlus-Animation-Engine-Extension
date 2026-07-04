@@ -165,6 +165,10 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['data-ss-intensity'] = esc_attr( (string) ( isset( $o['intensity'] ) ? (float) $o['intensity'] : 0.5 ) );
 
 	upw_sticky_stack_flag( true );
+	// On-demand assets: record this style so ONLY its per-card partial loads with the core.
+	if ( function_exists( 'upw_anim_use_asset' ) ) {
+		upw_anim_use_asset( 'sticky-stack', $mode );
+	}
 	return $attr;
 }, 24, 2 );
 
@@ -180,28 +184,29 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
 }, 10, 2 );
 
 /**
- * Enqueue the runtime — only on pages that actually used a stack.
+ * On-demand assets — register the per-style partial layout with the shared loader; a page ships
+ * the shared core + CSS base + ONLY the used style's per-card partial. Recorded per element in
+ * the wrapper filter via upw_anim_use_asset().
  */
-add_action( 'wp_footer', function () {
-	if ( ! upw_sticky_stack_flag() ) {
-		return;
+if ( function_exists( 'upw_anim_register_assets' ) ) {
+	$upw_ss_ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	if ( $upw_ss_ext ) {
+		upw_anim_register_assets( 'sticky-stack', array(
+			'path'      => __DIR__,
+			'uri'       => $upw_ss_ext->get_declared_URI( '/modules/sticky-stack' ),
+			'ver'       => $upw_ss_ext->manifest->get_version(),
+			'js_dir'    => 'static/js/effects',
+			'base_css'  => 'static/css/sticky-stack.css', // tiny, all-base (sticky card) — no per-style CSS
+			'base_js'   => 'static/js/sticky-stack-core.js',
+			'js_styles' => upw_sticky_stack_styles(), // every style has a per-card partial
+			'js_cfg'    => function () {
+				$cfg = array(
+					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
+					'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
+				);
+				return 'window.upwStickyStackCfg=' . wp_json_encode( $cfg ) . ';';
+			},
+		) );
 	}
-	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
-	if ( ! $ext ) {
-		return;
-	}
-	$base = $ext->get_declared_URI( '/modules/sticky-stack' );
-	$ver  = $ext->manifest->get_version();
-	$dir  = __DIR__;
-	$jsv  = file_exists( "$dir/static/js/sticky-stack.js" )  ? $ver . '.' . filemtime( "$dir/static/js/sticky-stack.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/sticky-stack.css" ) ? $ver . '.' . filemtime( "$dir/static/css/sticky-stack.css" ) : $ver;
-
-	wp_enqueue_style( 'upw-sticky-stack', $base . '/static/css/sticky-stack.css', array(), $cssv );
-	wp_enqueue_script( 'upw-sticky-stack', $base . '/static/js/sticky-stack.js', array(), $jsv, true );
-
-	$cfg = array(
-		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
-		'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
-	);
-	wp_add_inline_script( 'upw-sticky-stack', 'window.upwStickyStackCfg=' . wp_json_encode( $cfg ) . ';', 'before' );
-}, 5 );
+	unset( $upw_ss_ext );
+}

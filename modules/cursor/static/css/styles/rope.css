@@ -1,0 +1,11 @@
+/* Animation Engine — Cursor "rope" shape. */
+.upw-cursor--dot, .upw-cursor--dot-ring {
+	width: var(--s); height: var(--s);
+	background: var(--c); border-radius: 50%;
+}
+.upw-cursor--rope {
+	position: fixed; top: 0; left: 0; height: 2px; border-radius: 2px; background: var(--c);
+	transform-origin: left center; pointer-events: none; z-index: 2147483000;
+	opacity: 0; transition: opacity .25s ease;
+}
+html.upw-cursor-active .upw-cursor--rope { opacity: 1; }

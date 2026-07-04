@@ -1,0 +1,9 @@
+/* Animation Engine — Page transition "blinds". */
+[data-pt-type="blinds"][data-pt-dir="vertical"] .upw-pt__strip { top: 0; bottom: 0; width: calc(100% / var(--pt-cells, 6) + 1px); left: calc(var(--i) * 100% / var(--pt-cells, 6)); transform: scaleX(0); transform-origin: top; animation: pt-blind-v var(--pt-dur, .5s) var(--e) backwards; animation-delay: calc(var(--i) * .07s); }
+[data-pt-type="blinds"][data-pt-dir="horizontal"] .upw-pt__strip { left: 0; right: 0; height: calc(100% / var(--pt-cells, 6) + 1px); top: calc(var(--i) * 100% / var(--pt-cells, 6)); transform: scaleY(0); transform-origin: left; animation: pt-blind-h var(--pt-dur, .5s) var(--e) backwards; animation-delay: calc(var(--i) * .07s); }
+.is-exiting[data-pt-type="blinds"][data-pt-dir="vertical"] .upw-pt__strip { animation: pt-blind-vo var(--pt-dur, .5s) var(--e) forwards; animation-delay: calc(var(--i) * .07s); }
+.is-exiting[data-pt-type="blinds"][data-pt-dir="horizontal"] .upw-pt__strip { animation: pt-blind-ho var(--pt-dur, .5s) var(--e) forwards; animation-delay: calc(var(--i) * .07s); }
+@keyframes pt-blind-v { from { transform: scaleX(1); } }
+@keyframes pt-blind-h { from { transform: scaleY(1); } }
+@keyframes pt-blind-vo { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pt-blind-ho { from { transform: scaleY(0); } to { transform: scaleY(1); } }

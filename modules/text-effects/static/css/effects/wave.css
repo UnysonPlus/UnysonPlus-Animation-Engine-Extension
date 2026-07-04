@@ -1,0 +1,10 @@
+/* Animation Engine — Text effect "wave". */
+.upw-text-wave-ch {
+	display: inline-block;
+	animation: upw-text-wave var(--text-wave-speed, 1.4s) ease-in-out infinite;
+}
+@keyframes upw-text-wave {
+	0%, 100% { transform: translateY(0); }
+	50%      { transform: translateY(calc(var(--text-wave-amp, 6px) * -1)); }
+}
+@media (prefers-reduced-motion: reduce) { .upw-text-wave-ch { animation: none; } }

@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "word_trail" shape. */
+.upw-cursor--wordseg {
+	font: 700 13px/1 -apple-system, "Segoe UI", Roboto, sans-serif;
+	color: var(--c); white-space: nowrap;
+}

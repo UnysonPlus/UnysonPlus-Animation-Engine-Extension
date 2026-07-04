@@ -171,15 +171,25 @@ add_action( 'wp_enqueue_scripts', function () {
 	$base = $ext->get_declared_URI( '/modules/scroll-progress' );
 	$ver  = $ext->manifest->get_version();
 	$dir  = __DIR__;
-	$jsv  = file_exists( "$dir/static/js/scroll-progress.js" )  ? $ver . '.' . filemtime( "$dir/static/js/scroll-progress.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/scroll-progress.css" ) ? $ver . '.' . filemtime( "$dir/static/css/scroll-progress.css" ) : $ver;
-
-	wp_enqueue_style( 'upw-scroll-progress', $base . '/static/css/scroll-progress.css', array(), $cssv );
-	wp_enqueue_script( 'upw-scroll-progress', $base . '/static/js/scroll-progress.js', array(), $jsv, true );
-
 	$valid = array( 'bar', 'gradient', 'glow', 'segments', 'pill', 'labeled', 'under_nav', 'liquid', 'edge', 'ring', 'ring_number', 'gauge', 'battery', 'counter', 'reading_time', 'dots' );
 	$s     = fw_get_db_settings_option( 'scrollprog', array() );
 	$kind  = ( is_array( $s ) && isset( $s['kind'] ) && in_array( $s['kind'], $valid, true ) ) ? $s['kind'] : 'bar';
+
+	// On-demand assets: map the chosen kind to its asset family and ship ONLY that family's
+	// CSS+JS (this is a site-wide single choice) — was one 13 KB bundle → ~4-6 KB.
+	$fam_map = array(
+		'bar' => 'bar', 'gradient' => 'bar', 'glow' => 'bar', 'segments' => 'bar', 'pill' => 'bar',
+		'labeled' => 'bar', 'under_nav' => 'bar', 'liquid' => 'bar', 'edge' => 'bar',
+		'ring' => 'circle', 'ring_number' => 'circle', 'gauge' => 'circle',
+		'battery' => 'battery', 'counter' => 'chip', 'reading_time' => 'chip', 'dots' => 'dots',
+	);
+	$fam  = isset( $fam_map[ $kind ] ) ? $fam_map[ $kind ] : 'bar';
+	$fver = function ( $rel ) use ( $dir, $ver ) { $abs = $dir . $rel; return file_exists( $abs ) ? $ver . '.' . filemtime( $abs ) : $ver; };
+
+	wp_enqueue_style( 'upw-sp-base', $base . '/static/css/base.css', array(), $fver( '/static/css/base.css' ) );
+	wp_enqueue_style( 'upw-sp-css-' . $fam, $base . '/static/css/families/' . $fam . '.css', array( 'upw-sp-base' ), $fver( '/static/css/families/' . $fam . '.css' ) );
+	wp_enqueue_script( 'upw-scroll-progress', $base . '/static/js/families/' . $fam . '.js', array(), $fver( '/static/js/families/' . $fam . '.js' ), true );
+
 	$o     = ( is_array( $s ) && isset( $s[ $kind ] ) && is_array( $s[ $kind ] ) ) ? $s[ $kind ] : array();
 	$col   = function ( $v, $d ) { return function_exists( 'sc_color_to_css' ) ? sc_color_to_css( $v, $d ) : $d; };
 

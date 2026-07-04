@@ -1,0 +1,10 @@
+/* Animation Engine — Background "grid" (CSS-only style). */
+.upw-bg-grid {
+	background-image:
+		linear-gradient(var(--bg-color, #94a3b8) 1px, transparent 1px),
+		linear-gradient(90deg, var(--bg-color, #94a3b8) 1px, transparent 1px);
+	background-size: var(--bg-gap, 40px) var(--bg-gap, 40px);
+	opacity: .35; animation: upw-bg-grid var(--bg-speed, 12s) linear infinite;
+}
+@keyframes upw-bg-grid { from { background-position: 0 0; } to { background-position: 0 var(--bg-gap, 40px); } }
+@media (prefers-reduced-motion: reduce) { .upw-bg-grid { animation: none; } }

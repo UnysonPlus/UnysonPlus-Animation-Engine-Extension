@@ -1,0 +1,11 @@
+/* Animation Engine — Cursor "bubble" shape. */
+.upw-cursor--dot, .upw-cursor--dot-ring {
+	width: var(--s); height: var(--s);
+	background: var(--c); border-radius: 50%;
+}
+.upw-cursor-p { transition: none; opacity: 0; }
+.upw-cursor-p-bubble {
+	width: calc(var(--s) * 1.4); height: calc(var(--s) * 1.4); border-radius: 50%;
+	background: color-mix(in srgb, var(--c) 12%, transparent);
+	border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+}

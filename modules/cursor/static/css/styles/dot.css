@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "dot" shape. */
+.upw-cursor--dot, .upw-cursor--dot-ring {
+	width: var(--s); height: var(--s);
+	background: var(--c); border-radius: 50%;
+}

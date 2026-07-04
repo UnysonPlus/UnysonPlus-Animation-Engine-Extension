@@ -1,0 +1,2 @@
+/* Animation Engine — Cursor "streak" shape. */
+.upw-cursor--streak { width: calc(var(--s) * 1.6); height: calc(var(--s) * 1.6); background: var(--c); border-radius: 50%; }

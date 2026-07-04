@@ -1,0 +1,7 @@
+/* Animation Engine — Text effect "outline_fill". */
+.upw-text-outline {
+	-webkit-text-stroke: 1px var(--text-fill, currentColor); text-stroke: 1px var(--text-fill, currentColor);
+	-webkit-text-fill-color: transparent; color: transparent;
+	transition: -webkit-text-fill-color .5s ease, color .5s ease;
+}
+.upw-text-outline.is-on, .sc-text--outline_fill:hover .upw-text-outline { -webkit-text-fill-color: var(--text-fill, currentColor); color: var(--text-fill, currentColor); }

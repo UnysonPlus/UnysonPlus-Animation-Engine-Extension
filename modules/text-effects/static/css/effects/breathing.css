@@ -1,0 +1,4 @@
+/* Animation Engine — Text effect "breathing". */
+.upw-text-breathing { animation: upw-text-breathing var(--text-speed, 3s) ease-in-out infinite; }
+@keyframes upw-text-breathing { 0%, 100% { opacity: .78; transform: scale(.99); } 50% { opacity: 1; transform: scale(1.02); } }
+@media (prefers-reduced-motion: reduce) { .upw-text-breathing { animation: none; } }

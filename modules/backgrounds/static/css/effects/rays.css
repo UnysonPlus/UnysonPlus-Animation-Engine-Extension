@@ -1,0 +1,10 @@
+/* Animation Engine — Background "rays" (CSS-only style). */
+.upw-bg-rays {
+	background: repeating-linear-gradient(var(--bg-angle, 25deg),
+		transparent 0 40px,
+		color-mix(in srgb, var(--bg-color, #fff) 14%, transparent) 40px 80px);
+	background-size: 200% 200%;
+	animation: upw-bg-rays var(--bg-speed, 10s) linear infinite; mix-blend-mode: screen;
+}
+@keyframes upw-bg-rays { from { background-position: 0 0; } to { background-position: 200% 0; } }
+@media (prefers-reduced-motion: reduce) { .upw-bg-rays { animation: none; } }

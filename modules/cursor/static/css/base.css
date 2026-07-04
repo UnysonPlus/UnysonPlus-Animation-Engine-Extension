@@ -1,0 +1,101 @@
+.upw-cursor {
+	--c: var(--upw-cursor-color, #2f74e6);
+	--s: var(--upw-cursor-size, 8px);
+	position: fixed;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+	z-index: 2147483000;
+	opacity: 0;
+	transition: opacity .25s ease;
+	will-change: transform;
+	box-sizing: border-box;
+}
+html.upw-cursor-active .upw-cursor { opacity: 1; }
+.upw-cursor-primary, .upw-cursor-secondary {
+	transition: width .2s ease, height .2s ease, border-color .2s ease, background-color .2s ease, opacity .2s ease;
+}
+@keyframes upw-cursor-blob {
+	0%, 100% { border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; }
+	50%      { border-radius: 62% 38% 45% 55% / 55% 62% 38% 45%; }
+}
+@keyframes upw-cursor-radar {
+	0%   { transform: translate(-50%, -50%) scale(.1); opacity: .7; }
+	100% { transform: translate(-50%, -50%) scale(1);  opacity: 0; }
+}
+@keyframes upw-cursor-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@keyframes upw-cursor-rot { to { transform: rotate(360deg); } }
+@keyframes upw-cursor-rot-rev { to { transform: rotate(-360deg); } }
+.upw-cursor-click-ripple, .upw-cursor-click-spark {
+	position: fixed; pointer-events: none; z-index: 2147483600;
+}
+.upw-cursor-click-ripple {
+	width: calc(var(--upw-cursor-size, 8px) * 2); height: calc(var(--upw-cursor-size, 8px) * 2);
+	border: 2px solid var(--upw-cursor-color, #2f74e6); border-radius: 50%;
+	animation: upw-click-ripple .5s ease-out forwards;
+}
+@keyframes upw-click-ripple {
+	from { opacity: .7; transform: translate(-50%, -50%) scale(.3); }
+	to   { opacity: 0;  transform: translate(-50%, -50%) scale(4); }
+}
+.upw-cursor-click-spark {
+	width: calc(var(--upw-cursor-size, 8px) * 0.7); height: calc(var(--upw-cursor-size, 8px) * 0.7);
+	background: var(--upw-cursor-color, #2f74e6); border-radius: 50%;
+	animation: upw-click-spark .5s ease-out forwards;
+}
+@keyframes upw-click-spark {
+	from { opacity: 1; transform: translate(-50%, -50%); }
+	to   { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx, 0), var(--dy, 0)); }
+}
+html.upw-cursor-hover .upw-cursor--dot,
+html.upw-cursor-hover .upw-cursor--dot-ring,
+html.upw-cursor-hover .upw-cursor--gradient,
+html.upw-cursor-hover .upw-cursor--glow { width: calc(var(--s) * 2.4); height: calc(var(--s) * 2.4); }
+html.upw-cursor-hover .upw-cursor--ring,
+html.upw-cursor-hover .upw-cursor-ring,
+html.upw-cursor-hover .upw-cursor--square,
+html.upw-cursor-hover .upw-cursor--dashed,
+html.upw-cursor-hover .upw-cursor--crosshair,
+html.upw-cursor-hover .upw-cursor--brackets,
+html.upw-cursor-hover .upw-cursor--elastic,
+html.upw-cursor-hover .upw-cursor--arrow,
+html.upw-cursor-hover .upw-cursor--radar,
+html.upw-cursor-hover .upw-cursor--plus,
+html.upw-cursor-hover .upw-cursor--star,
+html.upw-cursor-hover .upw-cursor--diamond,
+html.upw-cursor-hover .upw-cursor--dual-ring,
+html.upw-cursor-hover .upw-cursor--bullseye,
+html.upw-cursor-hover .upw-cursor--reticle,
+html.upw-cursor-hover .upw-cursor--blob { width: calc(var(--s) * 6); height: calc(var(--s) * 6); }
+html.upw-cursor-hover .upw-cursor--invert,
+html.upw-cursor-hover .upw-cursor--streak { width: calc(var(--s) * 4.5); height: calc(var(--s) * 4.5); }
+html.upw-cursor-hover .upw-cursor--dot-ring { opacity: .6; }
+html.upw-cursor-hide-default, html.upw-cursor-hide-default * { cursor: none !important; }
+html.upw-cursor-blend .upw-cursor { mix-blend-mode: difference; }
+html.upw-cursor-blend .upw-cursor--dot,
+html.upw-cursor-blend .upw-cursor--dot-ring,
+html.upw-cursor-blend .upw-cursor--gradient,
+html.upw-cursor-blend .upw-cursor--glow,
+html.upw-cursor-blend .upw-cursor--blob,
+html.upw-cursor-blend .upw-cursor--arrow,
+html.upw-cursor-blend .upw-cursor-particle,
+html.upw-cursor-blend .upw-cursor-comet-seg { background: #fff; }
+html.upw-cursor-blend .upw-cursor--ring,
+html.upw-cursor-blend .upw-cursor-ring,
+html.upw-cursor-blend .upw-cursor--square,
+html.upw-cursor-blend .upw-cursor--elastic,
+html.upw-cursor-blend .upw-cursor--radar,
+html.upw-cursor-blend .upw-cursor--radar::before,
+html.upw-cursor-blend .upw-cursor--radar::after,
+html.upw-cursor-blend .upw-cursor--dashed::before { border-color: #fff; }
+html.upw-cursor-blend .upw-cursor--crosshair::before,
+html.upw-cursor-blend .upw-cursor--crosshair::after,
+html.upw-cursor-blend .upw-cursor--brackets::before,
+html.upw-cursor-blend .upw-cursor--brackets::after { background: #fff; border-color: #fff; }
+@media (prefers-reduced-motion: reduce) {
+	.upw-cursor--blob, .upw-cursor--star { animation: none; }
+	.upw-cursor--dashed::before,
+	.upw-cursor--radar::before, .upw-cursor--radar::after,
+	.upw-cursor--dual-ring::before, .upw-cursor--dual-ring::after { animation: none; }
+	.upw-cursor--radar::before, .upw-cursor--radar::after { opacity: 0; }
+}

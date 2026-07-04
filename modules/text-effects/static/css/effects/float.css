@@ -1,0 +1,4 @@
+/* Animation Engine — Text effect "float". */
+.upw-text-float { animation: upw-text-float var(--text-speed, 3s) ease-in-out infinite; }
+@keyframes upw-text-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--text-float, 8px) * -1)); } }
+@media (prefers-reduced-motion: reduce) { .upw-text-float { animation: none; } }

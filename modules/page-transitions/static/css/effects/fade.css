@@ -1,0 +1,3 @@
+/* Animation Engine — Page transition "fade". */
+[data-pt-type="fade"] .upw-pt__p1 { opacity: 0; animation: pt-fade-in var(--pt-dur, .6s) ease backwards; }
+.is-exiting[data-pt-type="fade"] .upw-pt__p1 { animation: pt-fade-out var(--pt-dur, .6s) ease forwards; }

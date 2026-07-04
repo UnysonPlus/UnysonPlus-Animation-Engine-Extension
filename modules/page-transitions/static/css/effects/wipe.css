@@ -1,0 +1,10 @@
+/* Animation Engine — Page transition "wipe". */
+[data-pt-type="wipe"] .upw-pt__p1 { transform: scale(0); animation: pt-wipe-in var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="wipe"][data-pt-dir="left"]  { --wo: left;   --ws: scaleX(0); }
+[data-pt-type="wipe"][data-pt-dir="right"] { --wo: right;  --ws: scaleX(0); }
+[data-pt-type="wipe"][data-pt-dir="up"]    { --wo: top;    --ws: scaleY(0); }
+[data-pt-type="wipe"][data-pt-dir="down"]  { --wo: bottom; --ws: scaleY(0); }
+[data-pt-type="wipe"] .upw-pt__p1 { transform-origin: var(--wo, left); transform: var(--ws, scaleX(0)); }
+.is-exiting[data-pt-type="wipe"] .upw-pt__p1 { animation: pt-wipe-out var(--pt-dur, .6s) var(--e) forwards; }
+@keyframes pt-wipe-in { from { transform: scale(1); } }
+@keyframes pt-wipe-out { from { transform: var(--ws, scaleX(0)); } to { transform: scale(1); } }

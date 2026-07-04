@@ -1,0 +1,6 @@
+/* Scroll Progress — section dots. */
+.upw-sp--dots { top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; }
+.upw-sp--dots.upw-sp--right { right: 16px; }
+.upw-sp--dots.upw-sp--left { left: 16px; }
+.upw-sp-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(120,130,150,.4); cursor: pointer; transition: transform .2s ease, background .2s ease; }
+.upw-sp-dot.is-active { transform: scale(1.5); }

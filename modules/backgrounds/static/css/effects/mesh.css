@@ -1,0 +1,12 @@
+/* Animation Engine — Background "mesh" (CSS-only style). */
+.upw-bg-mesh {
+	background:
+		radial-gradient(35% 45% at 25% 30%, var(--bg-c1, #6a8dff) 0%, transparent 55%),
+		radial-gradient(40% 45% at 75% 25%, var(--bg-c2, #ff6ac1) 0%, transparent 55%),
+		radial-gradient(45% 50% at 30% 80%, var(--bg-c3, #ffd36a) 0%, transparent 55%),
+		radial-gradient(45% 50% at 80% 75%, var(--bg-c4, #00d4c8) 0%, transparent 55%);
+	background-size: 200% 200%;
+	animation: upw-bg-mesh var(--bg-speed, 12s) ease-in-out infinite alternate;
+}
+@keyframes upw-bg-mesh { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+@media (prefers-reduced-motion: reduce) { .upw-bg-mesh { animation: none; } }

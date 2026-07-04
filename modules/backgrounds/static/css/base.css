@@ -1,0 +1,6 @@
+/* Animation Engine — Backgrounds base (the injected layer + canvas). */
+.upw-bg-layer {
+	position: absolute; inset: 0; z-index: 0;
+	pointer-events: none; overflow: hidden;
+}
+.upw-bg-canvas { display: block; width: 100%; height: 100%; }

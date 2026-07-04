@@ -1,0 +1,13 @@
+/* Animation Engine — Cursor "bullseye" shape. */
+.upw-cursor--bullseye {
+	width: calc(var(--s) * 4); height: calc(var(--s) * 4);
+	border: 1.5px solid var(--c); border-radius: 50%;
+}
+.upw-cursor--bullseye::before {
+	content: ""; position: absolute; left: 50%; top: 50%; width: 55%; height: 55%;
+	border: 1.5px solid var(--c); border-radius: 50%; transform: translate(-50%, -50%);
+}
+.upw-cursor--bullseye::after {
+	content: ""; position: absolute; left: 50%; top: 50%; width: calc(var(--s) * 0.9); height: calc(var(--s) * 0.9);
+	background: var(--c); border-radius: 50%; transform: translate(-50%, -50%);
+}

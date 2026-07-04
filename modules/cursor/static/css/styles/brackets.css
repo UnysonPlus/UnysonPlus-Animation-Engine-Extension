@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "brackets" shape. */
+.upw-cursor--brackets { width: calc(var(--s) * 3.5); height: calc(var(--s) * 3.5); }
+.upw-cursor--brackets::before, .upw-cursor--brackets::after { content: ""; position: absolute; width: 32%; height: 32%; }
+.upw-cursor--brackets::before { top: 0; left: 0; border-top: 1.5px solid var(--c); border-left: 1.5px solid var(--c); }
+.upw-cursor--brackets::after { bottom: 0; right: 0; border-bottom: 1.5px solid var(--c); border-right: 1.5px solid var(--c); }

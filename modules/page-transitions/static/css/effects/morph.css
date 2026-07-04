@@ -1,0 +1,5 @@
+/* Animation Engine — Page transition "morph". */
+[data-pt-type="morph"] .upw-pt__p1 { inset: -25%; border-radius: 42% 58% 55% 45% / 45% 42% 58% 55%; transform: scale(0); animation: pt-morph-in var(--pt-dur, .6s) var(--e) backwards; }
+.is-exiting[data-pt-type="morph"] .upw-pt__p1 { animation: pt-morph-out var(--pt-dur, .6s) var(--e) forwards; }
+@keyframes pt-morph-in { from { transform: scale(1.7) rotate(0); border-radius: 42% 58% 55% 45% / 45% 42% 58% 55%; } to { transform: scale(0) rotate(60deg); } }
+@keyframes pt-morph-out { from { transform: scale(0) rotate(60deg); } to { transform: scale(1.7) rotate(0); } }

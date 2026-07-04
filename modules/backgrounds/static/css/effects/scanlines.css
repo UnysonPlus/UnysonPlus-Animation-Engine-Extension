@@ -1,0 +1,9 @@
+/* Animation Engine — Background "scanlines" (CSS-only style). */
+.upw-bg-scanlines {
+	background-image: repeating-linear-gradient(0deg,
+		color-mix(in srgb, var(--bg-color, #000) calc(var(--bg-opacity, .12) * 100%), transparent) 0 1px,
+		transparent 1px 3px);
+	animation: upw-bg-scan var(--bg-speed, 6s) linear infinite;
+}
+@keyframes upw-bg-scan { from { background-position: 0 0; } to { background-position: 0 100px; } }
+@media (prefers-reduced-motion: reduce) { .upw-bg-scanlines { animation: none; } }

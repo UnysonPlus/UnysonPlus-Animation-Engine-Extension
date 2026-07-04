@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "gradient" shape. */
+.upw-cursor--gradient {
+	width: calc(var(--s) * 1.6); height: calc(var(--s) * 1.6); border-radius: 50%;
+	background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 30%, #fff));
+}

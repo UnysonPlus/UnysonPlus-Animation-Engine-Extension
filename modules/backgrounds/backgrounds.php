@@ -388,6 +388,12 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['class'] = esc_attr( trim( $cls . ' sc-bg sc-bg--' . sanitize_html_class( $effect ) ) );
 	$attr['data-bg'] = esc_attr( $effect );
 
+	// On-demand assets: record this style so ONLY its JS partial (+ CSS partial for the
+	// CSS-only styles) is enqueued, not the whole 35-style bundle.
+	if ( function_exists( 'upw_anim_use_asset' ) ) {
+		upw_anim_use_asset( 'backgrounds', $effect );
+	}
+
 	$add_style = function ( $css ) use ( &$attr ) {
 		$existing      = isset( $attr['style'] ) ? rtrim( (string) $attr['style'], '; ' ) . '; ' : '';
 		$attr['style'] = esc_attr( $existing . $css );
@@ -538,31 +544,35 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 }, 23, 2 );
 
 /* ------------------------------------------------------------------ *
- * 3) Enqueue the runtime — only on pages that actually used a background.
+ * 3) On-demand assets. Register the module's per-style partial layout with the shared
+ *    loader; a page ships ONLY the shared core (canvas engine) + the used styles'
+ *    partials — recorded per element in the wrapper filter via upw_anim_use_asset().
+ *    js_core_first: the core defines the shared engine that each style partial aliases.
  * ------------------------------------------------------------------ */
-add_action( 'wp_footer', function () {
-	if ( ! upw_bg_flag() ) {
-		return;
+if ( function_exists( 'upw_anim_register_assets' ) ) {
+	$upw_bg_ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	if ( $upw_bg_ext ) {
+		upw_anim_register_assets( 'backgrounds', array(
+			'path'          => __DIR__,
+			'uri'           => $upw_bg_ext->get_declared_URI( '/modules/backgrounds' ),
+			'ver'           => $upw_bg_ext->manifest->get_version(),
+			'css_dir'       => 'static/css/effects',   // CSS-only styles have a partial here; canvas styles have none
+			'js_dir'        => 'static/js/effects',
+			'base_css'      => 'static/css/base.css',   // the injected layer + canvas, always needed
+			'base_js'       => 'static/js/backgrounds-core.js',
+			'js_core_first' => true,                    // core (engine) loads before the style partials
+			'js_styles'     => upw_bg_effects(),        // every style ships a JS partial (dispatch injects the layer)
+			'js_cfg'        => function () {
+				$cfg = array(
+					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
+					'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
+				);
+				return 'window.upwBgCfg=' . wp_json_encode( $cfg ) . ';';
+			},
+		) );
 	}
-	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
-	if ( ! $ext ) {
-		return;
-	}
-	$base = $ext->get_declared_URI( '/modules/backgrounds' );
-	$ver  = $ext->manifest->get_version();
-	$dir  = __DIR__;
-	$jsv  = file_exists( "$dir/static/js/backgrounds.js" )  ? $ver . '.' . filemtime( "$dir/static/js/backgrounds.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/backgrounds.css" ) ? $ver . '.' . filemtime( "$dir/static/css/backgrounds.css" ) : $ver;
-
-	wp_enqueue_style( 'upw-bg', $base . '/static/css/backgrounds.css', array(), $cssv );
-	wp_enqueue_script( 'upw-bg', $base . '/static/js/backgrounds.js', array(), $jsv, true );
-
-	$cfg = array(
-		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
-		'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
-	);
-	wp_add_inline_script( 'upw-bg', 'window.upwBgCfg=' . wp_json_encode( $cfg ) . ';', 'before' );
-}, 5 );
+	unset( $upw_bg_ext );
+}
 
 /* ------------------------------------------------------------------ *
  * 4) Global on/off → Theme Settings → Animations → Backgrounds sub-tab.

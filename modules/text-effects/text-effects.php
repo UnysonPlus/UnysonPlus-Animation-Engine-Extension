@@ -471,6 +471,12 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['class'] = esc_attr( trim( $cls . ' sc-text sc-text--' . sanitize_html_class( $effect ) ) );
 	$attr['data-text'] = esc_attr( $effect );
 
+	// On-demand assets: record this effect so ONLY its JS partial (+ CSS partial if it has
+	// one) is enqueued, not the whole 37-effect bundle.
+	if ( function_exists( 'upw_anim_use_asset' ) ) {
+		upw_anim_use_asset( 'text-effects', $effect );
+	}
+
 	$add_style = function ( $css ) use ( &$attr ) {
 		$existing      = isset( $attr['style'] ) ? rtrim( (string) $attr['style'], '; ' ) . '; ' : '';
 		$attr['style'] = esc_attr( $existing . $css );
@@ -642,31 +648,35 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
 }, 10, 2 );
 
 /* ------------------------------------------------------------------ *
- * 3) Enqueue the runtime — only on pages that actually used an effect.
+ * 3) On-demand assets. Register the module's per-effect partial layout with the shared
+ *    loader; a page ships ONLY the shared core (text engine) + the used effects' partials
+ *    — recorded per element in the wrapper filter via upw_anim_use_asset(). js_core_first:
+ *    the core defines the shared engine that each effect partial aliases.
  * ------------------------------------------------------------------ */
-add_action( 'wp_footer', function () {
-	if ( ! upw_text_flag() ) {
-		return;
+if ( function_exists( 'upw_anim_register_assets' ) ) {
+	$upw_text_ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	if ( $upw_text_ext ) {
+		upw_anim_register_assets( 'text-effects', array(
+			'path'          => __DIR__,
+			'uri'           => $upw_text_ext->get_declared_URI( '/modules/text-effects' ),
+			'ver'           => $upw_text_ext->manifest->get_version(),
+			'css_dir'       => 'static/css/effects',   // effects with a CSS class have a partial here; JS-only ones have none
+			'js_dir'        => 'static/js/effects',
+			'base_css'      => 'static/css/base.css',   // the split-piece / line spans, always needed
+			'base_js'       => 'static/js/text-effects-core.js',
+			'js_core_first' => true,                    // core (engine) loads before the effect partials
+			'js_styles'     => upw_text_effects(),      // every effect ships a JS partial (registers into window.upwText)
+			'js_cfg'        => function () {
+				$cfg = array(
+					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
+					'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
+				);
+				return 'window.upwTextCfg=' . wp_json_encode( $cfg ) . ';';
+			},
+		) );
 	}
-	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
-	if ( ! $ext ) {
-		return;
-	}
-	$base = $ext->get_declared_URI( '/modules/text-effects' );
-	$ver  = $ext->manifest->get_version();
-	$dir  = __DIR__;
-	$jsv  = file_exists( "$dir/static/js/text-effects.js" )  ? $ver . '.' . filemtime( "$dir/static/js/text-effects.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/text-effects.css" ) ? $ver . '.' . filemtime( "$dir/static/css/text-effects.css" ) : $ver;
-
-	wp_enqueue_style( 'upw-text', $base . '/static/css/text-effects.css', array(), $cssv );
-	wp_enqueue_script( 'upw-text', $base . '/static/js/text-effects.js', array(), $jsv, true );
-
-	$cfg = array(
-		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
-		'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
-	);
-	wp_add_inline_script( 'upw-text', 'window.upwTextCfg=' . wp_json_encode( $cfg ) . ';', 'before' );
-}, 5 );
+	unset( $upw_text_ext );
+}
 
 /* ------------------------------------------------------------------ *
  * 4) Global on/off → Theme Settings → Animations → Text sub-tab.

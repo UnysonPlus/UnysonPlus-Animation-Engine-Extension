@@ -1,0 +1,11 @@
+/* Animation Engine — Cursor "label" shape. */
+.upw-cursor--label {
+	width: var(--s); height: var(--s); padding: 0; overflow: hidden;
+	background: var(--c); color: #fff; border-radius: 999px; white-space: nowrap;
+	display: flex; align-items: center; justify-content: center;
+	font: 600 12px/1 -apple-system, "Segoe UI", Roboto, sans-serif;
+	transition: width .2s ease, height .2s ease, padding .2s ease;
+}
+.upw-cursor--label.is-shown { width: auto; height: auto; padding: 7px 12px; }
+.upw-cursor-label-txt { opacity: 0; transition: opacity .15s ease; }
+.upw-cursor--label.is-shown .upw-cursor-label-txt { opacity: 1; }

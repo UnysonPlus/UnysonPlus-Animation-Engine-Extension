@@ -1,0 +1,7 @@
+/* Animation Engine — Text effect "vf_weight". */
+.upw-text-vf {
+	font-variation-settings: 'wght' var(--text-wght-from, 300);
+	transition: font-variation-settings .45s ease, font-weight .45s ease;
+}
+.sc-text--vf_weight:hover .upw-text-vf,
+.upw-text-vf.is-on { font-variation-settings: 'wght' var(--text-wght-to, 800); }

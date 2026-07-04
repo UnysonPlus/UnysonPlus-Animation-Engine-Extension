@@ -1,0 +1,5 @@
+/* Animation Engine — Page transition "rotate". */
+[data-pt-type="rotate"] .upw-pt__p1 { opacity: 0; transform: rotate(30deg) scale(1.8); animation: pt-rot-in var(--pt-dur, .6s) var(--e) backwards; }
+.is-exiting[data-pt-type="rotate"] .upw-pt__p1 { animation: pt-rot-out var(--pt-dur, .6s) var(--e) forwards; }
+@keyframes pt-rot-in { from { opacity: 1; transform: rotate(0) scale(1); } }
+@keyframes pt-rot-out { from { opacity: 0; transform: rotate(-30deg) scale(1.8); } to { opacity: 1; transform: rotate(0) scale(1); } }

@@ -173,6 +173,11 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['data-hs-intensity'] = esc_attr( (string) ( isset( $o['intensity'] ) ? (float) $o['intensity'] : 0.5 ) );
 
 	upw_hscroll_flag( true );
+	// On-demand assets: record this style so ONLY its per-panel partial (if any) loads with the
+	// core; the track-level styles (standard/reverse/snap/wall/skew/drag) need only the core.
+	if ( function_exists( 'upw_anim_use_asset' ) ) {
+		upw_anim_use_asset( 'horizontal-scroll', $mode );
+	}
 	return $attr;
 }, 24, 2 );
 
@@ -188,28 +193,31 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
 }, 10, 2 );
 
 /**
- * Enqueue the runtime — only on pages that actually used it.
+ * On-demand assets — register the per-panel-style partial layout with the shared loader; a page
+ * ships the shared core + CSS base + ONLY the used style's per-panel partial (track-level styles
+ * need no partial). Recorded per element in the wrapper filter via upw_anim_use_asset().
  */
-add_action( 'wp_footer', function () {
-	if ( ! upw_hscroll_flag() ) {
-		return;
+if ( function_exists( 'upw_anim_register_assets' ) ) {
+	$upw_hs_ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	if ( $upw_hs_ext ) {
+		upw_anim_register_assets( 'horizontal-scroll', array(
+			'path'      => __DIR__,
+			'uri'       => $upw_hs_ext->get_declared_URI( '/modules/horizontal-scroll' ),
+			'ver'       => $upw_hs_ext->manifest->get_version(),
+			'js_dir'    => 'static/js/effects',
+			'base_css'  => 'static/css/horizontal-scroll.css', // small, all-base (pin/track/panel) — no per-style CSS
+			'base_js'   => 'static/js/horizontal-scroll-core.js',
+			// All styles trigger the core; only the 9 per-panel styles have a partial file (the
+			// track-level standard/reverse/snap/wall/skew/drag are handled inside the core).
+			'js_styles' => upw_hscroll_styles(),
+			'js_cfg'    => function () {
+				$cfg = array(
+					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
+					'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
+				);
+				return 'window.upwHScrollCfg=' . wp_json_encode( $cfg ) . ';';
+			},
+		) );
 	}
-	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
-	if ( ! $ext ) {
-		return;
-	}
-	$base = $ext->get_declared_URI( '/modules/horizontal-scroll' );
-	$ver  = $ext->manifest->get_version();
-	$dir  = __DIR__;
-	$jsv  = file_exists( "$dir/static/js/horizontal-scroll.js" )  ? $ver . '.' . filemtime( "$dir/static/js/horizontal-scroll.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/horizontal-scroll.css" ) ? $ver . '.' . filemtime( "$dir/static/css/horizontal-scroll.css" ) : $ver;
-
-	wp_enqueue_style( 'upw-hscroll', $base . '/static/css/horizontal-scroll.css', array(), $cssv );
-	wp_enqueue_script( 'upw-hscroll', $base . '/static/js/horizontal-scroll.js', array(), $jsv, true );
-
-	$cfg = array(
-		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
-		'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
-	);
-	wp_add_inline_script( 'upw-hscroll', 'window.upwHScrollCfg=' . wp_json_encode( $cfg ) . ';', 'before' );
-}, 5 );
+	unset( $upw_hs_ext );
+}

@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "ring" shape. */
+.upw-cursor--ring, .upw-cursor-ring {
+	width: calc(var(--s) * 4); height: calc(var(--s) * 4);
+	border: 1.5px solid var(--c); border-radius: 50%;
+}

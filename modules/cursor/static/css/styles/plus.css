@@ -1,0 +1,5 @@
+/* Animation Engine — Cursor "plus" shape. */
+.upw-cursor--plus { width: calc(var(--s) * 2.6); height: calc(var(--s) * 2.6); }
+.upw-cursor--plus::before, .upw-cursor--plus::after { content: ""; position: absolute; background: var(--c); border-radius: 2px; }
+.upw-cursor--plus::before { left: 50%; top: 15%; width: 2.5px; height: 70%; transform: translateX(-50%); }
+.upw-cursor--plus::after { top: 50%; left: 15%; height: 2.5px; width: 70%; transform: translateY(-50%); }

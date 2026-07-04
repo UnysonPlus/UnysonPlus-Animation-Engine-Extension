@@ -1,0 +1,7 @@
+/* Animation Engine — Text effect "typewriter". */
+.upw-text-caret {
+	border-right: .08em solid currentColor; padding-right: .04em;
+	animation: upw-text-blink 1s step-end infinite;
+}
+@keyframes upw-text-blink { 0%, 100% { border-color: currentColor; } 50% { border-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { .upw-text-caret { animation: none; } }

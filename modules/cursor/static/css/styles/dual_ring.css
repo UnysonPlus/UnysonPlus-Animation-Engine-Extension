@@ -1,0 +1,7 @@
+/* Animation Engine — Cursor "dual_ring" shape. */
+.upw-cursor--dual-ring { width: calc(var(--s) * 4); height: calc(var(--s) * 4); }
+.upw-cursor--dual-ring::before, .upw-cursor--dual-ring::after {
+	content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid transparent;
+}
+.upw-cursor--dual-ring::before { border-top-color: var(--c); border-bottom-color: var(--c); animation: upw-cursor-rot 2.4s linear infinite; }
+.upw-cursor--dual-ring::after  { border-left-color: var(--c); border-right-color: var(--c); animation: upw-cursor-rot-rev 3.2s linear infinite; }

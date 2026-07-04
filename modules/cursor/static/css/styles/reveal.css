@@ -1,0 +1,7 @@
+/* Animation Engine — Cursor "reveal" shape. */
+.upw-cursor--reveal {
+	width: calc(var(--upw-reveal-r, 80px) * 2); height: calc(var(--upw-reveal-r, 80px) * 2);
+	border-radius: 50%;
+	background-size: cover; background-position: center; background-attachment: fixed;
+	border: 2px solid rgba(255, 255, 255, .6); box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+}

@@ -161,9 +161,18 @@ add_action( 'wp_enqueue_scripts', function () {
 	$ver  = $ext->manifest->get_version();
 	$dir  = __DIR__;
 	$jsv  = file_exists( "$dir/static/js/page-transitions.js" )  ? $ver . '.' . filemtime( "$dir/static/js/page-transitions.js" )  : $ver;
-	$cssv = file_exists( "$dir/static/css/page-transitions.css" ) ? $ver . '.' . filemtime( "$dir/static/css/page-transitions.css" ) : $ver;
 
-	wp_enqueue_style( 'upw-pt', $base . '/static/css/page-transitions.css', array(), $cssv );
+	// On-demand CSS: this is a site-wide single choice, so ship the shared base + ONLY the
+	// chosen transition's CSS partial, not all 23 (was one 21 KB bundle → ~3.5 KB).
+	$tr   = upw_pt_setting( 'transition', array() );
+	$type = ( is_array( $tr ) && ! empty( $tr['transition'] ) ) ? (string) $tr['transition'] : 'fade';
+	if ( ! in_array( $type, upw_pt_types(), true ) ) { $type = 'fade'; }
+	$basecss = "$dir/static/css/base.css";
+	$typecss = "$dir/static/css/effects/$type.css";
+	wp_enqueue_style( 'upw-pt-base', $base . '/static/css/base.css', array(), file_exists( $basecss ) ? $ver . '.' . filemtime( $basecss ) : $ver );
+	if ( file_exists( $typecss ) ) {
+		wp_enqueue_style( 'upw-pt-' . sanitize_html_class( $type ), $base . '/static/css/effects/' . $type . '.css', array( 'upw-pt-base' ), $ver . '.' . filemtime( $typecss ) );
+	}
 	wp_enqueue_script( 'upw-pt', $base . '/static/js/page-transitions.js', array(), $jsv, true );
 
 	$cfg = array(

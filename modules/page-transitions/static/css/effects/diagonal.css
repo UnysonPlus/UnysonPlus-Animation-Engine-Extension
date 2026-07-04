@@ -1,0 +1,11 @@
+/* Animation Engine — Page transition "diagonal". */
+[data-pt-type="diagonal"] .upw-pt__p1 { top: -20%; bottom: -20%; left: -40%; width: 180%; transform-origin: center; animation: pt-diag-in var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="diagonal"][data-pt-dir="tlbr"] .upw-pt__p1 { transform: skewX(-18deg) translateX(-190%); }
+[data-pt-type="diagonal"][data-pt-dir="trbl"] .upw-pt__p1 { transform: skewX(18deg) translateX(190%); }
+[data-pt-type="diagonal"][data-pt-dir="tlbr"] { --dsk: -18deg; }
+[data-pt-type="diagonal"][data-pt-dir="trbl"] { --dsk: 18deg; }
+.is-exiting[data-pt-type="diagonal"] .upw-pt__p1 { animation: pt-diag-out var(--pt-dur, .6s) var(--e) forwards; }
+[data-pt-type="diagonal"][data-pt-dir="tlbr"].is-exiting .upw-pt__p1 { --dfrom: 190%; }
+[data-pt-type="diagonal"][data-pt-dir="trbl"].is-exiting .upw-pt__p1 { --dfrom: -190%; }
+@keyframes pt-diag-in { from { transform: skewX(var(--dsk, -18deg)) translateX(0); } }
+@keyframes pt-diag-out { from { transform: skewX(var(--dsk, -18deg)) translateX(var(--dfrom, 190%)); } to { transform: skewX(var(--dsk, -18deg)) translateX(0); } }

@@ -1,0 +1,12 @@
+/* Animation Engine — Page transition "split". */
+[data-pt-type="split"] .upw-pt__p2 { display: block; }
+[data-pt-type="split"][data-pt-dir="vertical"] .upw-pt__p1 { left: 0; right: 0; top: 0; height: 50.5%; transform-origin: top; transform: scaleY(0); animation: pt-sp-v var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="split"][data-pt-dir="vertical"] .upw-pt__p2 { left: 0; right: 0; bottom: 0; height: 50.5%; transform-origin: bottom; transform: scaleY(0); animation: pt-sp-v var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="split"][data-pt-dir="horizontal"] .upw-pt__p1 { top: 0; bottom: 0; left: 0; width: 50.5%; transform-origin: left; transform: scaleX(0); animation: pt-sp-h var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="split"][data-pt-dir="horizontal"] .upw-pt__p2 { top: 0; bottom: 0; right: 0; width: 50.5%; transform-origin: right; transform: scaleX(0); animation: pt-sp-h var(--pt-dur, .6s) var(--e) backwards; }
+.is-exiting[data-pt-type="split"][data-pt-dir="vertical"] .upw-pt__p { animation: pt-sp-vo var(--pt-dur, .6s) var(--e) forwards; }
+.is-exiting[data-pt-type="split"][data-pt-dir="horizontal"] .upw-pt__p { animation: pt-sp-ho var(--pt-dur, .6s) var(--e) forwards; }
+@keyframes pt-sp-v { from { transform: scaleY(1); } }
+@keyframes pt-sp-h { from { transform: scaleX(1); } }
+@keyframes pt-sp-vo { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes pt-sp-ho { from { transform: scaleX(0); } to { transform: scaleX(1); } }

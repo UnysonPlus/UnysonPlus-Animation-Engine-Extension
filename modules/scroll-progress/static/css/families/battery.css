@@ -1,0 +1,5 @@
+/* Scroll Progress — battery. */
+.upw-sp--battery { display: flex; align-items: center; }
+.upw-sp-bat { width: 46px; height: 20px; border: 2px solid currentColor; border-radius: 4px; padding: 2px; box-sizing: border-box; background: #fff; }
+.upw-sp-bat-fill { display: block; height: 100%; width: 0; border-radius: 1px; transition: width .1s linear; }
+.upw-sp-bat-tip { width: 4px; height: 9px; border-radius: 0 2px 2px 0; background: currentColor; }

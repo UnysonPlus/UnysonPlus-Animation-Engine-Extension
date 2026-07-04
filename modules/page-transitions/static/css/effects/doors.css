@@ -1,0 +1,11 @@
+/* Animation Engine — Page transition "doors". */
+[data-pt-type="doors"] { perspective: 1400px; }
+[data-pt-type="doors"] .upw-pt__p2 { display: block; }
+[data-pt-type="doors"] .upw-pt__p1 { top: 0; bottom: 0; left: 0; width: 50.5%; transform-origin: left; transform: rotateY(-100deg); animation: pt-d1 var(--pt-dur, .6s) var(--e) backwards; }
+[data-pt-type="doors"] .upw-pt__p2 { top: 0; bottom: 0; right: 0; width: 50.5%; transform-origin: right; transform: rotateY(100deg); animation: pt-d2 var(--pt-dur, .6s) var(--e) backwards; }
+.is-exiting[data-pt-type="doors"] .upw-pt__p1 { animation: pt-d1o var(--pt-dur, .6s) var(--e) forwards; }
+.is-exiting[data-pt-type="doors"] .upw-pt__p2 { animation: pt-d2o var(--pt-dur, .6s) var(--e) forwards; }
+@keyframes pt-d1 { from { transform: rotateY(0); } }
+@keyframes pt-d2 { from { transform: rotateY(0); } }
+@keyframes pt-d1o { from { transform: rotateY(-100deg); } }
+@keyframes pt-d2o { from { transform: rotateY(100deg); } }
