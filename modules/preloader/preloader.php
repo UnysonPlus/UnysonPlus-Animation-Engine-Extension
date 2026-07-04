@@ -73,7 +73,10 @@ if ( ! function_exists( 'upw_preloader_settings' ) ) :
 		$enable = $get( 'animation_preloader', array() );
 		$on     = ( is_array( $enable ) && isset( $enable['enable'] ) ) ? $enable['enable'] : 'no';
 
-		$style = (string) $get( 'preloader_style', 'spinner' );
+		// `preloader_style` is a multi-picker (picker id `style`): [ 'style' => '<style>',
+		// '<style>' => [ …per-style options… ] ]. Tolerate the legacy scalar shape too.
+		$sp    = $get( 'preloader_style', array() );
+		$style = is_array( $sp ) ? ( isset( $sp['style'] ) ? (string) $sp['style'] : 'spinner' ) : (string) $sp;
 		if ( ! array_key_exists( $style, upw_preloader_styles() ) ) {
 			$style = 'spinner';
 		}
@@ -83,6 +86,9 @@ if ( ! function_exists( 'upw_preloader_settings' ) ) :
 		$s = array(
 			'enabled' => ( $on === 'yes' ),
 			'style'   => $style,
+			// Raw multi-picker value — future styles read their own options from
+			// $s['opts'][ $style ][ '<key>' ] (see upw_preloader_style_opt()).
+			'opts'    => is_array( $sp ) ? $sp : array(),
 			'bg'      => (string) $get( 'preloader_bg', '#0b1220' ),
 			'accent'  => (string) $get( 'preloader_accent', '#2f74e6' ),
 			'logo'    => $logo_url,
@@ -100,6 +106,22 @@ if ( ! function_exists( 'upw_preloader_enabled' ) ) :
 	}
 endif;
 
+/**
+ * Read a per-style option for the CURRENT style from the `preloader_style` multi-picker
+ * reveal. Future preloader styles that ship their own options (declared in the style's
+ * `choices` reveal group) read them through this — e.g. upw_preloader_style_opt( 'count', 5 ).
+ */
+if ( ! function_exists( 'upw_preloader_style_opt' ) ) :
+	function upw_preloader_style_opt( $key, $default = null ) {
+		$s     = upw_preloader_settings();
+		$style = isset( $s['style'] ) ? $s['style'] : '';
+		if ( $style !== '' && isset( $s['opts'][ $style ] ) && is_array( $s['opts'][ $style ] ) && array_key_exists( $key, $s['opts'][ $style ] ) ) {
+			return $s['opts'][ $style ][ $key ];
+		}
+		return $default;
+	}
+endif;
+
 /* 1) Theme Settings → Animations → Preloader tab. */
 add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 	$ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
@@ -112,8 +134,14 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 		);
 	};
 	$style_choices = array();
+	$style_reveals = array();
 	foreach ( upw_preloader_styles() as $k => $lbl ) {
 		$style_choices[ $k ] = $tile( $k, $lbl );
+		// Reserved for per-style options a future style may declare, e.g.:
+		//   $style_reveals['bars'] = array( 'group_bars' => array( 'type' => 'group',
+		//       'options' => array( 'count' => array( 'type' => 'slider', … ) ) ) );
+		// Empty for now — the colour / logo / timing options below are shared by all styles.
+		$style_reveals[ $k ] = array();
 	}
 
 	$tabs['preloader'] = array(
@@ -139,11 +167,24 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 						),
 					),
 					'preloader_style' => array(
-						'type'    => 'image-picker',
-						'label'   => __( 'Style', 'fw' ),
-						'desc'    => __( 'How the loading screen looks. Logo pulse needs a logo below.', 'fw' ),
-						'value'   => 'spinner',
-						'choices' => $style_choices,
+						// Popover multi-picker for consistency with Scroll Progress / Scroll Loop,
+						// and so a future style can reveal its own options in its `choices` slot.
+						'type'         => 'multi-picker',
+						'popover'      => true,
+						'label'        => __( 'Style', 'fw' ),
+						'desc'         => __( 'How the loading screen looks. Logo pulse needs a logo below.', 'fw' ),
+						'show_borders' => false,
+						'value'        => array( 'style' => 'spinner' ),
+						'picker'       => array(
+							'style' => array(
+								'type'    => 'image-picker',
+								'label'   => false,
+								'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
+								'value'   => 'spinner',
+								'choices' => $style_choices,
+							),
+						),
+						'choices' => $style_reveals,
 					),
 					'preloader_bg' => array(
 						'type'  => 'color-picker',
