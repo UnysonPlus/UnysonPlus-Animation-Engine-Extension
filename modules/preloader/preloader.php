@@ -15,13 +15,48 @@
 if ( ! function_exists( 'upw_preloader_styles' ) ) :
 	function upw_preloader_styles() {
 		return array(
-			'spinner' => __( 'Spinner', 'fw' ),
-			'bar'     => __( 'Progress bar', 'fw' ),
-			'dots'    => __( 'Bouncing dots', 'fw' ),
-			'counter' => __( 'Counter (%)', 'fw' ),
-			'curtain' => __( 'Curtain', 'fw' ),
-			'logo'    => __( 'Logo pulse', 'fw' ),
+			'spinner'       => __( 'Spinner', 'fw' ),
+			'dual_ring'     => __( 'Dual ring', 'fw' ),
+			'gradient'      => __( 'Gradient ring', 'fw' ),
+			'dots'          => __( 'Bouncing dots', 'fw' ),
+			'dots_fade'     => __( 'Fading dots', 'fw' ),
+			'orbit'         => __( 'Orbit', 'fw' ),
+			'bars'          => __( 'Equalizer bars', 'fw' ),
+			'grid'          => __( 'Pulsing grid', 'fw' ),
+			'pulse'         => __( 'Pulse', 'fw' ),
+			'ripple'        => __( 'Ripple', 'fw' ),
+			'square'        => __( 'Flip square', 'fw' ),
+			'bar'           => __( 'Progress bar', 'fw' ),
+			'progress_ring' => __( 'Progress ring (%)', 'fw' ),
+			'counter'       => __( 'Counter (%)', 'fw' ),
+			'curtain'       => __( 'Curtain', 'fw' ),
+			'logo'          => __( 'Logo pulse', 'fw' ),
 		);
+	}
+endif;
+
+/** The animator markup for a preloader style (built into the overlay). */
+if ( ! function_exists( 'upw_preloader_inner' ) ) :
+	function upw_preloader_inner( $style, $has_logo ) {
+		switch ( $style ) {
+			case 'dual_ring':     return '<div class="upw-pl-dual"></div>';
+			case 'gradient':      return '<div class="upw-pl-grad"></div>';
+			case 'dots':          return '<div class="upw-pl-dots"><span></span><span></span><span></span></div>';
+			case 'dots_fade':     return '<div class="upw-pl-fade">' . str_repeat( '<i></i>', 8 ) . '</div>';
+			case 'orbit':         return '<div class="upw-pl-orbit"></div>';
+			case 'bars':          return '<div class="upw-pl-bars">' . str_repeat( '<i></i>', 5 ) . '</div>';
+			case 'grid':          return '<div class="upw-pl-grid">' . str_repeat( '<i></i>', 9 ) . '</div>';
+			case 'pulse':         return '<div class="upw-pl-pulse"></div>';
+			case 'ripple':        return '<div class="upw-pl-ripple"><i></i><i></i></div>';
+			case 'square':        return '<div class="upw-pl-square"></div>';
+			case 'bar':           return '<div class="upw-pl-track"><div class="upw-pl-bar"></div></div>';
+			case 'progress_ring': return '<div class="upw-pl-ring"><span class="upw-pl-num">0</span></div>';
+			case 'counter':       return '<div class="upw-pl-count"><span class="upw-pl-num">0</span><span class="upw-pl-pct">%</span></div>';
+			case 'curtain':       return '<span class="upw-pl-panel upw-pl-panel--a"></span><span class="upw-pl-panel upw-pl-panel--b"></span>';
+			case 'logo':          return $has_logo ? '' : '<div class="upw-pl-spinner"></div>';
+			case 'spinner':
+			default:              return '<div class="upw-pl-spinner"></div>';
+		}
 	}
 endif;
 
@@ -191,31 +226,7 @@ add_action( 'wp_body_open', function () {
 	}
 
 	// Per-style animator markup.
-	$inner = '';
-	switch ( $style ) {
-		case 'bar':
-			$inner = '<div class="upw-pl-track"><div class="upw-pl-bar"></div></div>';
-			break;
-		case 'dots':
-			$inner = '<div class="upw-pl-dots"><span></span><span></span><span></span></div>';
-			break;
-		case 'counter':
-			$inner = '<div class="upw-pl-count"><span class="upw-pl-num">0</span><span class="upw-pl-pct">%</span></div>';
-			break;
-		case 'curtain':
-			$inner = '<span class="upw-pl-panel upw-pl-panel--a"></span><span class="upw-pl-panel upw-pl-panel--b"></span>';
-			break;
-		case 'logo':
-			$inner = ''; // the logo itself is the animator; if no logo, fall through to a spinner
-			if ( $s['logo'] === '' ) {
-				$inner = '<div class="upw-pl-spinner"></div>';
-			}
-			break;
-		case 'spinner':
-		default:
-			$inner = '<div class="upw-pl-spinner"></div>';
-			break;
-	}
+	$inner = upw_preloader_inner( $style, $s['logo'] !== '' );
 
 	// For curtain, the panels ARE the cover and the logo sits centred above them.
 	$content = ( $style === 'curtain' )

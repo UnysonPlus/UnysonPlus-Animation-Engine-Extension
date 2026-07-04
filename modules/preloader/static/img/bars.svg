@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Bars">
+  <g fill="#2f74e6">
+    <rect x="46" y="28" width="6" height="18" rx="3"/><rect x="56" y="18" width="6" height="28" rx="3"/>
+    <rect x="66" y="24" width="6" height="22" rx="3"/><rect x="76" y="14" width="6" height="32" rx="3"/>
+    <rect x="86" y="30" width="6" height="16" rx="3"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Bars</text>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Grid">
+  <g fill="#2f74e6">
+    <rect x="52" y="16" width="9" height="9" rx="2"/><rect x="63" y="16" width="9" height="9" rx="2" opacity="0.6"/><rect x="74" y="16" width="9" height="9" rx="2" opacity="0.35"/>
+    <rect x="52" y="27" width="9" height="9" rx="2" opacity="0.6"/><rect x="63" y="27" width="9" height="9" rx="2"/><rect x="74" y="27" width="9" height="9" rx="2" opacity="0.6"/>
+    <rect x="52" y="38" width="9" height="9" rx="2" opacity="0.35"/><rect x="63" y="38" width="9" height="9" rx="2" opacity="0.6"/><rect x="74" y="38" width="9" height="9" rx="2"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Grid</text>
+</svg>

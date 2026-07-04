@@ -7,7 +7,7 @@ shortcode, check this list first: a new one must be genuinely DISTINCT from ever
 rename or a near-duplicate of an existing style). Keep this file updated when styles/modules are
 added or removed.
 
-_Engine version at last update: 1.1.21._
+_Engine version at last update: 1.1.22._
 
 ---
 
@@ -48,7 +48,7 @@ the styles it uses.
 | **cursor** (Custom Cursor) | 42 | dot · ring · dot_ring · crosshair · brackets · square · dashed · glow · gradient · blob · spotlight · comet · particles · elastic · lens · arrow · radar · plus · star · diamond · dual_ring · bullseye · reticle · invert · echo · firefly · confetti · bubble · spring · streak · rope · metaball · label · sticky · word_trail · reveal · magnify · ink · fluid · distort · custom · glyph |
 | **page-transitions** (Page Transitions) | 23 | fade · slide · zoom · rotate · curtain · doors · split · wipe · diagonal · bars · stripes · blinds · reveal · shape · iris · glitch · flip · checkerboard · pixels · ripple · conic · morph · contentfade |
 | **scroll-progress** (Scroll Progress indicator) | 16 | bar · gradient · glow · segments · pill · labeled · under_nav · liquid · edge · ring · ring_number · gauge · battery · counter · reading_time · dots |
-| **preloader** (Preloader / Page Loader) | 6 | spinner · bar · dots · counter · curtain · logo — full-screen loading screen shown until the page is ready, then animated away (distinct from Page Transitions, which animate route changes) |
+| **preloader** (Preloader / Page Loader) | 16 | spinner · dual_ring · gradient · dots · dots_fade · orbit · bars · grid · pulse · ripple · square · bar · progress_ring · counter · curtain · logo — full-screen loading screen shown until the page is ready, then animated away (distinct from Page Transitions, which animate route changes). Supersedes the theme's basic preloader when the engine is active. |
 
 **Also in Theme Settings (not a style list):** the Entrance Animation (Animate.css, ~56 effects —
 lives in the **shortcodes** extension core, available even with the engine off).

@@ -15,13 +15,19 @@
 	var startT = Date.now();
 	var done = false;
 
+	// Determinate progress drives the Counter number and/or the Progress ring.
 	var numEl = el.querySelector('.upw-pl-num');
+	var ringEl = el.querySelector('.upw-pl-ring');
 	var counterTimer = null, pct = 0;
-	if (numEl) {
+	function applyProg(v) {
+		if (numEl) { numEl.textContent = v; }
+		if (ringEl) { ringEl.style.setProperty('--pl-prog', v); }
+	}
+	if (numEl || ringEl) {
 		counterTimer = setInterval(function () {
 			pct += Math.max(0.6, (90 - pct) * 0.06);
 			if (pct > 90) pct = 90;
-			numEl.textContent = Math.round(pct);
+			applyProg(Math.round(pct));
 		}, 60);
 	}
 
@@ -29,7 +35,7 @@
 		if (done) return;
 		done = true;
 		if (counterTimer) { clearInterval(counterTimer); }
-		if (numEl) { numEl.textContent = '100'; }
+		applyProg(100);
 		var wait = Math.max(0, minMs - (Date.now() - startT));
 		setTimeout(function () {
 			el.classList.add('is-done');
