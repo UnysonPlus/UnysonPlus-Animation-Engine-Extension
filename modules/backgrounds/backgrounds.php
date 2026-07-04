@@ -563,6 +563,12 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'needs_raf'     => true,                    // uses the shared frame scheduler (window.upwAnimRaf)
 			'js_core_first' => true,                    // core (engine) loads before the style partials
 			'js_styles'     => upw_bg_effects(),        // every style ships a JS partial (dispatch injects the layer)
+			// Shared canvas sub-engines kept OUT of the core — loaded only when a style that needs
+			// them is on the page (the particle field: 8 styles; the metaball blob: 2 styles).
+			'js_shared'     => array(
+				'field' => array( 'snow', 'confetti', 'bubbles', 'fireflies', 'bokeh', 'rain', 'shapes', 'meteors' ),
+				'blob'  => array( 'blobs', 'nebula' ),
+			),
 			'js_cfg'        => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

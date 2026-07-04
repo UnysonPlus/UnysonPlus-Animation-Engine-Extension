@@ -56,6 +56,10 @@ if ( ! function_exists( 'upw_anim_register_assets' ) ) :
 			'base_css'  => '',
 			'base_js'   => '',
 			'js_styles' => array(),
+			'js_shared' => array(),// [ 'chunk' => ['styleA','styleB',…] ]: a shared sub-engine used by
+			                       // ONLY some styles. The chunk file lives at js_dir/_<chunk>.js and is
+			                       // enqueued only when one of its styles is used; each such style's
+			                       // partial depends on it. Keeps rarely-used engines out of the core.
 			'js_cfg'    => null,   // callable() => string of inline JS, printed before the core script
 			'js_deps'   => array(),
 			'js_core_first' => false, // true: core loads BEFORE partials (partials depend on it) —
@@ -227,11 +231,38 @@ add_action( 'wp_footer', function () {
 			$cfg = '';
 		}
 
+		// Shared JS chunks (core_first only): a sub-engine (js_dir/_<chunk>.js) used by ONLY some
+		// styles loads when one of its styles is used; each such style's partial depends on it, and
+		// it sits between core and the partials (it aliases core's API; the partials alias it).
+		$chunk_files = array();          // ordered rows: handle/abs/src
+		$style_chunks = array();         // style => [chunk handles]
+		if ( $m['js_core_first'] && $has_core && ! empty( $m['js_shared'] ) ) {
+			foreach ( (array) $m['js_shared'] as $chunk => $chunk_styles ) {
+				$needed = array_intersect( $js_used, (array) $chunk_styles );
+				if ( empty( $needed ) ) {
+					continue;
+				}
+				$rel = $m['js_dir'] . '/_' . $chunk . '.js';
+				$abs = $path . '/' . $rel;
+				if ( ! file_exists( $abs ) ) {
+					continue;
+				}
+				$ch_handle     = $h . '-chunk-' . $chunk;
+				$chunk_files[] = array( 'handle' => $ch_handle, 'abs' => $abs, 'src' => $uri . '/' . $rel );
+				foreach ( $needed as $s ) {
+					$style_chunks[ $s ][] = $ch_handle;
+				}
+			}
+		}
+
 		// Ordered JS file list, matching the separate-enqueue order exactly:
-		//   core_first: [core, …partials]   |   default: […partials, core]
+		//   core_first: [core, …chunks, …partials]   |   default: […partials, core]
 		$js_files = array();
 		if ( $m['js_core_first'] && $has_core ) {
 			$js_files[] = array( 'handle' => $core_handle, 'abs' => $core_abs, 'src' => $core_src );
+			foreach ( $chunk_files as $cf ) {
+				$js_files[] = $cf;
+			}
 			foreach ( $js_used as $s ) {
 				$abs = $path . '/' . $m['js_dir'] . '/' . $s . '.js';
 				if ( file_exists( $abs ) ) {
@@ -257,17 +288,21 @@ add_action( 'wp_footer', function () {
 				wp_add_inline_script( $h . '-js-combined', $cfg, 'before' );
 			}
 		} elseif ( $m['js_core_first'] && $has_core ) {
-			// Separate — Core FIRST: it defines the shared helpers/registry; each per-style
-			// partial then loads after it (depends on it) and aliases those helpers.
+			// Separate — Core FIRST: it defines the shared helpers/registry; shared chunks load next
+			// (depend on core); each per-style partial then loads after them and aliases those helpers.
 			wp_enqueue_script( $core_handle, $core_src, $base_deps, upw_anim_asset_ver( $m['ver'], $core_abs ), true );
 			if ( $cfg !== '' ) {
 				wp_add_inline_script( $core_handle, $cfg, 'before' );
+			}
+			foreach ( $chunk_files as $cf ) {
+				wp_enqueue_script( $cf['handle'], $cf['src'], array( $core_handle ), upw_anim_asset_ver( $m['ver'], $cf['abs'] ), true );
 			}
 			foreach ( $js_used as $s ) {
 				$rel = $m['js_dir'] . '/' . $s . '.js';
 				$abs = $path . '/' . $rel;
 				if ( file_exists( $abs ) ) {
-					wp_enqueue_script( $h . '-js-' . $s, $uri . '/' . $rel, array( $core_handle ), upw_anim_asset_ver( $m['ver'], $abs ), true );
+					$deps = array_merge( array( $core_handle ), isset( $style_chunks[ $s ] ) ? $style_chunks[ $s ] : array() );
+					wp_enqueue_script( $h . '-js-' . $s, $uri . '/' . $rel, $deps, upw_anim_asset_ver( $m['ver'], $abs ), true );
 				}
 			}
 		} else {
