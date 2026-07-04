@@ -97,11 +97,16 @@ if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 		// the rest.)
 		return array(
 			'animation_engine_container' => array(
-				'title'   => __( 'Animations', 'fw' ),
+				// "Site-wide UX" — these are site-wide chrome/behaviour features (Cursor,
+				// Page Transitions, Scroll Progress, Preloader), not element animations, so
+				// the tab is named for what it is. (The per-element "Animations" inserter in
+				// the page builder keeps that name.) The theme uses the same tab title when
+				// the engine is off, so the swap is seamless.
+				'title'   => __( 'Site-wide UX', 'fw' ),
 				'type'    => 'tab',
 				'options' => array(
 					'animation_settings_box' => array(
-						'title'   => __( 'Animation Settings', 'fw' ),
+						'title'   => __( 'Site-wide UX', 'fw' ),
 						'type'    => 'box',
 						'options' => $sub_tabs,
 					),
