@@ -332,6 +332,11 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'needs_raf'     => true,                        // uses the shared frame scheduler (window.upwAnimRaf)
 			'js_core_first' => true,                        // core (integrator) loads before the effect partials
 			'js_styles'     => upw_physics_effects(),       // every effect ships a JS partial (registers into window.upwPhys)
+			// Pointer/drag/reaction helpers kept OUT of the core — loaded only when a pointer- or
+			// trigger-driven effect (drag / spring / jelly / recoil / …) is on the page.
+			'js_shared'     => array(
+				'pointer' => array( 'draggable', 'slingshot', 'spring', 'attract', 'jelly', 'squash', 'recoil', 'shake', 'spin' ),
+			),
 			'js_cfg'        => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

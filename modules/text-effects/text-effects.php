@@ -666,6 +666,11 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'base_js'       => 'static/js/text-effects-core.js',
 			'js_core_first' => true,                    // core (engine) loads before the effect partials
 			'js_styles'     => upw_text_effects(),      // every effect ships a JS partial (registers into window.upwText)
+			// The split/mask reveal engine (piece staggering, presets, cascade) is kept OUT of the
+			// core — loaded only when one of these entrance effects is on the page.
+			'js_shared'     => array(
+				'reveal' => array( 'split_reveal', 'blur', 'flip3d', 'scale', 'slide', 'bounce', 'random', 'skew', 'mask' ),
+			),
 			'js_cfg'        => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
