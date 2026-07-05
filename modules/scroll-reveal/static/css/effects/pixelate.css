@@ -1,0 +1,19 @@
+/* Animation Engine — Scroll Reveal "Pixelate In" (canvas pixel-resolve).
+ *
+ * The JS runtime draws the element's <img> onto a <canvas> and adds .sc-pixel-active. The canvas
+ * stacks over the image, which is then hidden so the two don't double up. Pointer events pass
+ * through so links / :hover still work. If the JS never runs (reduced motion, no 2D context, no
+ * <img>), the untouched image stays visible — nothing here hides it. */
+
+.sc-pixel-reveal .sc-px-canvas {
+	position: absolute;
+	z-index: 1;
+	display: block;
+	pointer-events: none;
+}
+
+/* Hide the source image only once the canvas is live (it renders the same pixels). */
+.sc-pixel-reveal.sc-pixel-active > img,
+.sc-pixel-reveal.sc-pixel-active img {
+	opacity: 0;
+}

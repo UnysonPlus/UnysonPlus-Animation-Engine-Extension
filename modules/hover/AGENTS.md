@@ -10,7 +10,8 @@ provides: per-element Hover Interactions (Animations tab)
 Adds a pointer-driven **"Interaction"** hover effect to **every** element's
 **Animations** tab. Loaded by the engine class `_init()` (only when the
 `animation-engine` extension is active), so the field only appears when the engine
-is on. Effects: **magnetic · tilt (3D) · spotlight · image_reveal · text_scramble**.
+is on. Effects: **magnetic · tilt (3D) · spotlight · image_reveal · text_scramble ·
+webgl_displace (WebGL Refract)** and ~26 CSS-driven ones.
 
 ## How it plugs in (no per-element code)
 
@@ -38,6 +39,7 @@ is on. Effects: **magnetic · tilt (3D) · spotlight · image_reveal · text_scr
 | `spotlight` | JS sets `--mx/--my`, **CSS** paints | radial glow (`--hover-glow`, `--hover-glow-size`); best on darker elements (mix-blend screen) |
 | `image_reveal` | **CSS only** | zoom / grayscale→color / shine sweep on a contained `<img>`; suits Image elements |
 | `text_scramble` | JS | chars resolve from random glyphs over `duration`; replaces `textContent`, so use on text/heading/button leaves |
+| `webgl_displace` | JS (**raw WebGL**, no Three.js) | renders the element's `<img>` through a fragment shader — noise-flow displacement (`liquid`) + RGB channel split along the pointer (`refract`); `style` both/refract/liquid, `strength`/`chroma`/`speed`, `trigger` hover/always. Distinct `data-wd-*` attrs (not `data-hover-*`) so it composes with other effects. Needs an `<img>`; falls back to the untouched image on no-WebGL / cross-origin (tainted texture) / reduced-motion. Best on Image / gallery elements |
 
 ## Guards
 
@@ -54,3 +56,8 @@ inserts.
   the wrapper filter no-ops for `none` (cheap).
 - `text_scramble` overwrites `textContent` — don't apply to elements with rich inner
   HTML (it flattens to text).
+- `webgl_displace` uploads the `<img>` into a WebGL texture — a **cross-origin** image
+  (different host, no CORS headers) taints the canvas and the `texImage2D` throws; the
+  runtime catches it and leaves the original image visible (no distortion). Use
+  same-origin (WP media) images. The `.sc-wd-active` class hides the source `<img>` only
+  after the canvas is live, so a failed init never leaves a blank hole.

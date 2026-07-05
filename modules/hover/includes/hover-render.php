@@ -211,6 +211,18 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'letter_spacing':
 			$add_style( '--hover-letter:' . (int) ( $o['amount'] ?? 3 ) . 'px;' );
 			break;
+
+		case 'webgl_displace':
+			$wd_style = $o['style'] ?? 'both';
+			if ( ! in_array( $wd_style, array( 'both', 'refract', 'liquid' ), true ) ) { $wd_style = 'both'; }
+			$attr['data-wd-style']    = esc_attr( $wd_style );
+			$attr['data-wd-strength'] = esc_attr( (float) ( $o['strength'] ?? 0.35 ) );
+			$attr['data-wd-chroma']   = esc_attr( (float) ( $o['chroma'] ?? 0.4 ) );
+			$attr['data-wd-speed']    = esc_attr( (float) ( $o['speed'] ?? 0.6 ) );
+			if ( ( $o['trigger'] ?? 'hover' ) === 'always' ) {
+				$attr['data-wd-trigger'] = 'always';
+			}
+			break;
 	}
 	}
 
@@ -254,7 +266,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'base_js'   => 'static/js/hover-core.js',
 			// ONLY these effects ship a JS partial; every other effect is CSS-only,
 			// so a page using only CSS effects loads zero hover JavaScript.
-			'js_styles' => array( 'magnetic', 'tilt', 'spotlight', 'ripple', 'text_scramble', 'text_swap' ),
+			'js_styles' => array( 'magnetic', 'tilt', 'spotlight', 'ripple', 'text_scramble', 'text_swap', 'webgl_displace' ),
 			'js_cfg'    => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

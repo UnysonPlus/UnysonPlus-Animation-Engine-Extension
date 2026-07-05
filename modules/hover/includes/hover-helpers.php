@@ -43,7 +43,7 @@ if ( ! function_exists( 'upw_hover_effects' ) ) :
 			'scale', 'push', 'jelly', 'skew', 'shine', 'gradient_border',
 			'corner_brackets', 'fill_sweep', 'border_draw', 'glitch', 'text_swap',
 			'rotate', 'pulse', 'shake', 'bounce', 'grayscale', 'blur',
-			'brightness', 'bg_pan', 'outline', 'letter_spacing',
+			'brightness', 'bg_pan', 'outline', 'letter_spacing', 'webgl_displace',
 		);
 	}
 endif;

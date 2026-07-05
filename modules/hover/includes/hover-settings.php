@@ -80,6 +80,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 						'bg_pan'          => $ix( 'bg-pan',          __( 'Background Pan', 'fw' ) ),
 						'outline'         => $ix( 'outline',         __( 'Outline Expand', 'fw' ) ),
 						'letter_spacing'  => $ix( 'letter-spacing',  __( 'Letter Spacing', 'fw' ) ),
+						'webgl_displace'  => $ix( 'webgl-displace',  __( 'WebGL Refract', 'fw' ) ),
 				),
 			),
 		),
@@ -261,6 +262,23 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			),
 			'letter_spacing' => array(
 				'amount' => array( 'type' => 'slider', 'label' => __( 'Extra spacing (px)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1, 'max' => 12, 'step' => 1 ) ),
+			),
+			'webgl_displace' => array(
+				'style' => array(
+					'type'    => 'select',
+					'label'   => __( 'Effect', 'fw' ),
+					'desc'    => __( 'Refract = chromatic RGB split; Liquid = flowing displacement; Both = the full effect.', 'fw' ),
+					'value'   => 'both',
+					'choices' => array(
+						'both'    => __( 'Both (refract + liquid)', 'fw' ),
+						'refract' => __( 'Refract only', 'fw' ),
+						'liquid'  => __( 'Liquid only', 'fw' ),
+					),
+				),
+				'strength' => array( 'type' => 'slider', 'label' => __( 'Displacement', 'fw' ), 'value' => 0.35, 'properties' => array( 'min' => 0.1, 'max' => 1, 'step' => 0.05 ) ),
+				'chroma'   => array( 'type' => 'slider', 'label' => __( 'RGB split', 'fw' ), 'value' => 0.4, 'properties' => array( 'min' => 0, 'max' => 1, 'step' => 0.05 ) ),
+				'speed'    => array( 'type' => 'slider', 'label' => __( 'Flow speed', 'fw' ), 'value' => 0.6, 'properties' => array( 'min' => 0.2, 'max' => 2, 'step' => 0.1 ) ),
+				'trigger'  => array( 'type' => 'select', 'label' => __( 'Runs', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover only', 'fw' ), 'always' => __( 'Always animating', 'fw' ) ) ),
 			),
 		),
 	);

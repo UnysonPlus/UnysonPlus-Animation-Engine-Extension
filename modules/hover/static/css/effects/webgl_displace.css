@@ -1,0 +1,20 @@
+/* Animation Engine — Hover "WebGL Refract" (webgl_displace).
+ *
+ * The JS runtime renders the element's image through a WebGL canvas and adds .sc-wd-active.
+ * The canvas is stacked over the original <img> (which is then hidden so the two don't
+ * double up). Pointer events pass through to the element so :hover / links still work.
+ * If the JS never runs (no WebGL, cross-origin image, reduced motion), the untouched <img>
+ * simply stays visible — nothing here hides it. */
+
+.sc-hover--webgl_displace .sc-wd-canvas {
+	position: absolute;
+	z-index: 1;
+	pointer-events: none;
+	display: block;
+}
+
+/* Hide the source image only once the canvas is live (renders the same pixels). */
+.sc-hover--webgl_displace.sc-wd-active > img,
+.sc-hover--webgl_displace.sc-wd-active img {
+	opacity: 0;
+}
