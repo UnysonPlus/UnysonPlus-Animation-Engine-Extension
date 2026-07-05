@@ -1,0 +1,302 @@
+<?php if ( ! defined( 'FW' ) ) {
+	die( 'Forbidden' );
+}
+
+/**
+ * Animation Engine — Hover module: options declaration.
+ *
+ * The per-element "Interaction" group appended to every element's Animations tab (via the
+ * shortcodes extension's `sc_animation_fields` filter), plus the global on/off sub-tab in
+ * Theme Settings → Animations → Interactions (via `upw_anim_engine_module_tabs`). Depends on
+ * upw_color_field() from hover-helpers.php.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1) The per-element "Interaction" group, appended to the Animations tab.
+ * ------------------------------------------------------------------ */
+add_filter( 'sc_animation_fields', function ( $fields ) {
+	if ( ! is_array( $fields ) ) {
+		return $fields;
+	}
+
+	// Visual tiles for the picker — hand-authored animated SVG diagrams (same
+	// approach as the Scroll Effect picker). Each tile shows the SVG at two sizes
+	// (large = the hover preview).
+	$ix_ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	$ix_base = $ix_ext ? $ix_ext->get_declared_URI( '/modules/hover/static/img/interactions' ) : '';
+	$ix      = function ( $file, $label ) use ( $ix_base ) {
+		return array(
+			'small' => array( 'src' => $ix_base . '/' . $file . '.svg', 'height' => 66 ),
+			'large' => array( 'src' => $ix_base . '/' . $file . '.svg', 'height' => 132 ),
+			'label' => $label,
+		);
+	};
+
+	$fields['interaction'] = array(
+		'type'         => 'multi-picker',
+		'label'        => __( 'Hover Interaction', 'fw' ),
+		'desc'         => __( 'A pointer-driven effect applied while hovering this element.', 'fw' ),
+		'help'         => __( 'Hover Interactions (Animation Engine): magnetic pull, 3D tilt, cursor spotlight, image reveal or text scramble. Honours "reduce motion" and is pointer-only (skipped on touch screens).', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
+		'popover'      => true,
+		'show_borders' => false,
+		'value'        => array( 'effect' => 'none' ),
+		'anim_meta'    => array( 'category' => __( 'Pointer', 'fw' ), 'multi' => true ), // multi = combine several hover effects on one element
+		'picker'       => array(
+			'effect' => array(
+				'type'    => 'image-picker',
+				'label'   => false,
+				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
+				'value'   => 'none',
+				'choices' => array(
+					'none'          => $ix( 'none',          __( 'None', 'fw' ) ),
+					'magnetic'      => $ix( 'magnetic',      __( 'Magnetic', 'fw' ) ),
+					'tilt'          => $ix( 'tilt',          __( '3D Tilt', 'fw' ) ),
+					'spotlight'     => $ix( 'spotlight',     __( 'Spotlight', 'fw' ) ),
+					'image_reveal'  => $ix( 'image-reveal',  __( 'Image Reveal', 'fw' ) ),
+					'text_scramble' => $ix( 'text-scramble', __( 'Text Scramble', 'fw' ) ),
+						'glow_border'    => $ix( 'glow-border',    __( 'Glow Border', 'fw' ) ),
+						'underline_grow' => $ix( 'underline-grow', __( 'Underline Grow', 'fw' ) ),
+						'ripple'         => $ix( 'ripple',         __( 'Ripple', 'fw' ) ),
+						'lift'           => $ix( 'lift',           __( 'Lift', 'fw' ) ),
+						'color_shift'    => $ix( 'color-shift',    __( 'Color Shift', 'fw' ) ),
+						'scale'           => $ix( 'scale',           __( 'Scale / Zoom', 'fw' ) ),
+						'push'            => $ix( 'push',            __( 'Push', 'fw' ) ),
+						'jelly'           => $ix( 'jelly',           __( 'Pop / Jelly', 'fw' ) ),
+						'skew'            => $ix( 'skew',            __( 'Skew', 'fw' ) ),
+						'shine'           => $ix( 'shine',           __( 'Shine Sweep', 'fw' ) ),
+						'gradient_border' => $ix( 'gradient-border', __( 'Gradient Border', 'fw' ) ),
+						'corner_brackets' => $ix( 'corner-brackets', __( 'Corner Brackets', 'fw' ) ),
+						'fill_sweep'      => $ix( 'fill-sweep',      __( 'Fill Sweep', 'fw' ) ),
+						'border_draw'     => $ix( 'border-draw',     __( 'Border Draw', 'fw' ) ),
+						'glitch'          => $ix( 'glitch',          __( 'Glitch', 'fw' ) ),
+						'text_swap'       => $ix( 'text-swap',       __( 'Text Swap', 'fw' ) ),
+						'rotate'          => $ix( 'rotate',          __( 'Rotate', 'fw' ) ),
+						'pulse'           => $ix( 'pulse',           __( 'Pulse', 'fw' ) ),
+						'shake'           => $ix( 'shake',           __( 'Shake / Buzz', 'fw' ) ),
+						'bounce'          => $ix( 'bounce',          __( 'Bounce', 'fw' ) ),
+						'grayscale'       => $ix( 'grayscale',       __( 'Grayscale', 'fw' ) ),
+						'blur'            => $ix( 'blur',            __( 'Blur Focus', 'fw' ) ),
+						'brightness'      => $ix( 'brightness',      __( 'Brightness', 'fw' ) ),
+						'bg_pan'          => $ix( 'bg-pan',          __( 'Background Pan', 'fw' ) ),
+						'outline'         => $ix( 'outline',         __( 'Outline Expand', 'fw' ) ),
+						'letter_spacing'  => $ix( 'letter-spacing',  __( 'Letter Spacing', 'fw' ) ),
+				),
+			),
+		),
+		'choices' => array(
+			'magnetic' => array(
+				'strength' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Strength', 'fw' ),
+					'desc'       => __( 'How far the element is pulled toward the cursor.', 'fw' ),
+					'value'      => 0.3,
+					'properties' => array( 'min' => 0.05, 'max' => 0.6, 'step' => 0.05 ),
+				),
+			),
+			'tilt' => array(
+				'max_tilt' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Max tilt (°)', 'fw' ),
+					'value'      => 12,
+					'properties' => array( 'min' => 2, 'max' => 25, 'step' => 1 ),
+				),
+				'hover_scale' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Hover scale', 'fw' ),
+					'value'      => 1,
+					'properties' => array( 'min' => 1, 'max' => 1.15, 'step' => 0.01 ),
+				),
+				'glare' => array(
+					'type'         => 'switch',
+					'label'        => __( 'Glare', 'fw' ),
+					'desc'         => __( 'A light sheen that follows the tilt.', 'fw' ),
+					'value'        => 'no',
+					'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
+					'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
+				),
+			),
+			'spotlight' => array(
+				'glow_color' => upw_color_field( __( 'Glow color', 'fw' ), 'bg', '#6aa6ff' ),
+				'glow_size' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Glow size (%)', 'fw' ),
+					'value'      => 40,
+					'properties' => array( 'min' => 10, 'max' => 90, 'step' => 5 ),
+				),
+			),
+			'image_reveal' => array(
+				'reveal_style' => array(
+					'type'    => 'select',
+					'label'   => __( 'Style', 'fw' ),
+					'value'   => 'zoom_gray',
+					'choices' => array(
+						'zoom'       => __( 'Zoom', 'fw' ),
+						'grayscale'  => __( 'Grayscale → color', 'fw' ),
+						'zoom_gray'  => __( 'Zoom + color', 'fw' ),
+						'shine'      => __( 'Shine sweep', 'fw' ),
+					),
+				),
+				'zoom' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Zoom', 'fw' ),
+					'value'      => 1.06,
+					'properties' => array( 'min' => 1, 'max' => 1.2, 'step' => 0.01 ),
+				),
+			),
+			'text_scramble' => array(
+				'duration' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Duration (s)', 'fw' ),
+					'value'      => 0.8,
+					'properties' => array( 'min' => 0.2, 'max' => 2, 'step' => 0.1 ),
+				),
+			),
+			'glow_border' => array(
+				'glow_color' => upw_color_field( __( 'Glow color', 'fw' ), 'bg', '#6aa6ff' ),
+			),
+			'underline_grow' => array(
+				'line_color' => upw_color_field( __( 'Line color', 'fw' ), 'text', '', __( 'Defaults to the text color when left blank.', 'fw' ) ),
+				'origin' => array(
+					'type'    => 'select',
+					'label'   => __( 'Grow from', 'fw' ),
+					'value'   => 'left',
+					'choices' => array(
+						'left'   => __( 'Left', 'fw' ),
+						'center' => __( 'Center', 'fw' ),
+					),
+				),
+			),
+			'ripple' => array(
+				'ripple_color' => upw_color_field( __( 'Ripple color', 'fw' ), 'bg', '#6aa6ff' ),
+			),
+			'lift' => array(
+				'distance' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Lift distance (px)', 'fw' ),
+					'value'      => 6,
+					'properties' => array( 'min' => 2, 'max' => 20, 'step' => 1 ),
+				),
+				'shadow' => array(
+					'type'         => 'switch',
+					'label'        => __( 'Shadow', 'fw' ),
+					'value'        => 'yes',
+					'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
+					'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
+				),
+			),
+			'color_shift' => array(
+				'shift_color' => upw_color_field( __( 'Hover background', 'fw' ), 'bg', '#6aa6ff' ),
+			),
+			'scale' => array(
+				'scale_to' => array( 'type' => 'slider', 'label' => __( 'Scale to', 'fw' ), 'value' => 1.04, 'properties' => array( 'min' => 1, 'max' => 1.2, 'step' => 0.01 ) ),
+			),
+			'push' => array(
+				'depth' => array( 'type' => 'slider', 'label' => __( 'Press depth (px)', 'fw' ), 'value' => 5, 'properties' => array( 'min' => 1, 'max' => 12, 'step' => 1 ) ),
+			),
+			'jelly' => array(
+				'strength' => array( 'type' => 'slider', 'label' => __( 'Bounciness', 'fw' ), 'value' => 1, 'properties' => array( 'min' => 0.3, 'max' => 2, 'step' => 0.1 ) ),
+			),
+			'skew' => array(
+				'angle' => array( 'type' => 'slider', 'label' => __( 'Skew angle', 'fw' ), 'value' => -6, 'properties' => array( 'min' => -14, 'max' => 14, 'step' => 1 ) ),
+			),
+			'shine' => array(
+				'shine_color' => upw_color_field( __( 'Shine color', 'fw' ), 'bg', '#ffffff' ),
+			),
+			'gradient_border' => array(
+				'color_a' => upw_color_field( __( 'Gradient color A', 'fw' ), 'bg', '#6aa6ff' ),
+				'color_b' => upw_color_field( __( 'Gradient color B', 'fw' ), 'bg', '#a06bff' ),
+				'speed' => array( 'type' => 'slider', 'label' => __( 'Flow speed (s)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1, 'max' => 8, 'step' => 0.5 ) ),
+			),
+			'corner_brackets' => array(
+				'bracket_color' => upw_color_field( __( 'Bracket color', 'fw' ), 'bg', '#6aa6ff' ),
+				'bracket_size' => array( 'type' => 'slider', 'label' => __( 'Bracket size (px)', 'fw' ), 'value' => 18, 'properties' => array( 'min' => 8, 'max' => 40, 'step' => 2 ) ),
+			),
+			'fill_sweep' => array(
+				'fill_color' => upw_color_field( __( 'Fill color', 'fw' ), 'bg', '#2f74e6' ),
+				'direction' => array( 'type' => 'select', 'label' => __( 'Fill from', 'fw' ), 'value' => 'left', 'choices' => array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ), 'up' => __( 'Bottom', 'fw' ), 'center' => __( 'Center', 'fw' ) ) ),
+			),
+			'border_draw' => array(
+				'line_color' => upw_color_field( __( 'Line color', 'fw' ), 'bg', '#6aa6ff' ),
+				'thickness' => array( 'type' => 'slider', 'label' => __( 'Thickness (px)', 'fw' ), 'value' => 2, 'properties' => array( 'min' => 1, 'max' => 6, 'step' => 1 ) ),
+			),
+			'glitch' => array(
+				'strength' => array( 'type' => 'slider', 'label' => __( 'Intensity', 'fw' ), 'value' => 1, 'properties' => array( 'min' => 0.3, 'max' => 2, 'step' => 0.1 ) ),
+			),
+			'text_swap' => array(
+				'swap_text' => array( 'type' => 'text', 'label' => __( 'Swap-to text', 'fw' ), 'desc' => __( 'Slides in on hover. Blank = reuse the original text.', 'fw' ), 'value' => '' ),
+				'direction' => array( 'type' => 'select', 'label' => __( 'Slide', 'fw' ), 'value' => 'up', 'choices' => array( 'up' => __( 'Up', 'fw' ), 'down' => __( 'Down', 'fw' ) ) ),
+			),
+			'rotate' => array(
+				'angle' => array( 'type' => 'slider', 'label' => __( 'Rotation', 'fw' ), 'value' => 6, 'properties' => array( 'min' => -45, 'max' => 45, 'step' => 1 ) ),
+			),
+			'pulse' => array(
+				'strength' => array( 'type' => 'slider', 'label' => __( 'Pulse size', 'fw' ), 'value' => 1, 'properties' => array( 'min' => 0.3, 'max' => 2, 'step' => 0.1 ) ),
+			),
+			'shake' => array(
+				'strength' => array( 'type' => 'slider', 'label' => __( 'Intensity', 'fw' ), 'value' => 1, 'properties' => array( 'min' => 0.3, 'max' => 2, 'step' => 0.1 ) ),
+			),
+			'bounce' => array(
+				'height' => array( 'type' => 'slider', 'label' => __( 'Bounce height (px)', 'fw' ), 'value' => 10, 'properties' => array( 'min' => 4, 'max' => 30, 'step' => 1 ) ),
+			),
+			'grayscale' => array(
+				'amount' => array( 'type' => 'slider', 'label' => __( 'Grayscale at rest (%)', 'fw' ), 'desc' => __( 'Desaturated when idle, full color on hover.', 'fw' ), 'value' => 100, 'properties' => array( 'min' => 20, 'max' => 100, 'step' => 5 ) ),
+			),
+			'blur' => array(
+				'amount' => array( 'type' => 'slider', 'label' => __( 'Blur amount (px)', 'fw' ), 'value' => 4, 'properties' => array( 'min' => 1, 'max' => 12, 'step' => 1 ) ),
+				'direction' => array( 'type' => 'select', 'label' => __( 'Blur', 'fw' ), 'value' => 'rest', 'choices' => array( 'rest' => __( 'Blurred at rest → sharp on hover', 'fw' ), 'hover' => __( 'Sharp at rest → blurred on hover', 'fw' ) ) ),
+			),
+			'brightness' => array(
+				'mode' => array( 'type' => 'select', 'label' => __( 'On hover', 'fw' ), 'value' => 'brighten', 'choices' => array( 'brighten' => __( 'Brighten', 'fw' ), 'dim' => __( 'Dim', 'fw' ) ) ),
+				'amount' => array( 'type' => 'slider', 'label' => __( 'Amount (%)', 'fw' ), 'value' => 20, 'properties' => array( 'min' => 5, 'max' => 60, 'step' => 5 ) ),
+			),
+			'bg_pan' => array(
+				'color_a' => upw_color_field( __( 'Gradient color A', 'fw' ), 'bg', '#2f74e6' ),
+				'color_b' => upw_color_field( __( 'Gradient color B', 'fw' ), 'bg', '#a06bff' ),
+				'speed' => array( 'type' => 'slider', 'label' => __( 'Pan speed (s)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1, 'max' => 8, 'step' => 0.5 ) ),
+			),
+			'outline' => array(
+				'line_color' => upw_color_field( __( 'Outline color', 'fw' ), 'bg', '#6aa6ff' ),
+				'offset' => array( 'type' => 'slider', 'label' => __( 'Offset (px)', 'fw' ), 'value' => 6, 'properties' => array( 'min' => 2, 'max' => 20, 'step' => 1 ) ),
+				'thickness' => array( 'type' => 'slider', 'label' => __( 'Thickness (px)', 'fw' ), 'value' => 2, 'properties' => array( 'min' => 1, 'max' => 6, 'step' => 1 ) ),
+			),
+			'letter_spacing' => array(
+				'amount' => array( 'type' => 'slider', 'label' => __( 'Extra spacing (px)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1, 'max' => 12, 'step' => 1 ) ),
+			),
+		),
+	);
+
+	return $fields;
+} );
+
+/* ------------------------------------------------------------------ *
+ * 4) Global on/off → Theme Settings → Animations → Interactions sub-tab.
+ * ------------------------------------------------------------------ */
+add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
+	$tabs['hover_interactions'] = array(
+		'title'   => __( 'Interactions', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'hover_box' => array(
+				'title'   => __( 'Hover Interactions', 'fw' ),
+				'type'    => 'box',
+				'options' => array(
+					'animation_hover' => array(
+						'type'          => 'multi',
+						'label'         => false,
+						'inner-options' => array(
+							'enable' => array(
+								'label'        => __( 'Enable hover interactions', 'fw' ),
+								'desc'         => __( 'Master switch for the per-element Hover Interaction effects. Off = none load anywhere.', 'fw' ),
+								'type'         => 'switch',
+								'value'        => 'yes',
+								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+							),
+						),
+					),
+				),
+			),
+		),
+	);
+	return $tabs;
+} );

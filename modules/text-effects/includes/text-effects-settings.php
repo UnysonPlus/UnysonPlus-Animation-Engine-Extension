@@ -1,0 +1,414 @@
+<?php if ( ! defined( 'FW' ) ) {
+	die( 'Forbidden' );
+}
+
+/**
+ * Animation Engine — Text Effects module: option declarations.
+ *
+ * The per-element "Text Effect" group appended to every element's Animations tab (via the
+ * shortcodes extension's `sc_animation_fields` filter), plus the global on/off sub-tab under
+ * Theme Settings → Animations → Text (`upw_anim_engine_module_tabs`). Depends on the helpers.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1) The per-element "Text Effect" group, appended to the Animations tab.
+ * ------------------------------------------------------------------ */
+add_filter( 'sc_animation_fields', function ( $fields ) {
+	if ( ! is_array( $fields ) ) {
+		return $fields;
+	}
+
+	$tx_ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	$tx_base = $tx_ext ? $tx_ext->get_declared_URI( '/modules/text-effects/static/img/effects' ) : '';
+	$tx      = function ( $file, $label ) use ( $tx_base ) {
+		return array(
+			'small' => array( 'src' => $tx_base . '/' . $file . '.svg', 'height' => 66 ),
+			'large' => array( 'src' => $tx_base . '/' . $file . '.svg', 'height' => 132 ),
+			'label' => $label,
+		);
+	};
+
+	$trigger_view_load = array(
+		'type'    => 'select',
+		'label'   => __( 'Trigger', 'fw' ),
+		'value'   => 'view',
+		'choices' => array(
+			'view' => __( 'When scrolled into view', 'fw' ),
+			'load' => __( 'On page load', 'fw' ),
+		),
+	);
+
+	// Shared option group for the reveal-family effects (split_reveal + Wave-A variants).
+	$reveal_group = function ( $split = 'chars', $with_dir = false ) use ( $trigger_view_load ) {
+		$g = array(
+			'split_by' => array(
+				'type'    => 'select',
+				'label'   => __( 'Split by', 'fw' ),
+				'value'   => $split,
+				'choices' => array(
+					'chars' => __( 'Characters', 'fw' ),
+					'words' => __( 'Words', 'fw' ),
+					'lines' => __( 'Lines', 'fw' ),
+				),
+			),
+			'stagger' => array(
+				'type'       => 'slider',
+				'label'      => __( 'Stagger (s)', 'fw' ),
+				'value'      => 0.03,
+				'properties' => array( 'min' => 0.005, 'max' => 0.12, 'step' => 0.005 ),
+			),
+			'duration' => array(
+				'type'       => 'slider',
+				'label'      => __( 'Duration (s)', 'fw' ),
+				'value'      => 0.6,
+				'properties' => array( 'min' => 0.2, 'max' => 1.6, 'step' => 0.1 ),
+			),
+			'sequence' => array(
+				'type'    => 'select',
+				'label'   => __( 'Sequence', 'fw' ),
+				'desc'    => __( 'When the element has several paragraphs / lines: reveal them all at once, or one after another (the stagger cascades from the very first word to the last).', 'fw' ),
+				'value'   => 'together',
+				'choices' => array(
+					'together' => __( 'All together', 'fw' ),
+					'cascade'  => __( 'One after another', 'fw' ),
+				),
+			),
+			'trigger' => $trigger_view_load,
+		);
+		if ( $with_dir ) {
+			$g = array( 'direction' => array(
+				'type'    => 'select',
+				'label'   => __( 'From', 'fw' ),
+				'value'   => 'left',
+				'choices' => array(
+					'left'  => __( 'Left', 'fw' ),
+					'right' => __( 'Right', 'fw' ),
+					'up'    => __( 'Below', 'fw' ),
+					'down'  => __( 'Above', 'fw' ),
+				),
+			) ) + $g;
+		}
+		return $g;
+	};
+
+	$fields['text_effect'] = array(
+		'type'         => 'multi-picker',
+		'label'        => __( 'Text Effect', 'fw' ),
+		'desc'         => __( 'A typographic animation applied to this element’s text.', 'fw' ),
+		'help'         => __( 'Text Effects (Animation Engine): split-text reveal, scramble/decode, typewriter, gradient shimmer, wave, glitch and variable-font weight. Self-contained (no GSAP), honours "reduce motion".', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
+		'popover'      => true,
+		'show_borders' => false,
+		'value'        => array( 'effect' => 'none' ),
+		'anim_meta'    => array( 'category' => __( 'Text', 'fw' ), 'icon' => '&#128221;' ), // 📝 (Animations-tab inserter)
+		'picker'       => array(
+			'effect' => array(
+				'type'    => 'image-picker',
+				'label'   => false,
+				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
+				'value'   => 'none',
+				'choices' => array(
+					'none'         => $tx( 'none',         __( 'None', 'fw' ) ),
+					'split_reveal' => $tx( 'split-reveal', __( 'Split Reveal', 'fw' ) ),
+					'blur'         => $tx( 'blur',         __( 'Blur Reveal', 'fw' ) ),
+					'mask'         => $tx( 'mask',         __( 'Mask Reveal', 'fw' ) ),
+					'flip3d'       => $tx( 'flip3d',       __( 'Flip 3D', 'fw' ) ),
+					'scale'        => $tx( 'scale',        __( 'Scale Pop', 'fw' ) ),
+					'slide'        => $tx( 'slide',        __( 'Slide', 'fw' ) ),
+					'bounce'       => $tx( 'bounce',       __( 'Bounce In', 'fw' ) ),
+					'random'       => $tx( 'random',       __( 'Random Order', 'fw' ) ),
+					'skew'         => $tx( 'skew',         __( 'Skew Reveal', 'fw' ) ),
+					'scramble'     => $tx( 'scramble',     __( 'Scramble', 'fw' ) ),
+					'typewriter'   => $tx( 'typewriter',   __( 'Typewriter', 'fw' ) ),
+					'shimmer'      => $tx( 'shimmer',      __( 'Shimmer', 'fw' ) ),
+					'wave'         => $tx( 'wave',         __( 'Wave', 'fw' ) ),
+					'glitch'       => $tx( 'glitch',       __( 'Glitch', 'fw' ) ),
+					'vf_weight'    => $tx( 'vf-weight',    __( 'Weight Sweep', 'fw' ) ),
+					'gradient_flow'=> $tx( 'gradient-flow', __( 'Gradient Flow', 'fw' ) ),
+					'rainbow'      => $tx( 'rainbow',      __( 'Rainbow', 'fw' ) ),
+					'neon'         => $tx( 'neon',         __( 'Neon Flicker', 'fw' ) ),
+					'breathing'    => $tx( 'breathing',    __( 'Breathing', 'fw' ) ),
+					'jitter'       => $tx( 'jitter',       __( 'Jitter', 'fw' ) ),
+					'float'        => $tx( 'float',        __( 'Float', 'fw' ) ),
+					'marker'       => $tx( 'marker',       __( 'Marker Highlight', 'fw' ) ),
+					'strikebox'    => $tx( 'strikebox',    __( 'Strike / Box', 'fw' ) ),
+					'outline_fill' => $tx( 'outline-fill', __( 'Outline → Fill', 'fw' ) ),
+					'chromatic'    => $tx( 'chromatic',    __( 'Chromatic', 'fw' ) ),
+					'width_sweep'  => $tx( 'width-sweep',  __( 'Width Sweep', 'fw' ) ),
+					'rotating_words' => $tx( 'rotating-words', __( 'Rotating Words', 'fw' ) ),
+					'countup'      => $tx( 'countup',      __( 'Count Up', 'fw' ) ),
+					'splitflap'    => $tx( 'splitflap',    __( 'Split-Flap', 'fw' ) ),
+					'matrix'       => $tx( 'matrix',       __( 'Matrix Decode', 'fw' ) ),
+					'fill_sweep'   => $tx( 'fill-sweep',   __( 'Fill Sweep', 'fw' ) ),
+					'letter_jump'  => $tx( 'letter-jump',  __( 'Letter Jump', 'fw' ) ),
+					'expand_spacing' => $tx( 'expand-spacing', __( 'Expand Spacing', 'fw' ) ),
+					'color_wave'   => $tx( 'color-wave',   __( 'Color Wave', 'fw' ) ),
+					'magnetic'     => $tx( 'magnetic',     __( 'Magnetic Letters', 'fw' ) ),
+					'image_mask'   => $tx( 'image-mask',   __( 'Image Mask', 'fw' ) ),
+					'kinetic'      => $tx( 'kinetic',      __( 'Kinetic Scroll', 'fw' ) ),
+				),
+			),
+		),
+		'choices' => array(
+			'split_reveal' => array(
+				'split_by' => array(
+					'type'    => 'select',
+					'label'   => __( 'Split by', 'fw' ),
+					'value'   => 'words',
+					'choices' => array(
+						'chars' => __( 'Characters', 'fw' ),
+						'words' => __( 'Words', 'fw' ),
+						'lines' => __( 'Lines', 'fw' ),
+					),
+				),
+				'direction' => array(
+					'type'    => 'select',
+					'label'   => __( 'Rise from', 'fw' ),
+					'value'   => 'up',
+					'choices' => array(
+						'up'    => __( 'Below', 'fw' ),
+						'down'  => __( 'Above', 'fw' ),
+						'left'  => __( 'Left', 'fw' ),
+						'right' => __( 'Right', 'fw' ),
+					),
+				),
+				'stagger' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Stagger (s)', 'fw' ),
+					'desc'       => __( 'Delay between each piece.', 'fw' ),
+					'value'      => 0.03,
+					'properties' => array( 'min' => 0.005, 'max' => 0.12, 'step' => 0.005 ),
+				),
+				'duration' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Duration (s)', 'fw' ),
+					'value'      => 0.6,
+					'properties' => array( 'min' => 0.2, 'max' => 1.6, 'step' => 0.1 ),
+				),
+				'trigger' => $trigger_view_load,
+			),
+			'blur'   => $reveal_group( 'chars' ),
+			'mask'   => $reveal_group( 'lines' ),
+			'flip3d' => $reveal_group( 'chars' ),
+			'scale'  => $reveal_group( 'chars' ),
+			'slide'  => $reveal_group( 'words', true ),
+			'bounce' => $reveal_group( 'chars' ),
+			'random' => $reveal_group( 'chars' ),
+			'skew'   => $reveal_group( 'words' ),
+			'scramble' => array(
+				'duration' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Duration (s)', 'fw' ),
+					'value'      => 1.2,
+					'properties' => array( 'min' => 0.4, 'max' => 3, 'step' => 0.1 ),
+				),
+				'trigger' => $trigger_view_load,
+			),
+			'typewriter' => array(
+				'speed' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Speed (ms/char)', 'fw' ),
+					'value'      => 55,
+					'properties' => array( 'min' => 15, 'max' => 200, 'step' => 5 ),
+				),
+				'caret' => array(
+					'type'         => 'switch',
+					'label'        => __( 'Caret', 'fw' ),
+					'value'        => 'yes',
+					'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
+					'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
+				),
+				'loop' => array(
+					'type'         => 'switch',
+					'label'        => __( 'Loop', 'fw' ),
+					'desc'         => __( 'Type, erase and retype forever.', 'fw' ),
+					'value'        => 'no',
+					'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
+					'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
+				),
+				'trigger' => $trigger_view_load,
+			),
+			'shimmer' => array(
+				'color_a' => upw_text_color_field( __( 'Base color', 'fw' ), 'text', '#8a8f98' ),
+				'color_b' => upw_text_color_field( __( 'Sheen color', 'fw' ), 'text', '#ffffff' ),
+				'speed' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Speed (s)', 'fw' ),
+					'value'      => 3,
+					'properties' => array( 'min' => 1, 'max' => 6, 'step' => 0.5 ),
+				),
+			),
+			'wave' => array(
+				'amplitude' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Amplitude (px)', 'fw' ),
+					'value'      => 6,
+					'properties' => array( 'min' => 2, 'max' => 16, 'step' => 1 ),
+				),
+				'speed' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Speed (s)', 'fw' ),
+					'value'      => 1.4,
+					'properties' => array( 'min' => 0.5, 'max' => 3, 'step' => 0.1 ),
+				),
+			),
+			'glitch' => array(
+				'trigger' => array(
+					'type'    => 'select',
+					'label'   => __( 'Trigger', 'fw' ),
+					'value'   => 'hover',
+					'choices' => array(
+						'hover'  => __( 'On hover', 'fw' ),
+						'always' => __( 'Always', 'fw' ),
+					),
+				),
+				'intensity' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Intensity (px)', 'fw' ),
+					'value'      => 3,
+					'properties' => array( 'min' => 1, 'max' => 8, 'step' => 1 ),
+				),
+			),
+			'vf_weight' => array(
+				'from' => array(
+					'type'       => 'slider',
+					'label'      => __( 'From weight', 'fw' ),
+					'value'      => 300,
+					'properties' => array( 'min' => 100, 'max' => 900, 'step' => 50 ),
+				),
+				'to' => array(
+					'type'       => 'slider',
+					'label'      => __( 'To weight', 'fw' ),
+					'value'      => 800,
+					'properties' => array( 'min' => 100, 'max' => 900, 'step' => 50 ),
+				),
+				'trigger' => array(
+					'type'    => 'select',
+					'label'   => __( 'Trigger', 'fw' ),
+					'value'   => 'hover',
+					'choices' => array(
+						'hover' => __( 'On hover', 'fw' ),
+						'view'  => __( 'When scrolled into view', 'fw' ),
+					),
+				),
+			),
+			'gradient_flow' => array(
+				'color_a' => upw_text_color_field( __( 'Color 1', 'fw' ), 'text', '#ff6b6b' ),
+				'color_b' => upw_text_color_field( __( 'Color 2', 'fw' ), 'text', '#6a8dff' ),
+				'color_c' => upw_text_color_field( __( 'Color 3', 'fw' ), 'text', '#17c964' ),
+				'speed'   => array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => 4, 'properties' => array( 'min' => 1, 'max' => 8, 'step' => 0.5 ) ),
+			),
+			'rainbow' => array(
+				'speed' => array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => 4, 'properties' => array( 'min' => 1, 'max' => 8, 'step' => 0.5 ) ),
+			),
+			'neon' => array(
+				'glow_color' => upw_text_color_field( __( 'Glow color', 'fw' ), 'bg', '#6aa6ff' ),
+				'speed'      => array( 'type' => 'slider', 'label' => __( 'Flicker speed (s)', 'fw' ), 'value' => 2.5, 'properties' => array( 'min' => 1, 'max' => 5, 'step' => 0.5 ) ),
+			),
+			'breathing' => array(
+				'speed' => array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1.5, 'max' => 6, 'step' => 0.5 ) ),
+			),
+			'jitter' => array(
+				'intensity' => array( 'type' => 'slider', 'label' => __( 'Intensity (px)', 'fw' ), 'value' => 2, 'properties' => array( 'min' => 1, 'max' => 6, 'step' => 1 ) ),
+			),
+			'float' => array(
+				'distance' => array( 'type' => 'slider', 'label' => __( 'Distance (px)', 'fw' ), 'value' => 8, 'properties' => array( 'min' => 3, 'max' => 24, 'step' => 1 ) ),
+				'speed'    => array( 'type' => 'slider', 'label' => __( 'Speed (s)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1.5, 'max' => 6, 'step' => 0.5 ) ),
+			),
+			'marker' => array(
+				'color'   => upw_text_color_field( __( 'Highlight color', 'fw' ), 'bg', '#ffe066' ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+			),
+			'strikebox' => array(
+				'shape'   => array( 'type' => 'select', 'label' => __( 'Shape', 'fw' ), 'value' => 'strike', 'choices' => array( 'strike' => __( 'Strike-through', 'fw' ), 'underline' => __( 'Underline', 'fw' ), 'box' => __( 'Box', 'fw' ) ) ),
+				'color'   => upw_text_color_field( __( 'Line color', 'fw' ), 'text', '', __( 'Defaults to the text color when blank.', 'fw' ) ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+			),
+			'outline_fill' => array(
+				'color'   => upw_text_color_field( __( 'Fill color', 'fw' ), 'text', '', __( 'Defaults to the text color when blank.', 'fw' ) ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+			),
+			'chromatic' => array(
+				'intensity' => array( 'type' => 'slider', 'label' => __( 'Offset (px)', 'fw' ), 'value' => 2, 'properties' => array( 'min' => 1, 'max' => 6, 'step' => 1 ) ),
+			),
+			'width_sweep' => array(
+				'from'    => array( 'type' => 'slider', 'label' => __( 'From width', 'fw' ), 'value' => 75, 'properties' => array( 'min' => 25, 'max' => 200, 'step' => 5 ) ),
+				'to'      => array( 'type' => 'slider', 'label' => __( 'To width', 'fw' ), 'value' => 125, 'properties' => array( 'min' => 25, 'max' => 200, 'step' => 5 ) ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+			),
+			'rotating_words' => array(
+				'words'    => array( 'type' => 'text', 'label' => __( 'Words', 'fw' ), 'desc' => __( 'Comma-separated words to cycle through, after the element’s own text. e.g. <em>designer, developer, dreamer</em>', 'fw' ), 'value' => '' ),
+				'interval' => array( 'type' => 'slider', 'label' => __( 'Interval (s)', 'fw' ), 'value' => 1.8, 'properties' => array( 'min' => 0.6, 'max' => 5, 'step' => 0.2 ) ),
+			),
+			'countup' => array(
+				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.6, 'properties' => array( 'min' => 0.5, 'max' => 5, 'step' => 0.1 ) ),
+				'trigger'  => $trigger_view_load,
+			),
+			'splitflap' => array(
+				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.4, 'properties' => array( 'min' => 0.4, 'max' => 3, 'step' => 0.1 ) ),
+				'trigger'  => $trigger_view_load,
+			),
+			'matrix' => array(
+				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.4, 'properties' => array( 'min' => 0.6, 'max' => 3, 'step' => 0.1 ) ),
+				'trigger'  => $trigger_view_load,
+			),
+			'fill_sweep' => array(
+				'color'   => upw_text_color_field( __( 'Fill color', 'fw' ), 'text', '#2f74e6' ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+			),
+			'letter_jump' => array(
+				'height' => array( 'type' => 'slider', 'label' => __( 'Jump height (px)', 'fw' ), 'desc' => __( 'Each letter hops on hover.', 'fw' ), 'value' => 6, 'properties' => array( 'min' => 2, 'max' => 18, 'step' => 1 ) ),
+			),
+			'expand_spacing' => array(
+				'amount' => array( 'type' => 'slider', 'label' => __( 'Extra spacing (px)', 'fw' ), 'desc' => __( 'Letter-spacing widens on hover.', 'fw' ), 'value' => 6, 'properties' => array( 'min' => 1, 'max' => 20, 'step' => 1 ) ),
+			),
+			'color_wave' => array(
+				'color'   => upw_text_color_field( __( 'Wave color', 'fw' ), 'text', '#2f74e6' ),
+				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+			),
+			'magnetic' => array(
+				'strength' => array( 'type' => 'slider', 'label' => __( 'Strength', 'fw' ), 'desc' => __( 'How far each letter nudges toward the pointer.', 'fw' ), 'value' => 0.4, 'properties' => array( 'min' => 0.1, 'max' => 1, 'step' => 0.05 ) ),
+			),
+			'image_mask' => array(
+				'image' => array( 'type' => 'upload', 'label' => __( 'Image', 'fw' ), 'desc' => __( 'The text becomes a window onto this image. Use bold, large text for the best effect.', 'fw' ) ),
+			),
+			'kinetic' => array(
+				'intensity' => array( 'type' => 'slider', 'label' => __( 'Intensity', 'fw' ), 'desc' => __( 'How much the letters spread/skew with scroll speed.', 'fw' ), 'value' => 4, 'properties' => array( 'min' => 1, 'max' => 10, 'step' => 1 ) ),
+			),
+		),
+	);
+
+	return $fields;
+} );
+
+/* ------------------------------------------------------------------ *
+ * 4) Global on/off → Theme Settings → Animations → Text sub-tab.
+ * ------------------------------------------------------------------ */
+add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
+	$tabs['text_effects'] = array(
+		'title'   => __( 'Text', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'text_box' => array(
+				'title'   => __( 'Text Effects', 'fw' ),
+				'type'    => 'box',
+				'options' => array(
+					'animation_text' => array(
+						'type'          => 'multi',
+						'label'         => false,
+						'inner-options' => array(
+							'enable' => array(
+								'label'        => __( 'Enable text effects', 'fw' ),
+								'desc'         => __( 'Master switch for the per-element Text Effect animations. Off = none load anywhere.', 'fw' ),
+								'type'         => 'switch',
+								'value'        => 'yes',
+								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+							),
+						),
+					),
+				),
+			),
+		),
+	);
+	return $tabs;
+} );

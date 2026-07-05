@@ -7,11 +7,11 @@ $manifest = [];
 $manifest['name']        = __( 'Animation Engine', 'fw' );
 $manifest['slug']        = 'unysonplus-animation-engine';
 $manifest['description'] = __(
-	'The home for UnysonPlus\'s animation capabilities. Its first module is WebGL — a real-time refractive glass blob, liquid metal, distorted sphere or particle field rendered with Three.js (the [webgl_object] page-builder element). Adds an "Animations" section to Theme Settings. Other modules plug in over time: Scroll Motion, Hover, Cursor, Text Effects, Backgrounds, Page Transitions, and a Seamless / Infinite Scroll Loop (Lenis) that turns a run of full-height sections into a never-ending, snapping scroll experience.',
+	'The home for UnysonPlus\'s animation capabilities. Its first module is WebGL — a real-time refractive glass blob, liquid metal, distorted sphere or particle field rendered with Three.js (the [webgl_object] page-builder element). Adds a "Site-wide UX" section to Theme Settings. Other modules plug in over time: Scroll Motion, Hover, Cursor, Text Effects, Backgrounds, Page Transitions, and a Seamless / Infinite Scroll Loop (Lenis) that turns a run of full-height sections into a never-ending, snapping scroll experience.',
 	'fw'
 );
 
-$manifest['version']     = '1.1.24';
+$manifest['version']     = '1.1.28';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';

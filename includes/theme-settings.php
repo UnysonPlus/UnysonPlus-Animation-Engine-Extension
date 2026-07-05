@@ -44,11 +44,11 @@ if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 
 		$engine_tab = array(
 			'engine_general' => array(
-				'title'   => __( 'Engine', 'fw' ),
+				'title'   => __( 'Animation Engine', 'fw' ),
 				'type'    => 'tab',
 				'options' => array(
 					'engine_box' => array(
-						'title'   => __( 'Animation Engine', 'fw' ),
+						'title'   => __( 'Engine Settings', 'fw' ),
 						'type'    => 'box',
 						'options' => array(
 							'engine_perf_note' => array(
@@ -106,7 +106,7 @@ if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 				'type'    => 'tab',
 				'options' => array(
 					'animation_settings_box' => array(
-						'title'   => __( 'Site-wide UX', 'fw' ),
+						'title'   => __( 'Site-wide User Experience', 'fw' ),
 						'type'    => 'box',
 						'options' => $sub_tabs,
 					),

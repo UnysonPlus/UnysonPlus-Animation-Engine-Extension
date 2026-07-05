@@ -101,6 +101,32 @@ The inserter tile (not the swatch) uses a flat-blue **line icon** keyed by the f
 `shortcodes/includes/container-types/animation-stack/class-fw-container-type-animation-stack.php`
 (24×24, `stroke="currentColor"`, no fill). Falls back to a generic glyph if omitted.
 
+### Splitting a large module (REQUIRED once a module `.php` passes ~250 lines)
+Keep `<mod>.php` as a **thin entry** the engine still `require_once`s, and move the parts into an
+`includes/` subfolder. Reference: **`cursor`** (`cursor.php` = ~30 lines →
+`includes/cursor-{helpers,settings,enqueue}.php`).
+
+```php
+// modules/<mod>/<mod>.php  (entry)
+if ( ! defined( 'FW' ) ) { die( 'Forbidden' ); }
+if ( ! defined( 'UPW_<MOD>_DIR' ) ) { define( 'UPW_<MOD>_DIR', __DIR__ ); }
+require_once __DIR__ . '/includes/<mod>-helpers.php';    // FIRST — settings + enqueue call it
+require_once __DIR__ . '/includes/<mod>-settings.php';   // the upw_anim_engine_module_tabs / sc_animation_fields filter
+require_once __DIR__ . '/includes/<mod>-enqueue.php';    // the wp_enqueue_scripts / wp_footer handler
+```
+
+Caveats — all real, all bit us or would:
+- **`__DIR__` is the trap.** Static-asset paths built with `__DIR__` (e.g. `filemtime( __DIR__ . '/static/...' )`
+  for cache-busting) BREAK when the code moves into `includes/` — `__DIR__` now points at `includes/`.
+  Use the module-root constant **`UPW_<MOD>_DIR`** (or `dirname( __DIR__ )`) in the moved files. URLs via
+  `$ext->get_declared_URI('/modules/<mod>/…')` are absolute and are fine.
+- **Load order:** require `helpers` first; the `add_filter`/`add_action` registrations can be in any order
+  (they fire later).
+- Every sub-file keeps the `if ( ! defined( 'FW' ) ) die;` top guard and the `if ( ! function_exists() ) : … endif;`
+  wrappers (partial-upgrade double-load safety).
+- It's a **pure move** (no behavior change) — verify after: the sub-tab still registers, and assets still enqueue
+  with a real mtime cache-bust (the `__DIR__` fix). Mirror with `cp -r` the whole module folder (new files).
+
 ---
 
 ## 3. Do NOT add a Theme Settings enable tab
