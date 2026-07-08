@@ -40,7 +40,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) use ( $upw_sr_cli
 			$attr['data-px-replay'] = '1';
 		}
 
-		upw_scroll_reveal_flag( true );
 		if ( function_exists( 'upw_anim_use_asset' ) ) {
 			upw_anim_use_asset( 'scroll-reveal', 'pixelate' );
 		}
@@ -76,7 +75,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) use ( $upw_sr_cli
 		$attr['data-cr-replay'] = '1';
 	}
 
-	upw_scroll_reveal_flag( true );
 	// On-demand assets: record this direction so ONLY its clip CSS partial loads (+ the shared
 	// base + the single scroll runtime). The runtime itself is one generic behavior.
 	if ( function_exists( 'upw_anim_use_asset' ) ) {

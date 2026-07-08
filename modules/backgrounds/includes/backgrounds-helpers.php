@@ -21,14 +21,6 @@ if ( ! function_exists( 'upw_bg_enabled' ) ) :
 	}
 endif;
 
-if ( ! function_exists( 'upw_bg_flag' ) ) :
-	function upw_bg_flag( $set = false ) {
-		static $used = false;
-		if ( $set ) { $used = true; }
-		return $used;
-	}
-endif;
-
 if ( ! function_exists( 'upw_bg_effects' ) ) :
 	function upw_bg_effects() {
 		return array(

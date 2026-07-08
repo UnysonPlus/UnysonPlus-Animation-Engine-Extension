@@ -23,17 +23,6 @@ if ( ! function_exists( 'upw_text_enabled' ) ) :
 	}
 endif;
 
-if ( ! function_exists( 'upw_text_flag' ) ) :
-	/** Per-request "a text effect rendered" flag → gates the footer enqueue. */
-	function upw_text_flag( $set = false ) {
-		static $used = false;
-		if ( $set ) {
-			$used = true;
-		}
-		return $used;
-	}
-endif;
-
 if ( ! function_exists( 'upw_text_effects' ) ) :
 	/** The valid text-effect ids — single source of truth for emit + wrapper checks. */
 	function upw_text_effects() {

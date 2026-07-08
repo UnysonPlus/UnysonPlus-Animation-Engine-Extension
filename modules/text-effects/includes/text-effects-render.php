@@ -58,7 +58,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		if ( isset( $o['direction'] ) ) {
 			$attr['data-text-dir'] = esc_attr( in_array( $o['direction'], array( 'up', 'down', 'left', 'right' ), true ) ? $o['direction'] : 'left' );
 		}
-		upw_text_flag( true );
 		return $attr;
 	}
 
@@ -194,7 +193,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			break;
 	}
 
-	upw_text_flag( true );
 	return $attr;
 }, 22, 2 );
 

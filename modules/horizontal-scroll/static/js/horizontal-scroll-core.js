@@ -78,16 +78,22 @@
 		function paintPanels() {
 			var fx = window.upwHsFx && window.upwHsFx[style];
 			if (!fx) return;
-			var vw = window.innerWidth, cx = vw / 2;
-			panels.forEach(function (panel, i) {
-				var r = panel.getBoundingClientRect();
-				var d = ((r.left + r.width / 2) - cx) / vw; // 0 at viewport centre
+			var vw = window.innerWidth, cx = vw / 2, i;
+			// READ phase — gather every panel's centre-distance first (no interleaved reflow).
+			var ds = [];
+			for (i = 0; i < panels.length; i++) {
+				var r = panels[i].getBoundingClientRect();
+				ds[i] = ((r.left + r.width / 2) - cx) / vw; // 0 at viewport centre
+			}
+			// WRITE phase.
+			for (i = 0; i < panels.length; i++) {
+				var panel = panels[i];
 				panel.style.transformOrigin = 'center center';
-				var out = fx(d, i, intensity, lastScrolled, clamp) || {};
+				var out = fx(ds[i], i, intensity, lastScrolled, clamp) || {};
 				panel.style.transform = out.tf || '';
 				panel.style.opacity = (out.op !== undefined && out.op !== '') ? out.op : '';
 				panel.style.filter = out.fil || '';
-			});
+			}
 		}
 
 		if (style === 'skew') {
@@ -122,13 +128,13 @@
 		function bounds() { min = Math.min(0, pin.clientWidth - track.scrollWidth); }
 		function apply() { x = clamp(x, min, 0); track.style.transform = 'translate3d(' + x + 'px,0,0)'; }
 		function px(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
-		function down(e) { dragging = true; track.classList.add('is-grabbing'); startX = px(e); startPos = x; vx = 0; last = startX; if (raf) { cancelAnimationFrame(raf); raf = null; } }
+		// Window mouse listeners are added only WHILE dragging (on mousedown) and removed on mouseup,
+		// so a builder rescan doesn't accumulate a leaked global mousemove/mouseup per drag section.
+		function down(e) { dragging = true; track.classList.add('is-grabbing'); startX = px(e); startPos = x; vx = 0; last = startX; if (raf) { cancelAnimationFrame(raf); raf = null; } window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); }
 		function move(e) { if (!dragging) return; var cx = px(e); x = startPos + (cx - startX); vx = cx - last; last = cx; apply(); if (e.cancelable && Math.abs(cx - startX) > 4) e.preventDefault(); }
-		function up() { if (!dragging) return; dragging = false; track.classList.remove('is-grabbing'); inertia(); }
+		function up() { if (!dragging) return; dragging = false; track.classList.remove('is-grabbing'); inertia(); window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }
 		function inertia() { if (Math.abs(vx) < 0.4) return; x += vx; vx *= 0.94; apply(); raf = requestAnimationFrame(inertia); }
 		track.addEventListener('mousedown', down);
-		window.addEventListener('mousemove', move);
-		window.addEventListener('mouseup', up);
 		track.addEventListener('touchstart', down, { passive: true });
 		track.addEventListener('touchmove', move, { passive: false });
 		track.addEventListener('touchend', up);

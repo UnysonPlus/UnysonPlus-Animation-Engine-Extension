@@ -289,36 +289,3 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 
 	return $options;
 }, 20, 2 );
-
-/* ------------------------------------------------------------------ *
- * 4) Global on/off → Theme Settings → Animations → Backgrounds sub-tab.
- * ------------------------------------------------------------------ */
-add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
-	$tabs['backgrounds'] = array(
-		'title'   => __( 'Backgrounds', 'fw' ),
-		'type'    => 'tab',
-		'options' => array(
-			'bg_box' => array(
-				'title'   => __( 'Animated Backgrounds', 'fw' ),
-				'type'    => 'box',
-				'options' => array(
-					'animation_bg' => array(
-						'type'          => 'multi',
-						'label'         => false,
-						'inner-options' => array(
-							'enable' => array(
-								'label'        => __( 'Enable animated backgrounds', 'fw' ),
-								'desc'         => __( 'Master switch for the per-section Background Effect animations. Off = none load anywhere.', 'fw' ),
-								'type'         => 'switch',
-								'value'        => 'yes',
-								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
-								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
-							),
-						),
-					),
-				),
-			),
-		),
-	);
-	return $tabs;
-} );

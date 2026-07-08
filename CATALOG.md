@@ -7,7 +7,7 @@ shortcode, check this list first: a new one must be genuinely DISTINCT from ever
 rename or a near-duplicate of an existing style). Keep this file updated when styles/modules are
 added or removed.
 
-_Engine version at last update: 1.1.36._
+_Engine version at last update: 1.1.37._
 
 ---
 

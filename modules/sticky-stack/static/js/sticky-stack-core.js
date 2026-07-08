@@ -58,16 +58,28 @@
 		function tick() {
 			pending = false;
 			if (!fx) { return; } // per-style partial not loaded — cards still stick, just no transform
+			// Self-clean on a builder re-render: the section left the DOM.
+			if (!document.documentElement.contains(sec)) {
+				window.removeEventListener('scroll', onScroll);
+				window.removeEventListener('resize', onScroll);
+				return;
+			}
+			var sr = sec.getBoundingClientRect();
+			if (sr.bottom < -200 || sr.top > (window.innerHeight || 0) + 200) { return; } // off-screen: skip
+			// READ phase — gather every rect first (cover() reads two card rects), THEN write, so we
+			// don't force a reflow between each card's read and write.
+			var covers = [];
+			for (var i = 0; i < n; i++) { covers[i] = cover(i); }
+			// WRITE phase.
 			var prev = 1;
-			for (var i = 0; i < n; i++) {
-				var cp = cover(i);
-				var s = fx(i, cp, prev, ctx) || {};
-				var card = cards[i];
+			for (var j = 0; j < n; j++) {
+				var s = fx(j, covers[j], prev, ctx) || {};
+				var card = cards[j];
 				card.style.transform = s.transform || 'none';
 				card.style.transformOrigin = s.origin || 'center top';
 				card.style.opacity = s.opacity == null ? '' : String(s.opacity.toFixed(3));
 				card.style.filter = s.filter || '';
-				prev = cp;
+				prev = covers[j];
 			}
 		}
 		function onScroll() { if (pending) return; pending = true; requestAnimationFrame(tick); }

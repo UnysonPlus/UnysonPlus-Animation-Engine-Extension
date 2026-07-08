@@ -23,17 +23,6 @@ if ( ! function_exists( 'upw_hover_enabled' ) ) :
 	}
 endif;
 
-if ( ! function_exists( 'upw_hover_flag' ) ) :
-	/** Per-request "a hover effect rendered" flag → gates the footer enqueue. */
-	function upw_hover_flag( $set = false ) {
-		static $used = false;
-		if ( $set ) {
-			$used = true;
-		}
-		return $used;
-	}
-endif;
-
 if ( ! function_exists( 'upw_hover_effects' ) ) :
 	/** The valid hover-effect ids — single source of truth for emit + wrapper checks. */
 	function upw_hover_effects() {

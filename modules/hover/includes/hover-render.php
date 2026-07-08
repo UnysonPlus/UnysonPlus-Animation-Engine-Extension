@@ -230,7 +230,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['class']      = esc_attr( trim( $cls . ' ' . implode( ' ', array_values( array_unique( $classes ) ) ) ) );
 	$attr['data-hover'] = esc_attr( implode( ' ', $effects ) );
 
-	upw_hover_flag( true );
 	return $attr;
 }, 21, 2 );
 

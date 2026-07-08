@@ -31,6 +31,18 @@ if ( ! function_exists( 'upw_cs_resolve_color' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'upw_color_shift_enabled' ) ) :
+	/** Global master switch — the single choke point (defaults to enabled, like every other module). */
+	function upw_color_shift_enabled() {
+		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
+			return true;
+		}
+		$v = fw_get_db_settings_option( 'animation_color_shift', array() );
+		$e = ( is_array( $v ) && isset( $v['enable'] ) ) ? $v['enable'] : 'yes';
+		return $e !== 'no' && $e !== false;
+	}
+endif;
+
 if ( ! function_exists( 'upw_color_shift_flag' ) ) :
 	function upw_color_shift_flag( $set = false ) {
 		static $used = false;
@@ -120,6 +132,9 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag = '' ) {
 
 /* Stamp the color-shift data attributes onto the section wrapper. */
 add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
+	if ( ! upw_color_shift_enabled() ) {
+		return $attr;
+	}
 	$c    = ( isset( $atts['scroll_color_shift'] ) && is_array( $atts['scroll_color_shift'] ) ) ? $atts['scroll_color_shift'] : array();
 	$mode = isset( $c['mode'] ) ? (string) $c['mode'] : 'off';
 	if ( $mode !== 'shift' ) {

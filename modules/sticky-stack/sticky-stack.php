@@ -29,16 +29,6 @@ if ( ! function_exists( 'upw_sticky_stack_enabled' ) ) :
 	}
 endif;
 
-if ( ! function_exists( 'upw_sticky_stack_flag' ) ) :
-	function upw_sticky_stack_flag( $set = false ) {
-		static $used = false;
-		if ( $set ) {
-			$used = true;
-		}
-		return $used;
-	}
-endif;
-
 /**
  * The Sticky Card Stack control (Section only). A popover image-picker multi-picker keyed
  * `sticky_stack`, picker id `mode`, so it stays compact like the other engine controls.
@@ -164,7 +154,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['data-ss-gap']       = esc_attr( (string) ( isset( $o['gap'] ) ? (float) $o['gap'] : 18 ) );
 	$attr['data-ss-intensity'] = esc_attr( (string) ( isset( $o['intensity'] ) ? (float) $o['intensity'] : 0.5 ) );
 
-	upw_sticky_stack_flag( true );
 	// On-demand assets: record this style so ONLY its per-card partial loads with the core.
 	if ( function_exists( 'upw_anim_use_asset' ) ) {
 		upw_anim_use_asset( 'sticky-stack', $mode );

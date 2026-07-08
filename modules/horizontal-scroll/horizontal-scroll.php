@@ -28,16 +28,6 @@ if ( ! function_exists( 'upw_hscroll_enabled' ) ) :
 	}
 endif;
 
-if ( ! function_exists( 'upw_hscroll_flag' ) ) :
-	function upw_hscroll_flag( $set = false ) {
-		static $used = false;
-		if ( $set ) {
-			$used = true;
-		}
-		return $used;
-	}
-endif;
-
 /** The valid horizontal-scroll style keys (shared by the wrapper filter + needs-wrapper). */
 if ( ! function_exists( 'upw_hscroll_styles' ) ) :
 	function upw_hscroll_styles() {
@@ -172,7 +162,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['data-hs-panel']     = esc_attr( $panel );
 	$attr['data-hs-intensity'] = esc_attr( (string) ( isset( $o['intensity'] ) ? (float) $o['intensity'] : 0.5 ) );
 
-	upw_hscroll_flag( true );
 	// On-demand assets: record this style so ONLY its per-panel partial (if any) loads with the
 	// core; the track-level styles (standard/reverse/snap/wall/skew/drag) need only the core.
 	if ( function_exists( 'upw_anim_use_asset' ) ) {

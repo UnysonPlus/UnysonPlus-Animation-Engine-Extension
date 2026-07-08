@@ -21,16 +21,6 @@ if ( ! function_exists( 'upw_scrollytelling_enabled' ) ) :
 	}
 endif;
 
-if ( ! function_exists( 'upw_scrollytelling_flag' ) ) :
-	function upw_scrollytelling_flag( $set = false ) {
-		static $used = false;
-		if ( $set ) {
-			$used = true;
-		}
-		return $used;
-	}
-endif;
-
 if ( ! function_exists( 'upw_scrollytelling_styles' ) ) :
 	/** The valid style keys (label registry) — shared by the picker + the wrapper filter. */
 	function upw_scrollytelling_styles() {

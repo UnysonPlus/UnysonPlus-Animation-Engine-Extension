@@ -38,7 +38,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		$attr[ 'data-phys-' . sanitize_html_class( str_replace( '_', '-', $k ) ) ] = esc_attr( (string) $v );
 	}
 
-	upw_physics_flag( true );
 	// On-demand assets: record this effect so ONLY its JS partial (+ the tiny base CSS) is
 	// enqueued, not the whole 27-effect bundle.
 	if ( function_exists( 'upw_anim_use_asset' ) ) {

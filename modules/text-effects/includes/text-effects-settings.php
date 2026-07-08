@@ -379,36 +379,3 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 
 	return $fields;
 } );
-
-/* ------------------------------------------------------------------ *
- * 4) Global on/off → Theme Settings → Animations → Text sub-tab.
- * ------------------------------------------------------------------ */
-add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
-	$tabs['text_effects'] = array(
-		'title'   => __( 'Text', 'fw' ),
-		'type'    => 'tab',
-		'options' => array(
-			'text_box' => array(
-				'title'   => __( 'Text Effects', 'fw' ),
-				'type'    => 'box',
-				'options' => array(
-					'animation_text' => array(
-						'type'          => 'multi',
-						'label'         => false,
-						'inner-options' => array(
-							'enable' => array(
-								'label'        => __( 'Enable text effects', 'fw' ),
-								'desc'         => __( 'Master switch for the per-element Text Effect animations. Off = none load anywhere.', 'fw' ),
-								'type'         => 'switch',
-								'value'        => 'yes',
-								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
-								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
-							),
-						),
-					),
-				),
-			),
-		),
-	);
-	return $tabs;
-} );

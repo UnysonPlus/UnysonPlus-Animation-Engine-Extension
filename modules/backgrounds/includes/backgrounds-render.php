@@ -183,7 +183,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			break;
 	}
 
-	upw_bg_flag( true );
 	return $attr;
 }, 23, 2 );
 

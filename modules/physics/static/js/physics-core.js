@@ -34,7 +34,8 @@
 		if ('IntersectionObserver' in window) {
 			new IntersectionObserver(function (e) { e.forEach(function (en) { return en.isIntersecting ? show() : hide(); }); }, { threshold: 0.01 }).observe(el);
 		} else { show(); }
-		document.addEventListener('visibilitychange', function () { if (document.hidden) { remove(fn); } else if (el.__pvis) { add(fn); } });
+		// (Tab-hidden pausing is handled centrally by the shared RAF scheduler — no per-element
+		// visibilitychange listener, which would leak one document listener per physics element.)
 	}
 
 	/* ---- One-shot entrance when scrolled into view ---- */

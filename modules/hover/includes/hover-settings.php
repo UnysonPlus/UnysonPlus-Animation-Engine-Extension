@@ -285,36 +285,3 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 
 	return $fields;
 } );
-
-/* ------------------------------------------------------------------ *
- * 4) Global on/off → Theme Settings → Animations → Interactions sub-tab.
- * ------------------------------------------------------------------ */
-add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
-	$tabs['hover_interactions'] = array(
-		'title'   => __( 'Interactions', 'fw' ),
-		'type'    => 'tab',
-		'options' => array(
-			'hover_box' => array(
-				'title'   => __( 'Hover Interactions', 'fw' ),
-				'type'    => 'box',
-				'options' => array(
-					'animation_hover' => array(
-						'type'          => 'multi',
-						'label'         => false,
-						'inner-options' => array(
-							'enable' => array(
-								'label'        => __( 'Enable hover interactions', 'fw' ),
-								'desc'         => __( 'Master switch for the per-element Hover Interaction effects. Off = none load anywhere.', 'fw' ),
-								'type'         => 'switch',
-								'value'        => 'yes',
-								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
-								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
-							),
-						),
-					),
-				),
-			),
-		),
-	);
-	return $tabs;
-} );

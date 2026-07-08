@@ -203,36 +203,3 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 
 	return $fields;
 } );
-
-/* ------------------------------------------------------------------ *
- * 4) Global on/off → Theme Settings → Animations → Physics sub-tab.
- * ------------------------------------------------------------------ */
-add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
-	$tabs['physics_effects'] = array(
-		'title'   => __( 'Physics', 'fw' ),
-		'type'    => 'tab',
-		'options' => array(
-			'physics_box' => array(
-				'title'   => __( 'Physics Effects', 'fw' ),
-				'type'    => 'box',
-				'options' => array(
-					'animation_physics' => array(
-						'type'          => 'multi',
-						'label'         => false,
-						'inner-options' => array(
-							'enable' => array(
-								'label'        => __( 'Enable physics effects', 'fw' ),
-								'desc'         => __( 'Master switch for the per-element Physics effects. Off = none load anywhere.', 'fw' ),
-								'type'         => 'switch',
-								'value'        => 'yes',
-								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
-								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
-							),
-						),
-					),
-				),
-			),
-		),
-	);
-	return $tabs;
-} );

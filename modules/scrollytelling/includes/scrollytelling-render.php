@@ -65,7 +65,6 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		$attr['data-story-dir'] = esc_attr( $dir );
 	}
 
-	upw_scrollytelling_flag( true );
 	// On-demand assets: record this style so ONLY its partials load with the core + base.
 	if ( function_exists( 'upw_anim_use_asset' ) ) {
 		upw_anim_use_asset( 'scrollytelling', $mode );

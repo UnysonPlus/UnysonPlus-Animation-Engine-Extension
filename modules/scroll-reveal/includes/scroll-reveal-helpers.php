@@ -20,13 +20,3 @@ if ( ! function_exists( 'upw_scroll_reveal_enabled' ) ) :
 		return $e !== 'no' && $e !== false;
 	}
 endif;
-
-if ( ! function_exists( 'upw_scroll_reveal_flag' ) ) :
-	function upw_scroll_reveal_flag( $set = false ) {
-		static $used = false;
-		if ( $set ) {
-			$used = true;
-		}
-		return $used;
-	}
-endif;
