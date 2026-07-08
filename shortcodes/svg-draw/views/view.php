@@ -14,17 +14,41 @@ if ( ! function_exists( 'sc_get' ) ) {
 	}
 }
 
-/** Strip scripts / event handlers / javascript: URLs from user-supplied SVG markup. */
+/**
+ * Sanitise user-supplied SVG markup before it is echoed inline.
+ *
+ * Two-tier: authors who can post raw HTML (`unfiltered_html`) keep full control — they can already
+ * inject arbitrary markup site-wide, so gating them adds nothing. Everyone else (Author /
+ * Contributor) is run through a hardened allow-strip that removes every script-capable / remote-ref
+ * element AND all `on*` event handlers — crucially catching the `<svg/onload=…>` slash-separator
+ * form that a naïve `\son…` strip misses, plus scripted/data: URLs on any remaining ref attribute.
+ */
 if ( ! function_exists( 'sc_svg_draw_sanitize' ) ) {
 	function sc_svg_draw_sanitize( $svg ) {
 		$svg = (string) $svg;
 		if ( $svg === '' ) { return ''; }
 		// Keep only from the first <svg to the last </svg>.
 		if ( preg_match( '#<svg[\s\S]*</svg>#i', $svg, $m ) ) { $svg = $m[0]; }
-		$svg = preg_replace( '#<script[\s\S]*?</script>#i', '', $svg );
-		$svg = preg_replace( '#\son\w+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)#i', '', $svg ); // on* handlers
-		$svg = preg_replace( '#(href|xlink:href)\s*=\s*("|\')\s*javascript:[^"\']*("|\')#i', '$1="#"', $svg );
-		$svg = preg_replace( '#<\s*(foreignObject|iframe|embed|object)[\s\S]*?>#i', '', $svg );
+
+		// Trusted authors keep full control.
+		if ( current_user_can( 'unfiltered_html' ) ) {
+			return $svg;
+		}
+
+		// Remove elements that can run script or pull remote/SMIL refs — paired (with their content)
+		// or self-closing — plus any orphaned closing tags left behind.
+		$danger = 'script|foreignObject|iframe|embed|object|animate|animateTransform|animateMotion|set|image|use|a|handler|listener';
+		$svg = preg_replace( '#<\s*(' . $danger . ')\b[^>]*(?:>[\s\S]*?<\s*/\s*\1\s*>|/?>)#i', '', $svg );
+		$svg = preg_replace( '#<\s*/\s*(?:' . $danger . ')\s*>#i', '', $svg );
+		// Strip EVERY on* event handler — the separator before "on" may be whitespace OR a slash
+		// (`<svg/onload=…>`), which the old `\son…` pattern let through.
+		$svg = preg_replace( '#[\s/]on\w+\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)#i', ' ', $svg );
+		// Neutralise scripted / data URLs on any remaining reference attribute.
+		$svg = preg_replace(
+			'#\b(href|xlink:href|src)\s*=\s*(?:"[^"]*(?:javascript|data|vbscript)\s*:[^"]*"|\'[^\']*(?:javascript|data|vbscript)\s*:[^\']*\')#i',
+			'$1="#"',
+			$svg
+		);
 		return $svg;
 	}
 }
@@ -59,7 +83,13 @@ if ( ! function_exists( 'sc_svg_draw_render' ) ) {
 			if ( $url !== '' ) {
 				$dir  = wp_get_upload_dir();
 				$path = ( ! empty( $dir['baseurl'] ) && ! empty( $dir['basedir'] ) ) ? str_replace( $dir['baseurl'], $dir['basedir'], $url ) : '';
-				if ( $path && file_exists( $path ) ) { $svg = sc_svg_draw_sanitize( file_get_contents( $path ) ); }
+				// Confirm the resolved path stays INSIDE the uploads dir (no ../ traversal) and is an .svg.
+					$real = $path ? realpath( $path ) : false;
+					$root = ! empty( $dir['basedir'] ) ? realpath( $dir['basedir'] ) : false;
+					if ( $real && $root && strpos( $real, $root . DIRECTORY_SEPARATOR ) === 0
+						&& strtolower( pathinfo( $real, PATHINFO_EXTENSION ) ) === 'svg' ) {
+						$svg = sc_svg_draw_sanitize( file_get_contents( $real ) );
+					}
 			}
 		} else {
 			$svg = sc_svg_draw_preset( sc_get( 'svg/preset/preset', $atts, 'signature' ) );

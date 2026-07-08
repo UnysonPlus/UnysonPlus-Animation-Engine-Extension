@@ -94,7 +94,9 @@
 				fit();
 				var k = 0;
 				function step() {
-					if (k >= sizes.length) { running = false; return; }
+					// Stop if the element was removed mid-resolve (builder re-render) — don't draw to a
+					// detached canvas or keep a timer alive.
+					if (k >= sizes.length || !el.isConnected) { running = false; return; }
 					draw(sizes[k]);
 					var wait = (k === 0) ? speed * 3 : speed; // dwell on the first (blockiest) frame
 					k++;

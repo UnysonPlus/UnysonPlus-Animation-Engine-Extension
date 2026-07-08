@@ -49,8 +49,9 @@ $tile = function ( $file, $label ) use ( $base ) {
 The global multi-picker CSS
 (`framework/includes/option-types/multi-picker/static/css/multi-picker.css`) already bumps tiles to
 72px in the **large** modal and Theme Settings. A per-module override forcing 96/117px makes tiles
-bigger (fewer per row) **and** breaks the baked-label layout. Older modules
-(`marquee`/`scroll-progress`/`physics`) still carry one — do not copy it into new modules.
+bigger (fewer per row) **and** breaks the baked-label layout. (The old per-module overrides in
+`marquee`/`scroll-progress`/`physics` have since been removed — none remain in the engine.) Do not
+add one to a new module.
 
 ### 5 tiles per row is a MEDIUM `popup_size` thing
 The Section/element edit modal is **medium** `popup_size`, where the 66px landscape tiles fall 5 per

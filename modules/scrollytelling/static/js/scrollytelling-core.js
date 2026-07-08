@@ -28,9 +28,12 @@
 		return n ? Array.prototype.filter.call(n.children, function (c) { return c.nodeType === 1; }) : [];
 	}
 
+	var tracked = [];
+
 	function setup(el) {
 		if (el.__storyReady) { return; }
 		el.__storyReady = true;
+		var teardown = [];
 
 		var style = el.getAttribute('data-story-style') || 'crossfade';
 		var side  = el.getAttribute('data-story-side') || 'left';
@@ -138,6 +141,7 @@
 				});
 			}, { rootMargin: band, threshold: 0 });
 			steps.forEach(function (s) { io.observe(s); });
+			teardown.push(function () { io.disconnect(); });
 		}
 		activate(0);
 
@@ -154,14 +158,32 @@
 			function run() { if (!running && inView) { running = true; raf = requestAnimationFrame(frame); } }
 			function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
 			if ('IntersectionObserver' in window) {
-				new IntersectionObserver(function (es) {
+				var scrubIo = new IntersectionObserver(function (es) {
 					inView = es[0].isIntersecting; if (inView) { run(); } else { stop(); }
-				}, { threshold: 0 }).observe(el);
+				}, { threshold: 0 });
+				scrubIo.observe(el);
+				teardown.push(function () { stop(); scrubIo.disconnect(); });
 			} else { run(); }
 		}
+
+		// Teardown for builder rescans: disconnect observers, stop the loop, and run any per-style
+		// cleanup (e.g. liquid.js disposes its WebGL context + canvas).
+		el.__storyTeardown = function () {
+			teardown.forEach(function (f) { try { f(); } catch (e) {} });
+			(el.__upwStoryCleanup || []).forEach(function (f) { try { f(); } catch (e) {} });
+			el.__upwStoryCleanup = [];
+		};
+		tracked.push(el);
 	}
 
 	function init() {
+		// Dispose instances whose section left the DOM (a builder re-render replaces the node).
+		for (var t = tracked.length - 1; t >= 0; t--) {
+			if (!document.documentElement.contains(tracked[t])) {
+				try { tracked[t].__storyTeardown(); } catch (e) {}
+				tracked.splice(t, 1);
+			}
+		}
 		var els = document.querySelectorAll('.upw-story');
 		for (var i = 0; i < els.length; i++) { setup(els[i]); }
 	}

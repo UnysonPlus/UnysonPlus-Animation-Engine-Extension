@@ -41,11 +41,19 @@
 	// off-screen. Enqueued as a dependency by the loader (needs_raf).
 	var RAF = window.upwAnimRaf;
 	function loop(host, cb) {
-		var visible = true;
+		var visible = true, io = null;
 		if ('IntersectionObserver' in window) {
-			new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0, rootMargin: '120px' }).observe(host);
+			io = new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0, rootMargin: '120px' });
+			io.observe(host);
 		}
-		if (RAF) { RAF.add(function (t) { if (visible) { cb(t); } }); }
+		// Self-cleaning: once the host leaves the DOM (a builder re-render), disconnect the observer
+		// and return false so the shared scheduler drops this callback — no leaked RAF work or IO.
+		if (RAF) {
+			RAF.add(function (t) {
+				if (!document.documentElement.contains(host)) { if (io) { io.disconnect(); } return false; }
+				if (visible) { cb(t); }
+			});
+		}
 	}
 
 	function num(host, attr, def) { var v = parseFloat(host.getAttribute(attr)); return isNaN(v) ? def : v; }

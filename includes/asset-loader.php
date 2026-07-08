@@ -320,8 +320,14 @@ add_action( 'wp_footer', function () {
 			}
 			if ( $has_core ) {
 				wp_enqueue_script( $core_handle, $core_src, array_merge( $base_deps, $eff_handles ), upw_anim_asset_ver( $m['ver'], $core_abs ), true );
-				if ( $cfg !== '' ) {
-					wp_add_inline_script( $core_handle, $cfg, 'before' );
+			}
+			if ( $cfg !== '' ) {
+				// Attach the module config to the FIRST-loading handle. In this branch the partials
+				// load BEFORE the core, so a partial that reads window.upw*Cfg at load-time must see the
+				// inline printed first (attaching it to the core — which loads last — would give it {}).
+				$cfg_handle = ! empty( $eff_handles ) ? $eff_handles[0] : ( $has_core ? $core_handle : '' );
+				if ( $cfg_handle !== '' ) {
+					wp_add_inline_script( $cfg_handle, $cfg, 'before' );
 				}
 			}
 		}

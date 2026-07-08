@@ -2,8 +2,10 @@
  * Scrollytelling style: Liquid (WebGL). Renders the media on a canvas overlay and warps between
  * the outgoing and incoming image through a displacement (noise) shader when the step changes.
  * Self-contained raw WebGL (no Three.js). onActivate style — the core still toggles the layers'
- * .is-active underneath, so if WebGL is unavailable / an image is cross-origin, it never adds the
- * .sc-liquid-on class and the plain crossfade fallback shows instead.
+ * .is-active underneath, so at any failure (no WebGL, cross-origin image, context loss) the
+ * instance tears itself down (removes the canvas + .sc-liquid-on) and the plain CSS crossfade
+ * fallback takes over. State is PER SECTION (stored on the section element), so multiple Liquid
+ * stories on one page each drive their own canvas.
  */
 (function () {
 	'use strict';
@@ -33,7 +35,7 @@
 	function compile(gl, type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; }
 	function coverScale(iw, ih, cw, ch) { var ir = iw / ih, cr = cw / ch; return (ir > cr) ? [cr / ir, 1] : [1, ir / cr]; }
 
-	function init(ctx) {
+	function makeInstance(ctx) {
 		var media = ctx.media, section = ctx.section;
 		var imgs = [];
 		for (var k = 0; k < ctx.layers.length; k++) {
@@ -60,30 +62,49 @@
 		gl.uniform1i(U.uTexA, 0); gl.uniform1i(U.uTexB, 1);
 		gl.uniform1f(U.uStrength, 0.12 + (ctx.intensity || 0.5) * 0.22);
 
-		var texes = [], ready = [], anyTainted = false;
+		var texes = [], ready = [], dead = false;
+		var from = 0, to = 0, mix = 1, raf = 0, t0 = null, t = 0;
+
+		// Tear the instance down and hand the panel back to the CSS crossfade fallback.
+		function bail() {
+			if (dead) { return; }
+			dead = true;
+			section.__upwLiquidFailed = true;
+			if (raf) { cancelAnimationFrame(raf); raf = 0; }
+			window.removeEventListener('resize', size);
+			try {
+				for (var i = 0; i < texes.length; i++) { if (texes[i]) { gl.deleteTexture(texes[i]); } }
+				if (buf) { gl.deleteBuffer(buf); }
+				if (prog) { gl.deleteProgram(prog); }
+			} catch (e) {}
+			if (canvas.parentNode) { canvas.parentNode.removeChild(canvas); }
+			section.classList.remove('sc-liquid-on');
+		}
+
 		imgs.forEach(function (img, i) {
-			var t = gl.createTexture(); texes[i] = t; ready[i] = false;
+			var tex = gl.createTexture(); texes[i] = tex; ready[i] = false;
 			function up() {
-				if (!img.naturalWidth) { return; }
-				gl.bindTexture(gl.TEXTURE_2D, t);
+				if (dead || !img.naturalWidth) { return; }
+				gl.bindTexture(gl.TEXTURE_2D, tex);
 				gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); ready[i] = true; }
-				catch (e) { anyTainted = true; }
+				try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); ready[i] = true; render(); }
+				catch (e) { bail(); } // cross-origin taint (sync OR on late load) → restore the CSS fallback
 			}
-			if (img.complete && img.naturalWidth) { up(); } else { img.addEventListener('load', function () { up(); render(); }, { once: true }); }
+			if (img.complete && img.naturalWidth) { up(); } else { img.addEventListener('load', up, { once: true }); }
 		});
-		if (anyTainted) { return null; } // cross-origin — fall back to CSS crossfade
+		if (dead) { return null; } // a same-origin-but-already-loaded image tainted synchronously
 
 		if (getComputedStyle(media).position === 'static') { media.style.position = 'relative'; }
 		media.appendChild(canvas);
 		section.classList.add('sc-liquid-on');
+		canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); bail(); }, false);
 
-		var from = 0, to = 0, mix = 1, raf = 0, t0 = null, t = 0;
 		function size() {
+			if (dead) { return; }
 			var r = media.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
 			canvas.width = Math.max(1, Math.round(r.width * dpr));
 			canvas.height = Math.max(1, Math.round(r.height * dpr));
@@ -91,7 +112,7 @@
 			render();
 		}
 		function render() {
-			if (!ready[from] || !ready[to]) { return; }
+			if (dead || !ready[from] || !ready[to]) { return; }
 			var cw = canvas.width, ch = canvas.height;
 			var sa = coverScale(imgs[from].naturalWidth, imgs[from].naturalHeight, cw, ch);
 			var sb = coverScale(imgs[to].naturalWidth, imgs[to].naturalHeight, cw, ch);
@@ -102,6 +123,7 @@
 			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 		}
 		function frame(ts) {
+			if (dead) { return; }
 			if (t0 === null) { t0 = ts; }
 			var dur = parseFloat(getComputedStyle(section).getPropertyValue('--story-trans')) || 0.6;
 			var d = (ts - t0) / 1000; t = d;
@@ -112,19 +134,29 @@
 		window.addEventListener('resize', size);
 		size();
 
-		return function go(i) {
-			if (i === to && mix >= 1) { return; }
-			from = (mix < 1) ? from : to; to = i; mix = 0; t0 = null;
-			if (raf) { cancelAnimationFrame(raf); } raf = requestAnimationFrame(frame);
+		return {
+			go: function (i) {
+				if (dead || (i === to && mix >= 1)) { return; }
+				from = (mix < 1) ? from : to; to = i; mix = 0; t0 = null;
+				if (raf) { cancelAnimationFrame(raf); } raf = requestAnimationFrame(frame);
+			},
+			dispose: bail
 		};
 	}
 
-	var go = null, failed = false;
 	(window.upwStoryFx = window.upwStoryFx || {}).liquid = {
 		onActivate: function (layer, i, ctx) {
-			if (failed) { return; }
-			if (!go) { go = init(ctx); if (!go) { failed = true; return; } }
-			go(i);
+			var section = ctx.section;
+			if (section.__upwLiquidFailed) { return; }
+			var inst = section.__upwLiquid;
+			if (!inst) {
+				inst = makeInstance(ctx);
+				if (!inst) { section.__upwLiquidFailed = true; return; }
+				section.__upwLiquid = inst;
+				// Register for teardown on a builder rescan (see scrollytelling-core.js cleanup).
+				(section.__upwStoryCleanup = section.__upwStoryCleanup || []).push(inst.dispose);
+			}
+			inst.go(i);
 		}
 	};
 })();

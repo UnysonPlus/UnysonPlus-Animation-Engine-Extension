@@ -7,7 +7,7 @@ shortcode, check this list first: a new one must be genuinely DISTINCT from ever
 rename or a near-duplicate of an existing style). Keep this file updated when styles/modules are
 added or removed.
 
-_Engine version at last update: 1.1.22._
+_Engine version at last update: 1.1.36._
 
 ---
 
@@ -40,6 +40,7 @@ the styles it uses.
 | **horizontal-scroll** (Horizontal Scroll Section) | 15 | standard · reverse · snap · parallax · fade · coverflow · blur · grow · arc · wave · zigzag · rotate3d · wall · skew · drag |
 | **scroll-loop** (Infinite / Seamless Scroll Loop, Lenis) | 1 | Single behavior — turns a run of full-height sections into a never-ending, snapping scroll |
 | **scroll-color-shift** (Scroll Color Shift) | 1 | Single behavior — give each Section a target colour; the page background morphs section-to-section as you scroll |
+| **scrollytelling** (Scrollytelling / Pinned Steps) | 29 | crossfade · slide · zoom · clip_wipe · blur · ken_burns · parallax · pixelate · push · cover · curtain · split · flip · cube · tilt · iris · barn · blinds · dissolve · glitch · flash · duotone · zoom_blur · page_turn · scan · color_shift · frame_sequence · horizontal_track · liquid (directional styles carry an up/down/left/right Direction option) |
 
 ### Site-wide (Theme Settings → Animations)
 
