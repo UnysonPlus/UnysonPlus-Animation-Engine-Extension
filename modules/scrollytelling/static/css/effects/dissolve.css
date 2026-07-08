@@ -1,0 +1,10 @@
+/* Scrollytelling: Dissolve — new media fades in through a dotted (halftone) mask. */
+.upw-story[data-story-style="dissolve"] .upw-story-layer {
+	opacity: 0;
+	-webkit-mask-image: radial-gradient(circle, #000 55%, transparent 60%);
+	mask-image: radial-gradient(circle, #000 55%, transparent 60%);
+	-webkit-mask-size: 16px 16px; mask-size: 16px 16px;
+	-webkit-mask-repeat: repeat; mask-repeat: repeat;
+	transition: opacity var(--story-trans, 0.6s) ease;
+}
+.upw-story[data-story-style="dissolve"] .upw-story-layer.is-active { opacity: 1; }

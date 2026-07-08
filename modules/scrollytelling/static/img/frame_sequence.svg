@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Frame Sequence">
+  <style>
+    .fsh{animation:fsh 2.6s steps(1) infinite}
+    @keyframes fsh{0%{transform:translateX(0)}25%{transform:translateX(13px)}50%{transform:translateX(26px)}75%{transform:translateX(39px)}100%{transform:translateX(0)}}
+  </style>
+  <defs><clipPath id="fs"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <g clip-path="url(#fs)">
+    <rect x="40" y="10" width="52" height="44" fill="#dbeafe"/>
+    <g fill="#7ea9e8"><rect x="42" y="20" width="9" height="24" rx="1.5"/><rect x="55" y="20" width="9" height="24" rx="1.5"/><rect x="68" y="20" width="9" height="24" rx="1.5"/><rect x="81" y="20" width="9" height="24" rx="1.5"/></g>
+    <rect class="fsh" x="42" y="20" width="9" height="24" rx="1.5" fill="#2f74e6"/>
+    <rect class="fsh" x="42" y="26" width="9" height="3" fill="#fbbf24"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Frame Seq</text>
+</svg>

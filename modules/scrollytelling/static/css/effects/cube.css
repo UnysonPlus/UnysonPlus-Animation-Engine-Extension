@@ -1,0 +1,4 @@
+/* Scrollytelling: Cube (tumble) — the panel tumbles top-to-bottom. */
+.upw-story[data-story-style="cube"] .upw-story-media { -webkit-perspective: 1200px; perspective: 1200px; }
+.upw-story[data-story-style="cube"] .upw-story-layer { opacity: 1; -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: rotateX(90deg); transform-origin: center bottom; transition: transform var(--story-trans, 0.6s) cubic-bezier(0.7, 0, 0.3, 1); }
+.upw-story[data-story-style="cube"] .upw-story-layer.is-active { transform: rotateX(0deg); transform-origin: center center; }

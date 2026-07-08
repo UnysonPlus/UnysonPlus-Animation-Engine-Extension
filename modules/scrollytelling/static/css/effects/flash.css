@@ -1,0 +1,4 @@
+/* Scrollytelling: Flash — a light-leak flash as the new media appears. */
+.upw-story[data-story-style="flash"] .upw-story-layer { opacity: 0; transition: opacity calc(var(--story-trans, 0.6s) * 0.5) ease; }
+.upw-story[data-story-style="flash"] .upw-story-layer.is-active { opacity: 1; animation: upw-story-flash var(--story-trans, 0.6s) ease; }
+@keyframes upw-story-flash { 0% { filter: brightness(5) contrast(0.4); } 35% { filter: brightness(1.5); } 100% { filter: brightness(1); } }

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Page Turn">
+  <style>
+    .ptp{animation:ptp 2.6s ease-in-out infinite;transform-origin:40px 32px}
+    @keyframes ptp{0%,15%{transform:rotateY(-80deg)}60%,100%{transform:rotateY(0deg)}}
+  </style>
+  <defs><clipPath id="pt"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <g clip-path="url(#pt)">
+    <rect x="40" y="10" width="52" height="44" fill="#bcd3f7"/>
+    <circle cx="78" cy="24" r="6" fill="#fbbf24"/><path d="M40 54 L60 36 L74 48 L92 32 L92 54 Z" fill="#5b8fe0"/>
+    <g class="ptp" style="perspective:120px"><rect x="40" y="10" width="26" height="44" fill="#7ea9e8"/><rect x="42" y="16" width="20" height="3" rx="1" fill="#dbeafe"/><rect x="42" y="24" width="20" height="3" rx="1" fill="#dbeafe"/><rect x="42" y="32" width="14" height="3" rx="1" fill="#dbeafe"/></g>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Page Turn</text>
+</svg>

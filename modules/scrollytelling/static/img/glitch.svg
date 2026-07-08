@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Glitch">
+  <style>
+    .gl-r{animation:gl-rk 2.6s steps(1) infinite}
+    @keyframes gl-rk{0%,40%{transform:translateX(0);opacity:0}45%{transform:translateX(-4px);opacity:.7}55%{transform:translateX(3px);opacity:.7}70%,100%{transform:translateX(0);opacity:0}}
+    .gl-b{animation:gl-bk 2.6s steps(1) infinite}
+    @keyframes gl-bk{0%,40%{transform:translateX(0);opacity:0}45%{transform:translateX(4px);opacity:.7}55%{transform:translateX(-3px);opacity:.7}70%,100%{transform:translateX(0);opacity:0}}
+    .gl-s{animation:gl-sk 2.6s steps(1) infinite}
+    @keyframes gl-sk{0%,42%{transform:translateX(0)}48%{transform:translateX(6px)}54%{transform:translateX(-5px)}66%,100%{transform:translateX(0)}}
+  </style>
+  <defs><clipPath id="gl-c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <g clip-path="url(#gl-c)" shape-rendering="crispEdges">
+    <rect x="40" y="10" width="52" height="44" fill="#2f74e6"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#bcd3f7"/>
+    <rect class="gl-r" x="40" y="18" width="52" height="10" fill="#ff3b60" opacity="0"/>
+    <rect class="gl-b" x="40" y="34" width="52" height="9" fill="#2f74e6" opacity="0"/>
+    <rect class="gl-s" x="40" y="26" width="52" height="8" fill="#7ea9e8"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Glitch</text>
+</svg>

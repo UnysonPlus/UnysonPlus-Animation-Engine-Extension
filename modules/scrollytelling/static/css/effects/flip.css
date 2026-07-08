@@ -1,0 +1,4 @@
+/* Scrollytelling: Flip (3D) — the panel flips left-to-right between media. */
+.upw-story[data-story-style="flip"] .upw-story-media { -webkit-perspective: 1400px; perspective: 1400px; }
+.upw-story[data-story-style="flip"] .upw-story-layer { opacity: 1; -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: rotateY(90deg); transition: transform var(--story-trans, 0.6s) ease; }
+.upw-story[data-story-style="flip"] .upw-story-layer.is-active { transform: rotateY(0deg); }

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Clip Wipe">
+  <style>
+    .cwt{animation:cwt 2.6s ease-in-out infinite}
+    @keyframes cwt{0%,15%{transform:translateX(-52px)}60%,100%{transform:translateX(0)}}
+    .cwe{animation:cwe 2.6s ease-in-out infinite}
+    @keyframes cwe{0%,15%{transform:translateX(-52px)}60%,100%{transform:translateX(0)}}
+  </style>
+  <defs><clipPath id="cw"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <g clip-path="url(#cw)">
+    <rect x="40" y="10" width="52" height="44" fill="#bcd3f7"/>
+    <g class="cwt"><rect x="40" y="10" width="52" height="44" fill="#5b8fe0"/><circle cx="54" cy="24" r="6" fill="#fbbf24"/><path d="M40 54 L58 34 L72 46 L92 30 L92 54 Z" fill="#2f74e6"/></g>
+    <rect class="cwe" x="90" y="10" width="4" height="44" fill="#fbbf24"/>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Clip Wipe</text>
+</svg>

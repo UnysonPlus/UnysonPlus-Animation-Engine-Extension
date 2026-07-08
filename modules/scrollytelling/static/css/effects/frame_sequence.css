@@ -1,0 +1,3 @@
+/* Scrollytelling: Frame Sequence — instant frame cuts; the JS drives which frame shows by scroll. */
+.upw-story[data-story-style="frame_sequence"] .upw-story-layer { opacity: 0; transition: none; }
+.upw-story[data-story-style="frame_sequence"] .upw-story-layer.is-active { opacity: 1; }

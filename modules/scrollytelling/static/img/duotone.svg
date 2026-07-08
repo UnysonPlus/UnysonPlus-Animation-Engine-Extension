@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Duotone">
+  <style>
+    .duo-grey{animation:duo-k 2.6s ease-in-out infinite}
+    @keyframes duo-k{0%,15%{opacity:1}55%,100%{opacity:0}}
+  </style>
+  <defs><clipPath id="duo-c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <g clip-path="url(#duo-c)">
+    <rect x="40" y="10" width="52" height="44" fill="#5b8fe0"/><circle cx="66" cy="26" r="7" fill="#fbbf24"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#2f74e6"/>
+    <g class="duo-grey"><rect x="40" y="10" width="52" height="44" fill="#cbd5e1"/><circle cx="66" cy="26" r="7" fill="#94a3b8"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#64748b"/></g>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Duotone</text>
+</svg>

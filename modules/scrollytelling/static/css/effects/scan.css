@@ -1,0 +1,9 @@
+/* Scrollytelling: Scan (CRT) — permanent scanlines + a bright fade-in sweep. */
+.upw-story[data-story-style="scan"] .upw-story-layer {
+	opacity: 0;
+	-webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 2px, rgba(0,0,0,0.55) 2px 4px);
+	mask-image: repeating-linear-gradient(to bottom, #000 0 2px, rgba(0,0,0,0.55) 2px 4px);
+	transition: opacity var(--story-trans, 0.6s) ease;
+}
+.upw-story[data-story-style="scan"] .upw-story-layer.is-active { opacity: 1; animation: upw-story-scan var(--story-trans, 0.6s) linear; }
+@keyframes upw-story-scan { 0% { filter: brightness(2.2) contrast(1.4); } 100% { filter: brightness(1) contrast(1); } }

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Horizontal Track">
+  <style>
+    .htt{animation:htt 2.8s ease-in-out infinite}
+    @keyframes htt{0%,10%{transform:translateX(0)}50%,60%{transform:translateX(-16px)}90%,100%{transform:translateX(-32px)}}
+  </style>
+  <defs><clipPath id="ht"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <g clip-path="url(#ht)">
+    <rect x="40" y="10" width="52" height="44" fill="#dbeafe"/>
+    <g class="htt"><rect x="42" y="16" width="30" height="32" rx="3" fill="#5b8fe0"/><rect x="76" y="16" width="30" height="32" rx="3" fill="#2f74e6"/><rect x="110" y="16" width="30" height="32" rx="3" fill="#7ea9e8"/></g>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Horizontal</text>
+</svg>

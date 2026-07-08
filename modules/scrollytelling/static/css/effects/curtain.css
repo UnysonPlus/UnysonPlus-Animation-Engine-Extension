@@ -1,0 +1,6 @@
+/* Scrollytelling: Curtain — clip reveal (default rises from the bottom). */
+.upw-story[data-story-style="curtain"] .upw-story-layer { opacity: 1; -webkit-clip-path: inset(100% 0 0 0); clip-path: inset(100% 0 0 0); transition: -webkit-clip-path var(--story-trans, 0.6s) ease, clip-path var(--story-trans, 0.6s) ease; }
+.upw-story[data-story-style="curtain"] .upw-story-layer.is-active { -webkit-clip-path: inset(0 0 0 0); clip-path: inset(0 0 0 0); }
+.upw-story[data-story-style="curtain"][data-story-dir="down"] .upw-story-layer { -webkit-clip-path: inset(0 0 100% 0); clip-path: inset(0 0 100% 0); }
+.upw-story[data-story-style="curtain"][data-story-dir="left"] .upw-story-layer { -webkit-clip-path: inset(0 100% 0 0); clip-path: inset(0 100% 0 0); }
+.upw-story[data-story-style="curtain"][data-story-dir="right"] .upw-story-layer { -webkit-clip-path: inset(0 0 0 100%); clip-path: inset(0 0 0 100%); }

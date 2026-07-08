@@ -1,0 +1,4 @@
+/* Scrollytelling: Page Turn — the media turns in like a book page (3D, hinged on the left). */
+.upw-story[data-story-style="page_turn"] .upw-story-media { -webkit-perspective: 1600px; perspective: 1600px; }
+.upw-story[data-story-style="page_turn"] .upw-story-layer { opacity: 1; transform-origin: left center; transform: rotateY(-118deg); -webkit-backface-visibility: hidden; backface-visibility: hidden; transition: transform var(--story-trans, 0.6s) cubic-bezier(0.6, 0, 0.4, 1); }
+.upw-story[data-story-style="page_turn"] .upw-story-layer.is-active { transform: rotateY(0deg); }

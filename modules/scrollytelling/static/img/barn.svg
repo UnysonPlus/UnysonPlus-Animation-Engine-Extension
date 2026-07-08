@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Barn Doors">
+  <style>
+    .barn-l{animation:barn-lk 2.6s ease-in-out infinite}
+    @keyframes barn-lk{0%,15%{transform:translateX(0)}55%,100%{transform:translateX(-26px)}}
+    .barn-r{animation:barn-rk 2.6s ease-in-out infinite}
+    @keyframes barn-rk{0%,15%{transform:translateX(0)}55%,100%{transform:translateX(26px)}}
+  </style>
+  <defs><clipPath id="barn-c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <g clip-path="url(#barn-c)">
+    <rect x="40" y="10" width="52" height="44" fill="#7ea9e8"/><circle cx="66" cy="28" r="7" fill="#fbbf24"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#2f74e6"/>
+    <g class="barn-l"><rect x="40" y="10" width="26" height="44" fill="#bcd3f7"/><path d="M40 54 L54 36 L66 46 L66 54 Z" fill="#5b8fe0"/></g>
+    <g class="barn-r"><rect x="66" y="10" width="26" height="44" fill="#5b8fe0"/><circle cx="80" cy="24" r="5" fill="#fbbf24"/></g>
+  </g>
+  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Barn Doors</text>
+</svg>

@@ -1,0 +1,11 @@
+/* Scrollytelling style: Blur Swap — the old media blurs out, the new blurs in. */
+.upw-story[data-story-style="blur"] .upw-story-layer {
+	opacity: 0;
+	filter: blur(calc(var(--story-intensity, 0.5) * 24px));
+	transition: opacity var(--story-trans, 0.6s) ease,
+		filter var(--story-trans, 0.6s) ease;
+}
+.upw-story[data-story-style="blur"] .upw-story-layer.is-active {
+	opacity: 1;
+	filter: blur(0);
+}

@@ -1,0 +1,5 @@
+/* Scrollytelling: Liquid (WebGL) — a shader warp between media, rendered on a canvas overlay.
+ * Layers stay visible (base crossfade) as the fallback; .sc-liquid-on (added by the JS once the
+ * WebGL canvas is live) hides them so only the canvas shows. */
+.upw-story[data-story-style="liquid"] .sc-liquid-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+.upw-story[data-story-style="liquid"].sc-liquid-on .upw-story-layer { opacity: 0 !important; }

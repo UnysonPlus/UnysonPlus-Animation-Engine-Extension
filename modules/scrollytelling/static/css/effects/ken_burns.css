@@ -1,0 +1,16 @@
+/* Scrollytelling style: Ken Burns — crossfade + a slow pan/zoom drift on the active media. */
+.upw-story[data-story-style="ken_burns"] .upw-story-layer {
+	opacity: 0;
+	transition: opacity var(--story-trans, 0.6s) ease;
+}
+.upw-story[data-story-style="ken_burns"] .upw-story-layer.is-active { opacity: 1; }
+
+.upw-story[data-story-style="ken_burns"] .upw-story-layer.is-active img,
+.upw-story[data-story-style="ken_burns"] .upw-story-layer.is-active > * {
+	transform-origin: 50% 50%;
+	animation: upw-story-kb calc(9s + var(--story-intensity, 0.5) * 8s) ease-out both;
+}
+@keyframes upw-story-kb {
+	from { transform: scale(1); }
+	to   { transform: scale(calc(1.08 + var(--story-intensity, 0.5) * 0.12)) translate3d(-2%, -2%, 0); }
+}

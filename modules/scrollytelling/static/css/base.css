@@ -1,0 +1,121 @@
+/* Animation Engine — Scrollytelling: shared base (pin, layer stacking, step pacing, progress rail).
+ *
+ * The core JS marks: .upw-story-media (pinned column), .upw-story-layers (the layers' container),
+ * .upw-story-layer (each media item, index-mapped to a step), .upw-story-steps (scrolling column),
+ * .upw-story-step (each caption). Per-style CSS/JS override the layer transition; the default here
+ * is a crossfade, so styles that don't ship a CSS file (Parallax, Pixelate) still crossfade. */
+
+.upw-story .fw-row { display: flex; align-items: flex-start; }
+.upw-story[data-story-side="top"] .fw-row { display: block; }
+
+/* Pinned media column. */
+.upw-story .upw-story-media {
+	position: -webkit-sticky;
+	position: sticky;
+	top: var(--story-top, 0px);
+	height: var(--story-h, 100vh);
+	align-self: flex-start;
+	overflow: hidden;
+}
+.upw-story[data-story-side="top"] .upw-story-media { width: 100%; }
+
+/* Stacked media layers — only the active one shows (default crossfade). Each layer is absolutely
+ * positioned against the sticky .upw-story-media (its nearest positioned ancestor), so the effect
+ * works whether the media items are DIRECT children of the column or wrapped. We deliberately do
+ * NOT position/size .upw-story-layers: when the media items are direct children, that class lands
+ * on the media column itself, and positioning it would override the sticky pin + collapse it. */
+.upw-story .upw-story-layer {
+	position: absolute;
+	inset: 0;
+	margin: 0;
+	opacity: 0;
+	transition: opacity var(--story-trans, 0.6s) ease;
+}
+.upw-story .upw-story-layer.is-active { opacity: 1; }
+.upw-story .upw-story-layer > * { width: 100%; height: 100%; }
+.upw-story .upw-story-layer img,
+.upw-story img.upw-story-layer {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Direction offsets for the translate-based styles (Slide / Push / Cover). Each of those styles
+ * sets --story-dist; these rules only set which axis/sign the inactive layer is offset on, so one
+ * Direction option drives all three. No [data-story-dir] = the style's own default (its fallback). */
+.upw-story[data-story-dir="up"]    .upw-story-layer { --story-tx: 0; --story-ty: var(--story-dist, 100%); }
+.upw-story[data-story-dir="down"]  .upw-story-layer { --story-tx: 0; --story-ty: calc(-1 * var(--story-dist, 100%)); }
+.upw-story[data-story-dir="left"]  .upw-story-layer { --story-tx: var(--story-dist, 100%); --story-ty: 0; }
+.upw-story[data-story-dir="right"] .upw-story-layer { --story-tx: calc(-1 * var(--story-dist, 100%)); --story-ty: 0; }
+
+/* Horizontal Track lays the layers side-by-side (JS sets each layer's left + translates the row). */
+.upw-story[data-story-style="horizontal_track"] .upw-story-layer {
+	inset: 0 auto auto 0;
+	width: 100%;
+	height: 100%;
+	opacity: 1;
+	transition: none;
+}
+
+/* Steps — each gets enough height to own a scroll "moment". */
+.upw-story .upw-story-step {
+	min-height: var(--story-step-min, 72vh);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+/* Progress rail (dots + bar). */
+.upw-story { position: relative; }
+.upw-story-progress {
+	position: absolute;
+	z-index: 3;
+	pointer-events: auto;
+}
+.upw-story-progress--dots {
+	top: 50%;
+	right: 18px;
+	transform: translateY(-50%);
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.upw-story-dot {
+	width: 10px;
+	height: 10px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: currentColor;
+	opacity: 0.3;
+	cursor: pointer;
+	transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.upw-story-dot.is-active { opacity: 1; transform: scale(1.35); }
+.upw-story-progress--bar {
+	top: 0;
+	right: 0;
+	width: 3px;
+	height: 100%;
+	background: rgba(128, 128, 128, 0.18);
+}
+.upw-story-progress__fill {
+	display: block;
+	width: 100%;
+	height: 100%;
+	background: currentColor;
+	transform: scaleY(0);
+	transform-origin: top;
+	transition: transform 0.2s linear;
+}
+
+@media (max-width: 767px) {
+	/* Mobile: unpin — media flows above its steps as a normal stack. */
+	.upw-story .fw-row { display: block; }
+	.upw-story .upw-story-media { position: static; height: auto; }
+	.upw-story .upw-story-layers { height: auto; }
+	.upw-story .upw-story-layer { position: relative; opacity: 1; }
+	.upw-story .upw-story-step { min-height: 0; }
+	.upw-story-progress { display: none; }
+}
