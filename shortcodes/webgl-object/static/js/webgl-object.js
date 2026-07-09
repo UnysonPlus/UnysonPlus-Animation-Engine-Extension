@@ -87,6 +87,103 @@
 
 	function isShaderPreset(p) { return FRAG.hasOwnProperty(p); }
 
+	// ---- Image Particles: an image sampled into a grid of coloured points (a 3D THREE.Points
+	// cloud) that drift and SCATTER away from the cursor. Not a full-screen quad — a real 3D path. ----
+	var PARTICLE_VS = [
+		'attribute vec3 aColor; attribute float aSeed;',
+		'uniform float uTime, uSize, uRepel, uRadius, uJitter, uDrift, uDpr;',
+		'uniform vec2 uMouse;',
+		'varying vec3 vColor;',
+		'void main(){',
+		'  vColor = aColor;',
+		'  vec3 p = position;',
+		'  float ph = aSeed * 6.2831853;',
+		'  p.z += sin(uTime*0.7 + ph) * uJitter * 3.0;',              // idle shimmer in depth
+		'  p.x += sin(uTime*uDrift + ph) * uJitter;',
+		'  p.y += cos(uTime*uDrift*0.9 + ph*1.3) * uJitter;',
+		'  vec2 d = p.xy - uMouse;',                                    // cursor repel (plane space)
+		'  float dist = length(d);',
+		'  if (dist < uRadius) {',
+		'    float f = 1.0 - dist/uRadius; f = f*f;',
+		'    p.xy += normalize(d + vec2(1e-4)) * f * uRepel;',
+		'    p.z  += f * uRepel * 1.5;',
+		'  }',
+		'  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+		'  gl_Position = projectionMatrix * mv;',
+		'  gl_PointSize = uSize * uDpr * (2.0 / max(0.1, -mv.z));',
+		'}'
+	].join('\n');
+	var PARTICLE_FS = [
+		'precision highp float;',
+		'varying vec3 vColor;',
+		'void main(){',
+		'  vec2 c = gl_PointCoord - 0.5;',
+		'  float a = smoothstep(0.5, 0.32, length(c));',              // round soft point
+		'  if (a < 0.02) discard;',
+		'  gl_FragColor = vec4(vColor, a);',
+		'}'
+	].join('\n');
+
+	// Sample the image into a cols×rows grid of points; fill the geometry's position/colour/seed.
+	function sampleImageInto(geo, img, cols) {
+		var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+		var aspect = (iw && ih) ? iw / ih : 1;
+		var rows = Math.max(6, Math.round(cols / aspect));
+		var cv = document.createElement('canvas'); cv.width = cols; cv.height = rows;
+		var ctx = cv.getContext('2d');
+		if (!ctx) { return false; }
+		var data;
+		try { ctx.drawImage(img, 0, 0, cols, rows); data = ctx.getImageData(0, 0, cols, rows).data; }
+		catch (e) { return false; } // cross-origin taint
+		var n = cols * rows, k = 0, w = 2 * aspect, h = 2;
+		var pos = new Float32Array(n * 3), col = new Float32Array(n * 3), seed = new Float32Array(n);
+		for (var y = 0; y < rows; y++) {
+			for (var x = 0; x < cols; x++) {
+				var idx = (y * cols + x) * 4, al = data[idx + 3] / 255;
+				pos[k * 3]     = (cols > 1 ? (x / (cols - 1) - 0.5) : 0) * w;
+				pos[k * 3 + 1] = -(rows > 1 ? (y / (rows - 1) - 0.5) : 0) * h;
+				pos[k * 3 + 2] = 0;
+				col[k * 3]     = (data[idx] / 255) * al;      // transparent pixels fade to black (invisible)
+				col[k * 3 + 1] = (data[idx + 1] / 255) * al;
+				col[k * 3 + 2] = (data[idx + 2] / 255) * al;
+				seed[k] = Math.random();
+				k++;
+			}
+		}
+		geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+		geo.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+		geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+		geo.computeBoundingSphere();
+		return true;
+	}
+
+	function buildImageParticles(cfg) {
+		var o = cfg.presetOpts || {};
+		var cols = Math.max(20, Math.min(240, Math.round(o.grid_density || 120)));
+		var geo = new THREE.BufferGeometry();
+		var num = function (v, d) { var f = parseFloat(v); return isNaN(f) ? d : f; };
+		var uniforms = {
+			uTime:   { value: 0 }, uMouse: { value: new THREE.Vector2(-999, -999) },
+			uSize:   { value: num(o.point_size, 6) }, uRepel: { value: num(o.repel, 0.5) },
+			uRadius: { value: num(o.radius, 0.35) }, uJitter: { value: num(o.jitter, 0.015) },
+			uDrift:  { value: num(o.drift, 0.4) }, uDpr: { value: Math.min(window.devicePixelRatio || 1, 2) }
+		};
+		if (REDUCE) { uniforms.uJitter.value = 0; uniforms.uDrift.value = 0; } // no idle drift under reduce-motion
+		var mat = new THREE.ShaderMaterial({
+			uniforms: uniforms, transparent: true, depthWrite: false,
+			vertexShader: PARTICLE_VS, fragmentShader: PARTICLE_FS
+		});
+		var points = new THREE.Points(geo, mat);
+		points.visible = false;
+		if (o.imageUrl) {
+			var img = new Image();
+			img.crossOrigin = 'anonymous';
+			img.onload = function () { if (sampleImageInto(geo, img, cols)) { points.visible = true; } };
+			img.src = o.imageUrl;
+		}
+		return { object: points, uniforms: uniforms, geometry: geo, material: mat };
+	}
+
 	// Map each preset's named sub-options onto the generic uP1..uP3 slots.
 	function paramFor(cfg, n) {
 		var o = cfg.presetOpts || {};
@@ -184,6 +281,8 @@
 		var preset = cfg.preset || 'glass';
 		var opts = cfg.presetOpts || {};
 		var colA = new THREE.Color(cfg.colorA || '#6aa6ff');
+
+		if (preset === 'image_particles') { return buildImageParticles(cfg); }
 
 		if (preset === 'particles') {
 			var count = Math.max(500, Math.min(12000, opts.particle_count || 4000));
@@ -326,14 +425,17 @@
 			// edges, like Hatom's hero blobs) rather than floating small in the middle.
 			camera.position.set(0, 0, 2.5);
 
-			// Glass transmission needs an environment; metal/sphere use it for reflections.
-			env = makeEnv(renderer, cfg.colorA || '#6aa6ff', cfg.colorB || '#b388ff');
-			scene.environment = env;
+			// Image Particles is unlit (vertex-coloured points) — skip the env + lights it never uses.
+			if (cfg.preset !== 'image_particles') {
+				// Glass transmission needs an environment; metal/sphere use it for reflections.
+				env = makeEnv(renderer, cfg.colorA || '#6aa6ff', cfg.colorB || '#b388ff');
+				scene.environment = env;
 
-			var key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(2, 3, 2); scene.add(key);
-			var rim = new THREE.DirectionalLight(new THREE.Color(cfg.colorB || '#b388ff'), 1.5); rim.position.set(-3, -1, -2); scene.add(rim);
-			var fill = new THREE.DirectionalLight(new THREE.Color(cfg.colorA || '#6aa6ff'), 0.8); fill.position.set(0, -2, 3); scene.add(fill);
-			scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+				var key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(2, 3, 2); scene.add(key);
+				var rim = new THREE.DirectionalLight(new THREE.Color(cfg.colorB || '#b388ff'), 1.5); rim.position.set(-3, -1, -2); scene.add(rim);
+				var fill = new THREE.DirectionalLight(new THREE.Color(cfg.colorA || '#6aa6ff'), 0.8); fill.position.set(0, -2, 3); scene.add(fill);
+				scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+			}
 
 			built = buildMesh(cfg, env);
 			obj = built.object;
@@ -355,7 +457,7 @@
 		// Pointer + parallax. In background mode the canvas is click-through, so
 		// listen on the window and measure against the section instead of the root.
 		var px = 0, py = 0, tx = 0, ty = 0;
-		if (cfg.pointerFollow) {
+		if (cfg.pointerFollow || cfg.preset === 'image_particles') {
 			var moveTarget = bgMode ? window : root;
 			var rectSource = (bgMode && sectionEl) ? sectionEl : root;
 			moveTarget.addEventListener('pointermove', function (e) {
@@ -399,6 +501,15 @@
 					var want = hoverActive * (parseFloat(cfg.presetOpts.strength) || 0.3);
 					u.uP1.value += (want - u.uP1.value) * 0.08;
 				}
+				renderer.render(scene, camera);
+				return;
+			}
+
+			// ---- Image Particles: drive time + the cursor in plane space; no rotation/parallax. ----
+			if (cfg.preset === 'image_particles') {
+				built.uniforms.uTime.value = t;
+				var vh = Math.tan(45 * Math.PI / 360) * camera.position.z; // visible half-height at z=0
+				built.uniforms.uMouse.value.set(px * vh * camera.aspect, -py * vh);
 				renderer.render(scene, camera);
 				return;
 			}
@@ -459,7 +570,9 @@
 		}
 
 		// Reduce-motion (no poster): one static frame, no loop.
-		if (REDUCE) { renderFrame(); return; }
+		// Image Particles keeps a (motionless) loop so the image still renders once it loads and the
+		// cursor scatter — a deliberate interaction, not autoplay — still responds; others draw once.
+		if (REDUCE && cfg.preset !== 'image_particles') { renderFrame(); return; }
 
 		// Run only while in view; pause when the tab is hidden.
 		if ('IntersectionObserver' in window) {

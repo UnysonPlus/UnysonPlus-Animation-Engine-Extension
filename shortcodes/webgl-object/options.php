@@ -47,10 +47,11 @@ $options = [
 									[
 										'attr'    => [ 'label' => __( '3D Objects', 'fw' ) ],
 										'choices' => [
-											'glass'     => __( 'Glass Blob', 'fw' ),
-											'metal'     => __( 'Liquid Metal', 'fw' ),
-											'sphere'    => __( 'Distorted Sphere', 'fw' ),
-											'particles' => __( 'Particle Field', 'fw' ),
+											'glass'           => __( 'Glass Blob', 'fw' ),
+											'metal'           => __( 'Liquid Metal', 'fw' ),
+											'sphere'          => __( 'Distorted Sphere', 'fw' ),
+											'particles'       => __( 'Particle Field', 'fw' ),
+											'image_particles' => __( 'Image Particles', 'fw' ),
 										],
 									],
 									[
@@ -118,6 +119,51 @@ $options = [
 									'label'      => __( 'Particle size', 'fw' ),
 									'value'      => 0.02,
 									'properties' => [ 'min' => 0.005, 'max' => 0.08, 'step' => 0.005 ],
+								],
+							],
+							'image_particles' => [
+								'image' => [
+									'type'  => 'upload',
+									'label' => __( 'Image', 'fw' ),
+									'desc'  => __( 'The image is sampled into a grid of coloured particles.', 'fw' ),
+								],
+								'grid_density' => [
+									'type'       => 'slider',
+									'label'      => __( 'Grid density', 'fw' ),
+									'desc'       => __( 'Particles across (higher = finer mosaic, more points).', 'fw' ),
+									'value'      => 120,
+									'properties' => [ 'min' => 30, 'max' => 220, 'step' => 5 ],
+								],
+								'point_size' => [
+									'type'       => 'slider',
+									'label'      => __( 'Point size', 'fw' ),
+									'value'      => 6,
+									'properties' => [ 'min' => 1, 'max' => 16, 'step' => 0.5 ],
+								],
+								'repel' => [
+									'type'       => 'slider',
+									'label'      => __( 'Cursor scatter', 'fw' ),
+									'desc'       => __( 'How far particles push away from the pointer.', 'fw' ),
+									'value'      => 0.5,
+									'properties' => [ 'min' => 0, 'max' => 1.5, 'step' => 0.05 ],
+								],
+								'radius' => [
+									'type'       => 'slider',
+									'label'      => __( 'Scatter radius', 'fw' ),
+									'value'      => 0.35,
+									'properties' => [ 'min' => 0.1, 'max' => 1, 'step' => 0.05 ],
+								],
+								'drift' => [
+									'type'       => 'slider',
+									'label'      => __( 'Idle drift', 'fw' ),
+									'value'      => 0.4,
+									'properties' => [ 'min' => 0, 'max' => 1.5, 'step' => 0.05 ],
+								],
+								'jitter' => [
+									'type'       => 'slider',
+									'label'      => __( 'Jitter', 'fw' ),
+									'value'      => 0.015,
+									'properties' => [ 'min' => 0, 'max' => 0.06, 'step' => 0.005 ],
 								],
 							],
 

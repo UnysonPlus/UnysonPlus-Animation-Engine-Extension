@@ -26,7 +26,7 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 
 		// Image Distortion shader: resolve the uploaded image to a URL the JS can load
 		// (the `upload` option stores an array with a 'url'). Mirrors poster handling.
-		if ( $preset === 'image_distort' && isset( $preset_opts['image'] ) && is_array( $preset_opts['image'] ) ) {
+		if ( in_array( $preset, array( 'image_distort', 'image_particles' ), true ) && isset( $preset_opts['image'] ) && is_array( $preset_opts['image'] ) ) {
 			$preset_opts['imageUrl'] = ! empty( $preset_opts['image']['url'] ) ? esc_url_raw( $preset_opts['image']['url'] ) : '';
 		}
 

@@ -7,7 +7,7 @@ shortcode, check this list first: a new one must be genuinely DISTINCT from ever
 rename or a near-duplicate of an existing style). Keep this file updated when styles/modules are
 added or removed.
 
-_Engine version at last update: 1.1.37._
+_Engine version at last update: 1.1.38._
 
 ---
 
@@ -60,7 +60,7 @@ lives in the **shortcodes** extension core, available even with the engine off).
 
 | Shortcode | Tag | What it is | Variants |
 | --- | --- | --- | --- |
-| **WebGL Object** | `[webgl_object]` | Real-time WebGL object (Three.js) | glass (refractive blob) · metal (liquid metal) · sphere (distorted) · particles (field) · plasma |
+| **WebGL Object** | `[webgl_object]` | Real-time WebGL object (Three.js) | glass (refractive blob) · metal (liquid metal) · sphere (distorted) · particles (field) · image particles (image sampled into a cursor-scatter point cloud) · plasma |
 | **Model Viewer** | `[model_viewer]` | Interactive 3D model (glTF/GLB) the visitor can orbit/zoom, with auto-rotate, IBL, ground shadow, poster, optional AR (`<model-viewer>`) | — |
 | **Image Sequence** | `[image_sequence]` | Scroll-scrubbed frame sequence — the "product-reveal" effect; upload frames or a numbered URL pattern; pin full-screen or play as it passes | — |
 | **SVG Draw** | `[svg_draw]` | Self-drawing SVG — line art / signature / animated divider or icon that traces itself on scroll; paste code, upload a file, or pick a preset | presets: arrow · check · circle · heart · signature · star · underline · wave |
