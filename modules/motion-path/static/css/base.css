@@ -1,0 +1,15 @@
+/* Animation Engine — Motion Path: shared base.
+ * The runtime translates (and optionally rotates) the element via transform. We only need to hint
+ * the compositor and keep the transform origin centred. Everything else is data-driven in JS. */
+.sc-motion-path{
+	will-change: transform;
+	transform-box: view-box;
+}
+/* Until the runtime initialises, keep the element at its natural spot (no flash of movement). */
+.sc-motion-path:not(.sc-mp-ready){
+	transform: none;
+}
+@media (prefers-reduced-motion: reduce){
+	/* Reduced motion: the runtime leaves the element at its layout position; nothing to animate. */
+	.sc-motion-path{ will-change: auto; }
+}

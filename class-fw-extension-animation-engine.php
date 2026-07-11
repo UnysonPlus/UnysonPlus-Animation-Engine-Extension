@@ -51,6 +51,7 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/scroll-color-shift/scroll-color-shift.php'; // Scroll Color Shift (Section-level, scroll)
 		require_once dirname( __FILE__ ) . '/modules/scrollytelling/scrollytelling.php'; // Scrollytelling / Pinned Steps (Section-level, scroll)
 		require_once dirname( __FILE__ ) . '/modules/preloader/preloader.php';                 // Preloader / Page Loader (site-wide)
+		require_once dirname( __FILE__ ) . '/modules/motion-path/motion-path.php';       // Motion Path (per-element — element travels a path)
 
 		// Central effects control — consolidates the per-module enable switches into one
 		// "Effects" tab and hides a disabled module's options. Loaded last (after modules).

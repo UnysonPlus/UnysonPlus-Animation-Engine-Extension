@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Pendulum">
+  <svg x="30" y="6" width="72" height="60" viewBox="-12 -12 124 124" preserveAspectRatio="xMidYMid meet">
+    <path d="M16,24 Q50,96 84,24" fill="none" stroke="#bcd3f7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 9"/>
+    <path d="M16,24 Q50,96 84,24" fill="none" stroke="#2f74e6" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+    <circle cx="16" cy="24" r="9" fill="#2f74e6"/>
+  </svg>
+  <text x="66" y="88" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#475569">Pendulum</text>
+</svg>

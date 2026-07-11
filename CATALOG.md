@@ -7,7 +7,7 @@ shortcode, check this list first: a new one must be genuinely DISTINCT from ever
 rename or a near-duplicate of an existing style). Keep this file updated when styles/modules are
 added or removed.
 
-_Engine version at last update: 1.1.38._
+_Engine version at last update: 1.1.41._
 
 ---
 
@@ -26,6 +26,7 @@ the styles it uses.
 | **text-effects** (Text Effects) | Text | 37 | split_reveal · scramble · typewriter · shimmer · wave · glitch · vf_weight · blur · mask · flip3d · scale · slide · bounce · random · skew · gradient_flow · rainbow · neon · breathing · jitter · float · marker · strikebox · outline_fill · chromatic · width_sweep · rotating_words · countup · splitflap · matrix · fill_sweep · letter_jump · expand_spacing · color_wave · magnetic · image_mask · kinetic |
 | **scroll-motion** (Scroll Motion, GSAP) | Scroll | 4×3 | Effect types: fade · slide · scale · rotate — each at intensity subtle / standard / dramatic. Scroll-triggered entrance. |
 | **scroll-reveal** (Scroll Reveal / clip wipe) | Scroll | 6 | left · right · up · down · iris · diagonal (clip-path wipe on scroll-in) |
+| **motion-path** (Motion Path) | Scroll/Motion | 37 | Path shapes: wave · arc · loop · s_curve · zigzag · spiral · circle · incline · figure8 · double_loop · knot · triangle · square · diamond · pentagon · hexagon · octagon · star · stairs · steps_down · l_corner · chevron · lightning · u_turn · bounce · pendulum · helix · corkscrew · swoosh · comet · ricochet · heart · teardrop · petal · ribbon · line · drift (+ custom SVG `d`). The element **travels the path** — drive by scroll (scrubbed) / loop / on-view; options: path size, start offset, direction, easing, **align to path** (rotate to tangent) |
 | **scroll-text-highlight** (Scroll Text Highlight) | Scroll | 4 | fill · fade · blur · marker — word/char scrolly-telling reveal (each word lights up as it scrolls through the viewport) |
 | **parallax** (Parallax Depth Layers) | Pointer/Scroll | 1 | Single behavior — mark a Scene, give each child a **Depth**; pointer/scroll multi-layer depth |
 | **marquee** (Marquee) | Motion | 1 | Single behavior — seamless ticker; directions left/right/up/down + **curve/arc** path; options: speed, drag, fade, curve |
