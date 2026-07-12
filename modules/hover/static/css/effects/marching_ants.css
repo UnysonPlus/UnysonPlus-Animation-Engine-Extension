@@ -1,0 +1,15 @@
+/* Animation Engine — Hover: "marching_ants" — an animated dashed outline runs around on hover. */
+.sc-hover--marching_ants { position: relative; }
+.sc-hover--marching_ants::after {
+	content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .2s ease;
+	background:
+		linear-gradient(90deg, var(--hover-ants, #6aa6ff) 50%, transparent 50%) repeat-x,
+		linear-gradient(90deg, var(--hover-ants, #6aa6ff) 50%, transparent 50%) repeat-x,
+		linear-gradient(0deg,  var(--hover-ants, #6aa6ff) 50%, transparent 50%) repeat-y,
+		linear-gradient(0deg,  var(--hover-ants, #6aa6ff) 50%, transparent 50%) repeat-y;
+	background-size: 12px 2px, 12px 2px, 2px 12px, 2px 12px;
+	background-position: 0 0, 0 100%, 0 0, 100% 0;
+}
+.sc-hover--marching_ants:hover::after { opacity: 1; animation: sc-hover-ants var(--hover-ants-speed, .5s) linear infinite; }
+@keyframes sc-hover-ants { to { background-position: 12px 0, -12px 100%, 0 -12px, 100% 12px; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--marching_ants:hover::after { animation: none; } }

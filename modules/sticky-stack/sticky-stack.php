@@ -79,6 +79,16 @@ if ( ! function_exists( 'sc_get_sticky_stack_fields' ) ) :
 			$choices[ $key ] = array( 'group_sticky_stack_' . $key => array( 'type' => 'group', 'options' => $opts ) );
 		}
 
+		// Alphabetize picker tiles by label (None/Off first) for easier scanning.
+		uksort( $tiles, function ( $a, $b ) use ( $tiles ) {
+			$rank = function ( $k ) { if ( $k === 'none' || $k === 'off' ) { return 0; } return 1; };
+			$ra = $rank( $a ); $rb = $rank( $b );
+			if ( $ra !== $rb ) { return $ra - $rb; }
+			$la = isset( $tiles[ $a ]['label'] ) ? $tiles[ $a ]['label'] : $a;
+			$lb = isset( $tiles[ $b ]['label'] ) ? $tiles[ $b ]['label'] : $b;
+			return strcasecmp( (string) $la, (string) $lb );
+		} );
+
 		return array(
 			'sticky_stack' => array(
 				'type'         => 'multi-picker',

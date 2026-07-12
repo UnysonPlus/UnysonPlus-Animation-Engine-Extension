@@ -1,0 +1,9 @@
+/* Animation Engine — Hover: "peel" — a top-right corner folds up (dog-ear) on hover. */
+.sc-hover--peel { position: relative; }
+.sc-hover--peel::before {
+	content: ""; position: absolute; top: 0; right: 0; z-index: 2; pointer-events: none;
+	width: 0; height: 0; border-style: solid; border-width: 0 0 0 0;
+	border-color: transparent var(--hover-peel, rgba(0, 0, 0, .22)) transparent transparent;
+	transition: border-width .25s ease;
+}
+.sc-hover--peel:hover::before { border-width: 0 var(--hover-peel-size, 22px) var(--hover-peel-size, 22px) 0; }

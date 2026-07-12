@@ -66,6 +66,11 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		}
 	}
 
+	// Vertical text orientation (Up / Down only) — sideways or stacked-upright glyphs.
+	if ( ( $mode === 'up' || $mode === 'down' ) && isset( $o['text_orientation'] ) && in_array( $o['text_orientation'], array( 'sideways', 'upright' ), true ) ) {
+		$attr['class'] = esc_attr( trim( (string) $attr['class'] . ' sc-mq--orient-' . $o['text_orientation'] ) );
+	}
+
 	// Text fill style.
 	$ts = isset( $o['text_style'] ) ? (string) $o['text_style'] : 'normal';
 	if ( $ts === 'outline' || $ts === 'gradient' ) {

@@ -3,8 +3,11 @@
 .sc-hover--spotlight { position: relative; }
 .sc-hover--spotlight::before {
 	content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+	/* NOTE: a `circle` radial-gradient may only take a length/keyword size — a
+	   percentage is invalid there and voids the whole gradient (no glow). Use the
+	   two-value (ellipse) form so the glow-size percentage is valid. */
 	background: radial-gradient(
-		circle var(--hover-glow-size, 40%) at var(--mx, 50%) var(--my, 50%),
+		var(--hover-glow-size, 40%) var(--hover-glow-size, 40%) at var(--mx, 50%) var(--my, 50%),
 		var(--hover-glow, #6aa6ff),
 		transparent 75%
 	);
@@ -12,3 +15,13 @@
 }
 .sc-hover--spotlight:hover::before { opacity: .55; }
 .sc-hover--spotlight > * { position: relative; z-index: 1; }
+
+/* "Gradient tint" sub-style — a 2-colour gradient follows the pointer (overlay blend) instead of a glow. */
+.sc-hover--spotlight[data-hover-spot="gradient"] { overflow: hidden; }
+.sc-hover--spotlight[data-hover-spot="gradient"]::before {
+	background: radial-gradient(
+		var(--hover-cg-size, 55%) var(--hover-cg-size, 55%) at var(--mx, 50%) var(--my, 50%),
+		var(--hover-cg-a, #2f74e6), var(--hover-cg-b, #a06bff) 55%, transparent 100%);
+	mix-blend-mode: overlay;
+}
+.sc-hover--spotlight[data-hover-spot="gradient"]:hover::before { opacity: 1; }

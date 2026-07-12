@@ -1,0 +1,2 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Velocity Skew"><g transform="translate(66 38)"><rect x="-32" y="-18" width="64" height="36" rx="5" fill="#2f74e6" transform="skewX(0)"><animateTransform attributeName="transform" type="skewX" dur="1.8s" repeatCount="indefinite" values="0;-22;0;14;0" keyTimes="0;0.2;0.5;0.7;1"/></rect></g>
+  <text x="66" y="88" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Velocity Skew</text></svg>

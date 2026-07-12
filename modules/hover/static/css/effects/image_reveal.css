@@ -21,3 +21,17 @@
 }
 .sc-hover--image_reveal[data-hover-style="shine"]:hover::after { animation: sc-hover-img-shine .8s ease; }
 @keyframes sc-hover-img-shine { to { left: 125%; } }
+
+/* "Blur → sharp" sub-style. */
+.sc-hover--image_reveal[data-hover-style="blur"] img { filter: blur(4px); }
+.sc-hover--image_reveal[data-hover-style="blur"]:hover img { filter: blur(0); }
+/* "Duotone → colour" sub-style — a tinted overlay + desaturation clears on hover. */
+.sc-hover--image_reveal[data-hover-style="duotone"] { position: relative; }
+.sc-hover--image_reveal[data-hover-style="duotone"] img { filter: grayscale(1) contrast(1.08); }
+.sc-hover--image_reveal[data-hover-style="duotone"]::before {
+	content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+	background: linear-gradient(135deg, rgba(47, 116, 230, .55), rgba(160, 60, 255, .45));
+	mix-blend-mode: overlay; transition: opacity .5s ease;
+}
+.sc-hover--image_reveal[data-hover-style="duotone"]:hover img { filter: grayscale(0); }
+.sc-hover--image_reveal[data-hover-style="duotone"]:hover::before { opacity: 0; }

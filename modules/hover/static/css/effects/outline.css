@@ -6,3 +6,7 @@
 	transition: outline-offset .25s ease, outline-color .25s ease;
 }
 .sc-hover--outline:hover { outline-offset: var(--hover-outline-off, 6px); outline-color: var(--hover-outline, #6aa6ff); }
+
+/* Line-style sub-styles (default = solid). */
+.sc-hover--outline[data-hover-outline-style="dashed"] { outline-style: dashed; }
+.sc-hover--outline[data-hover-outline-style="double"] { outline-style: double; outline-width: calc(var(--hover-outline-w, 2px) + 2px); }

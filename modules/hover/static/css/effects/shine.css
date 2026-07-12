@@ -9,3 +9,15 @@
 .sc-hover--shine:hover::before { animation: sc-hover-shine .85s ease; }
 @keyframes sc-hover-shine { from { left: -150%; } to { left: 150%; } }
 @media (prefers-reduced-motion: reduce) { .sc-hover--shine:hover::before { animation: none; } }
+
+/* "Holographic" sub-style — a rainbow sheen keeps sweeping while hovered. */
+.sc-hover--shine[data-hover-shine="holographic"]::before {
+	top: 0; left: 0; width: 100%; height: 100%; transform: none; opacity: 0;
+	background: linear-gradient(115deg, transparent 15%, rgba(255,0,128,.55), rgba(0,200,255,.55),
+		rgba(120,255,0,.55), rgba(255,200,0,.55), transparent 85%);
+	background-size: 300% 300%; mix-blend-mode: overlay; transition: opacity .3s ease;
+}
+.sc-hover--shine[data-hover-shine="holographic"]:hover::before {
+	opacity: 1; animation: sc-hover-holo var(--hover-holo-speed, 3s) linear infinite;
+}
+@keyframes sc-hover-holo { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }

@@ -1,3 +1,5 @@
 /* Animation Engine — Text effect "width_sweep". */
-.upw-text-width { font-variation-settings: 'wdth' var(--text-wdth-from, 75); transition: font-variation-settings .5s ease; }
-.sc-text--width_sweep:hover .upw-text-width, .upw-text-width.is-on { font-variation-settings: 'wdth' var(--text-wdth-to, 125); }
+/* font-stretch pairs with the 'wdth' axis (companion to vf_weight's font-weight)
+   so it maps through on fonts with width variants; the axis needs a variable font. */
+.upw-text-width { font-variation-settings: 'wdth' var(--text-wdth-from, 75); font-stretch: calc(var(--text-wdth-from, 75) * 1%); transition: font-variation-settings .5s ease, font-stretch .5s ease; }
+.sc-text--width_sweep:hover .upw-text-width, .upw-text-width.is-on { font-variation-settings: 'wdth' var(--text-wdth-to, 125); font-stretch: calc(var(--text-wdth-to, 125) * 1%); }

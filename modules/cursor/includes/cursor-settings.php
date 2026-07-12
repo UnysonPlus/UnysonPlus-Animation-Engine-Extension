@@ -35,6 +35,16 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 		);
 	}
 
+	// Alphabetize picker tiles by label (None/Off first, Custom last) for easier scanning.
+	uksort( $choices, function ( $a, $b ) use ( $choices ) {
+		$rank = function ( $k ) { return 1; };
+		$ra = $rank( $a ); $rb = $rank( $b );
+		if ( $ra !== $rb ) { return $ra - $rb; }
+		$la = isset( $choices[ $a ]['label'] ) ? $choices[ $a ]['label'] : $a;
+		$lb = isset( $choices[ $b ]['label'] ) ? $choices[ $b ]['label'] : $b;
+		return strcasecmp( (string) $la, (string) $lb );
+	} );
+
 	$color = function_exists( 'sc_color_field_compact' )
 		? sc_color_field_compact( array( 'label' => __( 'Cursor color', 'fw' ), 'kind' => 'bg', 'value' => array( 'predefined' => '', 'custom' => '#2f74e6' ) ) )
 		: array( 'type' => 'color-picker', 'label' => __( 'Cursor color', 'fw' ), 'value' => '#2f74e6' );

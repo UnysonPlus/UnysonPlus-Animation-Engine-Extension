@@ -4,3 +4,7 @@
 .sc-hover--push:hover { transform: translateY(var(--hover-push, 5px)); }
 .sc-hover--push:active { transform: translateY(calc(var(--hover-push, 5px) * 1.4)); }
 @media (prefers-reduced-motion: reduce) { .sc-hover--push:hover { transform: none; } }
+
+/* "Into screen" sub-style — a 3D push back instead of a flat press-down. */
+.sc-hover--push[data-hover-push-style="inz"]:hover { transform: perspective(500px) translateZ(calc(var(--hover-push, 5px) * -3)); }
+.sc-hover--push[data-hover-push-style="inz"]:active { transform: perspective(500px) translateZ(calc(var(--hover-push, 5px) * -5)); }

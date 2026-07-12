@@ -1,0 +1,12 @@
+/* Animation Engine — Hover: "shockwave" — an outline ring expands from the centre while hovered. */
+.sc-hover--shockwave { position: relative; }
+.sc-hover--shockwave::after {
+	content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
+	border: 2px solid var(--hover-shock, #6aa6ff); opacity: 0;
+}
+.sc-hover--shockwave:hover::after { animation: sc-hover-shock 1.1s ease-out infinite; }
+@keyframes sc-hover-shock {
+	0% { transform: scale(1); opacity: .7; }
+	100% { transform: scale(1.5); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .sc-hover--shockwave:hover::after { animation: none; } }

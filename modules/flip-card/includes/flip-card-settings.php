@@ -34,6 +34,16 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		$reveals[ $key ] = array( 'group_flip_' . $key => array( 'type' => 'group', 'options' => $opts ) );
 	}
 
+	// Alphabetize picker tiles by label (None/Off first, Custom last) for easier scanning.
+	uksort( $choices, function ( $a, $b ) use ( $choices ) {
+		$rank = function ( $k ) { if ( $k === 'none' || $k === 'off' ) { return 0; } return 1; };
+		$ra = $rank( $a ); $rb = $rank( $b );
+		if ( $ra !== $rb ) { return $ra - $rb; }
+		$la = isset( $choices[ $a ]['label'] ) ? $choices[ $a ]['label'] : $a;
+		$lb = isset( $choices[ $b ]['label'] ) ? $choices[ $b ]['label'] : $b;
+		return strcasecmp( (string) $la, (string) $lb );
+	} );
+
 	$fields['flip_card'] = array(
 		'type'         => 'multi-picker',
 		'popover'      => true,

@@ -1,0 +1,12 @@
+/* Animation Engine — Hover: "blob" — a soft colour blob follows the pointer (JS feeds --bx/--by). */
+.sc-hover--blob { position: relative; overflow: hidden; }
+.sc-hover--blob > * { position: relative; z-index: 1; }
+.sc-hover--blob::before {
+	content: ""; position: absolute; z-index: 0; pointer-events: none; border-radius: 50%;
+	width: var(--hover-blob-size, 70px); height: var(--hover-blob-size, 70px);
+	left: var(--bx, 50%); top: var(--by, 50%);
+	margin: calc(var(--hover-blob-size, 70px) / -2) 0 0 calc(var(--hover-blob-size, 70px) / -2);
+	background: var(--hover-blob, #6aa6ff); filter: blur(8px); opacity: 0; transition: opacity .3s ease;
+}
+.sc-hover--blob:hover::before { opacity: .8; }
+@media (prefers-reduced-motion: reduce) { .sc-hover--blob::before { transition: none; } }

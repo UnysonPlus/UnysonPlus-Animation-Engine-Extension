@@ -18,3 +18,8 @@
 }
 .sc-hover--border_draw:hover::before { transform: scale(1, 1); }
 .sc-hover--border_draw:hover::after { transform: scale(1, 1); transition-delay: .2s; }
+
+/* "Center-out" start — both strokes grow from the centre together (default = corner). */
+.sc-hover--border_draw[data-hover-draw-start="center"]::before { transform-origin: center top; }
+.sc-hover--border_draw[data-hover-draw-start="center"]::after { transform-origin: center bottom; }
+.sc-hover--border_draw[data-hover-draw-start="center"]:hover::after { transition-delay: 0s; }

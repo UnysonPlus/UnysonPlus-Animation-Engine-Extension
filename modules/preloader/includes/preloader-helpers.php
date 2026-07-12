@@ -87,8 +87,11 @@ if ( ! function_exists( 'upw_preloader_settings' ) ) :
 			// Raw multi-picker value — future styles read their own options from
 			// $s['opts'][ $style ][ '<key>' ] (see upw_preloader_style_opt()).
 			'opts'    => is_array( $sp ) ? $sp : array(),
-			'bg'      => (string) $get( 'preloader_bg', '#0b1220' ),
-			'accent'  => (string) $get( 'preloader_accent', '#2f74e6' ),
+			// Colours use the preset-or-custom compact picker; resolve to a CSS
+			// color (preset → var(--color-{slug}), custom → hex) for the --pl-*
+			// custom properties. sc_color_to_css tolerates a plain-string value too.
+			'bg'      => function_exists( 'sc_color_to_css' ) ? sc_color_to_css( $get( 'preloader_bg', '#0b1220' ), '#0b1220' ) : '#0b1220',
+			'accent'  => function_exists( 'sc_color_to_css' ) ? sc_color_to_css( $get( 'preloader_accent', '#2f74e6' ), '#2f74e6' ) : '#2f74e6',
 			'logo'    => $logo_url,
 			'min'     => (float) $get( 'preloader_min', 0.4 ),
 			'fade'    => (float) $get( 'preloader_fade', 0.5 ),

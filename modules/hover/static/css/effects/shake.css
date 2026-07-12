@@ -8,3 +8,20 @@
 	40%, 60% { transform: translateX(calc(4px * var(--hover-shake, 1))); }
 }
 @media (prefers-reduced-motion: reduce) { .sc-hover--shake:hover { animation: none; } }
+
+/* Vertical + rotate sub-styles (default = horizontal). */
+.sc-hover--shake[data-hover-shake-style="vertical"]:hover { animation: sc-hover-shake-v .4s cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes sc-hover-shake-v {
+	10%, 90% { transform: translateY(calc(-1px * var(--hover-shake, 1))); }
+	20%, 80% { transform: translateY(calc(2px * var(--hover-shake, 1))); }
+	30%, 50%, 70% { transform: translateY(calc(-4px * var(--hover-shake, 1))); }
+	40%, 60% { transform: translateY(calc(4px * var(--hover-shake, 1))); }
+}
+.sc-hover--shake[data-hover-shake-style="rotate"]:hover { animation: sc-hover-shake-r .4s cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes sc-hover-shake-r {
+	10%, 90% { transform: rotate(calc(-1deg * var(--hover-shake, 1))); }
+	20%, 80% { transform: rotate(calc(2deg * var(--hover-shake, 1))); }
+	30%, 50%, 70% { transform: rotate(calc(-4deg * var(--hover-shake, 1))); }
+	40%, 60% { transform: rotate(calc(4deg * var(--hover-shake, 1))); }
+}
+@media (prefers-reduced-motion: reduce) { .sc-hover--shake[data-hover-shake-style]:hover { animation: none; } }

@@ -1,0 +1,10 @@
+/* Animation Engine — Hover: "arrow_slide" — a CTA arrow slides + fades in on hover. */
+.sc-hover--arrow_slide { position: relative; }
+.sc-hover--arrow_slide::after {
+	content: "\2192"; display: inline-block; margin-left: .1em; width: 0;
+	color: var(--hover-arrow, currentColor);
+	opacity: 0; transform: translateX(-.5em);
+	transition: opacity .25s ease, transform .25s ease, margin-left .25s ease, width .25s ease;
+}
+.sc-hover--arrow_slide:hover::after { opacity: 1; transform: translateX(0); margin-left: .5em; width: auto; }
+@media (prefers-reduced-motion: reduce) { .sc-hover--arrow_slide::after { transition: opacity .2s ease; } }

@@ -1,4 +1,4 @@
 /* Animation Engine — Hover: "brightness" effect (on-demand partial). */
 /* Brightness */
 .sc-hover--brightness { transition: filter .3s ease; }
-.sc-hover--brightness:hover { filter: brightness(var(--hover-bright, 1.2)); }
+.sc-hover--brightness:hover { filter: var(--hover-bright-filter, brightness(1.2)); }

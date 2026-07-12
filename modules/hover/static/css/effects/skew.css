@@ -3,3 +3,7 @@
 .sc-hover--skew { transition: transform .3s cubic-bezier(.22, .61, .36, 1); }
 .sc-hover--skew:hover { transform: skewX(var(--hover-skew, -6deg)); }
 @media (prefers-reduced-motion: reduce) { .sc-hover--skew:hover { transform: none; } }
+
+/* Axis sub-styles (default = X / horizontal). */
+.sc-hover--skew[data-hover-skew-axis="y"]:hover { transform: skewY(var(--hover-skew, -6deg)); }
+.sc-hover--skew[data-hover-skew-axis="both"]:hover { transform: skew(var(--hover-skew, -6deg), calc(var(--hover-skew, -6deg) * .5)); }

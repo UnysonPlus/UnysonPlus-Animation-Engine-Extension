@@ -1,0 +1,11 @@
+/* Animation Engine — Hover: "cursor_trail" — fading dots trail the pointer (JS spawns them). */
+.sc-hover--cursor_trail { position: relative; }
+.sc-hover--cursor_trail > * { position: relative; z-index: 1; }
+.sc-hover-trail-dot {
+	position: absolute; z-index: 0; pointer-events: none; border-radius: 50%;
+	width: var(--hover-trail-size, 10px); height: var(--hover-trail-size, 10px);
+	margin: calc(var(--hover-trail-size, 10px) / -2) 0 0 calc(var(--hover-trail-size, 10px) / -2);
+	background: var(--hover-trail, #6aa6ff);
+	animation: sc-hover-trail .6s ease forwards;
+}
+@keyframes sc-hover-trail { to { transform: scale(0); opacity: 0; } }

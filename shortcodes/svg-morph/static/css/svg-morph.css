@@ -1,0 +1,40 @@
+/* Animation Engine — SVG Morph shortcode. The runtime rewrites the <path> d; CSS only handles
+   layout + paint (fill vs stroke) and alignment. */
+.sc-svg-morph {
+	display: block;
+	width: 100%;
+	line-height: 0;
+}
+.sc-svg-morph svg {
+	display: inline-block;
+	width: 100%;
+	height: auto;
+	overflow: visible;
+}
+.sc-svg-morph path {
+	transition: fill .3s ease, stroke .3s ease;
+}
+/* Filled shape */
+.sc-svg-morph--fill path {
+	fill: var(--morph-fill, #2f74e6);
+	stroke: none;
+}
+/* Outline */
+.sc-svg-morph--stroke path {
+	fill: none;
+	stroke: var(--morph-stroke, #2f74e6);
+	stroke-width: var(--morph-width, 3px);
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+/* Alignment (the SVG is capped by inline max-width; this sets the box's horizontal placement) */
+.sc-svg-morph--left  { text-align: left; }
+.sc-svg-morph--center{ text-align: center; }
+.sc-svg-morph--right { text-align: right; }
+.sc-svg-morph--left  svg { margin-inline: 0 auto; }
+.sc-svg-morph--center svg { margin-inline: auto; }
+.sc-svg-morph--right svg { margin-inline: auto 0; }
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-svg-morph path { transition: none; }
+}

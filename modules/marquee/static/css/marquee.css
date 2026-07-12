@@ -47,6 +47,19 @@
 	-webkit-text-stroke: 1px currentColor;
 }
 
+/* Vertical text (Up / Down only). Scoped to the UNIT so the track's column flow + translateY
+ * scroll stay horizontal-based; only the text inside each unit turns on its side. */
+.sc-marquee.sc-mq--orient-sideways .sc-mq-unit,
+.sc-marquee.sc-mq--orient-upright  .sc-mq-unit {
+	writing-mode: vertical-rl;
+	line-height: 1.15;
+}
+.sc-marquee.sc-mq--orient-sideways .sc-mq-unit { text-orientation: mixed; }   /* letters rotated 90° */
+.sc-marquee.sc-mq--orient-upright  .sc-mq-unit { text-orientation: upright; } /* glyphs stacked upright */
+/* The separator should follow the same axis so it stacks in line with the text. */
+.sc-marquee.sc-mq--orient-sideways .sc-mq-sep,
+.sc-marquee.sc-mq--orient-upright  .sc-mq-sep { writing-mode: vertical-rl; }
+
 @keyframes sc-mq-h { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes sc-mq-v { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 @keyframes sc-mq-bob {

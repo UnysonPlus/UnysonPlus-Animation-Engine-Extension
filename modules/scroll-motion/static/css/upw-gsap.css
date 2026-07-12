@@ -21,6 +21,12 @@
     opacity: 0;
 }
 
+/* Count Up — Odometer style: per-digit reels that roll to the final digits. Sizing/overflow is
+ * set inline by the initializer; this keeps each digit exactly one line tall so the roll aligns. */
+.upw-g-odo { white-space: nowrap; }
+.upw-g-odo-reel { overflow: hidden; height: 1em; line-height: 1em; }
+.upw-g-odo-d { display: block; height: 1em; line-height: 1em; }
+
 /* Respect the user's motion preference: reveal everything, no motion. */
 @media (prefers-reduced-motion: reduce) {
     .upw-g-pending,

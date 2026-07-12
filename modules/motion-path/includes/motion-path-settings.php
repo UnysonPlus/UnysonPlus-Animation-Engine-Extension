@@ -111,6 +111,16 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	) + $shared;
 	$reveal['custom'] = array( 'group_motion_path_custom' => array( 'type' => 'group', 'options' => $custom_opts ) );
 
+	// Alphabetize picker tiles by label (None/Off first, Custom last) for easier scanning.
+	uksort( $choices_tiles, function ( $a, $b ) use ( $choices_tiles ) {
+		$rank = function ( $k ) { if ( $k === 'none' || $k === 'off' ) { return 0; } if ( $k === 'custom' ) { return 2; } return 1; };
+		$ra = $rank( $a ); $rb = $rank( $b );
+		if ( $ra !== $rb ) { return $ra - $rb; }
+		$la = isset( $choices_tiles[ $a ]['label'] ) ? $choices_tiles[ $a ]['label'] : $a;
+		$lb = isset( $choices_tiles[ $b ]['label'] ) ? $choices_tiles[ $b ]['label'] : $b;
+		return strcasecmp( (string) $la, (string) $lb );
+	} );
+
 	$fields['motion_path'] = array(
 		'type'         => 'multi-picker',
 		'popover'      => true,

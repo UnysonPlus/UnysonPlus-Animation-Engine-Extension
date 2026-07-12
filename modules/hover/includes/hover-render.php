@@ -53,6 +53,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		switch ( $effect ) {
 		case 'magnetic':
 			$attr['data-hover-strength'] = esc_attr( (float) ( $o['strength'] ?? 0.3 ) );
+			if ( ( $o['mode'] ?? 'pull' ) === 'push' ) { $attr['data-hover-mode'] = 'push'; }
 			break;
 
 		case 'tilt':
@@ -61,13 +62,23 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			if ( ( $o['glare'] ?? 'no' ) === 'yes' ) {
 				$attr['data-hover-glare'] = '1';
 			}
+			if ( ( $o['invert'] ?? 'no' ) === 'yes' ) {
+				$attr['data-hover-invert'] = '1';
+			}
 			break;
 
 		case 'spotlight':
 			$color = upw_hover_color( $o['glow_color'] ?? '' );
 			if ( $color === '' ) { $color = '#6aa6ff'; }
 			$size  = (int) ( $o['glow_size'] ?? 40 );
-			$add_style( '--hover-glow:' . $color . '; --hover-glow-size:' . $size . '%;' );
+			if ( ( $o['style'] ?? 'glow' ) === 'gradient' ) {
+				// "Gradient tint" sub-style — a 2-colour gradient follows the pointer instead of a soft glow.
+				$cgb = upw_hover_color( $o['color_b'] ?? '' );
+				$attr['data-hover-spot'] = 'gradient';
+				$add_style( '--hover-cg-a:' . $color . '; --hover-cg-b:' . ( $cgb !== '' ? $cgb : '#a06bff' ) . '; --hover-cg-size:' . $size . '%;' );
+			} else {
+				$add_style( '--hover-glow:' . $color . '; --hover-glow-size:' . $size . '%;' );
+			}
 			break;
 
 		case 'image_reveal':
@@ -82,10 +93,13 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'glow_border':
 			$gc = upw_hover_color( $o['glow_color'] ?? '' );
 			$add_style( '--hover-glow:' . ( $gc !== '' ? $gc : '#6aa6ff' ) . ';' );
+			if ( ( $o['mode'] ?? 'steady' ) === 'pulse' ) { $attr['data-hover-glow-mode'] = 'pulse'; }
 			break;
 
 		case 'underline_grow':
 			$attr['data-hover-style'] = esc_attr( ( ( $o['origin'] ?? 'left' ) === 'center' ) ? 'center' : 'left' );
+			$pos = in_array( ( $o['position'] ?? 'under' ), array( 'under', 'over', 'through' ), true ) ? ( $o['position'] ?? 'under' ) : 'under';
+			if ( $pos !== 'under' ) { $attr['data-hover-pos'] = esc_attr( $pos ); }
 			$line = upw_hover_color( $o['line_color'] ?? '' );
 			if ( $line !== '' ) {
 				$add_style( '--hover-line:' . $line . ';' );
@@ -95,6 +109,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'ripple':
 			$rc = upw_hover_color( $o['ripple_color'] ?? '' );
 			$add_style( '--hover-ripple:' . ( $rc !== '' ? $rc : '#6aa6ff' ) . ';' );
+			if ( ( $o['origin'] ?? 'pointer' ) === 'center' ) { $attr['data-hover-ripple-origin'] = 'center'; }
 			break;
 
 		case 'lift':
@@ -102,19 +117,26 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			if ( ( $o['shadow'] ?? 'yes' ) !== 'yes' ) {
 				$attr['data-hover-noshadow'] = '1';
 			}
+			$lst = in_array( ( $o['style'] ?? 'lift' ), array( 'lift', 'tilt', 'sink' ), true ) ? ( $o['style'] ?? 'lift' ) : 'lift';
+			if ( $lst !== 'lift' ) { $attr['data-hover-lift-style'] = esc_attr( $lst ); }
 			break;
 
 		case 'color_shift':
-			$sc = upw_hover_color( $o['shift_color'] ?? '' );
+			$sc  = upw_hover_color( $o['shift_color'] ?? '' );
+			$tgt = in_array( ( $o['target'] ?? 'background' ), array( 'background', 'text', 'border' ), true ) ? ( $o['target'] ?? 'background' ) : 'background';
+			$attr['data-hover-target'] = esc_attr( $tgt );
 			$add_style( '--hover-shift:' . ( $sc !== '' ? $sc : '#6aa6ff' ) . ';' );
 			break;
 
 		case 'scale':
-			$add_style( '--hover-scale-to:' . (float) ( $o['scale_to'] ?? 1.04 ) . ';' );
+			$amt = (float) ( $o['scale_to'] ?? 1.04 );
+			if ( ( $o['direction'] ?? 'in' ) === 'out' ) { $amt = max( 0.6, 2 - $amt ); } // zoom out (shrink)
+			$add_style( '--hover-scale-to:' . $amt . ';' );
 			break;
 
 		case 'push':
 			$add_style( '--hover-push:' . (int) ( $o['depth'] ?? 5 ) . 'px;' );
+			if ( ( $o['style'] ?? 'press' ) === 'inz' ) { $attr['data-hover-push-style'] = 'inz'; }
 			break;
 
 		case 'jelly':
@@ -123,11 +145,19 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 
 		case 'skew':
 			$add_style( '--hover-skew:' . (float) ( $o['angle'] ?? -6 ) . 'deg;' );
+			$sax = in_array( ( $o['axis'] ?? 'x' ), array( 'x', 'y', 'both' ), true ) ? ( $o['axis'] ?? 'x' ) : 'x';
+			if ( $sax !== 'x' ) { $attr['data-hover-skew-axis'] = esc_attr( $sax ); }
 			break;
 
 		case 'shine':
-			$shc = upw_hover_color( $o['shine_color'] ?? '' );
-			$add_style( '--hover-shine:' . ( $shc !== '' ? $shc : 'rgba(255,255,255,.55)' ) . ';' );
+			if ( ( $o['style'] ?? 'sheen' ) === 'holographic' ) {
+				// "Holographic" sub-style — a rainbow sheen that keeps sweeping while hovered.
+				$attr['data-hover-shine'] = 'holographic';
+				$add_style( '--hover-holo-speed:' . (float) ( $o['speed'] ?? 3 ) . 's;' );
+			} else {
+				$shc = upw_hover_color( $o['shine_color'] ?? '' );
+				$add_style( '--hover-shine:' . ( $shc !== '' ? $shc : 'rgba(255,255,255,.55)' ) . ';' );
+			}
 			break;
 
 		case 'gradient_border':
@@ -139,11 +169,12 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'corner_brackets':
 			$bc = upw_hover_color( $o['bracket_color'] ?? '' );
 			$add_style( '--hover-bracket:' . ( $bc !== '' ? $bc : '#6aa6ff' ) . '; --hover-bracket-size:' . (int) ( $o['bracket_size'] ?? 18 ) . 'px;' );
+			if ( ( $o['style'] ?? 'pop' ) === 'draw' ) { $attr['data-hover-bracket-style'] = 'draw'; }
 			break;
 
 		case 'fill_sweep':
 			$fc  = upw_hover_color( $o['fill_color'] ?? '' );
-			$dir = in_array( ( $o['direction'] ?? 'left' ), array( 'left', 'right', 'up', 'center' ), true ) ? $o['direction'] : 'left';
+			$dir = in_array( ( $o['direction'] ?? 'left' ), array( 'left', 'right', 'up', 'center', 'diagonal' ), true ) ? $o['direction'] : 'left';
 			$attr['data-hover-fill'] = esc_attr( $dir );
 			$add_style( '--hover-fill:' . ( $fc !== '' ? $fc : '#2f74e6' ) . ';' );
 			break;
@@ -151,10 +182,13 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'border_draw':
 			$lc = upw_hover_color( $o['line_color'] ?? '' );
 			$add_style( '--hover-line:' . ( $lc !== '' ? $lc : '#6aa6ff' ) . '; --hover-line-w:' . (int) ( $o['thickness'] ?? 2 ) . 'px;' );
+			if ( ( $o['start'] ?? 'corner' ) === 'center' ) { $attr['data-hover-draw-start'] = 'center'; }
 			break;
 
 		case 'glitch':
 			$add_style( '--hover-glitch:' . (float) ( $o['strength'] ?? 1 ) . ';' );
+			$gst = in_array( ( $o['style'] ?? 'rgb' ), array( 'rgb', 'slice', 'jitter' ), true ) ? ( $o['style'] ?? 'rgb' ) : 'rgb';
+			if ( $gst !== 'rgb' ) { $attr['data-hover-glitch-style'] = esc_attr( $gst ); }
 			break;
 
 		case 'text_swap':
@@ -163,26 +197,44 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 				$attr['data-hover-swap'] = esc_attr( $swap );
 			}
 			$attr['data-hover-swap-dir'] = esc_attr( ( ( $o['direction'] ?? 'up' ) === 'down' ) ? 'down' : 'up' );
+			$smode = in_array( ( $o['mode'] ?? 'slide' ), array( 'slide', 'fade', 'flip' ), true ) ? ( $o['mode'] ?? 'slide' ) : 'slide';
+			if ( $smode !== 'slide' ) { $attr['data-hover-swap-mode'] = esc_attr( $smode ); }
 			break;
 
 		case 'rotate':
 			$add_style( '--hover-rotate:' . (float) ( $o['angle'] ?? 6 ) . 'deg;' );
+			if ( ( $o['style'] ?? 'flat' ) === 'flip3d' ) { $attr['data-hover-rotate-style'] = 'flip3d'; }
 			break;
 
 		case 'pulse':
 			$add_style( '--hover-pulse:' . (float) ( $o['strength'] ?? 1 ) . ';' );
+			$pst = in_array( ( $o['style'] ?? 'scale' ), array( 'scale', 'glow', 'opacity' ), true ) ? ( $o['style'] ?? 'scale' ) : 'scale';
+			if ( $pst !== 'scale' ) { $attr['data-hover-pulse-style'] = esc_attr( $pst ); }
 			break;
 
 		case 'shake':
 			$add_style( '--hover-shake:' . (float) ( $o['strength'] ?? 1 ) . ';' );
+			$sst = in_array( ( $o['style'] ?? 'horizontal' ), array( 'horizontal', 'vertical', 'rotate' ), true ) ? ( $o['style'] ?? 'horizontal' ) : 'horizontal';
+			if ( $sst !== 'horizontal' ) { $attr['data-hover-shake-style'] = esc_attr( $sst ); }
 			break;
 
 		case 'bounce':
 			$add_style( '--hover-bounce:' . (int) ( $o['height'] ?? 10 ) . 'px;' );
+			$bst = in_array( ( $o['style'] ?? 'up' ), array( 'up', 'drop', 'squash' ), true ) ? ( $o['style'] ?? 'up' ) : 'up';
+			if ( $bst !== 'up' ) { $attr['data-hover-bounce-style'] = esc_attr( $bst ); }
 			break;
 
 		case 'grayscale':
-			$add_style( '--hover-gray:' . (int) ( $o['amount'] ?? 100 ) . '%;' );
+			$amt = max( 0, min( 100, (int) ( $o['amount'] ?? 100 ) ) );
+			$ft  = in_array( ( $o['filter'] ?? 'grayscale' ), array( 'grayscale', 'sepia', 'invert', 'hue', 'saturate' ), true ) ? ( $o['filter'] ?? 'grayscale' ) : 'grayscale';
+			$map = array(
+				'grayscale' => 'grayscale(' . $amt . '%)',
+				'sepia'     => 'sepia(' . $amt . '%)',
+				'invert'    => 'invert(' . $amt . '%)',
+				'hue'       => 'hue-rotate(' . round( $amt * 1.8 ) . 'deg)',
+				'saturate'  => 'saturate(' . ( 1 + $amt / 33 ) . ')',
+			);
+			$add_style( '--hover-filter:' . $map[ $ft ] . ';' );
 			break;
 
 		case 'blur':
@@ -191,21 +243,24 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			break;
 
 		case 'brightness':
-			$mode = ( ( $o['mode'] ?? 'brighten' ) === 'dim' ) ? 'dim' : 'brighten';
-			$amt  = (int) ( $o['amount'] ?? 20 );
-			$attr['data-hover-bright'] = esc_attr( $mode );
-			$add_style( '--hover-bright:' . ( $mode === 'dim' ? ( 1 - $amt / 100 ) : ( 1 + $amt / 100 ) ) . ';' );
+			$bfilter = in_array( ( $o['filter'] ?? 'brightness' ), array( 'brightness', 'contrast', 'saturate' ), true ) ? ( $o['filter'] ?? 'brightness' ) : 'brightness';
+			$mode    = ( ( $o['mode'] ?? 'brighten' ) === 'dim' ) ? 'dim' : 'brighten';
+			$amt     = (int) ( $o['amount'] ?? 20 );
+			$val     = $mode === 'dim' ? ( 1 - $amt / 100 ) : ( 1 + $amt / 100 );
+			$add_style( '--hover-bright-filter:' . $bfilter . '(' . $val . ');' );
 			break;
 
 		case 'bg_pan':
 			$pa = upw_hover_color( $o['color_a'] ?? '' );
 			$pb = upw_hover_color( $o['color_b'] ?? '' );
-			$add_style( '--hover-pan-a:' . ( $pa !== '' ? $pa : '#2f74e6' ) . '; --hover-pan-b:' . ( $pb !== '' ? $pb : '#a06bff' ) . '; --hover-pan-speed:' . (float) ( $o['speed'] ?? 3 ) . 's;' );
+			$add_style( '--hover-pan-a:' . ( $pa !== '' ? $pa : '#2f74e6' ) . '; --hover-pan-b:' . ( $pb !== '' ? $pb : '#a06bff' ) . '; --hover-pan-speed:' . (float) ( $o['speed'] ?? 3 ) . 's; --hover-pan-angle:' . (int) ( $o['angle'] ?? 120 ) . 'deg;' );
 			break;
 
 		case 'outline':
 			$oc = upw_hover_color( $o['line_color'] ?? '' );
 			$add_style( '--hover-outline:' . ( $oc !== '' ? $oc : '#6aa6ff' ) . '; --hover-outline-off:' . (int) ( $o['offset'] ?? 6 ) . 'px; --hover-outline-w:' . (int) ( $o['thickness'] ?? 2 ) . 'px;' );
+			$ost = in_array( ( $o['style'] ?? 'solid' ), array( 'solid', 'dashed', 'double' ), true ) ? ( $o['style'] ?? 'solid' ) : 'solid';
+			if ( $ost !== 'solid' ) { $attr['data-hover-outline-style'] = esc_attr( $ost ); }
 			break;
 
 		case 'letter_spacing':
@@ -222,6 +277,58 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			if ( ( $o['trigger'] ?? 'hover' ) === 'always' ) {
 				$attr['data-wd-trigger'] = 'always';
 			}
+			break;
+
+		case 'goo':
+			$add_style( '--hover-goo-speed:' . (float) ( $o['speed'] ?? 4 ) . 's;' );
+			break;
+
+		case 'squash':
+			$add_style( '--hover-squash:' . (float) ( $o['strength'] ?? 1 ) . ';' );
+			break;
+
+		case 'arrow_slide':
+			$ac = upw_hover_color( $o['arrow_color'] ?? '' );
+			if ( $ac !== '' ) {
+				$add_style( '--hover-arrow:' . $ac . ';' );
+			}
+			break;
+
+		case 'depth_layers':
+			$attr['data-hover-depth'] = esc_attr( (float) ( $o['strength'] ?? 1 ) );
+			break;
+
+		case 'marching_ants':
+			$mc = upw_hover_color( $o['line_color'] ?? '' );
+			$add_style( '--hover-ants:' . ( $mc !== '' ? $mc : '#6aa6ff' ) . '; --hover-ants-speed:' . (float) ( $o['speed'] ?? 0.5 ) . 's;' );
+			break;
+
+		case 'flashlight':
+			$add_style( '--hover-torch-size:' . (int) ( $o['size'] ?? 90 ) . 'px; --hover-torch-dark:' . ( max( 30, min( 95, (int) ( $o['darkness'] ?? 82 ) ) ) / 100 ) . ';' );
+			break;
+
+		case 'blob':
+			$blc = upw_hover_color( $o['color'] ?? '' );
+			$add_style( '--hover-blob:' . ( $blc !== '' ? $blc : '#6aa6ff' ) . '; --hover-blob-size:' . (int) ( $o['size'] ?? 70 ) . 'px;' );
+			break;
+
+		case 'cursor_trail':
+			$tc = upw_hover_color( $o['color'] ?? '' );
+			$add_style( '--hover-trail:' . ( $tc !== '' ? $tc : '#6aa6ff' ) . '; --hover-trail-size:' . (int) ( $o['size'] ?? 10 ) . 'px;' );
+			break;
+
+		case 'magnetic_letters':
+			$attr['data-hover-ml-strength'] = esc_attr( (float) ( $o['strength'] ?? 1 ) );
+			break;
+
+		case 'shockwave':
+			$swc = upw_hover_color( $o['color'] ?? '' );
+			$add_style( '--hover-shock:' . ( $swc !== '' ? $swc : '#6aa6ff' ) . ';' );
+			break;
+
+		case 'peel':
+			$pc = upw_hover_color( $o['color'] ?? '' );
+			$add_style( '--hover-peel:' . ( $pc !== '' ? $pc : 'rgba(0,0,0,.22)' ) . '; --hover-peel-size:' . (int) ( $o['size'] ?? 22 ) . 'px;' );
 			break;
 	}
 	}
@@ -265,7 +372,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'base_js'   => 'static/js/hover-core.js',
 			// ONLY these effects ship a JS partial; every other effect is CSS-only,
 			// so a page using only CSS effects loads zero hover JavaScript.
-			'js_styles' => array( 'magnetic', 'tilt', 'spotlight', 'ripple', 'text_scramble', 'text_swap', 'webgl_displace' ),
+			'js_styles' => array( 'magnetic', 'tilt', 'spotlight', 'ripple', 'text_scramble', 'text_swap', 'webgl_displace', 'depth_layers', 'flashlight', 'blob', 'cursor_trail', 'magnetic_letters' ),
 			'js_cfg'    => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

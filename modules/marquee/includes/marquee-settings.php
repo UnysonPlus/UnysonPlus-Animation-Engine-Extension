@@ -94,6 +94,24 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'wave'   => upw_mq_slider( __( 'Wave', 'fw' ), 0, 0, 100, 1, __( 'Make the content undulate up / down as it scrolls.', 'fw' ) ),
 	);
 
+	// Up / Down only — orient the text itself vertically (sideways or stacked-upright) instead of
+	// the default horizontal lines that merely scroll up/down. Placed right after Gap for prominence.
+	$orient = array(
+		'text_orientation' => array(
+			'type'    => 'select',
+			'label'   => __( 'Text orientation', 'fw' ),
+			'desc'    => __( 'Up / Down only. Horizontal keeps normal lines that scroll vertically; the Vertical modes turn the text itself on its side.', 'fw' ),
+			'value'   => 'horizontal',
+			'choices' => array(
+				'horizontal' => __( 'Horizontal (stacked lines)', 'fw' ),
+				'sideways'   => __( 'Vertical — sideways', 'fw' ),
+				'upright'    => __( 'Vertical — upright letters', 'fw' ),
+			),
+		),
+	);
+	// Vertical-direction option set = speed + gap, then Text orientation, then the rest of $opts.
+	$opts_v = array( 'speed' => $opts['speed'], 'gap' => $opts['gap'] ) + $orient + $opts;
+
 	// Popover image-picker tiles — animated direction swatches (consistent with the other
 	// engine effects). Popover multi-picker → the user-visible label lives on the TOP level.
 	$ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
@@ -134,8 +152,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			'none'  => array(),
 			'left'  => $opts,
 			'right' => $opts,
-			'up'    => $opts,
-			'down'  => $opts,
+			'up'    => $opts_v,
+			'down'  => $opts_v,
 		),
 	);
 

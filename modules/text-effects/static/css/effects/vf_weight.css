@@ -1,7 +1,10 @@
 /* Animation Engine — Text effect "vf_weight". */
 .upw-text-vf {
+	/* font-weight pairs with the 'wght' axis so this degrades to stepped weights
+	   on a non-variable font (the axis alone does nothing without a VF). */
 	font-variation-settings: 'wght' var(--text-wght-from, 300);
+	font-weight: var(--text-wght-from, 300);
 	transition: font-variation-settings .45s ease, font-weight .45s ease;
 }
 .sc-text--vf_weight:hover .upw-text-vf,
-.upw-text-vf.is-on { font-variation-settings: 'wght' var(--text-wght-to, 800); }
+.upw-text-vf.is-on { font-variation-settings: 'wght' var(--text-wght-to, 800); font-weight: var(--text-wght-to, 800); }

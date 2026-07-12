@@ -7,3 +7,9 @@
 	.sc-hover--lift { transition: none; }
 	.sc-hover--lift:hover { transform: none; }
 }
+
+/* "Tilt" sub-style — lift with a slight forward tilt. */
+.sc-hover--lift[data-hover-lift-style="tilt"]:hover { transform: perspective(800px) translateY(calc(var(--hover-lift, 6px) * -1)) rotateX(6deg); }
+/* "Sink" sub-style — press down instead of up. */
+.sc-hover--lift[data-hover-lift-style="sink"]:hover { transform: translateY(var(--hover-lift, 6px)); }
+.sc-hover--lift[data-hover-lift-style="sink"]:not([data-hover-noshadow]):hover { box-shadow: 0 3px 8px rgba(0, 0, 0, .14); }

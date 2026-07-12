@@ -31,6 +31,16 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 		$style_reveals[ $k ] = array();
 	}
 
+	// Alphabetize picker tiles by label (None/Off first, Custom last) for easier scanning.
+	uksort( $style_choices, function ( $a, $b ) use ( $style_choices ) {
+		$rank = function ( $k ) { return 1; };
+		$ra = $rank( $a ); $rb = $rank( $b );
+		if ( $ra !== $rb ) { return $ra - $rb; }
+		$la = isset( $style_choices[ $a ]['label'] ) ? $style_choices[ $a ]['label'] : $a;
+		$lb = isset( $style_choices[ $b ]['label'] ) ? $style_choices[ $b ]['label'] : $b;
+		return strcasecmp( (string) $la, (string) $lb );
+	} );
+
 	$tabs['preloader'] = array(
 		'title'   => __( 'Preloader', 'fw' ),
 		'type'    => 'tab',
@@ -73,17 +83,12 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 						),
 						'choices' => $style_reveals,
 					),
-					'preloader_bg' => array(
-						'type'  => 'color-picker',
-						'label' => __( 'Background', 'fw' ),
-						'value' => '#0b1220',
-					),
-					'preloader_accent' => array(
-						'type'  => 'color-picker',
-						'label' => __( 'Accent', 'fw' ),
-						'desc'  => __( 'Spinner / bar / dots / counter colour.', 'fw' ),
-						'value' => '#2f74e6',
-					),
+					'preloader_bg' => function_exists( 'sc_color_field_compact' )
+						? sc_color_field_compact( array( 'label' => __( 'Background', 'fw' ), 'kind' => 'bg', 'value' => array( 'predefined' => '', 'custom' => '#0b1220' ) ) )
+						: array( 'type' => 'color-picker', 'label' => __( 'Background', 'fw' ), 'value' => '#0b1220' ),
+					'preloader_accent' => function_exists( 'sc_color_field_compact' )
+						? sc_color_field_compact( array( 'label' => __( 'Accent', 'fw' ), 'kind' => 'bg', 'desc' => __( 'Spinner / bar / dots / counter colour.', 'fw' ), 'value' => array( 'predefined' => '', 'custom' => '#2f74e6' ) ) )
+						: array( 'type' => 'color-picker', 'label' => __( 'Accent', 'fw' ), 'desc' => __( 'Spinner / bar / dots / counter colour.', 'fw' ), 'value' => '#2f74e6' ),
 					'preloader_logo' => array(
 						'type'  => 'upload',
 						'label' => __( 'Logo (optional)', 'fw' ),

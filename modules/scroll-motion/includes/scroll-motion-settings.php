@@ -31,6 +31,8 @@ function sc_get_gsap_fields() {
         'subtle'   => __( 'Subtle', 'fw' ),
         'standard' => __( 'Standard', 'fw' ),
         'dramatic' => __( 'Dramatic', 'fw' ),
+        'bounce'   => __( 'Bounce (overshoot)', 'fw' ),
+        'elastic'  => __( 'Elastic (springy)', 'fw' ),
     ];
 
     // ScrollTrigger `start` positions (element edge vs viewport edge).
@@ -43,11 +45,15 @@ function sc_get_gsap_fields() {
     ];
 
     $direction_choices = [
-        'up'    => __( 'Up (rise in)', 'fw' ),
-        'down'  => __( 'Down', 'fw' ),
-        'left'  => __( 'From the left', 'fw' ),
-        'right' => __( 'From the right', 'fw' ),
-        'none'  => __( 'No movement (fade only)', 'fw' ),
+        'up'         => __( 'Up (rise in)', 'fw' ),
+        'down'       => __( 'Down', 'fw' ),
+        'left'       => __( 'From the left', 'fw' ),
+        'right'      => __( 'From the right', 'fw' ),
+        'up_left'    => __( 'Up + from the left', 'fw' ),
+        'up_right'   => __( 'Up + from the right', 'fw' ),
+        'down_left'  => __( 'Down + from the left', 'fw' ),
+        'down_right' => __( 'Down + from the right', 'fw' ),
+        'none'       => __( 'No movement (fade only)', 'fw' ),
     ];
 
     $run_on_mobile = function ( $default_yes = true ) {
@@ -138,17 +144,25 @@ function sc_get_gsap_fields() {
                     'value'   => 'none',
                     'choices' => [
                         'none'      => $fx( 'none',      __( 'None', 'fw' ) ),
-                        'reveal'    => $fx( 'reveal',    __( 'Reveal', 'fw' ) ),
-                        'stagger'   => $fx( 'stagger',   __( 'Stagger', 'fw' ) ),
-                        'splittext' => $fx( 'splittext', __( 'Split Text', 'fw' ) ),
-                        'parallax'  => $fx( 'parallax',  __( 'Parallax', 'fw' ) ),
-                        'pin'       => $fx( 'pin',       __( 'Pin', 'fw' ) ),
-                        'scrub'     => $fx( 'scrub',     __( 'Scrub', 'fw' ) ),
-                        'zoom'      => $fx( 'zoom',      __( 'Zoom In', 'fw' ) ),
-                        'rotate'    => $fx( 'rotate',    __( 'Rotate In', 'fw' ) ),
                         'blur'      => $fx( 'blur',      __( 'Blur In', 'fw' ) ),
                         'clip'      => $fx( 'clip',      __( 'Clip Wipe', 'fw' ) ),
+                        'color_scrub' => $fx( 'color-scrub', __( 'Color Scrub', 'fw' ) ),
+                        'counter'   => $fx( 'counter',   __( 'Count Up', 'fw' ) ),
+                        'expand'    => $fx( 'expand',    __( 'Expand / Grow', 'fw' ) ),
+                        'flip'      => $fx( 'flip',      __( 'Flip In (3D)', 'fw' ) ),
+                        'mask_wipe' => $fx( 'mask-wipe', __( 'Mask Wipe', 'fw' ) ),
+                        'parallax'  => $fx( 'parallax',  __( 'Parallax', 'fw' ) ),
+                        'pin'       => $fx( 'pin',       __( 'Pin', 'fw' ) ),
+                        'reveal'    => $fx( 'reveal',    __( 'Reveal', 'fw' ) ),
+                        'rotate'    => $fx( 'rotate',    __( 'Rotate In', 'fw' ) ),
+                        'scroll_spin' => $fx( 'scroll-spin', __( 'Scroll Spin', 'fw' ) ),
+                        'scrub'     => $fx( 'scrub',     __( 'Scrub', 'fw' ) ),
                         'skew'      => $fx( 'skew',      __( 'Skew Settle', 'fw' ) ),
+                        'splittext' => $fx( 'splittext', __( 'Split Text', 'fw' ) ),
+                        'stagger'   => $fx( 'stagger',   __( 'Stagger', 'fw' ) ),
+                        'tilt_scrub' => $fx( 'tilt-scrub', __( 'Tilt Scrub (3D)', 'fw' ) ),
+                        'velocity_skew' => $fx( 'velocity-skew', __( 'Velocity Skew', 'fw' ) ),
+                        'zoom'      => $fx( 'zoom',      __( 'Zoom In', 'fw' ) ),
                     ],
                 ],
             ],
@@ -273,6 +287,20 @@ function sc_get_gsap_fields() {
                                 ],
                             ],
                             'style'        => $style_field,
+                            'split_anim' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Piece animation', 'fw' ),
+                                'desc'    => __( 'How each character / word / line arrives.', 'fw' ),
+                                'value'   => 'slide',
+                                'choices' => [
+                                    'slide'  => __( 'Slide up', 'fw' ),
+                                    'flip3d' => __( 'Flip 3D', 'fw' ),
+                                    'scale'  => __( 'Scale pop', 'fw' ),
+                                    'blur'   => __( 'Blur in', 'fw' ),
+                                    'rotate' => __( 'Rotate in', 'fw' ),
+                                    'random' => __( 'Random per piece', 'fw' ),
+                                ],
+                            ],
                             'stagger_each' => [
                                 'type'         => 'number',
                                 'label'        => __( 'Time between pieces (seconds)', 'fw' ),
@@ -324,6 +352,24 @@ function sc_get_gsap_fields() {
                                 'step'         => 1,
                                 'numeric_type' => 'integer',
                             ],
+                            'pmotion' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Add motion', 'fw' ),
+                                'desc'    => __( 'Layer a subtle rotate or scale on top of the drift.', 'fw' ),
+                                'value'   => 'none',
+                                'choices' => [
+                                    'none'   => __( 'Drift only', 'fw' ),
+                                    'rotate' => __( '+ Rotate', 'fw' ),
+                                    'scale'  => __( '+ Scale', 'fw' ),
+                                ],
+                            ],
+                            'pfade' => [
+                                'type'         => 'switch',
+                                'label'        => __( 'Fade with drift', 'fw' ),
+                                'value'        => 'no',
+                                'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
+                                'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
+                            ],
                             'run_on_mobile' => $run_on_mobile( false ),
                         ],
                     ],
@@ -340,6 +386,14 @@ function sc_get_gsap_fields() {
                                 'min'          => 10,
                                 'step'         => 10,
                                 'numeric_type' => 'integer',
+                            ],
+                            'pin_fade' => [
+                                'type'         => 'switch',
+                                'label'        => __( 'Fade at edges', 'fw' ),
+                                'desc'         => __( 'Fade the element in as it pins and out as it releases (smooth hand-off).', 'fw' ),
+                                'value'        => 'no',
+                                'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
+                                'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
                             ],
                             'run_on_mobile' => $run_on_mobile( false ),
                         ],
@@ -358,6 +412,8 @@ function sc_get_gsap_fields() {
                                     'scale'  => __( 'Scale up', 'fw' ),
                                     'rotate' => __( 'Rotate', 'fw' ),
                                     'slide'  => __( 'Slide up', 'fw' ),
+                                    'blur'   => __( 'Blur → sharp', 'fw' ),
+                                    'skew'   => __( 'Skew → straight', 'fw' ),
                                 ],
                             ],
                             'intensity' => [
@@ -383,10 +439,20 @@ function sc_get_gsap_fields() {
                     'group_gsap_zoom' => [
                         'type'    => 'group',
                         'options' => array_merge( [
+                            'zdir' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Zoom', 'fw' ),
+                                'desc'    => __( 'In grows from small; Out starts larger and settles down to size.', 'fw' ),
+                                'value'   => 'in',
+                                'choices' => [
+                                    'in'  => __( 'Zoom in (from small)', 'fw' ),
+                                    'out' => __( 'Zoom out (from large)', 'fw' ),
+                                ],
+                            ],
                             'scale' => [
                                 'type'       => 'slider',
                                 'label'      => __( 'Start scale', 'fw' ),
-                                'desc'       => __( 'Smaller = zooms in from further out.', 'fw' ),
+                                'desc'       => __( 'Smaller = zooms in from further out (for Zoom out it mirrors to start larger).', 'fw' ),
                                 'value'      => 0.6,
                                 'properties' => [ 'min' => 0.2, 'max' => 0.95, 'step' => 0.05 ],
                             ],
@@ -437,10 +503,13 @@ function sc_get_gsap_fields() {
                                 'label'   => __( 'Wipe from', 'fw' ),
                                 'value'   => 'up',
                                 'choices' => [
-                                    'up'    => __( 'Bottom → up', 'fw' ),
-                                    'down'  => __( 'Top → down', 'fw' ),
-                                    'left'  => __( 'Right → left', 'fw' ),
-                                    'right' => __( 'Left → right', 'fw' ),
+                                    'up'       => __( 'Bottom → up', 'fw' ),
+                                    'down'     => __( 'Top → down', 'fw' ),
+                                    'left'     => __( 'Right → left', 'fw' ),
+                                    'right'    => __( 'Left → right', 'fw' ),
+                                    'iris'     => __( 'Iris (circle open)', 'fw' ),
+                                    'diagonal' => __( 'Diagonal', 'fw' ),
+                                    'rounded'  => __( 'Rounded box', 'fw' ),
                                 ],
                             ],
                         ], $entrance_tail ),
@@ -450,6 +519,15 @@ function sc_get_gsap_fields() {
                     'group_gsap_skew' => [
                         'type'    => 'group',
                         'options' => array_merge( [
+                            'axis' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Skew axis', 'fw' ),
+                                'value'   => 'vertical',
+                                'choices' => [
+                                    'vertical'   => __( 'Vertical (skewY)', 'fw' ),
+                                    'horizontal' => __( 'Horizontal (skewX)', 'fw' ),
+                                ],
+                            ],
                             'skew' => [
                                 'type'       => 'slider',
                                 'label'      => __( 'Skew (°)', 'fw' ),
@@ -465,6 +543,254 @@ function sc_get_gsap_fields() {
                                 'numeric_type' => 'integer',
                             ],
                         ], $entrance_tail ),
+                    ],
+                ],
+                'flip' => [
+                    'group_gsap_flip' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'axis' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Flip axis', 'fw' ),
+                                'desc'    => __( 'Which way the card turns. Y = swings left/right like a door; X = tips forward like a lid.', 'fw' ),
+                                'value'   => 'y',
+                                'choices' => [
+                                    'y' => __( 'Vertical hinge (Y)', 'fw' ),
+                                    'x' => __( 'Horizontal hinge (X)', 'fw' ),
+                                ],
+                            ],
+                            'direction' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Flip from', 'fw' ),
+                                'value'   => 'left',
+                                'choices' => [
+                                    'left'  => __( 'One side', 'fw' ),
+                                    'right' => __( 'The other side', 'fw' ),
+                                ],
+                            ],
+                            'deg' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Start angle (°)', 'fw' ),
+                                'desc'       => __( 'How far it is turned away before flipping in. 90° = edge-on.', 'fw' ),
+                                'value'      => 90,
+                                'properties' => [ 'min' => 30, 'max' => 120, 'step' => 5 ],
+                            ],
+                        ], $entrance_tail ),
+                    ],
+                ],
+                'expand' => [
+                    'group_gsap_expand' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'axis' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Grow direction', 'fw' ),
+                                'desc'    => __( 'Horizontal grows a bar/underline sideways; Vertical grows it up or down.', 'fw' ),
+                                'value'   => 'x',
+                                'choices' => [
+                                    'x' => __( 'Horizontal (scaleX)', 'fw' ),
+                                    'y' => __( 'Vertical (scaleY)', 'fw' ),
+                                ],
+                            ],
+                            'origin' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Grow from', 'fw' ),
+                                'desc'    => __( 'The anchored edge the element expands away from.', 'fw' ),
+                                'value'   => 'left',
+                                'choices' => [
+                                    'left'   => __( 'Left', 'fw' ),
+                                    'center' => __( 'Center', 'fw' ),
+                                    'right'  => __( 'Right', 'fw' ),
+                                    'top'    => __( 'Top', 'fw' ),
+                                    'bottom' => __( 'Bottom', 'fw' ),
+                                ],
+                            ],
+                        ], $entrance_tail ),
+                    ],
+                ],
+                'counter' => [
+                    'group_gsap_counter' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'cstyle' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Count style', 'fw' ),
+                                'desc'    => __( 'Plain ticks the value up; Odometer rolls each digit like a mechanical counter.', 'fw' ),
+                                'value'   => 'count',
+                                'choices' => [
+                                    'count'    => __( 'Plain count', 'fw' ),
+                                    'odometer' => __( 'Odometer (digit roll)', 'fw' ),
+                                ],
+                            ],
+                            'duration' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Count duration (s)', 'fw' ),
+                                'desc'       => __( 'How long the number takes to tick from the start up to its value.', 'fw' ),
+                                'value'      => 2,
+                                'properties' => [ 'min' => 0.5, 'max' => 6, 'step' => 0.5 ],
+                            ],
+                            'from' => [
+                                'type'         => 'number',
+                                'label'        => __( 'Start from', 'fw' ),
+                                'desc'         => __( 'The value the count begins at (usually 0).', 'fw' ),
+                                'value'        => 0,
+                                'step'         => 1,
+                                'numeric_type' => 'float',
+                            ],
+                            'prefix' => [
+                                'type'  => 'text',
+                                'label' => __( 'Prefix', 'fw' ),
+                                'desc'  => __( 'Optional text shown before the number — e.g. $ or +. Leave blank if the number already includes it.', 'fw' ),
+                                'value' => '',
+                            ],
+                            'suffix' => [
+                                'type'  => 'text',
+                                'label' => __( 'Suffix', 'fw' ),
+                                'desc'  => __( 'Optional text shown after the number — e.g. % or K or +.', 'fw' ),
+                                'value' => '',
+                            ],
+                            'sep' => [
+                                'type'         => 'switch',
+                                'label'        => __( 'Thousands separator', 'fw' ),
+                                'desc'         => __( 'Show grouped digits (1,250) while counting. Decimals in the source number are preserved either way.', 'fw' ),
+                                'value'        => 'no',
+                                'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
+                                'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
+                            ],
+                            'start' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Start counting', 'fw' ),
+                                'value'   => 'top 85%',
+                                'choices' => $start_choices,
+                            ],
+                            'once' => [
+                                'type'         => 'switch',
+                                'label'        => __( 'Count once', 'fw' ),
+                                'desc'         => __( 'Off = re-count every time it scrolls back into view.', 'fw' ),
+                                'value'        => 'yes',
+                                'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
+                                'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                            ],
+                            'run_on_mobile' => $run_on_mobile( true ),
+                        ] ),
+                    ],
+                ],
+                'velocity_skew' => [
+                    'group_gsap_velocity_skew' => [
+                        'type'    => 'group',
+                        'options' => [
+                            'max' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Max skew (°)', 'fw' ),
+                                'desc'       => __( 'The strongest lean at high scroll speed; springs back to straight when you stop.', 'fw' ),
+                                'value'      => 20,
+                                'properties' => [ 'min' => 4, 'max' => 45, 'step' => 1 ],
+                            ],
+                            'axis' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Skew axis', 'fw' ),
+                                'value'   => 'y',
+                                'choices' => [
+                                    'y' => __( 'Vertical (skewY)', 'fw' ),
+                                    'x' => __( 'Horizontal (skewX)', 'fw' ),
+                                ],
+                            ],
+                            'run_on_mobile' => $run_on_mobile( false ),
+                        ],
+                    ],
+                ],
+                'tilt_scrub' => [
+                    'group_gsap_tilt_scrub' => [
+                        'type'    => 'group',
+                        'options' => [
+                            'axis' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Tilt axis', 'fw' ),
+                                'desc'    => __( 'Y tips left/right; X tips forward/back.', 'fw' ),
+                                'value'   => 'y',
+                                'choices' => [
+                                    'y' => __( 'Vertical hinge (Y)', 'fw' ),
+                                    'x' => __( 'Horizontal hinge (X)', 'fw' ),
+                                ],
+                            ],
+                            'deg' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Tilt (°)', 'fw' ),
+                                'desc'       => __( 'How far it leans; it tips from +° to −° as it passes through the viewport.', 'fw' ),
+                                'value'      => 12,
+                                'properties' => [ 'min' => 3, 'max' => 45, 'step' => 1 ],
+                            ],
+                            'run_on_mobile' => $run_on_mobile( false ),
+                        ],
+                    ],
+                ],
+                'scroll_spin' => [
+                    'group_gsap_scroll_spin' => [
+                        'type'    => 'group',
+                        'options' => [
+                            'turns' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Turns', 'fw' ),
+                                'desc'       => __( 'Full rotations as it travels through the viewport.', 'fw' ),
+                                'value'      => 1,
+                                'properties' => [ 'min' => 0.25, 'max' => 4, 'step' => 0.25 ],
+                            ],
+                            'dir' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Direction', 'fw' ),
+                                'value'   => 'cw',
+                                'choices' => [
+                                    'cw'  => __( 'Clockwise', 'fw' ),
+                                    'ccw' => __( 'Counter-clockwise', 'fw' ),
+                                ],
+                            ],
+                            'run_on_mobile' => $run_on_mobile( true ),
+                        ],
+                    ],
+                ],
+                'mask_wipe' => [
+                    'group_gsap_mask_wipe' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'direction' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Wipe from', 'fw' ),
+                                'value'   => 'left',
+                                'choices' => [
+                                    'left'  => __( 'Left → right', 'fw' ),
+                                    'right' => __( 'Right → left', 'fw' ),
+                                    'up'    => __( 'Top → down', 'fw' ),
+                                    'down'  => __( 'Bottom → up', 'fw' ),
+                                ],
+                            ],
+                            'soft' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Edge softness (%)', 'fw' ),
+                                'desc'       => __( 'Width of the feathered leading edge. 0 = a hard wipe.', 'fw' ),
+                                'value'      => 25,
+                                'properties' => [ 'min' => 0, 'max' => 60, 'step' => 5 ],
+                            ],
+                        ], $entrance_tail ),
+                    ],
+                ],
+                'color_scrub' => [
+                    'group_gsap_color_scrub' => [
+                        'type'    => 'group',
+                        'options' => [
+                            'ctarget' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Colour', 'fw' ),
+                                'desc'    => __( 'Which property tweens as you scroll through the element.', 'fw' ),
+                                'value'   => 'text',
+                                'choices' => [
+                                    'text' => __( 'Text colour', 'fw' ),
+                                    'bg'   => __( 'Background colour', 'fw' ),
+                                ],
+                            ],
+                            'c1' => upw_color_field( __( 'From colour', 'fw' ), 'text', '#888888' ),
+                            'c2' => upw_color_field( __( 'To colour', 'fw' ), 'text', '#2f74e6' ),
+                            'run_on_mobile' => $run_on_mobile( true ),
+                        ],
                     ],
                 ],
             ],

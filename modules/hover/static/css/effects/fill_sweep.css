@@ -9,3 +9,6 @@
 .sc-hover--fill_sweep[data-hover-fill="up"]::before { transform: scaleY(0); transform-origin: bottom center; }
 .sc-hover--fill_sweep[data-hover-fill="center"]::before { transform: scale(0); transform-origin: center; }
 .sc-hover--fill_sweep:hover::before { transform: scale(1); }
+
+/* "Diagonal" direction — the fill grows from the top-left corner. */
+.sc-hover--fill_sweep[data-hover-fill="diagonal"]::before { transform: scale(0); transform-origin: top left; }

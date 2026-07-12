@@ -8,3 +8,16 @@
 .sc-hover--text_swap:hover .sc-hover-swap-a { transform: translateY(-100%); }
 .sc-hover--text_swap[data-hover-swap-dir="down"]:hover .sc-hover-swap-a { transform: translateY(100%); }
 .sc-hover--text_swap:hover .sc-hover-swap-b { transform: translateY(0); }
+
+/* "Fade" mode — the labels cross-fade instead of sliding. */
+.sc-hover--text_swap[data-hover-swap-mode="fade"] .sc-hover-swap-a { transition: opacity .3s ease; }
+.sc-hover--text_swap[data-hover-swap-mode="fade"] .sc-hover-swap-b { transform: none; opacity: 0; transition: opacity .3s ease; }
+.sc-hover--text_swap[data-hover-swap-mode="fade"]:hover .sc-hover-swap-a { transform: none; opacity: 0; }
+.sc-hover--text_swap[data-hover-swap-mode="fade"]:hover .sc-hover-swap-b { transform: none; opacity: 1; }
+/* "Flip" mode — a 3D flip between the two labels. */
+.sc-hover--text_swap[data-hover-swap-mode="flip"] { perspective: 400px; }
+.sc-hover--text_swap[data-hover-swap-mode="flip"] .sc-hover-swap-a,
+.sc-hover--text_swap[data-hover-swap-mode="flip"] .sc-hover-swap-b { backface-visibility: hidden; transition: transform .4s ease; }
+.sc-hover--text_swap[data-hover-swap-mode="flip"] .sc-hover-swap-b { transform: rotateX(90deg); }
+.sc-hover--text_swap[data-hover-swap-mode="flip"]:hover .sc-hover-swap-a { transform: rotateX(-90deg); }
+.sc-hover--text_swap[data-hover-swap-mode="flip"]:hover .sc-hover-swap-b { transform: rotateX(0); }

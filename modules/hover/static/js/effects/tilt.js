@@ -6,6 +6,7 @@
 			var max = parseFloat(el.getAttribute('data-hover-max')) || 12;
 			var scale = parseFloat(el.getAttribute('data-hover-scale')) || 1;
 			var glare = el.getAttribute('data-hover-glare') === '1';
+			var inv = el.getAttribute('data-hover-invert') === '1' ? -1 : 1;
 			var gl = null;
 			if (glare) {
 				if (getComputedStyle(el).position === 'static') { el.style.position = 'relative'; }
@@ -18,8 +19,8 @@
 				var r = el.getBoundingClientRect();
 				var px = (e.clientX - r.left) / r.width - 0.5;
 				var py = (e.clientY - r.top) / r.height - 0.5;
-				el.style.transform = 'perspective(800px) rotateY(' + (px * max).toFixed(2) + 'deg) rotateX(' +
-					(-py * max).toFixed(2) + 'deg)' + (scale !== 1 ? ' scale(' + scale + ')' : '');
+				el.style.transform = 'perspective(800px) rotateY(' + (px * max * inv).toFixed(2) + 'deg) rotateX(' +
+					(-py * max * inv).toFixed(2) + 'deg)' + (scale !== 1 ? ' scale(' + scale + ')' : '');
 				if (gl) {
 					gl.style.opacity = '1';
 					gl.style.background = 'radial-gradient(circle at ' + ((px + 0.5) * 100).toFixed(0) + '% ' +

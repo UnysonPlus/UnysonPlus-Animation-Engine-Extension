@@ -24,7 +24,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     $g = ( isset( $atts['gsap_motion'] ) && is_array( $atts['gsap_motion'] ) ) ? $atts['gsap_motion'] : [];
 
     $effect  = isset( $g['effect'] ) ? (string) $g['effect'] : 'none';
-    $allowed = [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub', 'zoom', 'rotate', 'blur', 'clip', 'skew' ];
+    $allowed = [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub', 'zoom', 'rotate', 'blur', 'clip', 'skew', 'flip', 'expand', 'counter', 'velocity_skew', 'tilt_scrub', 'scroll_spin', 'mask_wipe', 'color_scrub' ];
     if ( ! in_array( $effect, $allowed, true ) ) {
         return $attr;
     }
@@ -48,8 +48,8 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
         return $v === 'yes';
     };
 
-    $dir_allow   = [ 'up', 'down', 'left', 'right', 'none' ];
-    $style_allow = [ 'subtle', 'standard', 'dramatic' ];
+    $dir_allow   = [ 'up', 'down', 'left', 'right', 'up_left', 'up_right', 'down_left', 'down_right', 'none' ];
+    $style_allow = [ 'subtle', 'standard', 'dramatic', 'bounce', 'elastic' ];
     $start_allow = [ 'top 85%', 'top 100%', 'top 70%', 'top center', 'top 40%' ];
 
     $pending = false; // effects that start hidden need the FOUC guard class
@@ -85,6 +85,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             $data['data-upw-g-split']  = $pick( 'split_by', [ 'chars', 'words', 'lines' ], 'chars' );
             $data['data-upw-g-target'] = $pick( 'target', [ 'headings', 'paragraphs', 'all' ], 'headings' );
             $data['data-upw-g-style']  = $pick( 'style', $style_allow, 'standard' );
+            $data['data-upw-g-split-anim'] = $pick( 'split_anim', [ 'slide', 'flip3d', 'scale', 'blur', 'rotate', 'random' ], 'slide' );
             $data['data-upw-g-each']   = $num( 'stagger_each', 0.03 );
             $dir = $pick( 'direction', [ 'up', 'down' ], 'up' );
             if ( $dir !== 'up' ) $data['data-upw-g-dir'] = $dir;
@@ -96,16 +97,20 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
         case 'parallax':
             $data['data-upw-g-axis']  = $pick( 'axis', [ 'vertical', 'horizontal' ], 'vertical' ) === 'horizontal' ? 'x' : 'y';
             $data['data-upw-g-speed'] = $num( 'speed', 20 );
+            $pm = $pick( 'pmotion', [ 'none', 'rotate', 'scale' ], 'none' );
+            if ( $pm !== 'none' ) $data['data-upw-g-pmotion'] = $pm;
+            if ( $on( 'pfade', false ) ) $data['data-upw-g-pfade'] = '1';
             if ( ! $on( 'run_on_mobile', false ) ) $data['data-upw-g-mobile'] = '0';
             break;
 
         case 'pin':
             $data['data-upw-g-pin-length'] = $num( 'pin_length', 100 );
+            if ( $on( 'pin_fade', false ) ) $data['data-upw-g-pin-fade'] = '1';
             if ( ! $on( 'run_on_mobile', false ) ) $data['data-upw-g-mobile'] = '0';
             break;
 
         case 'scrub':
-            $kind = $pick( 'scrub_kind', [ 'fade', 'scale', 'rotate', 'slide' ], 'fade' );
+            $kind = $pick( 'scrub_kind', [ 'fade', 'scale', 'rotate', 'slide', 'blur', 'skew' ], 'fade' );
             $data['data-upw-g-scrub-kind'] = $kind;
             $data['data-upw-g-intensity']  = $num( 'intensity', 20 );
             $data['data-upw-g-start']      = $pick( 'start', $start_allow, 'top 85%' );
@@ -114,6 +119,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             break;
 
         case 'zoom':
+            if ( $pick( 'zdir', [ 'in', 'out' ], 'in' ) === 'out' ) $data['data-upw-g-zdir'] = 'out';
             $data['data-upw-g-scale'] = $num( 'scale', 0.6 );
             $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
             if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
@@ -142,7 +148,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             break;
 
         case 'clip':
-            $data['data-upw-g-dir']   = $pick( 'direction', [ 'up', 'down', 'left', 'right' ], 'up' );
+            $data['data-upw-g-dir']   = $pick( 'direction', [ 'up', 'down', 'left', 'right', 'iris', 'diagonal', 'rounded' ], 'up' );
             $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
             if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
             if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
@@ -151,6 +157,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             break;
 
         case 'skew':
+            if ( $pick( 'axis', [ 'vertical', 'horizontal' ], 'vertical' ) === 'horizontal' ) $data['data-upw-g-axis'] = 'x';
             $data['data-upw-g-skew']     = $num( 'skew', 8 );
             $data['data-upw-g-distance'] = $num( 'distance', 40 );
             $data['data-upw-g-start']    = $pick( 'start', $start_allow, 'top 85%' );
@@ -158,6 +165,80 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
             if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
             $pending = true;
+            break;
+
+        case 'flip':
+            if ( $pick( 'axis', [ 'y', 'x' ], 'y' ) === 'x' ) $data['data-upw-g-axis'] = 'x';
+            $data['data-upw-g-dir'] = $pick( 'direction', [ 'left', 'right' ], 'left' );
+            $data['data-upw-g-deg'] = $num( 'deg', 90 );
+            $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true;
+            break;
+
+        case 'expand':
+            if ( $pick( 'axis', [ 'x', 'y' ], 'x' ) === 'y' ) $data['data-upw-g-axis'] = 'y';
+            $data['data-upw-g-origin'] = $pick( 'origin', [ 'left', 'center', 'right', 'top', 'bottom' ], 'left' );
+            $data['data-upw-g-start']  = $pick( 'start', $start_allow, 'top 85%' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true;
+            break;
+
+        case 'counter':
+            if ( $pick( 'cstyle', [ 'count', 'odometer' ], 'count' ) === 'odometer' ) $data['data-upw-g-cstyle'] = 'odometer';
+            $data['data-upw-g-duration'] = $num( 'duration', 2 );
+            if ( $num( 'from', 0 ) !== '0' ) $data['data-upw-g-from'] = $num( 'from', 0 );
+            $cpre = isset( $s['prefix'] ) ? (string) $s['prefix'] : '';
+            $csuf = isset( $s['suffix'] ) ? (string) $s['suffix'] : '';
+            if ( $cpre !== '' ) $data['data-upw-g-prefix'] = $cpre;
+            if ( $csuf !== '' ) $data['data-upw-g-suffix'] = $csuf;
+            if ( $on( 'sep', false ) ) $data['data-upw-g-sep'] = '1';
+            $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            // Counter shows the number at its start value (not hidden) — no FOUC guard class needed.
+            break;
+
+        case 'velocity_skew':
+            $data['data-upw-g-max']  = $num( 'max', 20 );
+            if ( $pick( 'axis', [ 'y', 'x' ], 'y' ) === 'x' ) $data['data-upw-g-axis'] = 'x';
+            if ( ! $on( 'run_on_mobile', false ) ) $data['data-upw-g-mobile'] = '0';
+            // Visible at rest (skews only while scrolling) — no FOUC guard.
+            break;
+
+        case 'tilt_scrub':
+            if ( $pick( 'axis', [ 'y', 'x' ], 'y' ) === 'x' ) $data['data-upw-g-axis'] = 'x';
+            $data['data-upw-g-deg'] = $num( 'deg', 12 );
+            if ( ! $on( 'run_on_mobile', false ) ) $data['data-upw-g-mobile'] = '0';
+            break;
+
+        case 'scroll_spin':
+            $data['data-upw-g-turns'] = $num( 'turns', 1 );
+            if ( $pick( 'dir', [ 'cw', 'ccw' ], 'cw' ) === 'ccw' ) $data['data-upw-g-dir'] = 'ccw';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            break;
+
+        case 'mask_wipe':
+            $data['data-upw-g-dir']  = $pick( 'direction', [ 'left', 'right', 'up', 'down' ], 'left' );
+            $data['data-upw-g-soft'] = $num( 'soft', 25 );
+            $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true; // starts fully masked out
+            break;
+
+        case 'color_scrub':
+            $data['data-upw-g-ctarget'] = $pick( 'ctarget', [ 'text', 'bg' ], 'text' );
+            $c1 = function_exists( 'upw_hover_color' ) ? upw_hover_color( isset( $s['c1'] ) ? $s['c1'] : '' ) : '';
+            $c2 = function_exists( 'upw_hover_color' ) ? upw_hover_color( isset( $s['c2'] ) ? $s['c2'] : '' ) : '';
+            if ( $c1 !== '' ) $data['data-upw-g-c1'] = $c1;
+            if ( $c2 !== '' ) $data['data-upw-g-c2'] = $c2;
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
             break;
     }
 
@@ -190,7 +271,7 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
     if ( $needs ) { return $needs; }
     $g      = ( isset( $atts['gsap_motion'] ) && is_array( $atts['gsap_motion'] ) ) ? $atts['gsap_motion'] : [];
     $effect = isset( $g['effect'] ) ? (string) $g['effect'] : 'none';
-    return in_array( $effect, [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub' ], true );
+    return in_array( $effect, [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub', 'flip', 'expand', 'counter', 'velocity_skew', 'tilt_scrub', 'scroll_spin', 'mask_wipe', 'color_scrub' ], true );
 }, 10, 2 );
 
 
