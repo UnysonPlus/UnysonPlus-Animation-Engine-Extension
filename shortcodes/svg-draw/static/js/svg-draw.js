@@ -3,7 +3,9 @@
  *
  * For each .sc-svg-draw: measure every drawable element in its inline SVG, set a
  * stroke-dash so it starts hidden, then animate stroke-dashoffset → 0 (staggered) on the
- * chosen trigger (view / load / hover). Optional reverse, loop, and fade-in fill after.
+ * chosen trigger (view / load / hover), OR — in "scrub" mode — tie stroke-dashoffset to the
+ * scroll position so the art draws/un-draws as the reader scrolls. Optional reverse, loop,
+ * and fade-in fill after.
  * Under reduced motion the art is shown fully drawn (no animation).
  */
 (function () {
@@ -77,6 +79,45 @@
 		if (loop) { setTimeout(function () { reset(host, items); setTimeout(function () { play(host, items); }, 400); }, (total + 0.8) * 1000); }
 	}
 
+	function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
+	// SCRUB: tie the draw progress to the scroll position instead of a timed transition.
+	// p = 0 when the host's top is at 90% of the viewport (just entered from below),
+	// p = 1 when its top reaches 25% (scrolled well up). With stagger > 0 the paths draw
+	// sequentially across that band (path i completes at p = (i+1)/n); otherwise together.
+	function scrubProgress(host) {
+		var r = host.getBoundingClientRect();
+		var vh = window.innerHeight || document.documentElement.clientHeight || 1;
+		var start = vh * 0.9, end = vh * 0.25;
+		return clamp((start - r.top) / (start - end || 1));
+	}
+
+	function applyScrub(host, items) {
+		var p = scrubProgress(host);
+		var reverse = host.getAttribute('data-draw-direction') === 'reverse';
+		var stag = parseFloat(host.getAttribute('data-draw-stagger')) || 0;
+		var n = items.length, j, it, lp;
+		for (j = 0; j < n; j++) {
+			it = items[reverse ? (n - 1 - j) : j];
+			lp = (stag > 0 && n > 1) ? clamp(p * n - j) : p;
+			it.el.style.transition = 'none';
+			it.el.style.strokeDashoffset = String(it.len * (1 - lp));
+		}
+		if (host.getAttribute('data-draw-fill') === '1') {
+			var full = p >= 1;
+			for (j = 0; j < n; j++) { items[j].el.style.fill = full ? 'var(--draw-fill)' : 'none'; }
+		}
+	}
+
+	function bindScrub(host, items) {
+		var ticking = false;
+		function tick() { ticking = false; applyScrub(host, items); }
+		function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(tick); } }
+		addEventListener('scroll', onScroll, { passive: true });
+		addEventListener('resize', onScroll, { passive: true });
+		applyScrub(host, items);
+	}
+
 	function init() {
 		var hosts = document.querySelectorAll('.sc-svg-draw');
 		Array.prototype.forEach.call(hosts, function (host) {
@@ -85,7 +126,8 @@
 			if (!items) { return; }
 			if (reduce) { for (var i = 0; i < items.length; i++) { items[i].el.style.strokeDashoffset = '0'; if (host.getAttribute('data-draw-fill') === '1') { items[i].el.style.fill = 'var(--draw-fill)'; } } return; }
 			var trigger = host.getAttribute('data-draw-trigger') || 'view';
-			if (trigger === 'load') { requestAnimationFrame(function () { play(host, items); }); }
+			if (trigger === 'scrub') { bindScrub(host, items); }
+			else if (trigger === 'load') { requestAnimationFrame(function () { play(host, items); }); }
 			else if (trigger === 'hover') {
 				host.addEventListener('pointerenter', function () { reset(host, items); requestAnimationFrame(function () { play(host, items); }); });
 			} else { onView(host, function () { play(host, items); }); }

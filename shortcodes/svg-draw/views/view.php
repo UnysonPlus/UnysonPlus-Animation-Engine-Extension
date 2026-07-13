@@ -96,7 +96,7 @@ if ( ! function_exists( 'sc_svg_draw_render' ) ) {
 		}
 		if ( $svg === '' ) { $svg = sc_svg_draw_preset( 'signature' ); }
 
-		$trigger    = in_array( sc_get( 'trigger', $atts, 'view' ), array( 'view', 'load', 'hover' ), true ) ? sc_get( 'trigger', $atts, 'view' ) : 'view';
+		$trigger    = in_array( sc_get( 'trigger', $atts, 'view' ), array( 'view', 'scrub', 'load', 'hover' ), true ) ? sc_get( 'trigger', $atts, 'view' ) : 'view';
 		$duration   = (float) sc_get( 'duration', $atts, 1.6 );
 		$stagger    = (float) sc_get( 'stagger', $atts, 0.15 );
 		$direction  = sc_get( 'direction', $atts, 'normal' ) === 'reverse' ? 'reverse' : 'normal';

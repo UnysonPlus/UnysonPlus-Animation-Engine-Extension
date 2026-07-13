@@ -98,9 +98,11 @@ $options = array(
 					'trigger' => array(
 						'type'    => 'select',
 						'label'   => __( 'Trigger', 'fw' ),
+						'desc'    => __( 'Scrub with scroll ties the drawing progress to the scroll position — the artwork draws and un-draws as the reader scrolls past it (Draw duration is ignored in that mode).', 'fw' ),
 						'value'   => 'view',
 						'choices' => array(
 							'view'  => __( 'When scrolled into view', 'fw' ),
+							'scrub' => __( 'Scrub with scroll', 'fw' ),
 							'load'  => __( 'On page load', 'fw' ),
 							'hover' => __( 'On hover', 'fw' ),
 						),
