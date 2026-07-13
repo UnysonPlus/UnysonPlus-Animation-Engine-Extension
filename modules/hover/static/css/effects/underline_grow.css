@@ -8,8 +8,12 @@
 	transition: transform .3s ease; pointer-events: none;
 }
 .sc-hover--underline_grow[data-hover-style="center"]::after { transform-origin: center; }
-.sc-hover--underline_grow:hover::after { transform: scaleX(1); }
+.sc-hover--underline_grow:is(:hover, :focus-visible)::after { transform: scaleX(1); }
 
 /* Line-position sub-styles (default = underline). */
 .sc-hover--underline_grow[data-hover-pos="over"]::after { top: -2px; bottom: auto; }
 .sc-hover--underline_grow[data-hover-pos="through"]::after { top: 50%; bottom: auto; margin-top: -1px; }
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-hover--underline_grow, .sc-hover--underline_grow:is(:hover, :focus-visible) { transition: none !important; animation: none !important; }
+}

@@ -5,13 +5,21 @@ H.typewriter = function (el, target) {
 		var speed = parseInt(el.getAttribute('data-text-speed'), 10) || 55;
 		var caret = el.getAttribute('data-text-caret') === '1';
 		var loop = el.getAttribute('data-text-loop') === '1';
-		var trigger = el.getAttribute('data-text-trigger') || 'view';
 		var full = target.textContent;
 		target.textContent = '';
 		if (caret) { target.classList.add('upw-text-caret'); }
-		function type(cb) { var i = 0; (function s() { target.textContent = full.slice(0, i); if (i++ < full.length) { setTimeout(s, speed); } else if (cb) { cb(); } })(); }
-		function erase(cb) { var i = full.length; (function s() { target.textContent = full.slice(0, i); if (i-- > 0) { setTimeout(s, speed / 1.7); } else if (cb) { cb(); } })(); }
-		function cycle() { type(function () { if (loop) { setTimeout(function () { erase(function () { setTimeout(cycle, 350); }); }, 1400); } else if (caret) { target.classList.add('upw-text-caret-done'); } }); }
-		if (trigger === 'load') { cycle(); } else { onView(el, cycle); }
+		var token = 0; // a newer cycle supersedes any in-flight typing/erasing (clean replay)
+		function type(cb, id) { var i = 0; (function s() { if (id !== token) { return; } target.textContent = full.slice(0, i); if (i++ < full.length) { setTimeout(s, speed); } else if (cb) { cb(); } })(); }
+		function erase(cb, id) { var i = full.length; (function s() { if (id !== token) { return; } target.textContent = full.slice(0, i); if (i-- > 0) { setTimeout(s, speed / 1.7); } else if (cb) { cb(); } })(); }
+		function cycle() {
+			var id = ++token;
+			if (caret) { target.classList.remove('upw-text-caret-done'); }
+			type(function () {
+				if (id !== token) { return; }
+				if (loop) { setTimeout(function () { if (id !== token) { return; } erase(function () { if (id !== token) { return; } setTimeout(function () { if (id === token) { cycle(); } }, 350); }, id); }, 1400); }
+				else if (caret) { target.classList.add('upw-text-caret-done'); }
+			}, id);
+		}
+		API.bindTriggers(el, cycle);
 	};
 })();

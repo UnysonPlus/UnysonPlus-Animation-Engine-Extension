@@ -1,8 +1,8 @@
 /* Animation Engine — Hover: "rotate" effect (on-demand partial). */
 /* Rotate */
 .sc-hover--rotate { transition: transform .3s cubic-bezier(.22, .61, .36, 1); }
-.sc-hover--rotate:hover { transform: rotate(var(--hover-rotate, 6deg)); }
-@media (prefers-reduced-motion: reduce) { .sc-hover--rotate:hover { transform: none; } }
+.sc-hover--rotate:is(:hover, :focus-visible) { transform: rotate(var(--hover-rotate, 6deg)); }
+@media (prefers-reduced-motion: reduce) { .sc-hover--rotate:is(:hover, :focus-visible) { transform: none; } }
 
 /* "3D flip" sub-style — a perspective flip instead of a flat rotation. */
-.sc-hover--rotate[data-hover-rotate-style="flip3d"]:hover { transform: perspective(700px) rotateY(var(--hover-rotate, 6deg)) rotateX(calc(var(--hover-rotate, 6deg) * .35)); }
+.sc-hover--rotate[data-hover-rotate-style="flip3d"]:is(:hover, :focus-visible) { transform: perspective(700px) rotateY(var(--hover-rotate, 6deg)) rotateX(calc(var(--hover-rotate, 6deg) * .35)); }

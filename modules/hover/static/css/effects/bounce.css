@@ -1,16 +1,16 @@
 /* Animation Engine — Hover: "bounce" effect (on-demand partial). */
 /* Bounce (one-shot vertical bounce) */
-.sc-hover--bounce:hover { animation: sc-hover-bounce .6s cubic-bezier(.28, .84, .42, 1); }
+.sc-hover--bounce:is(:hover, :focus-visible) { animation: sc-hover-bounce .6s cubic-bezier(.28, .84, .42, 1); }
 @keyframes sc-hover-bounce {
 	0%, 100% { transform: translateY(0); }
 	40% { transform: translateY(calc(var(--hover-bounce, 10px) * -1)); }
 	60% { transform: translateY(calc(var(--hover-bounce, 10px) * -0.4)); }
 	80% { transform: translateY(calc(var(--hover-bounce, 10px) * -0.15)); }
 }
-@media (prefers-reduced-motion: reduce) { .sc-hover--bounce:hover { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--bounce:is(:hover, :focus-visible) { animation: none; } }
 
 /* "Drop" sub-style — falls from above and settles (default = bounce up). */
-.sc-hover--bounce[data-hover-bounce-style="drop"]:hover { animation: sc-hover-bounce-drop .6s cubic-bezier(.28, .84, .42, 1); }
+.sc-hover--bounce[data-hover-bounce-style="drop"]:is(:hover, :focus-visible) { animation: sc-hover-bounce-drop .6s cubic-bezier(.28, .84, .42, 1); }
 @keyframes sc-hover-bounce-drop {
 	0% { transform: translateY(calc(var(--hover-bounce, 10px) * -1)); }
 	50% { transform: translateY(0); }
@@ -18,11 +18,11 @@
 	100% { transform: translateY(0); }
 }
 /* "Squash land" sub-style — bounce up then squash on landing. */
-.sc-hover--bounce[data-hover-bounce-style="squash"]:hover { animation: sc-hover-bounce-squash .6s cubic-bezier(.28, .84, .42, 1); }
+.sc-hover--bounce[data-hover-bounce-style="squash"]:is(:hover, :focus-visible) { animation: sc-hover-bounce-squash .6s cubic-bezier(.28, .84, .42, 1); }
 @keyframes sc-hover-bounce-squash {
 	0%, 100% { transform: translateY(0) scale(1, 1); }
 	40% { transform: translateY(calc(var(--hover-bounce, 10px) * -1)) scale(.94, 1.06); }
 	70% { transform: translateY(0) scale(1.06, .94); }
 	85% { transform: translateY(0) scale(.98, 1.02); }
 }
-@media (prefers-reduced-motion: reduce) { .sc-hover--bounce[data-hover-bounce-style]:hover { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--bounce[data-hover-bounce-style]:is(:hover, :focus-visible) { animation: none; } }

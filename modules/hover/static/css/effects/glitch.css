@@ -1,16 +1,16 @@
 /* Animation Engine — Hover: "glitch" effect (on-demand partial). */
 /* Glitch (RGB-split judder on hover) */
-.sc-hover--glitch:hover { animation: sc-hover-glitch calc(.4s / var(--hover-glitch, 1)) steps(2, end) infinite; }
+.sc-hover--glitch:is(:hover, :focus-visible) { animation: sc-hover-glitch calc(.4s / var(--hover-glitch, 1)) steps(2, end) infinite; }
 @keyframes sc-hover-glitch {
 	0% { transform: translate(0); text-shadow: none; }
 	25% { transform: translate(calc(-1px * var(--hover-glitch, 1)), 0); text-shadow: calc(-2px * var(--hover-glitch, 1)) 0 rgba(255,0,80,.6), calc(2px * var(--hover-glitch, 1)) 0 rgba(0,200,255,.6); }
 	50% { transform: translate(calc(1px * var(--hover-glitch, 1)), 0); text-shadow: calc(2px * var(--hover-glitch, 1)) 0 rgba(255,0,80,.6), calc(-2px * var(--hover-glitch, 1)) 0 rgba(0,200,255,.6); }
 	100% { transform: translate(0); text-shadow: none; }
 }
-@media (prefers-reduced-motion: reduce) { .sc-hover--glitch:hover { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--glitch:is(:hover, :focus-visible) { animation: none; } }
 
 /* "Slice" sub-style — horizontal slices jump. */
-.sc-hover--glitch[data-hover-glitch-style="slice"]:hover { animation: sc-hover-glitch-slice calc(.5s / var(--hover-glitch, 1)) steps(3, end) infinite; }
+.sc-hover--glitch[data-hover-glitch-style="slice"]:is(:hover, :focus-visible) { animation: sc-hover-glitch-slice calc(.5s / var(--hover-glitch, 1)) steps(3, end) infinite; }
 @keyframes sc-hover-glitch-slice {
 	0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
 	20% { clip-path: inset(18% 0 52% 0); transform: translate(calc(-3px * var(--hover-glitch, 1)), 0); }
@@ -19,11 +19,11 @@
 	80% { clip-path: inset(8% 0 76% 0);  transform: translate(calc(2px * var(--hover-glitch, 1)), 0); }
 }
 /* "Jitter" sub-style — a fast shaky judder, no colour split. */
-.sc-hover--glitch[data-hover-glitch-style="jitter"]:hover { animation: sc-hover-glitch-jitter calc(.25s / var(--hover-glitch, 1)) steps(2, end) infinite; }
+.sc-hover--glitch[data-hover-glitch-style="jitter"]:is(:hover, :focus-visible) { animation: sc-hover-glitch-jitter calc(.25s / var(--hover-glitch, 1)) steps(2, end) infinite; }
 @keyframes sc-hover-glitch-jitter {
 	0%, 100% { transform: translate(0, 0); }
 	25% { transform: translate(calc(-1px * var(--hover-glitch, 1)), calc(1px * var(--hover-glitch, 1))); }
 	50% { transform: translate(calc(1px * var(--hover-glitch, 1)), calc(-1px * var(--hover-glitch, 1))); }
 	75% { transform: translate(calc(1px * var(--hover-glitch, 1)), calc(1px * var(--hover-glitch, 1))); }
 }
-@media (prefers-reduced-motion: reduce) { .sc-hover--glitch[data-hover-glitch-style]:hover { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--glitch[data-hover-glitch-style]:is(:hover, :focus-visible) { animation: none; } }

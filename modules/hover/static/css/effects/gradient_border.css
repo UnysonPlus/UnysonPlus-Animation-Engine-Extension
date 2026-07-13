@@ -8,6 +8,6 @@
 	-webkit-mask-composite: xor; mask-composite: exclude;
 	opacity: 0; transition: opacity .3s ease; pointer-events: none;
 }
-.sc-hover--gradient_border:hover::after { opacity: 1; animation: sc-hover-grad var(--hover-grad-speed, 3s) linear infinite; }
+.sc-hover--gradient_border:is(:hover, :focus-visible)::after { opacity: 1; animation: sc-hover-grad var(--hover-grad-speed, 3s) linear infinite; }
 @keyframes sc-hover-grad { to { transform: rotate(1turn); } }
-@media (prefers-reduced-motion: reduce) { .sc-hover--gradient_border:hover::after { animation: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--gradient_border:is(:hover, :focus-visible)::after { animation: none; opacity: 1; } }

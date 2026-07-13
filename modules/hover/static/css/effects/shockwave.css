@@ -4,9 +4,9 @@
 	content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
 	border: 2px solid var(--hover-shock, #6aa6ff); opacity: 0;
 }
-.sc-hover--shockwave:hover::after { animation: sc-hover-shock 1.1s ease-out infinite; }
+.sc-hover--shockwave:is(:hover, :focus-visible)::after { animation: sc-hover-shock 1.1s ease-out infinite; }
 @keyframes sc-hover-shock {
 	0% { transform: scale(1); opacity: .7; }
 	100% { transform: scale(1.5); opacity: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .sc-hover--shockwave:hover::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--shockwave:is(:hover, :focus-visible)::after { animation: none; } }

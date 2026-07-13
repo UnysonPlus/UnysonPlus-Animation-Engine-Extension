@@ -8,5 +8,5 @@
 	margin: calc(var(--hover-blob-size, 70px) / -2) 0 0 calc(var(--hover-blob-size, 70px) / -2);
 	background: var(--hover-blob, #6aa6ff); filter: blur(8px); opacity: 0; transition: opacity .3s ease;
 }
-.sc-hover--blob:hover::before { opacity: .8; }
+.sc-hover--blob:is(:hover, :focus-visible)::before { opacity: .8; }
 @media (prefers-reduced-motion: reduce) { .sc-hover--blob::before { transition: none; } }

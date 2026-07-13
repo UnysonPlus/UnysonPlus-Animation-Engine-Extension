@@ -1,10 +1,10 @@
 /* Animation Engine — Hover: "push" effect (on-demand partial). */
 /* Push (press-in) */
 .sc-hover--push { transition: transform .18s ease; }
-.sc-hover--push:hover { transform: translateY(var(--hover-push, 5px)); }
+.sc-hover--push:is(:hover, :focus-visible) { transform: translateY(var(--hover-push, 5px)); }
 .sc-hover--push:active { transform: translateY(calc(var(--hover-push, 5px) * 1.4)); }
-@media (prefers-reduced-motion: reduce) { .sc-hover--push:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--push:is(:hover, :focus-visible) { transform: none; } }
 
 /* "Into screen" sub-style — a 3D push back instead of a flat press-down. */
-.sc-hover--push[data-hover-push-style="inz"]:hover { transform: perspective(500px) translateZ(calc(var(--hover-push, 5px) * -3)); }
+.sc-hover--push[data-hover-push-style="inz"]:is(:hover, :focus-visible) { transform: perspective(500px) translateZ(calc(var(--hover-push, 5px) * -3)); }
 .sc-hover--push[data-hover-push-style="inz"]:active { transform: perspective(500px) translateZ(calc(var(--hover-push, 5px) * -5)); }

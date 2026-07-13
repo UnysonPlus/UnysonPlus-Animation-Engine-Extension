@@ -1,14 +1,14 @@
 /* Animation Engine — Hover: "glow_border" effect (on-demand partial). */
 /* Glow Border */
 .sc-hover--glow_border { transition: box-shadow .3s ease; border-radius: inherit; }
-.sc-hover--glow_border:hover {
+.sc-hover--glow_border:is(:hover, :focus-visible) {
 	box-shadow: 0 0 0 1px var(--hover-glow, #6aa6ff), 0 0 18px 2px var(--hover-glow, #6aa6ff);
 }
 
 /* "Pulse" sub-style — the glow throbs while hovered. */
-.sc-hover--glow_border[data-hover-glow-mode="pulse"]:hover { animation: sc-hover-glowpulse 1.2s ease-in-out infinite; }
+.sc-hover--glow_border[data-hover-glow-mode="pulse"]:is(:hover, :focus-visible) { animation: sc-hover-glowpulse 1.2s ease-in-out infinite; }
 @keyframes sc-hover-glowpulse {
 	0%, 100% { box-shadow: 0 0 0 1px var(--hover-glow, #6aa6ff), 0 0 10px 1px var(--hover-glow, #6aa6ff); }
 	50%      { box-shadow: 0 0 0 1px var(--hover-glow, #6aa6ff), 0 0 26px 6px var(--hover-glow, #6aa6ff); }
 }
-@media (prefers-reduced-motion: reduce) { .sc-hover--glow_border[data-hover-glow-mode="pulse"]:hover { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--glow_border[data-hover-glow-mode="pulse"]:is(:hover, :focus-visible) { animation: none; } }

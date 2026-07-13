@@ -9,8 +9,8 @@
 }
 .sc-hover--corner_brackets::before { top: 4px; left: 4px; border-right: 0; border-bottom: 0; transform: translate(-4px, -4px); }
 .sc-hover--corner_brackets::after { bottom: 4px; right: 4px; border-left: 0; border-top: 0; transform: translate(4px, 4px); }
-.sc-hover--corner_brackets:hover::before,
-.sc-hover--corner_brackets:hover::after { opacity: 1; transform: translate(0, 0); }
+.sc-hover--corner_brackets:is(:hover, :focus-visible)::before,
+.sc-hover--corner_brackets:is(:hover, :focus-visible)::after { opacity: 1; transform: translate(0, 0); }
 
 /* "Draw-in" sub-style — the brackets grow from the corners instead of popping in. */
 .sc-hover--corner_brackets[data-hover-bracket-style="draw"]::before,
@@ -18,7 +18,11 @@
 	opacity: 1; transform: none; width: 0; height: 0;
 	transition: width .3s ease, height .3s ease;
 }
-.sc-hover--corner_brackets[data-hover-bracket-style="draw"]:hover::before,
-.sc-hover--corner_brackets[data-hover-bracket-style="draw"]:hover::after {
+.sc-hover--corner_brackets[data-hover-bracket-style="draw"]:is(:hover, :focus-visible)::before,
+.sc-hover--corner_brackets[data-hover-bracket-style="draw"]:is(:hover, :focus-visible)::after {
 	width: var(--hover-bracket-size, 18px); height: var(--hover-bracket-size, 18px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-hover--corner_brackets, .sc-hover--corner_brackets:is(:hover, :focus-visible) { transition: none !important; animation: none !important; }
 }

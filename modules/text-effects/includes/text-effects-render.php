@@ -14,6 +14,20 @@
  * static assets are at the module root.
  */
 
+/**
+ * Normalise a multi-select trigger value (array of view/load/click/hover, or a legacy scalar,
+ * or empty) into a space-separated list for data-text-trigger. Shared by every one-shot effect
+ * whose trigger is the multi image-picker (reveal family, scramble, typewriter, countup,
+ * splitflap, matrix). Defaults to 'view'.
+ */
+if ( ! function_exists( 'upw_text_trigger_list' ) ) :
+	function upw_text_trigger_list( $raw ) {
+		$t = is_array( $raw ) ? $raw : ( ( $raw === '' || $raw === null ) ? array() : array( (string) $raw ) );
+		$t = array_values( array_intersect( array_map( 'strval', $t ), array( 'view', 'load', 'click', 'hover' ) ) );
+		return empty( $t ) ? 'view' : implode( ' ', $t );
+	}
+endif;
+
 /* ------------------------------------------------------------------ *
  * 2) Emit the chosen effect onto the element wrapper.
  * ------------------------------------------------------------------ */
@@ -53,7 +67,8 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		$attr['data-text-split']    = esc_attr( in_array( ( $o['split_by'] ?? 'chars' ), array( 'chars', 'words', 'lines' ), true ) ? $o['split_by'] : 'chars' );
 		$attr['data-text-stagger']  = esc_attr( (float) ( $o['stagger'] ?? 0.03 ) );
 		$attr['data-text-duration'] = esc_attr( (float) ( $o['duration'] ?? 0.6 ) );
-		$attr['data-text-trigger']  = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
+		// Trigger is MULTI-SELECT (array of view/load/click/hover); emit a space-separated list.
+		$attr['data-text-trigger']  = esc_attr( upw_text_trigger_list( $o['trigger'] ?? null ) );
 		$attr['data-text-seq']      = esc_attr( ( ( $o['sequence'] ?? 'together' ) === 'cascade' ) ? 'cascade' : 'together' );
 		if ( isset( $o['direction'] ) ) {
 			$attr['data-text-dir'] = esc_attr( in_array( $o['direction'], array( 'up', 'down', 'left', 'right' ), true ) ? $o['direction'] : 'left' );
@@ -64,14 +79,14 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	switch ( $effect ) {
 		case 'scramble':
 			$attr['data-text-duration'] = esc_attr( (float) ( $o['duration'] ?? 1.2 ) );
-			$attr['data-text-trigger']  = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
+			$attr['data-text-trigger']  = esc_attr( upw_text_trigger_list( $o['trigger'] ?? null ) );
 			break;
 
 		case 'typewriter':
 			$attr['data-text-speed']   = esc_attr( (int) ( $o['speed'] ?? 55 ) );
 			$attr['data-text-caret']   = ( ( $o['caret'] ?? 'yes' ) !== 'no' ) ? '1' : '0';
 			$attr['data-text-loop']    = ( ( $o['loop'] ?? 'no' ) === 'yes' ) ? '1' : '0';
-			$attr['data-text-trigger'] = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
+			$attr['data-text-trigger'] = esc_attr( upw_text_trigger_list( $o['trigger'] ?? null ) );
 			break;
 
 		case 'shimmer':
@@ -158,7 +173,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		case 'splitflap':
 		case 'matrix':
 			$attr['data-text-duration'] = esc_attr( (float) ( $o['duration'] ?? 1.4 ) );
-			$attr['data-text-trigger']  = esc_attr( ( ( $o['trigger'] ?? 'view' ) === 'load' ) ? 'load' : 'view' );
+			$attr['data-text-trigger']  = esc_attr( upw_text_trigger_list( $o['trigger'] ?? null ) );
 			break;
 
 		case 'fill_sweep':

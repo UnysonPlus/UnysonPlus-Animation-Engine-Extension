@@ -6,5 +6,5 @@
 	opacity: 0; transform: translateX(-.5em);
 	transition: opacity .25s ease, transform .25s ease, margin-left .25s ease, width .25s ease;
 }
-.sc-hover--arrow_slide:hover::after { opacity: 1; transform: translateX(0); margin-left: .5em; width: auto; }
+.sc-hover--arrow_slide:is(:hover, :focus-visible)::after { opacity: 1; transform: translateX(0); margin-left: .5em; width: auto; }
 @media (prefers-reduced-motion: reduce) { .sc-hover--arrow_slide::after { transition: opacity .2s ease; } }

@@ -39,7 +39,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),
 		'placeholder'  => __( 'None', 'fw' ),
-		'anim_meta'    => array( 'category' => __( 'Physics', 'fw' ), 'icon' => '&#9883;' ), // ⚛ (Animations-tab inserter)
+		'anim_meta'    => array( 'category' => __( 'Interaction', 'fw' ), 'icon' => '&#9883;' ), // ⚛ (Animations-tab inserter)
 		'picker'       => array(
 			'effect' => array(
 				'type'    => 'image-picker',

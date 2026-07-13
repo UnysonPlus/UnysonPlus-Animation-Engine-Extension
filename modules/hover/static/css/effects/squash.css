@@ -1,6 +1,6 @@
 /* Animation Engine — Hover: "squash" — an elastic squash-and-stretch on hover. */
 .sc-hover--squash { transform-origin: bottom center; }
-.sc-hover--squash:hover { animation: sc-hover-squash .5s ease; }
+.sc-hover--squash:is(:hover, :focus-visible) { animation: sc-hover-squash .5s ease; }
 @keyframes sc-hover-squash {
 	0%   { transform: scale(1, 1); }
 	30%  { transform: scale(calc(1 + .12 * var(--hover-squash, 1)), calc(1 - .12 * var(--hover-squash, 1))); }
@@ -8,4 +8,4 @@
 	75%  { transform: scale(calc(1 + .04 * var(--hover-squash, 1)), calc(1 - .04 * var(--hover-squash, 1))); }
 	100% { transform: scale(1, 1); }
 }
-@media (prefers-reduced-motion: reduce) { .sc-hover--squash:hover { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--squash:is(:hover, :focus-visible) { animation: none; } }

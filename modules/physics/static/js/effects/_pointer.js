@@ -45,6 +45,30 @@
 		function endDrag() { if (!dragging) { return; } dragging = false; el.style.cursor = 'grab'; add(loop); }
 		el.addEventListener('pointerup', endDrag);
 		el.addEventListener('pointercancel', endDrag);
+
+		// ── Keyboard drag (accessibility) ───────────────────────────────────────────────────────
+		// Make the element keyboard-operable: focusable, arrow keys nudge it along the allowed axis
+		// with the SAME return physics (spring-back / free inertia), Escape or Home snaps to origin.
+		// While a key is held the settle loop is paused; on release it settles just like a mouse drop.
+		el.setAttribute('tabindex', el.getAttribute('tabindex') || '0');
+		el.classList.add('upw-phys-kbd');
+		if (!el.getAttribute('aria-label')) { el.setAttribute('aria-label', 'Draggable — press the arrow keys to move it'); }
+		var STEP = 20;
+		el.addEventListener('keydown', function (e) {
+			var moved = true;
+			if (e.key === 'ArrowLeft'  && axis !== 'y') { x -= STEP; }
+			else if (e.key === 'ArrowRight' && axis !== 'y') { x += STEP; }
+			else if (e.key === 'ArrowUp'    && axis !== 'x') { y -= STEP; }
+			else if (e.key === 'ArrowDown'  && axis !== 'x') { y += STEP; }
+			else if (e.key === 'Escape' || e.key === 'Home') { x = 0; y = 0; }
+			else { moved = false; }
+			if (!moved) { return; }
+			e.preventDefault();
+			remove(loop); vx = vy = 0; apply(); // pause settling while actively key-moving
+		});
+		el.addEventListener('keyup', function (e) {
+			if (e.key.indexOf('Arrow') === 0 || e.key === 'Escape' || e.key === 'Home') { add(loop); }
+		});
 	}
 
 	/* ---- Shared reaction helpers (jelly / squash + recoil / shake / spin triggers) ---- */

@@ -10,5 +10,11 @@
 .sc-phys--draggable:active {
 	cursor: grabbing;
 }
+/* Keyboard drag (accessibility): the runtime makes drag/slingshot elements focusable — show a
+   clear focus ring so keyboard users can tell what they're about to move with the arrow keys. */
+.upw-phys-kbd:focus-visible {
+	outline: 2px solid #2f74e6;
+	outline-offset: 3px;
+}
 
 /* Reduced motion: the runtime skips physics entirely, so nothing to animate here. */

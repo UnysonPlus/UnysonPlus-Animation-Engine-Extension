@@ -1,7 +1,7 @@
 /* Animation Engine — Hover: "color_shift" — shift a colour on hover; target = background / text / border. */
 .sc-hover--color_shift { transition: background-color .3s ease, color .3s ease, box-shadow .3s ease; }
-.sc-hover--color_shift[data-hover-target="text"]:hover { color: var(--hover-shift, #6aa6ff); }
-.sc-hover--color_shift[data-hover-target="border"]:hover { box-shadow: inset 0 0 0 2px var(--hover-shift, #6aa6ff); }
+.sc-hover--color_shift[data-hover-target="text"]:is(:hover, :focus-visible) { color: var(--hover-shift, #6aa6ff); }
+.sc-hover--color_shift[data-hover-target="border"]:is(:hover, :focus-visible) { box-shadow: inset 0 0 0 2px var(--hover-shift, #6aa6ff); }
 /* Background is the default (and covers legacy markup with no data-hover-target attr). */
-.sc-hover--color_shift[data-hover-target="background"]:hover,
-.sc-hover--color_shift:not([data-hover-target]):hover { background-color: var(--hover-shift, #6aa6ff); }
+.sc-hover--color_shift[data-hover-target="background"]:is(:hover, :focus-visible),
+.sc-hover--color_shift:not([data-hover-target]):is(:hover, :focus-visible) { background-color: var(--hover-shift, #6aa6ff); }

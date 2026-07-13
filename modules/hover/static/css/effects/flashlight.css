@@ -6,5 +6,5 @@
 	background: radial-gradient(circle var(--hover-torch-size, 90px) at var(--mx, 50%) var(--my, 50%),
 		transparent 0, transparent 62%, rgba(0, 0, 0, var(--hover-torch-dark, .82)) 100%);
 }
-.sc-hover--flashlight:hover::after { opacity: 1; }
+.sc-hover--flashlight:is(:hover, :focus-visible)::after { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .sc-hover--flashlight::after { transition: none; } }

@@ -90,6 +90,20 @@
 		};
 	}
 
+	// Bind a one-shot effect's play() to every selected trigger. data-text-trigger is a space-
+	// separated list of view / load / click / hover (missing = 'view'). view/load fire once;
+	// click/hover replay — the effect's play() should supersede any in-flight run (see the token
+	// pattern in scramble.js / typewriter.js) so replays don't stack.
+	function bindTriggers(el, play) {
+		var t = (el.getAttribute('data-text-trigger') || 'view').split(/\s+/).filter(Boolean);
+		if (!t.length) { t = ['view']; }
+		var has = function (x) { return t.indexOf(x) >= 0; };
+		if (has('load')) { play(); }
+		if (has('view')) { onView(el, play); }
+		if (has('click')) { el.addEventListener('click', play); }
+		if (has('hover')) { el.addEventListener('mouseenter', play); }
+	}
+
 	var FLAP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 	var GLYPH = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿ0123456789ABCDEF';
 
@@ -98,7 +112,7 @@
 	window.upwTextApi = {
 		cfg: cfg, reduce: reduce,
 		targetsOf: targetsOf, onView: onView, piece: piece, wrapPieces: wrapPieces, wrapLines: wrapLines,
-		cssEffect: cssEffect, cssTriggered: cssTriggered,
+		cssEffect: cssEffect, cssTriggered: cssTriggered, bindTriggers: bindTriggers,
 		FLAP: FLAP, GLYPH: GLYPH
 	};
 

@@ -6,7 +6,7 @@
  * the loop sleeps when no particles are alive. Pure Canvas 2D, no library. Skips entirely under
  * "reduce motion". Data attrs are stamped by confetti.php:
  *   data-cf-style     confetti | stars | fireworks | streamers | hearts | snow
- *   data-cf-trigger   view | click | load | hover
+ *   data-cf-trigger   space-separated list of: view click load hover
  *   data-cf-count     20..400   particles per burst
  *   data-cf-spread    20..360   fan angle (deg)
  *   data-cf-power     15..100   launch velocity
@@ -168,16 +168,17 @@
 		el.__cfBound = true;
 		if ( reduce ) { return; } // decorative motion — skip under reduce-motion
 
-		var trigger = el.getAttribute( 'data-cf-trigger' ) || 'view';
-		var replay  = el.getAttribute( 'data-cf-replay' ) === '1';
+		// data-cf-trigger is a SPACE-SEPARATED list (view / click / load / hover) — bind every one,
+		// so a burst can fire on several events (e.g. "view click").
+		var triggers = ( el.getAttribute( 'data-cf-trigger' ) || 'view' ).split( /\s+/ ).filter( Boolean );
+		if ( ! triggers.length ) { triggers = [ 'view' ]; }
+		var has    = function ( t ) { return triggers.indexOf( t ) >= 0; };
+		var replay = el.getAttribute( 'data-cf-replay' ) === '1';
 
-		if ( trigger === 'click' ) {
-			el.addEventListener( 'click', function () { burst( el ); } );
-		} else if ( trigger === 'hover' ) {
-			el.addEventListener( 'mouseenter', function () { burst( el ); } );
-		} else if ( trigger === 'load' ) {
-			burst( el );
-		} else { // view
+		if ( has( 'click' ) ) { el.addEventListener( 'click', function () { burst( el ); } ); }
+		if ( has( 'hover' ) ) { el.addEventListener( 'mouseenter', function () { burst( el ); } ); }
+		if ( has( 'load' ) )  { burst( el ); }
+		if ( has( 'view' ) ) {
 			if ( 'IntersectionObserver' in window ) {
 				var io = new IntersectionObserver( function ( ents ) {
 					ents.forEach( function ( en ) {

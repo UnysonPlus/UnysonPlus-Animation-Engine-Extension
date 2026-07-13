@@ -10,6 +10,6 @@
 	background-size: 12px 2px, 12px 2px, 2px 12px, 2px 12px;
 	background-position: 0 0, 0 100%, 0 0, 100% 0;
 }
-.sc-hover--marching_ants:hover::after { opacity: 1; animation: sc-hover-ants var(--hover-ants-speed, .5s) linear infinite; }
+.sc-hover--marching_ants:is(:hover, :focus-visible)::after { opacity: 1; animation: sc-hover-ants var(--hover-ants-speed, .5s) linear infinite; }
 @keyframes sc-hover-ants { to { background-position: 12px 0, -12px 100%, 0 -12px, 100% 12px; } }
-@media (prefers-reduced-motion: reduce) { .sc-hover--marching_ants:hover::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--marching_ants:is(:hover, :focus-visible)::after { animation: none; } }

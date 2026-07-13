@@ -6,9 +6,9 @@
 	background: linear-gradient(115deg, transparent 0%, var(--hover-shine, rgba(255,255,255,.55)) 50%, transparent 100%);
 	transform: skewX(-18deg); pointer-events: none; transition: none;
 }
-.sc-hover--shine:hover::before { animation: sc-hover-shine .85s ease; }
+.sc-hover--shine:is(:hover, :focus-visible)::before { animation: sc-hover-shine .85s ease; }
 @keyframes sc-hover-shine { from { left: -150%; } to { left: 150%; } }
-@media (prefers-reduced-motion: reduce) { .sc-hover--shine:hover::before { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--shine:is(:hover, :focus-visible)::before { animation: none; } }
 
 /* "Holographic" sub-style — a rainbow sheen keeps sweeping while hovered. */
 .sc-hover--shine[data-hover-shine="holographic"]::before {
@@ -17,7 +17,7 @@
 		rgba(120,255,0,.55), rgba(255,200,0,.55), transparent 85%);
 	background-size: 300% 300%; mix-blend-mode: overlay; transition: opacity .3s ease;
 }
-.sc-hover--shine[data-hover-shine="holographic"]:hover::before {
+.sc-hover--shine[data-hover-shine="holographic"]:is(:hover, :focus-visible)::before {
 	opacity: 1; animation: sc-hover-holo var(--hover-holo-speed, 3s) linear infinite;
 }
 @keyframes sc-hover-holo { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }

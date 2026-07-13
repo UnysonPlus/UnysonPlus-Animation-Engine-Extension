@@ -133,7 +133,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'show_borders' => false,
 		'value'        => array( 'mode' => 'none' ),
 		'placeholder'  => __( 'None', 'fw' ),
-		'anim_meta'    => array( 'category' => __( 'Motion', 'fw' ), 'icon' => '&#127916;' ), // 🎞 (Animations-tab inserter)
+		'anim_meta'    => array( 'category' => __( 'Ambient', 'fw' ), 'icon' => '&#127916;' ), // 🎞 (Animations-tab inserter)
 		'picker'       => array(
 			'mode' => array(
 				'type'    => 'image-picker',

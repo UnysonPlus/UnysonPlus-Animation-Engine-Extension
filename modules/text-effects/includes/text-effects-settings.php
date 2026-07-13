@@ -28,18 +28,50 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		);
 	};
 
-	$trigger_view_load = array(
-		'type'    => 'select',
-		'label'   => __( 'Trigger', 'fw' ),
-		'value'   => 'view',
-		'choices' => array(
-			'view' => __( 'When scrolled into view', 'fw' ),
-			'load' => __( 'On page load', 'fw' ),
+	// Shared MULTI-SELECT trigger for the one-shot effects (reveal family, scramble, typewriter,
+	// countup, splitflap, matrix) — the SAME tiles + tooltip UI as
+	// the Entrance Animation / Confetti triggers, so "when does it play" is consistent across the
+	// engine. view/load reveal once; click/hover replay. Tiles live in the shortcodes extension.
+	$sc_ext        = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+	$trig_base     = $sc_ext ? $sc_ext->get_declared_URI( '/static/img/triggers' ) : '';
+	$trig_tile     = function ( $key, $label ) use ( $trig_base ) {
+		return array( 'small' => array( 'src' => $trig_base . '/' . $key . '.svg', 'height' => 30, 'title' => $label ), 'label' => $label );
+	};
+	$trigger_multi = array(
+		'type'       => 'image-picker',
+		'multiple'   => true,
+		'show_label' => false,
+		'label'      => __( 'Trigger', 'fw' ),
+		'desc'       => __( 'When the reveal plays — pick one or more. Scroll into view / Page load reveal the text once; Click / Hover replay it.', 'fw' ),
+		'value'      => array( 'view' ),
+		'choices'    => array(
+			'view'  => $trig_tile( 'view',  __( 'Scroll into view', 'fw' ) ),
+			'load'  => $trig_tile( 'load',  __( 'Page load', 'fw' ) ),
+			'click' => $trig_tile( 'click', __( 'Click', 'fw' ) ),
+			'hover' => $trig_tile( 'hover', __( 'Hover', 'fw' ) ),
 		),
 	);
 
+	// Single-select trigger image-picker (view / hover) for the effects whose trigger is a choice
+	// of ONE, not a combination (marker, strikebox, outline_fill, width_sweep, fill_sweep,
+	// color_wave). Same tiles as the multi trigger, so the control is visually consistent across
+	// every Text Effect; the value stays a scalar, so render/runtime are unchanged. Not `multiple`
+	// — for these effects "view" and "hover" are mutually exclusive.
+	$trigger_vh = function ( $default ) use ( $trig_tile ) {
+		return array(
+			'type'       => 'image-picker',
+			'show_label' => false,
+			'label'      => __( 'Trigger', 'fw' ),
+			'value'      => $default,
+			'choices'    => array(
+				'view'  => $trig_tile( 'view',  __( 'Scroll into view', 'fw' ) ),
+				'hover' => $trig_tile( 'hover', __( 'Hover', 'fw' ) ),
+			),
+		);
+	};
+
 	// Shared option group for the reveal-family effects (split_reveal + Wave-A variants).
-	$reveal_group = function ( $split = 'chars', $with_dir = false ) use ( $trigger_view_load ) {
+	$reveal_group = function ( $split = 'chars', $with_dir = false ) use ( $trigger_multi ) {
 		$g = array(
 			'split_by' => array(
 				'type'    => 'select',
@@ -73,7 +105,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'cascade'  => __( 'One after another', 'fw' ),
 				),
 			),
-			'trigger' => $trigger_view_load,
+			'trigger' => $trigger_multi,
 		);
 		if ( $with_dir ) {
 			$g = array( 'direction' => array(
@@ -100,7 +132,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),
 		'placeholder'  => __( 'None', 'fw' ),
-		'anim_meta'    => array( 'category' => __( 'Text', 'fw' ), 'icon' => '&#128221;' ), // 📝 (Animations-tab inserter)
+		'anim_meta'    => array( 'category' => __( 'Entrance', 'fw' ), 'icon' => '&#128221;' ), // 📝 (Animations-tab inserter)
 		'picker'       => array(
 			'effect' => array(
 				'type'    => 'image-picker',
@@ -197,7 +229,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'value'      => 0.6,
 					'properties' => array( 'min' => 0.2, 'max' => 1.6, 'step' => 0.1 ),
 				),
-				'trigger' => $trigger_view_load,
+				'trigger' => $trigger_multi,
 			),
 			'blur'   => $reveal_group( 'chars' ),
 			'mask'   => $reveal_group( 'lines' ),
@@ -214,7 +246,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'value'      => 1.2,
 					'properties' => array( 'min' => 0.4, 'max' => 3, 'step' => 0.1 ),
 				),
-				'trigger' => $trigger_view_load,
+				'trigger' => $trigger_multi,
 			),
 			'typewriter' => array(
 				'speed' => array(
@@ -238,7 +270,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
 					'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
 				),
-				'trigger' => $trigger_view_load,
+				'trigger' => $trigger_multi,
 			),
 			'shimmer' => array(
 				'color_a' => upw_text_color_field( __( 'Base color', 'fw' ), 'text', '#8a8f98' ),
@@ -266,12 +298,13 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			),
 			'glitch' => array(
 				'trigger' => array(
-					'type'    => 'select',
-					'label'   => __( 'Trigger', 'fw' ),
-					'value'   => 'hover',
-					'choices' => array(
-						'hover'  => __( 'On hover', 'fw' ),
-						'always' => __( 'Always', 'fw' ),
+					'type'       => 'image-picker',
+					'show_label' => false,
+					'label'      => __( 'Trigger', 'fw' ),
+					'value'      => 'hover',
+					'choices'    => array(
+						'hover'  => $trig_tile( 'hover',  __( 'Hover', 'fw' ) ),
+						'always' => $trig_tile( 'always', __( 'Always', 'fw' ) ),
 					),
 				),
 				'intensity' => array(
@@ -294,15 +327,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'value'      => 800,
 					'properties' => array( 'min' => 100, 'max' => 900, 'step' => 50 ),
 				),
-				'trigger' => array(
-					'type'    => 'select',
-					'label'   => __( 'Trigger', 'fw' ),
-					'value'   => 'hover',
-					'choices' => array(
-						'hover' => __( 'On hover', 'fw' ),
-						'view'  => __( 'When scrolled into view', 'fw' ),
-					),
-				),
+				'trigger' => $trigger_vh( 'hover' ),
 			),
 			'gradient_flow' => array(
 				'color_a' => upw_text_color_field( __( 'Color 1', 'fw' ), 'text', '#ff6b6b' ),
@@ -329,16 +354,16 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			),
 			'marker' => array(
 				'color'   => upw_text_color_field( __( 'Highlight color', 'fw' ), 'bg', '#ffe066' ),
-				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+				'trigger' => $trigger_vh( 'view' ),
 			),
 			'strikebox' => array(
 				'shape'   => array( 'type' => 'select', 'label' => __( 'Shape', 'fw' ), 'value' => 'strike', 'choices' => array( 'strike' => __( 'Strike-through', 'fw' ), 'underline' => __( 'Underline', 'fw' ), 'box' => __( 'Box', 'fw' ) ) ),
 				'color'   => upw_text_color_field( __( 'Line color', 'fw' ), 'text', '', __( 'Defaults to the text color when blank.', 'fw' ) ),
-				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+				'trigger' => $trigger_vh( 'view' ),
 			),
 			'outline_fill' => array(
 				'color'   => upw_text_color_field( __( 'Fill color', 'fw' ), 'text', '', __( 'Defaults to the text color when blank.', 'fw' ) ),
-				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'view', 'choices' => array( 'view' => __( 'When scrolled into view', 'fw' ), 'hover' => __( 'On hover', 'fw' ) ) ),
+				'trigger' => $trigger_vh( 'view' ),
 			),
 			'chromatic' => array(
 				'intensity' => array( 'type' => 'slider', 'label' => __( 'Offset (px)', 'fw' ), 'value' => 2, 'properties' => array( 'min' => 1, 'max' => 6, 'step' => 1 ) ),
@@ -346,7 +371,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			'width_sweep' => array(
 				'from'    => array( 'type' => 'slider', 'label' => __( 'From width', 'fw' ), 'value' => 75, 'properties' => array( 'min' => 25, 'max' => 200, 'step' => 5 ) ),
 				'to'      => array( 'type' => 'slider', 'label' => __( 'To width', 'fw' ), 'value' => 125, 'properties' => array( 'min' => 25, 'max' => 200, 'step' => 5 ) ),
-				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+				'trigger' => $trigger_vh( 'hover' ),
 			),
 			'rotating_words' => array(
 				'words'    => array( 'type' => 'text', 'label' => __( 'Words', 'fw' ), 'desc' => __( 'Comma-separated words to cycle through, after the element’s own text. e.g. <em>designer, developer, dreamer</em>', 'fw' ), 'value' => '' ),
@@ -354,19 +379,19 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			),
 			'countup' => array(
 				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.6, 'properties' => array( 'min' => 0.5, 'max' => 5, 'step' => 0.1 ) ),
-				'trigger'  => $trigger_view_load,
+				'trigger'  => $trigger_multi,
 			),
 			'splitflap' => array(
 				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.4, 'properties' => array( 'min' => 0.4, 'max' => 3, 'step' => 0.1 ) ),
-				'trigger'  => $trigger_view_load,
+				'trigger'  => $trigger_multi,
 			),
 			'matrix' => array(
 				'duration' => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 1.4, 'properties' => array( 'min' => 0.6, 'max' => 3, 'step' => 0.1 ) ),
-				'trigger'  => $trigger_view_load,
+				'trigger'  => $trigger_multi,
 			),
 			'fill_sweep' => array(
 				'color'   => upw_text_color_field( __( 'Fill color', 'fw' ), 'text', '#2f74e6' ),
-				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+				'trigger' => $trigger_vh( 'hover' ),
 			),
 			'letter_jump' => array(
 				'height' => array( 'type' => 'slider', 'label' => __( 'Jump height (px)', 'fw' ), 'desc' => __( 'Each letter hops on hover.', 'fw' ), 'value' => 6, 'properties' => array( 'min' => 2, 'max' => 18, 'step' => 1 ) ),
@@ -376,7 +401,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			),
 			'color_wave' => array(
 				'color'   => upw_text_color_field( __( 'Wave color', 'fw' ), 'text', '#2f74e6' ),
-				'trigger' => array( 'type' => 'select', 'label' => __( 'Trigger', 'fw' ), 'value' => 'hover', 'choices' => array( 'hover' => __( 'On hover', 'fw' ), 'view' => __( 'When scrolled into view', 'fw' ) ) ),
+				'trigger' => $trigger_vh( 'hover' ),
 			),
 			'magnetic' => array(
 				'strength' => array( 'type' => 'slider', 'label' => __( 'Strength', 'fw' ), 'desc' => __( 'How far each letter nudges toward the pointer.', 'fw' ), 'value' => 0.4, 'properties' => array( 'min' => 0.1, 'max' => 1, 'step' => 0.05 ) ),

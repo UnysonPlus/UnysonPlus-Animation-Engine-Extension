@@ -6,6 +6,6 @@
 	background-position: 0% 0%;
 	transition: background-position .1s linear;
 }
-.sc-hover--bg_pan:hover { animation: sc-hover-pan var(--hover-pan-speed, 3s) linear infinite; }
+.sc-hover--bg_pan:is(:hover, :focus-visible) { animation: sc-hover-pan var(--hover-pan-speed, 3s) linear infinite; }
 @keyframes sc-hover-pan { to { background-position: -200% 0%; } }
-@media (prefers-reduced-motion: reduce) { .sc-hover--bg_pan:hover { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--bg_pan:is(:hover, :focus-visible) { animation: none; } }

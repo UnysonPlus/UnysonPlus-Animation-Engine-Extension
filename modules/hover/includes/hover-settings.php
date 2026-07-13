@@ -41,7 +41,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),
 		'placeholder'  => __( 'None', 'fw' ),
-		'anim_meta'    => array( 'category' => __( 'Pointer', 'fw' ), 'multi' => true ), // multi = combine several hover effects on one element
+		'anim_meta'    => array( 'category' => __( 'Interaction', 'fw' ), 'multi' => true ), // multi = combine several hover effects on one element
 		'picker'       => array(
 			'effect' => array(
 				'type'    => 'image-picker',

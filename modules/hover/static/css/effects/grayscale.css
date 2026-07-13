@@ -1,4 +1,4 @@
 /* Animation Engine — Hover: "grayscale" — an idle CSS filter that clears on hover.
    Sub-styles (via --hover-filter): grayscale · sepia · invert · hue-shift · over-saturate. */
 .sc-hover--grayscale { filter: var(--hover-filter, grayscale(100%)); transition: filter .35s ease; }
-.sc-hover--grayscale:hover { filter: none; }
+.sc-hover--grayscale:is(:hover, :focus-visible) { filter: none; }

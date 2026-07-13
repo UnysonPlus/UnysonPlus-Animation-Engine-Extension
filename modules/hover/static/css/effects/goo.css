@@ -1,9 +1,9 @@
 /* Animation Engine — Hover: "goo" — the element morphs its corners like a liquid blob on hover. */
 .sc-hover--goo { transition: border-radius .5s ease; }
-.sc-hover--goo:hover { animation: sc-hover-goo var(--hover-goo-speed, 4s) ease-in-out infinite; }
+.sc-hover--goo:is(:hover, :focus-visible) { animation: sc-hover-goo var(--hover-goo-speed, 4s) ease-in-out infinite; }
 @keyframes sc-hover-goo {
 	0%, 100% { border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; }
 	33%      { border-radius: 63% 37% 41% 59% / 58% 63% 37% 42%; }
 	66%      { border-radius: 40% 60% 54% 46% / 49% 60% 40% 51%; }
 }
-@media (prefers-reduced-motion: reduce) { .sc-hover--goo:hover { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sc-hover--goo:is(:hover, :focus-visible) { animation: none; } }

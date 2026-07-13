@@ -16,7 +16,8 @@ H.countup = function (el, target) {
 			return pre + s + suf;
 		}
 		t.textContent = fmt(0);
-		function run() { var start = null; (function f(tm) { if (!start) { start = tm; } var p = Math.min(1, (tm - start) / dur); t.textContent = fmt(goal * (1 - Math.pow(1 - p, 3))); if (p < 1) { requestAnimationFrame(f); } else { t.textContent = fmt(goal); } })(0); }
-		if ((el.getAttribute('data-text-trigger') || 'view') === 'load') { run(); } else { onView(el, run); }
+		var runId = 0; // a newer run supersedes any in-flight one (clean click/hover replay)
+		function run() { var myId = ++runId, start = null; (function f(tm) { if (myId !== runId) { return; } if (!start) { start = tm; } var p = Math.min(1, (tm - start) / dur); t.textContent = fmt(goal * (1 - Math.pow(1 - p, 3))); if (p < 1) { requestAnimationFrame(f); } else { t.textContent = fmt(goal); } })(0); }
+		API.bindTriggers(el, run);
 	};
 })();

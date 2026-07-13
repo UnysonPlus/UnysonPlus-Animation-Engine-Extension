@@ -25,6 +25,16 @@ $svg_draw_tile = function ( $file, $label ) use ( $svg_draw_base ) {
 	);
 };
 
+// Trigger tiles — the SHARED trigger vocabulary used across the engine (Entrance / Confetti /
+// Text Effects). SVG Draw's trigger is single-choice ("scrub" is mutually exclusive with the
+// event triggers), so this is a single-select image-picker; labels show (it's a full-width
+// element option, not a cramped Animations-tab card). Tiles live in the shortcodes extension.
+$svg_draw_sc   = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+$svg_draw_trig = $svg_draw_sc ? $svg_draw_sc->get_declared_URI( '/static/img/triggers' ) : '';
+$svg_draw_ttile = function ( $key, $label ) use ( $svg_draw_trig ) {
+	return array( 'small' => array( 'src' => $svg_draw_trig . '/' . $key . '.svg', 'height' => 40, 'title' => $label ), 'label' => $label );
+};
+
 $options = array(
 	'tab_content' => array(
 		'title'   => __( 'Content', 'fw' ),
@@ -96,15 +106,16 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'trigger' => array(
-						'type'    => 'select',
-						'label'   => __( 'Trigger', 'fw' ),
-						'desc'    => __( 'Scrub with scroll ties the drawing progress to the scroll position — the artwork draws and un-draws as the reader scrolls past it (Draw duration is ignored in that mode).', 'fw' ),
-						'value'   => 'view',
-						'choices' => array(
-							'view'  => __( 'When scrolled into view', 'fw' ),
-							'scrub' => __( 'Scrub with scroll', 'fw' ),
-							'load'  => __( 'On page load', 'fw' ),
-							'hover' => __( 'On hover', 'fw' ),
+						'type'       => 'image-picker',
+						'show_label' => false,
+						'label'      => __( 'Trigger', 'fw' ),
+						'desc'       => __( 'Scrub with scroll ties the drawing progress to the scroll position — the artwork draws and un-draws as the reader scrolls past it (Draw duration is ignored in that mode).', 'fw' ),
+						'value'      => 'view',
+						'choices'    => array(
+							'view'  => $svg_draw_ttile( 'view',  __( 'Scroll into view', 'fw' ) ),
+							'scrub' => $svg_draw_ttile( 'scrub', __( 'Scrub with scroll', 'fw' ) ),
+							'load'  => $svg_draw_ttile( 'load',  __( 'Page load', 'fw' ) ),
+							'hover' => $svg_draw_ttile( 'hover', __( 'Hover', 'fw' ) ),
 						),
 					),
 					'duration' => array(

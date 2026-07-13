@@ -53,7 +53,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'show_borders' => false,
 		'value'        => array( 'mode' => 'off' ),
 		'placeholder'  => __( 'Off', 'fw' ),
-		'anim_meta'    => array( 'category' => __( 'Pointer', 'fw' ) ),
+		'anim_meta'    => array( 'category' => __( 'Interaction', 'fw' ) ),
 		'picker'       => array(
 			'mode' => array(
 				'type'    => 'image-picker',

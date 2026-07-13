@@ -1,15 +1,15 @@
 /* Animation Engine — Hover: "lift" effect (on-demand partial). */
 /* Lift */
 .sc-hover--lift { transition: transform .25s ease, box-shadow .25s ease; }
-.sc-hover--lift:hover { transform: translateY(calc(var(--hover-lift, 6px) * -1)); }
-.sc-hover--lift:not([data-hover-noshadow]):hover { box-shadow: 0 12px 28px rgba(0, 0, 0, .18); }
+.sc-hover--lift:is(:hover, :focus-visible) { transform: translateY(calc(var(--hover-lift, 6px) * -1)); }
+.sc-hover--lift:not([data-hover-noshadow]):is(:hover, :focus-visible) { box-shadow: 0 12px 28px rgba(0, 0, 0, .18); }
 @media (prefers-reduced-motion: reduce) {
 	.sc-hover--lift { transition: none; }
-	.sc-hover--lift:hover { transform: none; }
+	.sc-hover--lift:is(:hover, :focus-visible) { transform: none; }
 }
 
 /* "Tilt" sub-style — lift with a slight forward tilt. */
-.sc-hover--lift[data-hover-lift-style="tilt"]:hover { transform: perspective(800px) translateY(calc(var(--hover-lift, 6px) * -1)) rotateX(6deg); }
+.sc-hover--lift[data-hover-lift-style="tilt"]:is(:hover, :focus-visible) { transform: perspective(800px) translateY(calc(var(--hover-lift, 6px) * -1)) rotateX(6deg); }
 /* "Sink" sub-style — press down instead of up. */
-.sc-hover--lift[data-hover-lift-style="sink"]:hover { transform: translateY(var(--hover-lift, 6px)); }
-.sc-hover--lift[data-hover-lift-style="sink"]:not([data-hover-noshadow]):hover { box-shadow: 0 3px 8px rgba(0, 0, 0, .14); }
+.sc-hover--lift[data-hover-lift-style="sink"]:is(:hover, :focus-visible) { transform: translateY(var(--hover-lift, 6px)); }
+.sc-hover--lift[data-hover-lift-style="sink"]:not([data-hover-noshadow]):is(:hover, :focus-visible) { box-shadow: 0 3px 8px rgba(0, 0, 0, .14); }

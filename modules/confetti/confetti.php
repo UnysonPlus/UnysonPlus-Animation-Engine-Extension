@@ -54,18 +54,29 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		);
 	};
 
+	// Trigger tiles — the SHARED multi-select trigger UI (same tiles + tooltip styling as the
+	// Entrance Animation's Trigger). Tiles live in the shortcodes extension; the animation-stack
+	// container's CSS gives any image-picker inside a card's reveal the icon+tooltip treatment.
+	$sc_ext    = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+	$trig_base = $sc_ext ? $sc_ext->get_declared_URI( '/static/img/triggers' ) : '';
+	$trig_tile = function ( $key, $label ) use ( $trig_base ) {
+		return array( 'small' => array( 'src' => $trig_base . '/' . $key . '.svg', 'height' => 30, 'title' => $label ), 'label' => $label );
+	};
+
 	// Shared option group revealed for every style.
 	$opts = array(
 		'trigger' => array(
-			'type'    => 'select',
-			'label'   => __( 'Fire on', 'fw' ),
-			'desc'    => __( 'What sets off the burst.', 'fw' ),
-			'value'   => 'view',
-			'choices' => array(
-				'view'  => __( 'Scroll into view', 'fw' ),
-				'click' => __( 'Click the element', 'fw' ),
-				'load'  => __( 'Page load', 'fw' ),
-				'hover' => __( 'Hover the element', 'fw' ),
+			'type'       => 'image-picker',
+			'multiple'   => true,
+			'show_label' => false,
+			'label'      => __( 'Fire on', 'fw' ),
+			'desc'       => __( 'What sets off the burst — pick one or more (e.g. on scroll AND on click).', 'fw' ),
+			'value'      => array( 'view' ),
+			'choices'    => array(
+				'view'  => $trig_tile( 'view',  __( 'Scroll into view', 'fw' ) ),
+				'click' => $trig_tile( 'click', __( 'Click', 'fw' ) ),
+				'load'  => $trig_tile( 'load',  __( 'Page load', 'fw' ) ),
+				'hover' => $trig_tile( 'hover', __( 'Hover', 'fw' ) ),
 			),
 		),
 		'count'    => array( 'type' => 'slider', 'label' => __( 'Particle count', 'fw' ), 'value' => 90, 'properties' => array( 'min' => 20, 'max' => 400, 'step' => 10 ) ),
@@ -110,7 +121,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'show_borders' => false,
 		'value'        => array( 'style' => 'none' ),
 		'placeholder'  => __( 'None', 'fw' ),
-		'anim_meta'    => array( 'category' => __( 'Delight', 'fw' ), 'icon' => '&#127881;' ), // 🎉
+		'anim_meta'    => array( 'category' => __( 'Ambient', 'fw' ), 'icon' => '&#127881;' ), // 🎉
 		'picker'       => array(
 			'style' => array(
 				'type'       => 'image-picker',
@@ -142,11 +153,15 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
 	$attr['class'] = esc_attr( trim( $cls . ' sc-confetti' ) );
 
-	$trigger = isset( $o['trigger'] ) && in_array( $o['trigger'], array( 'view', 'click', 'load', 'hover' ), true ) ? $o['trigger'] : 'view';
+	// Trigger is now MULTI-SELECT (array). Tolerate the legacy scalar save + empty → default 'view'.
+	$raw_trigger = isset( $o['trigger'] ) ? $o['trigger'] : array( 'view' );
+	$triggers    = is_array( $raw_trigger ) ? $raw_trigger : ( $raw_trigger === '' ? array() : array( (string) $raw_trigger ) );
+	$triggers    = array_values( array_intersect( array_map( 'strval', $triggers ), array( 'view', 'click', 'load', 'hover' ) ) );
+	if ( empty( $triggers ) ) { $triggers = array( 'view' ); }
 	$palette = isset( $o['palette'] ) && in_array( $o['palette'], array( 'brand', 'rainbow', 'gold', 'pastel', 'mono' ), true ) ? $o['palette'] : 'brand';
 
 	$attr['data-cf-style']    = esc_attr( $style );
-	$attr['data-cf-trigger']  = esc_attr( $trigger );
+	$attr['data-cf-trigger']  = esc_attr( implode( ' ', $triggers ) );
 	$attr['data-cf-count']    = esc_attr( max( 20, min( 400, (int) ( $o['count'] ?? 90 ) ) ) );
 	$attr['data-cf-spread']   = esc_attr( max( 20, min( 360, (int) ( $o['spread'] ?? 70 ) ) ) );
 	$attr['data-cf-power']    = esc_attr( max( 15, min( 100, (int) ( $o['power'] ?? 45 ) ) ) );

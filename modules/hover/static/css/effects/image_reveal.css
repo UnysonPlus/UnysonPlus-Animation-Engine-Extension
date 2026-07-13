@@ -7,10 +7,10 @@
 }
 .sc-hover--image_reveal[data-hover-style="grayscale"] img,
 .sc-hover--image_reveal[data-hover-style="zoom_gray"] img { filter: grayscale(1); }
-.sc-hover--image_reveal[data-hover-style="zoom"]:hover img,
-.sc-hover--image_reveal[data-hover-style="zoom_gray"]:hover img { transform: scale(var(--hover-zoom, 1.06)); }
-.sc-hover--image_reveal[data-hover-style="grayscale"]:hover img,
-.sc-hover--image_reveal[data-hover-style="zoom_gray"]:hover img { filter: grayscale(0); }
+.sc-hover--image_reveal[data-hover-style="zoom"]:is(:hover, :focus-visible) img,
+.sc-hover--image_reveal[data-hover-style="zoom_gray"]:is(:hover, :focus-visible) img { transform: scale(var(--hover-zoom, 1.06)); }
+.sc-hover--image_reveal[data-hover-style="grayscale"]:is(:hover, :focus-visible) img,
+.sc-hover--image_reveal[data-hover-style="zoom_gray"]:is(:hover, :focus-visible) img { filter: grayscale(0); }
 
 /* Shine sweep (own keyframe name to avoid colliding with the standalone Shine effect). */
 .sc-hover--image_reveal[data-hover-style="shine"] { position: relative; }
@@ -19,12 +19,12 @@
 	background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .4), transparent);
 	transform: skewX(-20deg); pointer-events: none; z-index: 2;
 }
-.sc-hover--image_reveal[data-hover-style="shine"]:hover::after { animation: sc-hover-img-shine .8s ease; }
+.sc-hover--image_reveal[data-hover-style="shine"]:is(:hover, :focus-visible)::after { animation: sc-hover-img-shine .8s ease; }
 @keyframes sc-hover-img-shine { to { left: 125%; } }
 
 /* "Blur → sharp" sub-style. */
 .sc-hover--image_reveal[data-hover-style="blur"] img { filter: blur(4px); }
-.sc-hover--image_reveal[data-hover-style="blur"]:hover img { filter: blur(0); }
+.sc-hover--image_reveal[data-hover-style="blur"]:is(:hover, :focus-visible) img { filter: blur(0); }
 /* "Duotone → colour" sub-style — a tinted overlay + desaturation clears on hover. */
 .sc-hover--image_reveal[data-hover-style="duotone"] { position: relative; }
 .sc-hover--image_reveal[data-hover-style="duotone"] img { filter: grayscale(1) contrast(1.08); }
@@ -33,5 +33,9 @@
 	background: linear-gradient(135deg, rgba(47, 116, 230, .55), rgba(160, 60, 255, .45));
 	mix-blend-mode: overlay; transition: opacity .5s ease;
 }
-.sc-hover--image_reveal[data-hover-style="duotone"]:hover img { filter: grayscale(0); }
-.sc-hover--image_reveal[data-hover-style="duotone"]:hover::before { opacity: 0; }
+.sc-hover--image_reveal[data-hover-style="duotone"]:is(:hover, :focus-visible) img { filter: grayscale(0); }
+.sc-hover--image_reveal[data-hover-style="duotone"]:is(:hover, :focus-visible)::before { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-hover--image_reveal, .sc-hover--image_reveal:is(:hover, :focus-visible) { transition: none !important; animation: none !important; }
+}

@@ -5,10 +5,12 @@ H.matrix = function (el, target) {
 		var pieces = wrapPieces(target, 'chars');
 		var dur = (parseFloat(el.getAttribute('data-text-duration')) || 1.4) * 1000;
 		for (var i = 0; i < pieces.length; i++) { pieces[i].setAttribute('data-f', pieces[i].textContent); }
+		var runId = 0; // a newer run supersedes any in-flight one (clean click/hover replay)
 		function run() {
-			var start = null, len = pieces.length;
+			var myId = ++runId, start = null, len = pieces.length;
 			for (var k = 0; k < len; k++) { pieces[k].classList.add('upw-text-matrix'); }
 			(function f(t) {
+				if (myId !== runId) { return; }
 				if (!start) { start = t; }
 				var prog = Math.min(1, (t - start) / dur), rev = Math.floor(prog * len), j;
 				for (j = 0; j < len; j++) {
@@ -19,6 +21,6 @@ H.matrix = function (el, target) {
 				else { for (j = 0; j < len; j++) { pieces[j].textContent = pieces[j].getAttribute('data-f'); pieces[j].classList.remove('upw-text-matrix'); } }
 			})(0);
 		}
-		if ((el.getAttribute('data-text-trigger') || 'view') === 'load') { run(); } else { onView(el, run); }
+		API.bindTriggers(el, run);
 	};
 })();

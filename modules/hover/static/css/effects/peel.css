@@ -6,4 +6,8 @@
 	border-color: transparent var(--hover-peel, rgba(0, 0, 0, .22)) transparent transparent;
 	transition: border-width .25s ease;
 }
-.sc-hover--peel:hover::before { border-width: 0 var(--hover-peel-size, 22px) var(--hover-peel-size, 22px) 0; }
+.sc-hover--peel:is(:hover, :focus-visible)::before { border-width: 0 var(--hover-peel-size, 22px) var(--hover-peel-size, 22px) 0; }
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-hover--peel, .sc-hover--peel:is(:hover, :focus-visible) { transition: none !important; animation: none !important; }
+}

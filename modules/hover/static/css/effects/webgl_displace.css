@@ -2,7 +2,7 @@
  *
  * The JS runtime renders the element's image through a WebGL canvas and adds .sc-wd-active.
  * The canvas is stacked over the original <img> (which is then hidden so the two don't
- * double up). Pointer events pass through to the element so :hover / links still work.
+ * double up). Pointer events pass through to the element so :is(:hover, :focus-visible) / links still work.
  * If the JS never runs (no WebGL, cross-origin image, reduced motion), the untouched <img>
  * simply stays visible — nothing here hides it. */
 
