@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="An animated gradient border traces the box"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="An animated gradient border traces the box"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.gb{animation:gb 3s linear infinite;transform-origin:66px 37px}@keyframes gb{to{transform:rotate(1turn)}}</style>
   <rect x="43" y="17" width="46" height="40" rx="7" fill="none" stroke="#bcd3f7" stroke-width="4"/>
   <g class="gb"><rect x="43" y="17" width="46" height="40" rx="7" fill="none" stroke="#2f74e6" stroke-width="4" stroke-dasharray="40 130" stroke-linecap="round"/></g>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Gradient Border</text>
+  </g>
 </svg>

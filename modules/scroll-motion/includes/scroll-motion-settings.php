@@ -108,7 +108,7 @@ function sc_get_gsap_fields() {
     $fx_base = $fx_ext ? $fx_ext->get_declared_URI( '/modules/scroll-motion/static/img/scroll-effects' ) : '';
     $fx      = function ( $file, $label ) use ( $fx_base ) {
         return [
-            'small' => [ 'src' => $fx_base . '/' . $file . '.svg', 'height' => 66 ],
+            'small' => [ 'src' => $fx_base . '/' . $file . '.svg', 'height' => 53 ],
             'large' => [ 'src' => $fx_base . '/' . $file . '.svg', 'height' => 132 ],
             'label' => $label,
         ];
@@ -135,6 +135,7 @@ function sc_get_gsap_fields() {
             'popover'      => true,
             'show_borders' => false,
             'value'        => [ 'effect' => 'none' ],
+            'placeholder'  => __( 'None', 'fw' ),
             'anim_meta'    => [ 'category' => __( 'Scroll', 'fw' ), 'icon' => '&#128220;' ], // 📜 (Animations-tab inserter)
             'picker' => [
                 'effect' => [
@@ -142,28 +143,39 @@ function sc_get_gsap_fields() {
                     'label'   => false,
                     'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
                     'value'   => 'none',
-                    'choices' => [
-                        'none'      => $fx( 'none',      __( 'None', 'fw' ) ),
-                        'blur'      => $fx( 'blur',      __( 'Blur In', 'fw' ) ),
-                        'clip'      => $fx( 'clip',      __( 'Clip Wipe', 'fw' ) ),
-                        'color_scrub' => $fx( 'color-scrub', __( 'Color Scrub', 'fw' ) ),
-                        'counter'   => $fx( 'counter',   __( 'Count Up', 'fw' ) ),
-                        'expand'    => $fx( 'expand',    __( 'Expand / Grow', 'fw' ) ),
-                        'flip'      => $fx( 'flip',      __( 'Flip In (3D)', 'fw' ) ),
-                        'mask_wipe' => $fx( 'mask-wipe', __( 'Mask Wipe', 'fw' ) ),
-                        'parallax'  => $fx( 'parallax',  __( 'Parallax', 'fw' ) ),
-                        'pin'       => $fx( 'pin',       __( 'Pin', 'fw' ) ),
-                        'reveal'    => $fx( 'reveal',    __( 'Reveal', 'fw' ) ),
-                        'rotate'    => $fx( 'rotate',    __( 'Rotate In', 'fw' ) ),
-                        'scroll_spin' => $fx( 'scroll-spin', __( 'Scroll Spin', 'fw' ) ),
-                        'scrub'     => $fx( 'scrub',     __( 'Scrub', 'fw' ) ),
-                        'skew'      => $fx( 'skew',      __( 'Skew Settle', 'fw' ) ),
-                        'splittext' => $fx( 'splittext', __( 'Split Text', 'fw' ) ),
-                        'stagger'   => $fx( 'stagger',   __( 'Stagger', 'fw' ) ),
-                        'tilt_scrub' => $fx( 'tilt-scrub', __( 'Tilt Scrub (3D)', 'fw' ) ),
-                        'velocity_skew' => $fx( 'velocity-skew', __( 'Velocity Skew', 'fw' ) ),
-                        'zoom'      => $fx( 'zoom',      __( 'Zoom In', 'fw' ) ),
-                    ],
+                    'search'  => __( 'Search scroll effects…', 'fw' ),
+                    'layout'  => 'tabs',
+                    'choices' => upw_ae_group_tiles(
+                        [
+                            'none'      => $fx( 'none',      __( 'None', 'fw' ) ),
+                            'blur'      => $fx( 'blur',      __( 'Blur In', 'fw' ) ),
+                            'clip'      => $fx( 'clip',      __( 'Clip Wipe', 'fw' ) ),
+                            'color_scrub' => $fx( 'color-scrub', __( 'Color Scrub', 'fw' ) ),
+                            'counter'   => $fx( 'counter',   __( 'Count Up', 'fw' ) ),
+                            'expand'    => $fx( 'expand',    __( 'Expand / Grow', 'fw' ) ),
+                            'flip'      => $fx( 'flip',      __( 'Flip In (3D)', 'fw' ) ),
+                            'mask_wipe' => $fx( 'mask-wipe', __( 'Mask Wipe', 'fw' ) ),
+                            'parallax'  => $fx( 'parallax',  __( 'Parallax', 'fw' ) ),
+                            'pin'       => $fx( 'pin',       __( 'Pin', 'fw' ) ),
+                            'reveal'    => $fx( 'reveal',    __( 'Reveal', 'fw' ) ),
+                            'rotate'    => $fx( 'rotate',    __( 'Rotate In', 'fw' ) ),
+                            'scroll_spin' => $fx( 'scroll-spin', __( 'Scroll Spin', 'fw' ) ),
+                            'scrub'     => $fx( 'scrub',     __( 'Scrub', 'fw' ) ),
+                            'skew'      => $fx( 'skew',      __( 'Skew Settle', 'fw' ) ),
+                            'splittext' => $fx( 'splittext', __( 'Split Text', 'fw' ) ),
+                            'stagger'   => $fx( 'stagger',   __( 'Stagger', 'fw' ) ),
+                            'tilt_scrub' => $fx( 'tilt-scrub', __( 'Tilt Scrub (3D)', 'fw' ) ),
+                            'velocity_skew' => $fx( 'velocity-skew', __( 'Velocity Skew', 'fw' ) ),
+                            'zoom'      => $fx( 'zoom',      __( 'Zoom In', 'fw' ) ),
+                        ],
+                        array(
+                            'grp_reveal' => array( 'label' => __( 'Reveal & Wipe', 'fw' ), 'ids' => array( 'reveal', 'clip', 'mask_wipe', 'blur', 'expand', 'zoom' ) ),
+                            'grp_3d' => array( 'label' => __( '3D & Rotate', 'fw' ), 'ids' => array( 'flip', 'rotate', 'scroll_spin', 'tilt_scrub', 'skew' ) ),
+                            'grp_scrub' => array( 'label' => __( 'Scrub & Parallax', 'fw' ), 'ids' => array( 'scrub', 'parallax', 'pin', 'velocity_skew', 'color_scrub' ) ),
+                            'grp_text' => array( 'label' => __( 'Text & Count', 'fw' ), 'ids' => array( 'counter', 'splittext', 'stagger' ) ),
+                        ),
+                        array( 'none' )
+                    ),
                 ],
             ],
             'choices' => [

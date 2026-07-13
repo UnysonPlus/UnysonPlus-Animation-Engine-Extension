@@ -1,0 +1,8 @@
+.sc-clip--bars {
+	-webkit-mask-image: repeating-linear-gradient(to right, #000 0, #000 0, transparent 0, transparent 22px); mask-image: repeating-linear-gradient(to right, #000 0, #000 0, transparent 0, transparent 22px);
+	transition: -webkit-mask-image var(--cr-dur,.7s) var(--cr-ease,cubic-bezier(.22,1,.36,1)) var(--cr-delay,0s), mask-image var(--cr-dur,.7s) var(--cr-ease,cubic-bezier(.22,1,.36,1)) var(--cr-delay,0s);
+}
+.sc-clip--bars.is-in { -webkit-mask-image: repeating-linear-gradient(to right, #000 0, #000 22px, transparent 22px, transparent 22px); mask-image: repeating-linear-gradient(to right, #000 0, #000 22px, transparent 22px, transparent 22px); }
+@media (prefers-reduced-motion: reduce) {
+	.sc-clip--bars { -webkit-mask-image: none !important; mask-image: none !important; transition: none !important; }
+}

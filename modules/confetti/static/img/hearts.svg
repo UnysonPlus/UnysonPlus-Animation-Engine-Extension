@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Hearts">
+  
+  <style>.ht{transform-box:fill-box;transform-origin:center;animation:ht 2.6s ease-in-out infinite}@keyframes ht{0%{transform:translateY(12px) scale(.5);opacity:0}25%{opacity:1}75%{opacity:1}100%{transform:translateY(-14px) scale(1);opacity:0}}</style>
+  <g>
+    <path class="ht" d="M66 46 l-7.68 -7.68 a4.56 4.56 0 1 1 7.68 -1.44 a4.56 4.56 0 1 1 7.68 1.44 z" fill="#ec4899" style="animation-delay:0s"/>
+    <path class="ht" d="M44 48 l-5.120000000000001 -5.120000000000001 a3.04 3.04 0 1 1 5.120000000000001 -0.96 a3.04 3.04 0 1 1 5.120000000000001 0.96 z" fill="#a855f7" style="animation-delay:.4s"/>
+    <path class="ht" d="M90 46.25 l-5.44 -5.44 a3.23 3.23 0 1 1 5.44 -1.02 a3.23 3.23 0 1 1 5.44 1.02 z" fill="#2f74e6" style="animation-delay:.7s"/>
+    <path class="ht" d="M56 55.25 l-4.16 -4.16 a2.4699999999999998 2.4699999999999998 0 1 1 4.16 -0.78 a2.4699999999999998 2.4699999999999998 0 1 1 4.16 0.78 z" fill="#00b295" style="animation-delay:.2s"/>
+    <path class="ht" d="M80 55.25 l-4.16 -4.16 a2.4699999999999998 2.4699999999999998 0 1 1 4.16 -0.78 a2.4699999999999998 2.4699999999999998 0 1 1 4.16 0.78 z" fill="#f6b93b" style="animation-delay:.55s"/>
+  </g>
+</svg>

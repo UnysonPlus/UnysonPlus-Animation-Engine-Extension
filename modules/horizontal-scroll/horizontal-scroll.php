@@ -41,7 +41,7 @@ if ( ! function_exists( 'sc_get_hscroll_fields' ) ) :
 		$base = $ext ? $ext->get_declared_URI( '/modules/horizontal-scroll/static/img' ) : '';
 		$tile = function ( $file, $label ) use ( $base ) {
 			return array(
-				'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 66 ),
+				'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 53 ),
 				'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 132 ),
 				'label' => $label,
 			);
@@ -89,7 +89,7 @@ if ( ! function_exists( 'sc_get_hscroll_fields' ) ) :
 			'drag'      => __( 'Drag / Flick', 'fw' ),
 		);
 
-		$tiles   = array( 'off' => $tile( 'off', __( 'Off', 'fw' ) ) );
+		$tiles   = array(  );
 		$choices = array();
 		foreach ( $styles as $key => $label ) {
 			$tiles[ $key ]   = $tile( $key, $label );
@@ -115,6 +115,7 @@ if ( ! function_exists( 'sc_get_hscroll_fields' ) ) :
 				'popover'      => true,
 				'show_borders' => false,
 				'value'        => array( 'mode' => 'off' ),
+				'placeholder'  => __( 'Off', 'fw' ),
 				'anim_meta'    => array( 'category' => __( 'Scroll', 'fw' ) ),
 				'picker'       => array(
 					'mode' => array(
@@ -122,6 +123,7 @@ if ( ! function_exists( 'sc_get_hscroll_fields' ) ) :
 						'label'   => false,
 						'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 						'value'   => 'off',
+						'search'  => __( 'Search effects…', 'fw' ),
 						'choices' => $tiles,
 					),
 				),

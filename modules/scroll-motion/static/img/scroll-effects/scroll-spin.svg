@@ -1,2 +1,2 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Scroll Spin"><g transform="translate(66 38)"><rect x="-20" y="-20" width="40" height="40" rx="6" fill="#2f74e6"><animateTransform attributeName="transform" type="rotate" dur="3s" repeatCount="indefinite" from="0" to="360"/></rect></g>
-  <text x="66" y="88" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#475569">Scroll Spin</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Scroll Spin"><g transform="translate(66 38)"><rect x="-20" y="-20" width="40" height="40" rx="6" fill="#2f74e6"><animateTransform attributeName="transform" type="rotate" dur="3s" repeatCount="indefinite" from="0" to="360"/></rect></g>
+  </svg>

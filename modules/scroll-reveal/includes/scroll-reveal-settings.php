@@ -47,21 +47,35 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$base = $ext ? $ext->get_declared_URI( '/modules/scroll-reveal/static/img' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 66 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 53 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 132 ),
 			'label' => $label,
 		);
 	};
 
 	$dirs = array(
-		'left'     => __( 'Wipe Left', 'fw' ),
-		'right'    => __( 'Wipe Right', 'fw' ),
-		'up'       => __( 'Wipe Up', 'fw' ),
-		'down'     => __( 'Wipe Down', 'fw' ),
-		'iris'     => __( 'Iris (circle)', 'fw' ),
-		'diagonal' => __( 'Diagonal', 'fw' ),
+		'left'        => __( 'Wipe Left', 'fw' ),
+		'right'       => __( 'Wipe Right', 'fw' ),
+		'up'          => __( 'Wipe Up', 'fw' ),
+		'down'        => __( 'Wipe Down', 'fw' ),
+		'iris'        => __( 'Iris (circle)', 'fw' ),
+		'diagonal'    => __( 'Diagonal', 'fw' ),
+		'diag_tr'     => __( 'Diagonal (top-right)', 'fw' ),
+		'diag_bl'     => __( 'Diagonal (bottom-left)', 'fw' ),
+		'diag_br'     => __( 'Diagonal (bottom-right)', 'fw' ),
+		'split_h'     => __( 'Split Horizontal', 'fw' ),
+		'split_v'     => __( 'Split Vertical', 'fw' ),
+		'box'         => __( 'Box Expand', 'fw' ),
+		'rounded'     => __( 'Rounded Box', 'fw' ),
+		'diamond'     => __( 'Diamond', 'fw' ),
+		'ellipse'     => __( 'Ellipse', 'fw' ),
+		'corner_iris' => __( 'Corner Iris', 'fw' ),
+		'chevron'     => __( 'Chevron', 'fw' ),
+		'triangle'    => __( 'Triangle', 'fw' ),
+		'blinds'      => __( 'Blinds (strips)', 'fw' ),
+		'bars'        => __( 'Bars (strips)', 'fw' ),
 	);
-	$choices_tiles = array( 'none' => $tile( 'none', __( 'None', 'fw' ) ) );
+	$choices_tiles = array(  );
 	$reveal        = array( 'none' => array() );
 	foreach ( $dirs as $k => $lbl ) {
 		$choices_tiles[ $k ] = $tile( $k, $lbl );
@@ -90,6 +104,27 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		),
 	);
 
+	// Dissolve In — a Canvas 2D random-block reveal (blocks fill in random order until whole). Like
+	// Pixelate, it's a stepped image reveal, so it exposes block size / speed rather than easing.
+	$choices_tiles['dissolve'] = $tile( 'dissolve', __( 'Dissolve In', 'fw' ) );
+	$reveal['dissolve']        = array(
+		'group_scroll_reveal_dissolve' => array(
+			'type'    => 'group',
+			'options' => array(
+				'block'  => array( 'type' => 'slider', 'label' => __( 'Block size (px)', 'fw' ), 'desc' => __( 'Size of each dissolve block — smaller = finer grain.', 'fw' ), 'value' => 24, 'properties' => array( 'min' => 8, 'max' => 80, 'step' => 2 ) ),
+				'speed'  => array( 'type' => 'slider', 'label' => __( 'Batch speed (ms)', 'fw' ), 'desc' => __( 'Delay between each batch of blocks revealed.', 'fw' ), 'value' => 40, 'properties' => array( 'min' => 10, 'max' => 120, 'step' => 5 ) ),
+				'replay' => array(
+					'type'         => 'switch',
+					'label'        => __( 'Replay on scroll', 'fw' ),
+					'desc'         => __( 'Re-run the dissolve every time the element re-enters the viewport.', 'fw' ),
+					'value'        => 'no',
+					'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
+					'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
+				),
+			),
+		),
+	);
+
 	// Alphabetize picker tiles by label (None/Off first, Custom last) for easier scanning.
 	uksort( $choices_tiles, function ( $a, $b ) use ( $choices_tiles ) {
 		$rank = function ( $k ) { if ( $k === 'none' || $k === 'off' ) { return 0; } return 1; };
@@ -108,6 +143,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'help'         => __( 'Scroll Reveal (Animation Engine): a directional clip-path wipe (left / right / up / down), an iris or a diagonal, or "Pixelate In" — an image that resolves from pixel blocks to sharp (Canvas 2D). Triggered by a passive scroll check when the element enters view. Honours "reduce motion" (shows instantly) and loads only on pages that use it.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'mode' => 'none' ),
+		'placeholder'  => __( 'None', 'fw' ),
 		'anim_meta'    => array( 'category' => __( 'Scroll', 'fw' ) ),
 		'picker'       => array(
 			'mode' => array(
@@ -115,6 +151,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'label'   => false,
 				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'   => 'none',
+				'search'  => __( 'Search reveals…', 'fw' ),
 				'choices' => $choices_tiles,
 			),
 		),

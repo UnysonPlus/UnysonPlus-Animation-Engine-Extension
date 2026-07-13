@@ -1,0 +1,2 @@
+.sc-clip--rounded { clip-path: inset(50% 50% 50% 50% round 50%); -webkit-clip-path: inset(50% 50% 50% 50% round 50%); }
+.sc-clip--rounded.is-in { clip-path: inset(0 round 0); -webkit-clip-path: inset(0 round 0); }

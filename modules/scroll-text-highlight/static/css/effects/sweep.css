@@ -1,0 +1,7 @@
+.sc-sth--sweep .sth-w {
+	background-image:linear-gradient(90deg,var(--sth-active,#2f74e6),var(--sth-active,#2f74e6));
+	background-repeat:no-repeat; background-size:0% 100%;
+	-webkit-background-clip:text; background-clip:text;
+	color:#c3ccd8; -webkit-text-fill-color:#c3ccd8;
+}
+.sc-sth--sweep .sth-w.is-on { background-size:100% 100%; }

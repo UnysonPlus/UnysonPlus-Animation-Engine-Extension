@@ -1,0 +1,5 @@
+.sc-sth--outline .sth-w {
+	-webkit-text-fill-color:transparent; -webkit-text-stroke:1px var(--sth-active,#2f74e6);
+	opacity:.8; transition:-webkit-text-fill-color var(--sth-dur,.5s) ease, opacity var(--sth-dur,.5s) ease;
+}
+.sc-sth--outline .sth-w.is-on { -webkit-text-fill-color:var(--sth-active,#2f74e6); opacity:1; }

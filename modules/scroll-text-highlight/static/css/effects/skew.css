@@ -1,0 +1,2 @@
+.sc-sth--skew .sth-w { display:inline-block; opacity:.3; transform:skewX(-12deg) translateY(.08em); transition:transform var(--sth-dur,.5s) ease, opacity var(--sth-dur,.5s) ease; }
+.sc-sth--skew .sth-w.is-on { opacity:1; transform:none; }

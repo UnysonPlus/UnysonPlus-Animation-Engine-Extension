@@ -15,8 +15,14 @@
  * module root.
  */
 
-$upw_sr_clip_modes = array( 'left', 'right', 'up', 'down', 'iris', 'diagonal' );
-$upw_sr_all_modes  = array_merge( $upw_sr_clip_modes, array( 'pixelate' ) );
+$upw_sr_clip_modes = array(
+	'left', 'right', 'up', 'down', 'iris', 'diagonal',
+	'diag_tr', 'diag_bl', 'diag_br',           // corner diagonals
+	'split_h', 'split_v', 'box', 'rounded',    // split / centre-out (inset)
+	'diamond', 'ellipse', 'corner_iris', 'chevron', 'triangle', // shape irises (clip-path)
+	'blinds', 'bars',                          // strip reveals (mask-image)
+);
+$upw_sr_all_modes  = array_merge( $upw_sr_clip_modes, array( 'pixelate', 'dissolve' ) );
 
 /* 2) Emit the reveal settings onto the element wrapper. */
 add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) use ( $upw_sr_clip_modes ) {
@@ -42,6 +48,25 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) use ( $upw_sr_cli
 
 		if ( function_exists( 'upw_anim_use_asset' ) ) {
 			upw_anim_use_asset( 'scroll-reveal', 'pixelate' );
+		}
+		return $attr;
+	}
+
+	// ---- Dissolve In (Canvas 2D random-block reveal). ----
+	if ( 'dissolve' === $mode ) {
+		$o = ( isset( $cr['dissolve'] ) && is_array( $cr['dissolve'] ) ) ? $cr['dissolve'] : array();
+
+		$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
+		$attr['class'] = esc_attr( trim( $cls . ' sc-dissolve-reveal' ) );
+
+		$attr['data-dsv-block'] = esc_attr( max( 8, min( 80, (int) ( $o['block'] ?? 24 ) ) ) );
+		$attr['data-dsv-speed'] = esc_attr( max( 10, min( 120, (int) ( $o['speed'] ?? 40 ) ) ) );
+		if ( isset( $o['replay'] ) && $o['replay'] === 'yes' ) {
+			$attr['data-dsv-replay'] = '1';
+		}
+
+		if ( function_exists( 'upw_anim_use_asset' ) ) {
+			upw_anim_use_asset( 'scroll-reveal', 'dissolve' );
 		}
 		return $attr;
 	}
@@ -109,7 +134,8 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'base_js'   => 'static/js/scroll-reveal.js', // clip runtime; Pixelate ships its own JS partial
 			// Directions have no JS partial (the loader only enqueues a per-style file that EXISTS);
 			// 'pixelate' DOES have static/js/effects/pixelate.js, so it loads only when used.
-			'js_styles' => array( 'left', 'right', 'up', 'down', 'iris', 'diagonal', 'pixelate' ),
+			// Every clip/mask mode needs the shared clip runtime; pixelate & dissolve ship their own JS.
+			'js_styles' => array_merge( $upw_sr_clip_modes, array( 'pixelate', 'dissolve' ) ),
 			'js_cfg'    => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

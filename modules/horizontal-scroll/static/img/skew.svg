@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Velocity Skew">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Velocity Skew">
   <path d="M18 14 L46 14 L38 56 L10 56 Z" fill="#2f74e6"/>
   <path d="M54 14 L82 14 L74 56 L46 56 Z" fill="#7aa9ee"/>
   <path d="M90 14 L118 14 L110 56 L82 56 Z" fill="#bcd3f7"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Velocity Skew</text>
+  
 </svg>

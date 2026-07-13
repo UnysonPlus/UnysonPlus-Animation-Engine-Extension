@@ -1,2 +1,2 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Expand / Grow"><rect x="30" y="34" width="72" height="14" rx="4" fill="#e2e8f0"/><rect x="30" y="34" width="20" height="14" rx="4" fill="#2f74e6"><animate attributeName="width" dur="2.2s" repeatCount="indefinite" values="0;72;72;0"/></rect>
-  <text x="66" y="88" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#475569">Expand / Grow</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Expand / Grow"><rect x="30" y="34" width="72" height="14" rx="4" fill="#e2e8f0"/><rect x="30" y="34" width="20" height="14" rx="4" fill="#2f74e6"><animate attributeName="width" dur="2.2s" repeatCount="indefinite" values="0;72;72;0"/></rect>
+  </svg>

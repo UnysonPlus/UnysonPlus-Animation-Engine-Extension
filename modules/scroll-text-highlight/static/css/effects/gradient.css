@@ -1,0 +1,6 @@
+.sc-sth--gradient .sth-w { color:#c3ccd8; -webkit-text-fill-color:#c3ccd8; }
+.sc-sth--gradient .sth-w.is-on {
+	background:linear-gradient(90deg,var(--sth-active,#2f74e6),#a855f7);
+	-webkit-background-clip:text; background-clip:text;
+	-webkit-text-fill-color:transparent; color:transparent;
+}

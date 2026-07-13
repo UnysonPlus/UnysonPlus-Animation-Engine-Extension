@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="An RGB-split glitch judder on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="An RGB-split glitch judder on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.g1{animation:g1 .5s steps(2) infinite}.g2{animation:g2 .5s steps(2) infinite}@keyframes g1{0%,100%{transform:translate(0,0)}25%{transform:translate(-3px,0)}75%{transform:translate(3px,0)}}@keyframes g2{0%,100%{transform:translate(0,0)}25%{transform:translate(3px,0)}75%{transform:translate(-3px,0)}}</style>
   <rect class="g1" x="44" y="20" width="44" height="34" rx="5" fill="#e5308a" opacity="0.7"/>
   <rect class="g2" x="44" y="20" width="44" height="34" rx="5" fill="#12b6e6" opacity="0.7"/>
   <rect x="44" y="20" width="44" height="34" rx="5" fill="#2f74e6" opacity="0.55"/>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Glitch</text>
+  </g>
 </svg>

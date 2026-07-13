@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Off">
-  <defs><clipPath id="of"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
-  <rect x="40" y="10" width="52" height="44" rx="5" fill="#e2e8f0"/>
-  <g clip-path="url(#of)"><line x1="40" y1="54" x2="92" y2="10" stroke="#94a3b8" stroke-width="4"/></g>
-  <rect x="40" y="10" width="52" height="44" rx="5" fill="none" stroke="#94a3b8" stroke-width="2"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Off</text>
-</svg>

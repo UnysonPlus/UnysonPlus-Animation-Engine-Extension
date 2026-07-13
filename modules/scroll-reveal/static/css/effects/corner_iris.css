@@ -1,0 +1,2 @@
+.sc-clip--corner_iris { clip-path: circle(0% at 0% 0%); -webkit-clip-path: circle(0% at 0% 0%); }
+.sc-clip--corner_iris.is-in { clip-path: circle(150% at 0% 0%); -webkit-clip-path: circle(150% at 0% 0%); }

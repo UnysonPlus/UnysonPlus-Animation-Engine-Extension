@@ -85,13 +85,13 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$base = $ext ? $ext->get_declared_URI( '/modules/motion-path/static/img' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 66 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 53 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 132 ),
 			'label' => $label,
 		);
 	};
 
-	$choices_tiles = array( 'none' => $tile( 'none', __( 'None', 'fw' ) ) );
+	$choices_tiles = array(  );
 	$reveal        = array( 'none' => array() );
 
 	foreach ( upw_motion_path_presets() as $key => $preset ) {
@@ -129,6 +129,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'help'         => __( 'Motion Path (Animation Engine): the element follows an SVG path — a preset shape (wave / arc / loop / S-curve / zigzag / spiral / circle / incline) or your own path data. Drive it by scroll (scrubbed), on a loop, or once on view; optionally rotate it to the path tangent ("Align to path"). Pure SVG geometry + one runtime; honours "reduce motion" (stays put) and loads only on pages that use it.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'mode' => 'none' ),
+		'placeholder'  => __( 'None', 'fw' ),
 		'anim_meta'    => array( 'category' => __( 'Scroll', 'fw' ) ),
 		'picker'       => array(
 			'mode' => array(
@@ -136,6 +137,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'label'   => false,
 				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'   => 'none',
+				'search'  => __( 'Search motion paths…', 'fw' ),
 				'choices' => $choices_tiles,
 			),
 		),

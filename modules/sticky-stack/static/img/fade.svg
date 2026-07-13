@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Fade Under">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Fade Under">
   <rect x="42" y="10" width="48" height="11" rx="3" fill="#2f74e6" opacity="0.25"/>
   <rect x="42" y="26" width="48" height="11" rx="3" fill="#2f74e6" opacity="0.55"/>
   <rect x="42" y="42" width="48" height="11" rx="3" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Fade Under</text>
+  
 </svg>

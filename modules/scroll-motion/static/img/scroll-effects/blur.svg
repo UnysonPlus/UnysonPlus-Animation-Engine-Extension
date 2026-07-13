@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Blur to sharp on scroll"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Blur to sharp on scroll"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.b{animation:b 2.6s ease-in-out infinite}@keyframes b{0%{filter:blur(6px);opacity:.35}45%,80%{filter:blur(0);opacity:1}100%{filter:blur(6px);opacity:.35}}</style>
   <g class="b">
     <rect x="42" y="20" width="48" height="34" rx="6" fill="#dbeafe"/>
     <circle cx="66" cy="37" r="9" fill="#2f74e6"/>
   </g>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Blur In</text>
+  </g>
 </svg>

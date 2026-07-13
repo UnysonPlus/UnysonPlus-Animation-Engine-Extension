@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Progress bar">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Progress bar">
   <rect x="34" y="30" width="64" height="7" rx="3.5" fill="#bcd3f7"/>
   <rect x="34" y="30" width="34" height="7" rx="3.5" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Bar</text>
+  
 </svg>

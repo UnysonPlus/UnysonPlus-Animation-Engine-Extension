@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Element shakes horizontally on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Element shakes horizontally on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.sh{animation:sh .5s ease-in-out infinite}@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}</style>
   <rect class="sh" x="46" y="18" width="40" height="36" rx="6" fill="#2f74e6"/>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Shake / Buzz</text>
+  </g>
 </svg>

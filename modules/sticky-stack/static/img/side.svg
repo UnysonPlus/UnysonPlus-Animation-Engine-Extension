@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Side Offset">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Side Offset">
   <rect x="34" y="18" width="34" height="30" rx="4" fill="#bcd3f7"/>
   <rect x="49" y="18" width="34" height="30" rx="4" fill="#7aa9ee"/>
   <rect x="64" y="18" width="34" height="30" rx="4" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Side Offset</text>
+  
 </svg>

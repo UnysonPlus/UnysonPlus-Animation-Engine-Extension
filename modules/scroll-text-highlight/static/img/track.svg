@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="track">
+  
+  <style>.w{fill:#2f74e6;transform-box:fill-box;transform-origin:0 50%;animation:tw 3.2s ease-in-out infinite}@keyframes tw{0%,12%{opacity:.3;transform:scaleX(.5)}30%,68%{opacity:1;transform:scaleX(1)}88%,100%{opacity:.3;transform:scaleX(.5)}}</style>
+  <g>
+    <rect class="w" x="30" y="22" width="18" height="9" rx="3" style="animation-delay:0.00s" />
+    <rect class="w" x="52" y="22" width="26" height="9" rx="3" style="animation-delay:0.16s" />
+    <rect class="w" x="82" y="22" width="20" height="9" rx="3" style="animation-delay:0.32s" />
+    <rect class="w" x="30" y="40" width="24" height="9" rx="3" style="animation-delay:0.48s" />
+    <rect class="w" x="58" y="40" width="16" height="9" rx="3" style="animation-delay:0.64s" />
+    <rect class="w" x="78" y="40" width="24" height="9" rx="3" style="animation-delay:0.80s" />
+  </g>
+</svg>

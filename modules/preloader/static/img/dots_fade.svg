@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Fading dots">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Fading dots">
   <g fill="#2f74e6">
     <circle cx="66" cy="16" r="4" opacity="1"/><circle cx="78" cy="21" r="4" opacity="0.8"/>
     <circle cx="83" cy="33" r="4" opacity="0.6"/><circle cx="78" cy="45" r="4" opacity="0.45"/>
     <circle cx="66" cy="50" r="4" opacity="0.35"/><circle cx="54" cy="45" r="4" opacity="0.28"/>
     <circle cx="49" cy="33" r="4" opacity="0.28"/><circle cx="54" cy="21" r="4" opacity="0.5"/>
   </g>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Fade dots</text>
+  
 </svg>

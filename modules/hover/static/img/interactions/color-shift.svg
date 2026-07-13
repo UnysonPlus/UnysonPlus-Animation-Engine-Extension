@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Color shifts on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Color shifts on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.csa{animation:csa 2.4s ease-in-out infinite}@keyframes csa{0%,38%{opacity:1}58%,100%{opacity:0}}.csb{animation:csb 2.4s ease-in-out infinite}@keyframes csb{0%,38%{opacity:0}58%,100%{opacity:1}}</style>
   <rect class="csa" x="40" y="20" width="52" height="34" rx="6" fill="#cbd5e1"/>
   <rect class="csb" x="40" y="20" width="52" height="34" rx="6" fill="#2f74e6"/>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Color Shift</text>
+  </g>
 </svg>

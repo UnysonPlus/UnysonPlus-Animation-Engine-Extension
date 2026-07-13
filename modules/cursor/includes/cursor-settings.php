@@ -29,21 +29,40 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 	$choices = array();
 	foreach ( upw_cursor_styles() as $id => $label ) {
 		$choices[ $id ] = array(
-			'small' => array( 'src' => $base . '/' . str_replace( '_', '-', $id ) . '.svg', 'height' => 66 ),
+			'small' => array( 'src' => $base . '/' . str_replace( '_', '-', $id ) . '.svg', 'height' => 53 ),
 			'large' => array( 'src' => $base . '/' . str_replace( '_', '-', $id ) . '.svg', 'height' => 132 ),
 			'label' => $label,
 		);
 	}
 
-	// Alphabetize picker tiles by label (None/Off first, Custom last) for easier scanning.
-	uksort( $choices, function ( $a, $b ) use ( $choices ) {
-		$rank = function ( $k ) { return 1; };
-		$ra = $rank( $a ); $rb = $rank( $b );
-		if ( $ra !== $rb ) { return $ra - $rb; }
-		$la = isset( $choices[ $a ]['label'] ) ? $choices[ $a ]['label'] : $a;
-		$lb = isset( $choices[ $b ]['label'] ) ? $choices[ $b ]['label'] : $b;
-		return strcasecmp( (string) $la, (string) $lb );
-	} );
+	// Drop the redundant "None" tile (the Enable switch is the off state) and regroup the styles
+	// into categories so the picker can show searchable tabs (nothing is lost — any un-categorized
+	// style falls into a "More" group).
+	unset( $choices['none'] );
+	$cursor_cats = array(
+		'grp_dotring'  => array( 'label' => __( 'Dot & Ring', 'fw' ),  'ids' => array( 'dot', 'ring', 'dot_ring', 'dual_ring', 'dashed', 'elastic', 'bullseye' ) ),
+		'grp_target'   => array( 'label' => __( 'Targeting', 'fw' ),    'ids' => array( 'crosshair', 'brackets', 'plus', 'reticle', 'radar', 'arrow' ) ),
+		'grp_shapes'   => array( 'label' => __( 'Shapes', 'fw' ),       'ids' => array( 'square', 'diamond', 'star', 'glow', 'gradient' ) ),
+		'grp_trails'   => array( 'label' => __( 'Trails', 'fw' ),       'ids' => array( 'comet', 'particles', 'confetti', 'streak', 'firefly', 'bubble', 'echo', 'word_trail' ) ),
+		'grp_fluid'    => array( 'label' => __( 'Fluid & Lens', 'fw' ), 'ids' => array( 'blob', 'spotlight', 'lens', 'magnify', 'metaball', 'ink', 'fluid', 'distort', 'reveal', 'invert' ) ),
+		'grp_interact' => array( 'label' => __( 'Interactive', 'fw' ),  'ids' => array( 'spring', 'rope', 'sticky', 'label' ) ),
+		'grp_custom'   => array( 'label' => __( 'Custom', 'fw' ),       'ids' => array( 'custom', 'glyph' ) ),
+	);
+	$grouped = array();
+	$placed  = array();
+	foreach ( $cursor_cats as $gk => $c ) {
+		$g = array();
+		foreach ( $c['ids'] as $id ) {
+			if ( isset( $choices[ $id ] ) ) { $g[ $id ] = $choices[ $id ]; $placed[ $id ] = true; }
+		}
+		if ( $g ) { $grouped[ $gk ] = array( 'label' => $c['label'], 'choices' => $g ); }
+	}
+	$misc = array();
+	foreach ( $choices as $id => $tile ) {
+		if ( empty( $placed[ $id ] ) ) { $misc[ $id ] = $tile; }
+	}
+	if ( $misc ) { $grouped['grp_more'] = array( 'label' => __( 'More', 'fw' ), 'choices' => $misc ); }
+	$choices = $grouped;
 
 	$color = function_exists( 'sc_color_field_compact' )
 		? sc_color_field_compact( array( 'label' => __( 'Cursor color', 'fw' ), 'kind' => 'bg', 'value' => array( 'predefined' => '', 'custom' => '#2f74e6' ) ) )
@@ -80,6 +99,8 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 										'label'   => false,
 										'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 										'value'   => 'dot_ring',
+										'search'  => __( 'Search cursors…', 'fw' ),
+										'layout'  => 'tabs',
 										'choices' => $choices,
 									),
 								),

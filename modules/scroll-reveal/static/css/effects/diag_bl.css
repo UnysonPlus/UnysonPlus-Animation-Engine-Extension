@@ -1,0 +1,2 @@
+.sc-clip--diag_bl { clip-path: polygon(0 100%, 0 100%, 0 0, 0 0); -webkit-clip-path: polygon(0 100%, 0 100%, 0 0, 0 0); }
+.sc-clip--diag_bl.is-in { clip-path: polygon(0 100%, 250% 100%, 0 -150%, 0 0); -webkit-clip-path: polygon(0 100%, 250% 100%, 0 -150%, 0 0); }

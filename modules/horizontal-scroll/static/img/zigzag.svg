@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Zigzag">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Zigzag">
   <rect x="12" y="8" width="30" height="38" rx="4" fill="#2f74e6"/>
   <rect x="48" y="30" width="30" height="38" rx="4" fill="#7aa9ee"/>
   <rect x="84" y="8" width="30" height="38" rx="4" fill="#bcd3f7"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Zigzag</text>
+  
 </svg>

@@ -1,0 +1,2 @@
+.sc-sth--desaturate .sth-w { filter:grayscale(1); opacity:.55; }
+.sc-sth--desaturate .sth-w.is-on { filter:grayscale(0); opacity:1; }

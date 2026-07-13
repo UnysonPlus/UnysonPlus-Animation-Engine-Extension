@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="neon">
+  <defs><filter id="gl" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <style>.w{fill:#cad3df;animation:tw 3.2s ease-in-out infinite}@keyframes tw{0%,12%{fill:#cad3df;filter:none}30%,68%{fill:#4aa3ff;filter:url(#gl)}88%,100%{fill:#cad3df;filter:none}}</style>
+  <g>
+    <rect class="w" x="30" y="22" width="18" height="9" rx="3" style="animation-delay:0.00s" />
+    <rect class="w" x="52" y="22" width="26" height="9" rx="3" style="animation-delay:0.16s" />
+    <rect class="w" x="82" y="22" width="20" height="9" rx="3" style="animation-delay:0.32s" />
+    <rect class="w" x="30" y="40" width="24" height="9" rx="3" style="animation-delay:0.48s" />
+    <rect class="w" x="58" y="40" width="16" height="9" rx="3" style="animation-delay:0.64s" />
+    <rect class="w" x="78" y="40" width="24" height="9" rx="3" style="animation-delay:0.80s" />
+  </g>
+</svg>

@@ -69,7 +69,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 	$base = $ext ? $ext->get_declared_URI( '/modules/scroll-progress/static/img/styles' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 96 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 78 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 150 ),
 			'label' => $label,
 		);
@@ -111,6 +111,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 								'label'   => false,
 								'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 								'value'   => 'bar',
+								'search'  => __( 'Search styles…', 'fw' ),
 								'choices' => array(
 									'counter'      => $tile( 'counter',      __( '% Counter', 'fw' ) ),
 									'labeled'      => $tile( 'labeled',      __( '% label bar', 'fw' ) ),

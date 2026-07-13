@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Magnetic: element follows the cursor"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Magnetic: element follows the cursor"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>
     .mag{animation:mag 1.8s ease-in-out infinite}
     @keyframes mag{0%,100%{transform:translate(0,0)}50%{transform:translate(15px,-6px)}}
@@ -9,5 +9,5 @@
   <g class="cur" transform="translate(80,28)">
     <path d="M0 0 L0 17 L4.5 12.5 L7.5 19 L9.5 18 L6.5 11.5 L12 11.5 Z" fill="#475569"/>
   </g>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Magnetic</text>
+  </g>
 </svg>

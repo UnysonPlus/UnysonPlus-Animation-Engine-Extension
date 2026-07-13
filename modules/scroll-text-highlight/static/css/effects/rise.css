@@ -1,0 +1,2 @@
+.sc-sth--rise .sth-w { display:inline-block; opacity:0; transform:translateY(.35em); transition:transform var(--sth-dur,.5s) ease, opacity var(--sth-dur,.5s) ease; }
+.sc-sth--rise .sth-w.is-on { opacity:1; transform:none; }

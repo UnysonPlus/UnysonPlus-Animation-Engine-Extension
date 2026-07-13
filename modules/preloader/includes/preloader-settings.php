@@ -15,7 +15,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 	$base = $ext ? $ext->get_declared_URI( '/modules/preloader/static/img' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 66 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 53 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 132 ),
 			'label' => $label,
 		);
@@ -78,6 +78,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 								'label'   => false,
 								'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 								'value'   => 'spinner',
+								'search'  => __( 'Search preloaders…', 'fw' ),
 								'choices' => $style_choices,
 							),
 						),

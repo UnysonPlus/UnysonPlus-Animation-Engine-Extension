@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="gradient">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f74e6"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+  <style>.w{fill:#cad3df;animation:tw 3.2s ease-in-out infinite}@keyframes tw{0%,12%{fill:#cad3df}30%,68%{fill:url(#g)}88%,100%{fill:#cad3df}}</style>
+  <g>
+    <rect class="w" x="30" y="22" width="18" height="9" rx="3" style="animation-delay:0.00s" />
+    <rect class="w" x="52" y="22" width="26" height="9" rx="3" style="animation-delay:0.16s" />
+    <rect class="w" x="82" y="22" width="20" height="9" rx="3" style="animation-delay:0.32s" />
+    <rect class="w" x="30" y="40" width="24" height="9" rx="3" style="animation-delay:0.48s" />
+    <rect class="w" x="58" y="40" width="16" height="9" rx="3" style="animation-delay:0.64s" />
+    <rect class="w" x="78" y="40" width="24" height="9" rx="3" style="animation-delay:0.80s" />
+  </g>
+</svg>

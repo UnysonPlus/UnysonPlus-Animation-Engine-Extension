@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Snow">
+  
+  <style>.sn{animation:sn 3s linear infinite}@keyframes sn{0%{transform:translateY(-10px);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateY(30px);opacity:0}}</style>
+  <g>
+    <circle class="sn" cx="40" cy="14" r="2.0" fill="#bcd3f7" style="animation-delay:0.00s"/>
+    <circle class="sn" cx="58" cy="8" r="2.8" fill="#bcd3f7" style="animation-delay:0.18s"/>
+    <circle class="sn" cx="76" cy="16" r="3.6" fill="#bcd3f7" style="animation-delay:0.36s"/>
+    <circle class="sn" cx="94" cy="10" r="2.0" fill="#bcd3f7" style="animation-delay:0.54s"/>
+    <circle class="sn" cx="48" cy="30" r="2.8" fill="#bcd3f7" style="animation-delay:0.72s"/>
+    <circle class="sn" cx="68" cy="26" r="3.6" fill="#bcd3f7" style="animation-delay:0.90s"/>
+    <circle class="sn" cx="88" cy="32" r="2.0" fill="#bcd3f7" style="animation-delay:1.08s"/>
+    <circle class="sn" cx="52" cy="50" r="2.8" fill="#bcd3f7" style="animation-delay:1.26s"/>
+    <circle class="sn" cx="80" cy="48" r="3.6" fill="#bcd3f7" style="animation-delay:1.44s"/>
+    <circle class="sn" cx="66" cy="40" r="2.0" fill="#bcd3f7" style="animation-delay:1.62s"/>
+  </g>
+</svg>

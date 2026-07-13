@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="The border strokes trace around the box on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="The border strokes trace around the box on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.bd1{animation:bd1 2.4s ease-in-out infinite}.bd2{animation:bd2 2.4s ease-in-out infinite}@keyframes bd1{0%{stroke-dashoffset:88}45%,100%{stroke-dashoffset:0}}@keyframes bd2{0%,45%{stroke-dashoffset:88}90%,100%{stroke-dashoffset:0}}</style>
   <rect x="44" y="20" width="44" height="34" rx="5" fill="none" stroke="#bcd3f7" stroke-width="3"/>
   <path class="bd1" d="M44 25 v-3 a3 3 0 0 1 3 -3 h38 a3 3 0 0 1 3 3 v27" fill="none" stroke="#2f74e6" stroke-width="3" stroke-dasharray="88" stroke-linecap="round"/>
   <path class="bd2" d="M88 49 v3 a3 3 0 0 1 -3 3 h-38 a3 3 0 0 1 -3 -3 v-27" fill="none" stroke="#2f74e6" stroke-width="3" stroke-dasharray="88" stroke-linecap="round"/>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Border Draw</text>
+  </g>
 </svg>

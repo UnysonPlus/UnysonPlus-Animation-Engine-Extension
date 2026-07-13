@@ -1,0 +1,2 @@
+.sc-sth--glow .sth-w { opacity:.5; transition:text-shadow var(--sth-dur,.5s) ease, opacity var(--sth-dur,.5s) ease; }
+.sc-sth--glow .sth-w.is-on { opacity:1; text-shadow:0 0 8px var(--sth-active,#4aa3ff), 0 0 2px var(--sth-active,#4aa3ff); }

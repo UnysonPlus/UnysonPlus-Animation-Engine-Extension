@@ -1,0 +1,3 @@
+.sc-sth--shimmer .sth-w { opacity:.5; }
+.sc-sth--shimmer .sth-w.is-on { opacity:1; animation:sth-shimmer .9s ease; }
+@keyframes sth-shimmer { 0%{filter:brightness(1)} 50%{filter:brightness(1.65)} 100%{filter:brightness(1)} }

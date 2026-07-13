@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="3D Tilt Back">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="3D Tilt Back">
   <path d="M54 12 L78 12 L82 22 L50 22 Z" fill="#bcd3f7"/>
   <path d="M50 26 L82 26 L88 39 L44 39 Z" fill="#7aa9ee"/>
   <path d="M44 43 L88 43 L94 57 L38 57 Z" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">3D Tilt Back</text>
+  
 </svg>

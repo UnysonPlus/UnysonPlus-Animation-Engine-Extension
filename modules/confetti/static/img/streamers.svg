@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Streamers">
+  
+  <style>.sr{animation:sr 2.6s ease-in-out infinite}@keyframes sr{0%{transform:translateY(-14px);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateY(10px);opacity:0}}</style>
+  <g>
+    <path class="sr" d="M40 8 q6 12 0 24 q-6 12 0 24" fill="none" stroke="#2f74e6" stroke-width="3" stroke-linecap="round" style="animation-delay:0.00s"/>
+    <path class="sr" d="M58 8 q6 12 0 24 q-6 12 0 24" fill="none" stroke="#ec4899" stroke-width="3" stroke-linecap="round" style="animation-delay:0.20s"/>
+    <path class="sr" d="M76 8 q6 12 0 24 q-6 12 0 24" fill="none" stroke="#00b295" stroke-width="3" stroke-linecap="round" style="animation-delay:0.40s"/>
+    <path class="sr" d="M94 8 q6 12 0 24 q-6 12 0 24" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round" style="animation-delay:0.60s"/>
+  </g>
+</svg>

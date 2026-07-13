@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Element presses down on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Element presses down on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.pu{animation:pu 1.8s ease-in-out infinite}@keyframes pu{0%,100%{transform:translateY(0)}45%,70%{transform:translateY(7px)}}</style>
   <rect x="42" y="20" width="48" height="34" rx="6" fill="#bcd3f7"/>
   <rect class="pu" x="42" y="18" width="48" height="34" rx="6" fill="#2f74e6"/>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Push</text>
+  </g>
 </svg>

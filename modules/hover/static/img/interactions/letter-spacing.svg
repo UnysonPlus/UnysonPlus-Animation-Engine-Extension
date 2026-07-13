@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Text tracking expands on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Text tracking expands on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.ls{animation:ls 2.4s ease-in-out infinite}@keyframes ls{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.4)}}</style>
   <g class="ls" transform-origin="66px 36px" fill="#2f74e6">
     <rect x="46" y="30" width="8" height="12" rx="2"/>
     <rect x="62" y="30" width="8" height="12" rx="2"/>
     <rect x="78" y="30" width="8" height="12" rx="2"/>
   </g>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Letter Spacing</text>
+  </g>
 </svg>

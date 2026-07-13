@@ -118,7 +118,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$base = $ext ? $ext->get_declared_URI( '/modules/marquee/static/img/directions' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 96 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 78 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 150 ),
 			'label' => $label,
 		);
@@ -132,6 +132,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'help'         => __( 'Marquee (Animation Engine): a self-running seamless ticker for any element. The content is doubled and translated by exactly one set (no jump), pauses on hover, and honours "reduce motion". Pure CSS animation, no library; loads only on pages that use it.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'mode' => 'none' ),
+		'placeholder'  => __( 'None', 'fw' ),
 		'anim_meta'    => array( 'category' => __( 'Motion', 'fw' ), 'icon' => '&#127916;' ), // 🎞 (Animations-tab inserter)
 		'picker'       => array(
 			'mode' => array(
@@ -139,8 +140,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'label'   => false,
 				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'   => 'none',
+				'show_label' => true,
 				'choices' => array(
-					'none'  => $tile( 'none',  __( 'None', 'fw' ) ),
 					'left'  => $tile( 'left',  __( 'Left', 'fw' ) ),
 					'right' => $tile( 'right', __( 'Right', 'fw' ) ),
 					'up'    => $tile( 'up',    __( 'Up', 'fw' ) ),

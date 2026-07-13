@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Iris">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Iris">
   <defs><clipPath id="c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
   <rect x="40" y="10" width="52" height="44" rx="5" fill="#bcd3f7"/>
   <g clip-path="url(#c)"><circle cx="66" cy="32" r="17" fill="#2f74e6"/></g>
   <circle cx="66" cy="32" r="22" fill="none" stroke="#2f74e6" stroke-width="2" stroke-dasharray="3 5" opacity="0.6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Iris</text>
+  
 </svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Diamond">
+  <defs><clipPath id="c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <style>.rv{animation:rv 2.9s ease-in-out infinite}
+@keyframes rv{0%,10%{clip-path:polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%);-webkit-clip-path:polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)}48%,82%{clip-path:polygon(50% -100%, 200% 50%, 50% 200%, -100% 50%);-webkit-clip-path:polygon(50% -100%, 200% 50%, 50% 200%, -100% 50%)}96%,100%{clip-path:polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%);-webkit-clip-path:polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)}}</style>
+  <rect x="40" y="10" width="52" height="44" rx="5" fill="#bcd3f7"/>
+  <g clip-path="url(#c)"><g class="rv">
+      <rect x="40" y="10" width="52" height="44" fill="#2f74e6"/>
+      <circle cx="55" cy="24" r="5" fill="#cfe0fb"/>
+      <path d="M40 54 L57 35 L68 46 L78 39 L92 54 Z" fill="#1c56b8"/>
+  </g></g>
+</svg>

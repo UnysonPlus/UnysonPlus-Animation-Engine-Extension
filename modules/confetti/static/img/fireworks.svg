@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Fireworks">
+  
+  <style>.fw,.fd{transform-box:fill-box;transform-origin:66px 34px;animation:fw 2.2s ease-out infinite}@keyframes fw{0%{transform:scale(0);opacity:0}20%{opacity:1}70%{opacity:1}100%{transform:scale(1.1);opacity:0}}</style>
+  <g>
+    <line class="fw" x1="66" y1="34" x2="92.0" y2="34.0" stroke="#2f74e6" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="92.0" cy="34.0" r="2" fill="#2f74e6"/>
+    <line class="fw" x1="66" y1="34" x2="88.5" y2="47.0" stroke="#00b295" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="88.5" cy="47.0" r="2" fill="#00b295"/>
+    <line class="fw" x1="66" y1="34" x2="79.0" y2="56.5" stroke="#f6b93b" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="79.0" cy="56.5" r="2" fill="#f6b93b"/>
+    <line class="fw" x1="66" y1="34" x2="66.0" y2="60.0" stroke="#ec4899" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="66.0" cy="60.0" r="2" fill="#ec4899"/>
+    <line class="fw" x1="66" y1="34" x2="53.0" y2="56.5" stroke="#a855f7" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="53.0" cy="56.5" r="2" fill="#a855f7"/>
+    <line class="fw" x1="66" y1="34" x2="43.5" y2="47.0" stroke="#2f74e6" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="43.5" cy="47.0" r="2" fill="#2f74e6"/>
+    <line class="fw" x1="66" y1="34" x2="40.0" y2="34.0" stroke="#00b295" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="40.0" cy="34.0" r="2" fill="#00b295"/>
+    <line class="fw" x1="66" y1="34" x2="43.5" y2="21.0" stroke="#f6b93b" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="43.5" cy="21.0" r="2" fill="#f6b93b"/>
+    <line class="fw" x1="66" y1="34" x2="53.0" y2="11.5" stroke="#ec4899" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="53.0" cy="11.5" r="2" fill="#ec4899"/>
+    <line class="fw" x1="66" y1="34" x2="66.0" y2="8.0" stroke="#a855f7" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="66.0" cy="8.0" r="2" fill="#a855f7"/>
+    <line class="fw" x1="66" y1="34" x2="79.0" y2="11.5" stroke="#2f74e6" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="79.0" cy="11.5" r="2" fill="#2f74e6"/>
+    <line class="fw" x1="66" y1="34" x2="88.5" y2="21.0" stroke="#00b295" stroke-width="2.4" stroke-linecap="round"/>
+    <circle class="fd" cx="88.5" cy="21.0" r="2" fill="#00b295"/>
+  </g>
+</svg>

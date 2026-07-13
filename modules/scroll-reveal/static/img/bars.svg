@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Bars">
+  <defs><clipPath id="c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
+  <style>.st{fill:#2f74e6;transform-box:fill-box;animation:st 2.9s ease-in-out infinite}.st{transform-origin:50% 0}@keyframes st{0%,10%{transform:scaleX(0)}48%,82%{transform:scaleX(1)}96%,100%{transform:scaleX(0)}}</style>
+  <rect x="40" y="10" width="52" height="44" rx="5" fill="#bcd3f7"/>
+  <g clip-path="url(#c)">
+    <rect class="st" x="40.0" y="10" width="9.4" height="44" style="animation-delay:0.00s"/>
+    <rect class="st" x="50.4" y="10" width="9.4" height="44" style="animation-delay:0.12s"/>
+    <rect class="st" x="60.8" y="10" width="9.4" height="44" style="animation-delay:0.24s"/>
+    <rect class="st" x="71.2" y="10" width="9.4" height="44" style="animation-delay:0.36s"/>
+    <rect class="st" x="81.6" y="10" width="9.4" height="44" style="animation-delay:0.48s"/>
+  </g>
+</svg>

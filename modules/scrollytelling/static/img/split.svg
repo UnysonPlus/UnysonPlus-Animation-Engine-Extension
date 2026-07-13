@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Split">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Split">
   <style>
     .split-t{animation:split-tk 2.6s ease-in-out infinite}
     @keyframes split-tk{0%,15%{transform:translateY(0)}55%,100%{transform:translateY(-22px)}}
@@ -11,5 +11,5 @@
     <g class="split-t"><rect x="40" y="10" width="52" height="22" fill="#bcd3f7"/><path d="M40 32 L58 20 L72 30 L92 18 L92 32 Z" fill="#5b8fe0"/></g>
     <g class="split-b"><rect x="40" y="32" width="52" height="22" fill="#5b8fe0"/></g>
   </g>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Split</text>
+  
 </svg>

@@ -1,0 +1,12 @@
+/* Animation Engine — Confetti. One shared, non-interactive full-viewport canvas stacks over the
+ * page; every element's burst draws to it. Pointer events pass through so nothing is blocked. */
+.sc-confetti-canvas {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 9998;
+}
+/* Click / hover triggers hint interactivity. */
+.sc-confetti[data-cf-trigger="click"] { cursor: pointer; }

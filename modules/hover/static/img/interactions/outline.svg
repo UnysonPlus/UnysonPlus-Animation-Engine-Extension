@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="An offset outline expands around the box on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="An offset outline expands around the box on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.ol{animation:ol 2.2s ease-in-out infinite}@keyframes ol{0%,100%{opacity:0;transform:scale(.9)}50%{opacity:1;transform:scale(1)}}</style>
   <rect x="48" y="22" width="36" height="28" rx="4" fill="#2f74e6"/>
   <rect class="ol" x="40" y="14" width="52" height="44" rx="6" fill="none" stroke="#7aa9ee" stroke-width="2.5" transform-origin="66px 36px"/>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Outline Expand</text>
+  </g>
 </svg>

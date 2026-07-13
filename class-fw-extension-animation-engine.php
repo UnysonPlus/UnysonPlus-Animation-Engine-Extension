@@ -52,9 +52,13 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/scrollytelling/scrollytelling.php'; // Scrollytelling / Pinned Steps (Section-level, scroll)
 		require_once dirname( __FILE__ ) . '/modules/preloader/preloader.php';                 // Preloader / Page Loader (site-wide)
 		require_once dirname( __FILE__ ) . '/modules/motion-path/motion-path.php';       // Motion Path (per-element — element travels a path)
+		require_once dirname( __FILE__ ) . '/modules/confetti/confetti.php';             // Confetti (per-element — celebratory particle burst)
 
 		// Central effects control — consolidates the per-module enable switches into one
 		// "Effects" tab and hides a disabled module's options. Loaded last (after modules).
 		require_once dirname( __FILE__ ) . '/includes/effects-control.php';
+
+		// Tools → Animation Diagnostics — inspect/reset a page's saved per-element animation values.
+		require_once dirname( __FILE__ ) . '/includes/animation-diagnostics.php';
 	}
 }

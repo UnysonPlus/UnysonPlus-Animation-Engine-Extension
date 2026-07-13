@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Grow In">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Grow In">
   <rect x="34" y="10" width="64" height="48" rx="6" fill="none" stroke="#bcd3f7" stroke-width="3"/>
   <rect x="45" y="19" width="42" height="30" rx="5" fill="none" stroke="#7aa9ee" stroke-width="3"/>
   <rect x="56" y="27" width="20" height="14" rx="4" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Grow In</text>
+  
 </svg>

@@ -24,7 +24,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		return array(
 			// These swatches use the taller viewBox 100×118 with a baked-in name label; 107px reads
 			// clearly at 5-per-row in the medium modal.
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 107 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 86 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 190 ),
 			'label' => $label,
 		);
@@ -38,6 +38,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'popover'      => true,
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),
+		'placeholder'  => __( 'None', 'fw' ),
 		'anim_meta'    => array( 'category' => __( 'Physics', 'fw' ), 'icon' => '&#9883;' ), // ⚛ (Animations-tab inserter)
 		'picker'       => array(
 			'effect' => array(
@@ -45,41 +46,53 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'label'   => false,
 				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'   => 'none',
-				'choices' => array(
-					'none'         => $tile( 'none',         __( 'None', 'fw' ) ),
-					// Drag
-					'draggable'    => $tile( 'draggable',    __( 'Draggable', 'fw' ) ),
-					'slingshot'    => $tile( 'slingshot',    __( 'Slingshot', 'fw' ) ),
-					// Pointer
-					'attract'      => $tile( 'attract',      __( 'Attract', 'fw' ) ),
-					'tilt_inertia' => $tile( 'tilt_inertia', __( 'Inertia Tilt', 'fw' ) ),
-					'orbit_cursor' => $tile( 'orbit_cursor', __( 'Orbit Cursor', 'fw' ) ),
-					'repel'        => $tile( 'repel',        __( 'Repel', 'fw' ) ),
-					'rubber_band'  => $tile( 'rubber_band',  __( 'Rubber Band', 'fw' ) ),
-					'spring'       => $tile( 'spring',       __( 'Spring Follow', 'fw' ) ),
-					// Ambient
-					'breathing'    => $tile( 'breathing',    __( 'Breathing', 'fw' ) ),
-					'drift'        => $tile( 'drift',        __( 'Drift', 'fw' ) ),
-					'float'        => $tile( 'float',        __( 'Float', 'fw' ) ),
-					'levitate'     => $tile( 'levitate',     __( 'Levitate', 'fw' ) ),
-					'orbit'        => $tile( 'orbit',        __( 'Orbit Point', 'fw' ) ),
-					'pendulum'     => $tile( 'pendulum',     __( 'Pendulum', 'fw' ) ),
-					'sway'         => $tile( 'sway',         __( 'Wind Sway', 'fw' ) ),
-					'wobble'       => $tile( 'wobble',       __( 'Wobble', 'fw' ) ),
-					// Entrance
-					'gravity'      => $tile( 'gravity',      __( 'Gravity Drop', 'fw' ) ),
-					'rise'         => $tile( 'rise',         __( 'Gravity Rise', 'fw' ) ),
-					'pop'          => $tile( 'pop',          __( 'Pop In', 'fw' ) ),
-					'ragdoll'      => $tile( 'ragdoll',      __( 'Ragdoll', 'fw' ) ),
-					'sag'          => $tile( 'sag',          __( 'Weight Sag', 'fw' ) ),
-					// Container
-					'bounded'      => $tile( 'bounded',      __( 'Bounce Box', 'fw' ) ),
-					// Reaction
-					'jelly'        => $tile( 'jelly',        __( 'Jelly', 'fw' ) ),
-					'spin'         => $tile( 'spin',         __( 'Momentum Spin', 'fw' ) ),
-					'recoil'       => $tile( 'recoil',       __( 'Recoil', 'fw' ) ),
-					'shake'        => $tile( 'shake',        __( 'Shake', 'fw' ) ),
-					'squash'       => $tile( 'squash',       __( 'Squash & Stretch', 'fw' ) ),
+				'search'  => __( 'Search physics effects…', 'fw' ),
+				'layout'  => 'tabs',
+				'choices' => upw_ae_group_tiles(
+					array(
+						'none'         => $tile( 'none',         __( 'None', 'fw' ) ),
+						// Drag
+						'draggable'    => $tile( 'draggable',    __( 'Draggable', 'fw' ) ),
+						'slingshot'    => $tile( 'slingshot',    __( 'Slingshot', 'fw' ) ),
+						// Pointer
+						'attract'      => $tile( 'attract',      __( 'Attract', 'fw' ) ),
+						'tilt_inertia' => $tile( 'tilt_inertia', __( 'Inertia Tilt', 'fw' ) ),
+						'orbit_cursor' => $tile( 'orbit_cursor', __( 'Orbit Cursor', 'fw' ) ),
+						'repel'        => $tile( 'repel',        __( 'Repel', 'fw' ) ),
+						'rubber_band'  => $tile( 'rubber_band',  __( 'Rubber Band', 'fw' ) ),
+						'spring'       => $tile( 'spring',       __( 'Spring Follow', 'fw' ) ),
+						// Ambient
+						'breathing'    => $tile( 'breathing',    __( 'Breathing', 'fw' ) ),
+						'drift'        => $tile( 'drift',        __( 'Drift', 'fw' ) ),
+						'float'        => $tile( 'float',        __( 'Float', 'fw' ) ),
+						'levitate'     => $tile( 'levitate',     __( 'Levitate', 'fw' ) ),
+						'orbit'        => $tile( 'orbit',        __( 'Orbit Point', 'fw' ) ),
+						'pendulum'     => $tile( 'pendulum',     __( 'Pendulum', 'fw' ) ),
+						'sway'         => $tile( 'sway',         __( 'Wind Sway', 'fw' ) ),
+						'wobble'       => $tile( 'wobble',       __( 'Wobble', 'fw' ) ),
+						// Entrance
+						'gravity'      => $tile( 'gravity',      __( 'Gravity Drop', 'fw' ) ),
+						'rise'         => $tile( 'rise',         __( 'Gravity Rise', 'fw' ) ),
+						'pop'          => $tile( 'pop',          __( 'Pop In', 'fw' ) ),
+						'ragdoll'      => $tile( 'ragdoll',      __( 'Ragdoll', 'fw' ) ),
+						'sag'          => $tile( 'sag',          __( 'Weight Sag', 'fw' ) ),
+						// Container
+						'bounded'      => $tile( 'bounded',      __( 'Bounce Box', 'fw' ) ),
+						// Reaction
+						'jelly'        => $tile( 'jelly',        __( 'Jelly', 'fw' ) ),
+						'spin'         => $tile( 'spin',         __( 'Momentum Spin', 'fw' ) ),
+						'recoil'       => $tile( 'recoil',       __( 'Recoil', 'fw' ) ),
+						'shake'        => $tile( 'shake',        __( 'Shake', 'fw' ) ),
+						'squash'       => $tile( 'squash',       __( 'Squash & Stretch', 'fw' ) ),
+					),
+					array(
+						'grp_drag' => array( 'label' => __( 'Drag', 'fw' ), 'ids' => array( 'draggable', 'slingshot' ) ),
+						'grp_pointer' => array( 'label' => __( 'Pointer', 'fw' ), 'ids' => array( 'attract', 'tilt_inertia', 'orbit_cursor', 'repel', 'rubber_band', 'spring' ) ),
+						'grp_ambient' => array( 'label' => __( 'Ambient', 'fw' ), 'ids' => array( 'breathing', 'drift', 'float', 'levitate', 'orbit', 'pendulum', 'sway', 'wobble' ) ),
+						'grp_entrance' => array( 'label' => __( 'Entrance', 'fw' ), 'ids' => array( 'gravity', 'rise', 'pop', 'ragdoll', 'sag' ) ),
+						'grp_reaction' => array( 'label' => __( 'Reaction', 'fw' ), 'ids' => array( 'bounded', 'jelly', 'spin', 'recoil', 'shake', 'squash' ) ),
+					),
+					array( 'none' )
 				),
 			),
 		),

@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Arc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Arc">
   <path d="M8 58 Q66 8 124 58" fill="none" stroke="#7aa9ee" stroke-width="2" stroke-dasharray="3 5" opacity="0.6"/>
   <rect x="12" y="40" width="26" height="30" rx="4" fill="#bcd3f7"/>
   <rect x="53" y="14" width="28" height="34" rx="4" fill="#2f74e6"/>
   <rect x="96" y="40" width="26" height="30" rx="4" fill="#bcd3f7"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Arc</text>
+  
 </svg>

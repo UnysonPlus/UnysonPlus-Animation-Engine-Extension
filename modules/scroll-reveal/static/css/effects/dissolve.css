@@ -1,0 +1,7 @@
+/* Animation Engine — Scroll Reveal "Dissolve In" (canvas random-block reveal).
+ * JS draws the element's <img> onto a <canvas> block-by-block in random order and adds
+ * .sc-dissolve-active; the canvas stacks over the image, which is then hidden. Pointer events pass
+ * through. If the JS never runs (reduced motion, no 2D context, no <img>), the image stays. */
+.sc-dissolve-reveal .sc-dsv-canvas { position: absolute; z-index: 1; display: block; pointer-events: none; }
+.sc-dissolve-reveal.sc-dissolve-active > img,
+.sc-dissolve-reveal.sc-dissolve-active img { opacity: 0; }

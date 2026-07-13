@@ -1,0 +1,2 @@
+.sc-clip--ellipse { clip-path: ellipse(0% 0% at 50% 50%); -webkit-clip-path: ellipse(0% 0% at 50% 50%); }
+.sc-clip--ellipse.is-in { clip-path: ellipse(150% 120% at 50% 50%); -webkit-clip-path: ellipse(150% 120% at 50% 50%); }

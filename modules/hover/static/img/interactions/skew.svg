@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Element skews sideways on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Element skews sideways on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.sk{animation:sk 2s ease-in-out infinite}@keyframes sk{0%,100%{transform:skewX(0)}50%{transform:skewX(-16deg)}}</style>
   <rect class="sk" x="44" y="20" width="44" height="34" rx="6" fill="#2f74e6"/>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Skew</text>
+  </g>
 </svg>

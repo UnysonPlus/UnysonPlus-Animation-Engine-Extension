@@ -1,0 +1,2 @@
+.sc-clip--chevron { clip-path: polygon(0 0, 0 0, 0 50%, 0 100%, 0 100%); -webkit-clip-path: polygon(0 0, 0 0, 0 50%, 0 100%, 0 100%); }
+.sc-clip--chevron.is-in { clip-path: polygon(0 0, 125% 0, 155% 50%, 125% 100%, 0 100%); -webkit-clip-path: polygon(0 0, 125% 0, 155% 50%, 125% 100%, 0 100%); }

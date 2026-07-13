@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Stars">
+  
+  <style>.st{transform-box:fill-box;transform-origin:center;animation:st 2.2s ease-in-out infinite}@keyframes st{0%,100%{transform:scale(.5);opacity:.3}50%{transform:scale(1) rotate(20deg);opacity:1}}</style>
+  <g>
+    <polygon class="st" points="66.0,19.0 70.0,28.5 80.3,29.4 72.4,36.1 74.8,46.1 66.0,40.8 57.2,46.1 59.6,36.1 51.7,29.4 62.0,28.5" fill="#f6b93b" style="animation-delay:0s"/>
+    <polygon class="st" points="40.0,18.0 42.1,23.1 47.6,23.5 43.4,27.1 44.7,32.5 40.0,29.6 35.3,32.5 36.6,27.1 32.4,23.5 37.9,23.1" fill="#2f74e6" style="animation-delay:.2s"/>
+    <polygon class="st" points="94.0,22.0 96.1,27.1 101.6,27.5 97.4,31.1 98.7,36.5 94.0,33.6 89.3,36.5 90.6,31.1 86.4,27.5 91.9,27.1" fill="#ec4899" style="animation-delay:.4s"/>
+    <polygon class="st" points="52.0,44.0 53.6,47.8 57.7,48.1 54.6,50.8 55.5,54.9 52.0,52.7 48.5,54.9 49.4,50.8 46.3,48.1 50.4,47.8" fill="#00b295" style="animation-delay:.6s"/>
+    <polygon class="st" points="84.0,44.0 85.6,47.8 89.7,48.1 86.6,50.8 87.5,54.9 84.0,52.7 80.5,54.9 81.4,50.8 78.3,48.1 82.4,47.8" fill="#a855f7" style="animation-delay:.3s"/>
+  </g>
+</svg>

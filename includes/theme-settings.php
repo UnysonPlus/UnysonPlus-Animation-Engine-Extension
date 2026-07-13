@@ -34,6 +34,50 @@ if ( ! function_exists( 'upw_perf_note' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'upw_ae_group_tiles' ) ) :
+	/**
+	 * Group a FLAT image-picker choices map into categories for the searchable "tabs" layout used
+	 * by every module effect picker. The flat list stays the source of truth (a module just adds a
+	 * new tile to it); categorisation is a thin map over it.
+	 *
+	 * @param array $flat Ordered map of id => tile (as built by a module's tile helper).
+	 * @param array $cats Ordered map of group_key => array( 'label' => .., 'ids' => array( id, .. ) ).
+	 * @param array $drop Choice ids to omit entirely (e.g. a redundant 'none' tile).
+	 * @return array Grouped choices ( group_key => array( 'label' => .., 'choices' => array( id => tile ) ) ).
+	 *               Any id not named in $cats (and not dropped) is appended to a final "More" group,
+	 *               so a newly-added effect is surfaced rather than silently lost.
+	 */
+	function upw_ae_group_tiles( $flat, $cats, $drop = array() ) {
+		foreach ( (array) $drop as $d ) {
+			unset( $flat[ $d ] );
+		}
+		$grouped = array();
+		$placed  = array();
+		foreach ( $cats as $gk => $c ) {
+			$g = array();
+			foreach ( $c['ids'] as $id ) {
+				if ( isset( $flat[ $id ] ) ) {
+					$g[ $id ]      = $flat[ $id ];
+					$placed[ $id ] = true;
+				}
+			}
+			if ( $g ) {
+				$grouped[ $gk ] = array( 'label' => $c['label'], 'choices' => $g );
+			}
+		}
+		$misc = array();
+		foreach ( $flat as $id => $tile ) {
+			if ( empty( $placed[ $id ] ) ) {
+				$misc[ $id ] = $tile;
+			}
+		}
+		if ( $misc ) {
+			$grouped['grp_more'] = array( 'label' => __( 'More', 'fw' ), 'choices' => $misc );
+		}
+		return $grouped;
+	}
+endif;
+
 if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 	/**
 	 * The "Animations" nav section: a box → group of global engine options, plus a

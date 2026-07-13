@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Cube">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Cube">
   <path d="M66 14 L90 24 L90 48 L66 58 L42 48 L42 24 Z" fill="none" stroke="#2f74e6" stroke-width="3" stroke-linejoin="round"/>
   <path d="M42 24 L66 34 L90 24" fill="none" stroke="#2f74e6" stroke-width="3" stroke-linejoin="round"/>
   <path d="M66 34 L66 58" fill="none" stroke="#2f74e6" stroke-width="3"/>
   <path d="M66 34 L90 24 L90 48 L66 58 Z" fill="#2f74e6" opacity="0.18"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Cube</text>
+  
 </svg>

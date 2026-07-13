@@ -1,0 +1,2 @@
+.sc-sth--scale .sth-w { display:inline-block; opacity:.3; transform:scale(.8); transition:transform var(--sth-dur,.5s) cubic-bezier(.34,1.56,.64,1), opacity var(--sth-dur,.5s) ease; }
+.sc-sth--scale .sth-w.is-on { opacity:1; transform:scale(1); }

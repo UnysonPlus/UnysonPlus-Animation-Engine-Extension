@@ -1,0 +1,2 @@
+.sc-sth--spotlight .sth-w { opacity:.35; filter:blur(1.6px); }
+.sc-sth--spotlight .sth-w.is-on { opacity:1; filter:blur(0); }

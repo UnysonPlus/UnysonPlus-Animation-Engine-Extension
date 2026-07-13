@@ -1,0 +1,2 @@
+.sc-sth--dim .sth-w { opacity:.5; filter:brightness(.5); }
+.sc-sth--dim .sth-w.is-on { opacity:1; filter:brightness(1); }

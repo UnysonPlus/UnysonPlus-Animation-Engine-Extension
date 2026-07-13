@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="3D Carousel">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="3D Carousel">
   <path d="M14 18 L40 12 L40 56 L14 62 Z" fill="#bcd3f7"/>
   <path d="M118 18 L92 12 L92 56 L118 62 Z" fill="#bcd3f7"/>
   <rect x="48" y="10" width="36" height="50" rx="5" fill="#2f74e6"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">3D Carousel</text>
+  
 </svg>

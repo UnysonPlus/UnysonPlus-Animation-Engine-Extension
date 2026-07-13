@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Carousel">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Carousel">
   <rect x="40" y="22" width="26" height="30" rx="4" fill="none" stroke="#2f74e6" stroke-width="3"/>
   <rect x="60" y="18" width="30" height="34" rx="4" fill="#2f74e6" opacity="0.85"/>
   <path d="M48 60 a22 8 0 0 0 40 -2" fill="none" stroke="#2f74e6" stroke-width="3" stroke-linecap="round"/>
   <path d="M88 58 l0 -8 -8 3" fill="none" stroke="#2f74e6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Carousel</text>
+  
 </svg>

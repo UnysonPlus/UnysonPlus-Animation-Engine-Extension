@@ -1,0 +1,7 @@
+.sc-sth--neon .sth-w { opacity:.4; }
+.sc-sth--neon .sth-w.is-on { opacity:1; animation:sth-neon .7s both; }
+@keyframes sth-neon {
+	0%{opacity:.4;text-shadow:none} 10%{opacity:1} 16%{opacity:.5}
+	26%{opacity:1;text-shadow:0 0 8px var(--sth-active,#4aa3ff)} 32%{opacity:.7}
+	100%{opacity:1;text-shadow:0 0 8px var(--sth-active,#4aa3ff),0 0 2px var(--sth-active,#4aa3ff)}
+}

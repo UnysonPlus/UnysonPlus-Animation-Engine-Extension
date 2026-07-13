@@ -30,10 +30,26 @@ endif;
 if ( ! function_exists( 'upw_sth_styles' ) ) :
 	function upw_sth_styles() {
 		return array(
-			'fill'   => __( 'Fill (colour)', 'fw' ),
-			'fade'   => __( 'Fade (opacity)', 'fw' ),
-			'blur'   => __( 'Blur to sharp', 'fw' ),
-			'marker' => __( 'Marker sweep', 'fw' ),
+			'fill'       => __( 'Fill (colour)', 'fw' ),
+			'fade'       => __( 'Fade (opacity)', 'fw' ),
+			'blur'       => __( 'Blur to sharp', 'fw' ),
+			'marker'     => __( 'Marker sweep', 'fw' ),
+			'dim'        => __( 'Dim to bright', 'fw' ),
+			'desaturate' => __( 'Greyscale to colour', 'fw' ),
+			'spotlight'  => __( 'Spotlight (focus)', 'fw' ),
+			'gradient'   => __( 'Gradient fill', 'fw' ),
+			'sweep'      => __( 'Colour sweep', 'fw' ),
+			'glow'       => __( 'Glow', 'fw' ),
+			'neon'       => __( 'Neon flicker', 'fw' ),
+			'rise'       => __( 'Rise up', 'fw' ),
+			'scale'      => __( 'Scale pop', 'fw' ),
+			'skew'       => __( 'Skew settle', 'fw' ),
+			'track'      => __( 'Track in (spacing)', 'fw' ),
+			'underline'  => __( 'Underline grow', 'fw' ),
+			'pill'       => __( 'Highlight pill', 'fw' ),
+			'outline'    => __( 'Outline to fill', 'fw' ),
+			'strike'     => __( 'Strike clear', 'fw' ),
+			'shimmer'    => __( 'Shimmer', 'fw' ),
 		);
 	}
 endif;
@@ -86,13 +102,13 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$base = $ext ? $ext->get_declared_URI( '/modules/scroll-text-highlight/static/img' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 66 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 53 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 132 ),
 			'label' => $label,
 		);
 	};
 
-	$choices = array( 'off' => $tile( 'off', __( 'Off', 'fw' ) ) );
+	$choices = array(  );
 	$reveal  = array( 'off' => array() );
 	foreach ( upw_sth_styles() as $k => $lbl ) {
 		$choices[ $k ] = $tile( $k, $lbl );
@@ -117,6 +133,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'help'         => __( 'Scroll Text Highlight (Animation Engine): splits the text into word (or character) spans and scrubs each from muted to full as the reader scrolls past — the "scrollytelling" read. Pure CSS transitions + one passive, rAF-throttled scroll check, no library. Honours "reduce motion" (shows everything lit) and loads only on pages that use it.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'mode' => 'off' ),
+		'placeholder'  => __( 'Off', 'fw' ),
 		'anim_meta'    => array( 'category' => __( 'Scroll', 'fw' ) ),
 		'picker'       => array(
 			'mode' => array(
@@ -124,6 +141,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'label'   => false,
 				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'   => 'off',
+				'show_label' => true,
 				'choices' => $choices,
 			),
 		),
@@ -190,7 +208,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'css_dir'   => 'static/css/effects',
 			'base_css'  => 'static/css/base.css',
 			'base_js'   => 'static/js/scroll-text-highlight.js',
-			'js_styles' => array( 'fill', 'fade', 'blur', 'marker' ),
+			'js_styles' => array_keys( upw_sth_styles() ), // every highlight mode needs the word-wrap runtime
 			'js_cfg'    => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

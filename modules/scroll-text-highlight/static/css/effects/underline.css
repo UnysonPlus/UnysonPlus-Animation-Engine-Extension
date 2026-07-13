@@ -1,0 +1,5 @@
+.sc-sth--underline .sth-w {
+	background-image:linear-gradient(var(--sth-active,#2f74e6),var(--sth-active,#2f74e6));
+	background-repeat:no-repeat; background-position:0 100%; background-size:0% 2px; opacity:.65;
+}
+.sc-sth--underline .sth-w.is-on { background-size:100% 2px; opacity:1; }

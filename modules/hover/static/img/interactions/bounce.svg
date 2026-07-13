@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 96" role="img" aria-label="Element bounces up on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Element bounces up on hover"><g transform="translate(66,36) scale(1.35) translate(-66,-36)">
   <style>.bo{animation:bo 1.4s cubic-bezier(.28,.84,.42,1) infinite}@keyframes bo{0%,100%{transform:translateY(0)}40%{transform:translateY(-16px)}60%{transform:translateY(-6px)}}</style>
   <ellipse cx="66" cy="56" rx="20" ry="3.5" fill="#1e293b" opacity="0.15"/>
   <rect class="bo" x="48" y="20" width="36" height="32" rx="6" fill="#2f74e6"/>
-  </g><text x="66" y="86" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#475569">Bounce</text>
+  </g>
 </svg>

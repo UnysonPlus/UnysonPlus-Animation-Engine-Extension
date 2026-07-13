@@ -23,7 +23,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 	$base = $ext ? $ext->get_declared_URI( '/modules/parallax/static/img/roles' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 96 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 78 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 150 ),
 			'label' => $label,
 		);
@@ -38,6 +38,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'help'         => __( 'Parallax Depth Layers (Animation Engine): pointer- and scroll-driven multi-layer depth. Mark the stage as a Scene; mark each moving element as a Layer and give it a Depth. One shared render loop, no library. Honours "reduce motion" and is skipped on touch for the pointer source (scroll layers still move).', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'role' => 'none' ),
+		'placeholder'  => __( 'None', 'fw' ),
 		'anim_meta'    => array( 'category' => __( 'Scroll', 'fw' ), 'icon' => '&#127748;' ), // 🌄 (Animations-tab inserter)
 		'picker'       => array(
 			'role' => array(
@@ -45,8 +46,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'label'   => false,
 				'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'   => 'none',
+				'show_label' => true,
 				'choices' => array(
-					'none'  => $tile( 'none',  __( 'None', 'fw' ) ),
 					'scene' => $tile( 'scene', __( 'Scene', 'fw' ) ),
 					'layer' => $tile( 'layer', __( 'Layer', 'fw' ) ),
 				),

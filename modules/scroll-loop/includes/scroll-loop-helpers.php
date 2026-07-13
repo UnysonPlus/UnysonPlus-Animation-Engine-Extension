@@ -42,7 +42,7 @@ function sc_get_scroll_loop_fields() {
 	$base = $ext ? $ext->get_declared_URI( '/modules/scroll-loop/static/img/loop' ) : '';
 	$tile = function ( $file, $label ) use ( $base ) {
 		return array(
-			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 66 ),
+			'small' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 53 ),
 			'large' => array( 'src' => $base . '/' . $file . '.svg', 'height' => 132 ),
 			'label' => $label,
 		);
@@ -58,6 +58,7 @@ function sc_get_scroll_loop_fields() {
 			'popover'      => true,
 			'show_borders' => false,
 			'value'        => array( 'mode' => 'off' ),
+			'placeholder'  => __( 'Off', 'fw' ),
 			'anim_meta'    => array( 'category' => __( 'Scroll', 'fw' ), 'icon' => '&#128257;' ), // 🔁 (Animations-tab inserter)
 			'picker'       => array(
 				'mode' => array(
@@ -65,8 +66,8 @@ function sc_get_scroll_loop_fields() {
 					'label'   => false,
 					'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
 					'value'   => 'off',
+					'show_label' => true,
 					'choices' => array(
-						'off'  => $tile( 'off',  __( 'Off', 'fw' ) ),
 						'loop' => $tile( 'loop', __( 'Infinite Loop', 'fw' ) ),
 					),
 				),

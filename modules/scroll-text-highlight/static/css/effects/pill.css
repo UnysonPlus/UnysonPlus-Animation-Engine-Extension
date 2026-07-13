@@ -1,0 +1,2 @@
+.sc-sth--pill .sth-w { border-radius:6px; padding:0 3px; opacity:.7; transition:background-color var(--sth-dur,.5s) ease, opacity var(--sth-dur,.5s) ease; }
+.sc-sth--pill .sth-w.is-on { opacity:1; background-color:var(--sth-active,#ffe08a); }

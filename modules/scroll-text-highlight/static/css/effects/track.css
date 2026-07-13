@@ -1,0 +1,2 @@
+.sc-sth--track .sth-w { opacity:.3; letter-spacing:.28em; transition:letter-spacing var(--sth-dur,.5s) ease, opacity var(--sth-dur,.5s) ease; }
+.sc-sth--track .sth-w.is-on { opacity:1; letter-spacing:normal; }

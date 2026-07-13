@@ -1,0 +1,5 @@
+.sc-sth--strike .sth-w {
+	background-image:linear-gradient(currentColor,currentColor);
+	background-repeat:no-repeat; background-position:100% 50%; background-size:100% 2px; opacity:.6;
+}
+.sc-sth--strike .sth-w.is-on { background-size:0% 2px; opacity:1; }
