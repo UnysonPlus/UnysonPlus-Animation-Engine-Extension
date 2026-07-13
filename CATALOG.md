@@ -7,7 +7,15 @@ shortcode, check this list first: a new one must be genuinely DISTINCT from ever
 rename or a near-duplicate of an existing style). Keep this file updated when styles/modules are
 added or removed.
 
-_Engine version at last update: 1.1.57. (Scroll Effect module +5 distinct effects — Velocity Skew, 3D Tilt Scrub, Scroll Spin, Mask Wipe, Color Scrub — plus Split-Text per-piece animations, Odometer counter, Zoom-out, diagonal reveals, parallax motion/fade, pin edge-fade, rounded clip.)_
+_Engine version at last update: 1.1.83. (Since 1.1.57: **Confetti** module added — 6 burst styles.
+**Trigger unification** — Entrance, Confetti and the applicable Text Effects + SVG Draw share one
+image-picker **Trigger** control (`view`/`load`/`click`/`hover`, multi-select where events combine;
+the label shows as the tile's hover title). **Accessibility pass** — hover effects fire on keyboard
+focus (`:hover` → `:is(:hover, :focus-visible)`), reduced-motion guards added where missing, and
+draggable/slingshot **Physics** is keyboard-operable (arrow keys move, Escape resets). **SVG Draw**
+gained a scroll-**scrub** trigger. The "Add Animation" inserter was regrouped into four behavior
+buckets — **Entrance / Scroll / Interaction / Ambient** — with self-describing tab descriptions;
+the Category column below reflects those buckets.)_
 
 ---
 
@@ -21,17 +29,18 @@ the styles it uses.
 
 | Module | Category | Count | Styles / effects |
 | --- | --- | --- | --- |
-| **hover** (Hover Interactions) | Pointer | 43 | magnetic *(pull / push)* · tilt *(+ invert, glare)* · spotlight *(glow / gradient-tint)* · image_reveal *(zoom / grayscale / duotone / blur / shine)* · text_scramble · glow_border *(steady / pulse)* · underline_grow *(under / over / through)* · ripple *(pointer / center)* · lift *(lift / tilt / sink)* · color_shift *(bg / text / border)* · scale *(in / out)* · push *(press / into-screen)* · jelly · skew *(X / Y / both)* · shine *(sheen / holographic)* · gradient_border · corner_brackets *(pop / draw)* · fill_sweep *(L / R / B / center / diagonal)* · border_draw *(corner / center-out)* · glitch *(rgb / slice / jitter)* · text_swap *(slide / fade / flip)* · rotate *(2D / 3D-flip)* · pulse *(scale / glow / opacity)* · shake *(horizontal / vertical / rotate)* · bounce *(up / drop / squash)* · grayscale *(grayscale / sepia / invert / hue / saturate)* · blur · brightness *(brightness / contrast / saturation)* · bg_pan *(+ angle)* · outline *(solid / dashed / double)* · letter_spacing · goo · squash · arrow_slide · depth_layers · marching_ants · flashlight · cursor_trail · magnetic_letters · shockwave · peel · blob — many effects carry **sub-styles** (variants) shown in parens; picker tiles are sorted A–Z |
-| **physics** (Physics Effects) | Physics | 27 | draggable · slingshot · spring · attract · repel · orbit_cursor · rubber_band · tilt_inertia · float · levitate · sway · pendulum · wobble · breathing · drift · orbit · gravity · rise · sag · ragdoll · pop · bounded · jelly · squash · recoil · shake · spin |
-| **text-effects** (Text Effects) | Text | 37 | split_reveal · scramble · typewriter · shimmer · wave · glitch · vf_weight · blur · mask · flip3d · scale · slide · bounce · random · skew · gradient_flow · rainbow · neon · breathing · jitter · float · marker · strikebox · outline_fill · chromatic · width_sweep · rotating_words · countup · splitflap · matrix · fill_sweep · letter_jump · expand_spacing · color_wave · magnetic · image_mask · kinetic |
+| **hover** (Hover Interactions) | Interaction | 43 | magnetic *(pull / push)* · tilt *(+ invert, glare)* · spotlight *(glow / gradient-tint)* · image_reveal *(zoom / grayscale / duotone / blur / shine)* · text_scramble · glow_border *(steady / pulse)* · underline_grow *(under / over / through)* · ripple *(pointer / center)* · lift *(lift / tilt / sink)* · color_shift *(bg / text / border)* · scale *(in / out)* · push *(press / into-screen)* · jelly · skew *(X / Y / both)* · shine *(sheen / holographic)* · gradient_border · corner_brackets *(pop / draw)* · fill_sweep *(L / R / B / center / diagonal)* · border_draw *(corner / center-out)* · glitch *(rgb / slice / jitter)* · text_swap *(slide / fade / flip)* · rotate *(2D / 3D-flip)* · pulse *(scale / glow / opacity)* · shake *(horizontal / vertical / rotate)* · bounce *(up / drop / squash)* · grayscale *(grayscale / sepia / invert / hue / saturate)* · blur · brightness *(brightness / contrast / saturation)* · bg_pan *(+ angle)* · outline *(solid / dashed / double)* · letter_spacing · goo · squash · arrow_slide · depth_layers · marching_ants · flashlight · cursor_trail · magnetic_letters · shockwave · peel · blob — many effects carry **sub-styles** (variants) shown in parens; picker tiles are sorted A–Z |
+| **physics** (Physics Effects) | Interaction | 27 | draggable · slingshot · spring · attract · repel · orbit_cursor · rubber_band · tilt_inertia · float · levitate · sway · pendulum · wobble · breathing · drift · orbit · gravity · rise · sag · ragdoll · pop · bounded · jelly · squash · recoil · shake · spin |
+| **text-effects** (Text Effects) | Entrance | 37 | split_reveal · scramble · typewriter · shimmer · wave · glitch · vf_weight · blur · mask · flip3d · scale · slide · bounce · random · skew · gradient_flow · rainbow · neon · breathing · jitter · float · marker · strikebox · outline_fill · chromatic · width_sweep · rotating_words · countup · splitflap · matrix · fill_sweep · letter_jump · expand_spacing · color_wave · magnetic · image_mask · kinetic |
 | **scroll-motion** (Scroll Motion, GSAP) | Scroll | 19 | reveal *(subtle / standard / dramatic / bounce / elastic styles; 4 cardinals + 4 diagonals)* · stagger · splittext *(per-piece: slide / flip3d / scale / blur / rotate / random)* · parallax *(+ rotate/scale motion, + fade)* · pin *(+ anticipate, + edge-fade)* · scrub *(fade / scale / rotate / slide / blur / skew)* · zoom *(in / out)* · rotate · blur · clip *(up/down/left/right / iris / diagonal / rounded)* · skew *(axis X/Y)* · flip *(3D X/Y hinge)* · expand *(scaleX/Y + origin)* · counter *(count / **odometer** roll; start-from, prefix/suffix)* · **velocity_skew** *(leans by scroll speed, springs back)* · **tilt_scrub** *(3D perspective tilt on scroll)* · **scroll_spin** *(scrubbed rotation)* · **mask_wipe** *(feathered gradient reveal)* · **color_scrub** *(text/bg colour tween on scroll)*. GSAP 3.13 + ScrollTrigger; picker tiles sorted A–Z. |
 | **scroll-reveal** (Scroll Reveal / clip wipe) | Scroll | 6 | left · right · up · down · iris · diagonal (clip-path wipe on scroll-in) |
-| **motion-path** (Motion Path) | Scroll/Motion | 37 | Path shapes: wave · arc · loop · s_curve · zigzag · spiral · circle · incline · figure8 · double_loop · knot · triangle · square · diamond · pentagon · hexagon · octagon · star · stairs · steps_down · l_corner · chevron · lightning · u_turn · bounce · pendulum · helix · corkscrew · swoosh · comet · ricochet · heart · teardrop · petal · ribbon · line · drift (+ custom SVG `d`). The element **travels the path** — drive by scroll (scrubbed) / loop / on-view; options: path size, start offset, direction, easing, **align to path** (rotate to tangent) |
+| **motion-path** (Motion Path) | Scroll | 37 | Path shapes: wave · arc · loop · s_curve · zigzag · spiral · circle · incline · figure8 · double_loop · knot · triangle · square · diamond · pentagon · hexagon · octagon · star · stairs · steps_down · l_corner · chevron · lightning · u_turn · bounce · pendulum · helix · corkscrew · swoosh · comet · ricochet · heart · teardrop · petal · ribbon · line · drift (+ custom SVG `d`). The element **travels the path** — drive by scroll (scrubbed) / loop / on-view; options: path size, start offset, direction, easing, **align to path** (rotate to tangent) |
 | **scroll-text-highlight** (Scroll Text Highlight) | Scroll | 4 | fill · fade · blur · marker — word/char scrolly-telling reveal (each word lights up as it scrolls through the viewport) |
-| **parallax** (Parallax Depth Layers) | Pointer/Scroll | 1 | Single behavior — mark a Scene, give each child a **Depth**; pointer/scroll multi-layer depth |
-| **marquee** (Marquee) | Motion | 1 | Single behavior — seamless ticker; directions left/right/up/down + **curve/arc** path; options: speed, drag, fade, curve; **Text orientation** for up/down (horizontal lines / vertical-sideways / vertical-upright) |
-| **flip-card** (3D Flip Card) | Pointer | 7 | Flip styles: flip · cube · fold · door · diagonal · pop · carousel — each Horizontal/Vertical, trigger hover/click/scroll/auto; back face (bg / color / image / heading / text / button, align) |
-| **backgrounds** (Animated Backgrounds) *(Styling tab, Sections/rows)* | — | 35 | aurora · gradient · dots · particles · constellation · waves · starfield · noise · mesh · grid · orbs · conic · scanlines · rays · snow · confetti · bubbles · fireflies · bokeh · rain · shapes · meteors · pgrid · hexgrid · topo · circuit · halftone · blobs · ripple · flow · matrix · nebula · borealis · orbits · spotlight |
+| **parallax** (Parallax Depth Layers) | Scroll | 1 | Single behavior — mark a Scene, give each child a **Depth**; pointer/scroll multi-layer depth |
+| **marquee** (Marquee) | Ambient | 1 | Single behavior — seamless ticker; directions left/right/up/down + **curve/arc** path; options: speed, drag, fade, curve; **Text orientation** for up/down (horizontal lines / vertical-sideways / vertical-upright) |
+| **flip-card** (3D Flip Card) | Interaction | 7 | Flip styles: flip · cube · fold · door · diagonal · pop · carousel — each Horizontal/Vertical, trigger hover/click/scroll/auto; back face (bg / color / image / heading / text / button, align) |
+| **confetti** (Confetti) | Ambient | 6 | confetti · stars · fireworks · streamers · hearts · snow — Canvas 2D particle burst fired from the element on a trigger (view/click/load/hover, multi-select); options: count, spread, power, lifetime, palette *(brand / rainbow / gold / pastel / mono)*, replay-on-scroll. One shared full-viewport canvas, no library |
+| **backgrounds** (Animated Backgrounds) *(Styling tab, Sections/rows)* | Ambient | 35 | aurora · gradient · dots · particles · constellation · waves · starfield · noise · mesh · grid · orbs · conic · scanlines · rays · snow · confetti · bubbles · fireflies · bokeh · rain · shapes · meteors · pgrid · hexgrid · topo · circuit · halftone · blobs · ripple · flow · matrix · nebula · borealis · orbits · spotlight |
 
 ### Section-level (a Section's Animations tab)
 
@@ -71,7 +80,7 @@ lives in the **shortcodes** extension core, available even with the engine off).
 
 ## Quick "is it already covered?" checklist
 
-- **Pointer-following / cursor-reactive on an element** → hover (31) or physics pointer effects.
+- **Pointer-following / cursor-reactive on an element** → hover (43) or physics pointer effects.
 - **Whole-page custom cursor** → cursor (42) — do NOT add per-element cursor effects here.
 - **Scroll-in entrance** → scroll-motion (GSAP) or scroll-reveal (clip) or Entrance Animation (Animate.css).
 - **Kinetic / animated text** → text-effects (37).
@@ -81,6 +90,7 @@ lives in the **shortcodes** extension core, available even with the engine off).
 - **Reading indicator** → scroll-progress (16).
 - **3D / WebGL / media element** → webgl_object, model_viewer, image_sequence, svg_draw.
 - **Repeating/looping motion** → marquee (ticker) or scroll-loop (infinite sections).
+- **Celebration / particle burst on a trigger** → confetti (6 styles) — do NOT add a parallel burst effect.
 
 If a request maps cleanly onto a row above, it already exists — extend that module's style list
 rather than creating a parallel one. Only build a NEW module/shortcode when the interaction model
