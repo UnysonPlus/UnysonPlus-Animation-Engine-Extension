@@ -1,0 +1,62 @@
+/* 3D Gallery — in-modal live preview. Scoped under .fw-gallery-3d-preview so the shortcode's .tdg
+ * card CSS (enqueued alongside) only ever styles the preview host, never leaks into wp-admin. */
+
+/* Pin the whole preview OPTION while the controls below it scroll (a "fixed header" for the Design
+ * tab) — its parent (the options list) is tall so sticky travels, and the option's own padding keeps
+ * the card inset (the spacing). The option's bottom-border separator would otherwise ride along as a
+ * line under the pinned card, so it's hidden via the framework's own .fw-bottom-border-hidden helper
+ * (added in JS to this same wrapper). */
+.fw-g3d-sticky {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	padding-top: 4px;
+}
+.fw-g3d-sticky .fw-gallery-3d-preview {
+	box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.55); /* reads as a floating card over the controls */
+}
+
+.fw-gallery-3d-preview {
+	margin: 0 0 14px;
+	border: 1px solid var(--fw-preview-border, #d9e2ec);
+	border-radius: 8px;
+	overflow: hidden;
+	background: #101014;
+}
+.fw-gallery-3d-preview__stage {
+	position: relative;
+	width: 100%;
+	height: 300px;
+	overflow: hidden;
+	background: #101014; /* dark by default; the Dark/Light toggle flips this */
+}
+.fw-gallery-3d-preview.is-light .fw-gallery-3d-preview__stage { background: #ffffff; }
+/* The driver expects a positioned .tdg filling the stage. */
+.fw-gallery-3d-preview__stage .tdg {
+	position: absolute;
+	inset: 0;
+	height: 100% !important;
+}
+/* bottom bar: hint on the left, Dark/Light toggle on the right */
+.fw-gallery-3d-preview__bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 6px 12px;
+	background: #14161c;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.fw-gallery-3d-preview__note { font-size: 11px; line-height: 1.4; color: #8a94a6; }
+.fw-gallery-3d-preview__bg { display: inline-flex; gap: 3px; flex: 0 0 auto; }
+.fw-gallery-3d-preview__bg button {
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	background: transparent;
+	color: #8a94a6;
+	font-size: 11px;
+	line-height: 1.4;
+	padding: 2px 9px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+.fw-gallery-3d-preview__bg button.is-active { background: #2f74e6; border-color: #2f74e6; color: #fff; }

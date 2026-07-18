@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="ss-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+  </defs>
+  <!-- Diagonal ring of cards. The whole group is rolled -15° (the "Diagonal Tilt") over a flattened
+       ellipse (the Ring Tilt). Each card flows around the ellipse (animateMotion) while it scales up
+       at the front (bottom, phase .25) and shrinks + dims at the back (top, phase .75) to fake depth.
+       Motion + scale + opacity share the same per-card begin offset so they stay in phase. -->
+  <g transform="rotate(-15 48 32)">
+    <g><animateMotion dur="9s" begin="0s" repeatCount="indefinite" rotate="0" path="M78 32A30 12.5 0 1 1 18 32A30 12.5 0 1 1 78 32"/>
+      <g><animateTransform attributeName="transform" type="scale" dur="9s" begin="0s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.82;1.12;0.82;0.5;0.82"/>
+        <animate attributeName="opacity" dur="9s" begin="0s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.8;1;0.8;0.4;0.8"/>
+        <rect x="-7.5" y="-7.5" width="15" height="15" rx="2.6" fill="url(#ss-f)"/></g></g>
+    <g><animateMotion dur="9s" begin="-1.125s" repeatCount="indefinite" rotate="0" path="M78 32A30 12.5 0 1 1 18 32A30 12.5 0 1 1 78 32"/>
+      <g><animateTransform attributeName="transform" type="scale" dur="9s" begin="-1.125s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.82;1.12;0.82;0.5;0.82"/>
+        <animate attributeName="opacity" dur="9s" begin="-1.125s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.8;1;0.8;0.4;0.8"/>
+        <rect x="-7.5" y="-7.5" width="15" height="15" rx="2.6" fill="url(#ss-f)"/></g></g>
+    <g><animateMotion dur="9s" begin="-2.25s" repeatCount="indefinite" rotate="0" path="M78 32A30 12.5 0 1 1 18 32A30 12.5 0 1 1 78 32"/>
+      <g><animateTransform attributeName="transform" type="scale" dur="9s" begin="-2.25s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.82;1.12;0.82;0.5;0.82"/>
+        <animate attributeName="opacity" dur="9s" begin="-2.25s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.8;1;0.8;0.4;0.8"/>
+        <rect x="-7.5" y="-7.5" width="15" height="15" rx="2.6" fill="url(#ss-f)"/></g></g>
+    <g><animateMotion dur="9s" begin="-3.375s" repeatCount="indefinite" rotate="0" path="M78 32A30 12.5 0 1 1 18 32A30 12.5 0 1 1 78 32"/>
+      <g><animateTransform attributeName="transform" type="scale" dur="9s" begin="-3.375s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.82;1.12;0.82;0.5;0.82"/>
+        <animate attributeName="opacity" dur="9s" begin="-3.375s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.8;1;0.8;0.4;0.8"/>
+        <rect x="-7.5" y="-7.5" width="15" height="15" rx="2.6" fill="url(#ss-f)"/></g></g>
+    <g><animateMotion dur="9s" begin="-4.5s" repeatCount="indefinite" rotate="0" path="M78 32A30 12.5 0 1 1 18 32A30 12.5 0 1 1 78 32"/>
+      <g><animateTransform attributeName="transform" type="scale" dur="9s" begin="-4.5s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.82;1.12;0.82;0.5;0.82"/>
+        <animate attributeName="opacity" dur="9s" begin="-4.5s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.8;1;0.8;0.4;0.8"/>
+        <rect x="-7.5" y="-7.5" width="15" height="15" rx="2.6" fill="url(#ss-f)"/></g></g>
+    <g><animateMotion dur="9s" begin="-5.625s" repeatCount="indefinite" rotate="0" path="M78 32A30 12.5 0 1 1 18 32A30 12.5 0 1 1 78 32"/>
+      <g><animateTransform attributeName="transform" type="scale" dur="9s" begin="-5.625s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.82;1.12;0.82;0.5;0.82"/>
+        <animate attributeName="opacity" dur="9s" begin="-5.625s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.8;1;0.8;0.4;0.8"/>
+        <rect x="-7.5" y="-7.5" width="15" height="15" rx="2.6" fill="url(#ss-f)"/></g></g>
+    <g><animateMotion dur="9s" begin="-6.75s" repeatCount="indefinite" rotate="0" path="M78 32A30 12.5 0 1 1 18 32A30 12.5 0 1 1 78 32"/>
+      <g><animateTransform attributeName="transform" type="scale" dur="9s" begin="-6.75s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.82;1.12;0.82;0.5;0.82"/>
+        <animate attributeName="opacity" dur="9s" begin="-6.75s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.8;1;0.8;0.4;0.8"/>
+        <rect x="-7.5" y="-7.5" width="15" height="15" rx="2.6" fill="url(#ss-f)"/></g></g>
+    <g><animateMotion dur="9s" begin="-7.875s" repeatCount="indefinite" rotate="0" path="M78 32A30 12.5 0 1 1 18 32A30 12.5 0 1 1 78 32"/>
+      <g><animateTransform attributeName="transform" type="scale" dur="9s" begin="-7.875s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.82;1.12;0.82;0.5;0.82"/>
+        <animate attributeName="opacity" dur="9s" begin="-7.875s" repeatCount="indefinite" keyTimes="0;.25;.5;.75;1" values="0.8;1;0.8;0.4;0.8"/>
+        <rect x="-7.5" y="-7.5" width="15" height="15" rx="2.6" fill="url(#ss-f)"/></g></g>
+  </g>
+</svg>

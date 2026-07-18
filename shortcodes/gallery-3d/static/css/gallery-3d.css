@@ -1,0 +1,137 @@
+/**
+ * 3D Gallery — base + Carousel Ring. Pure CSS 3D scene; gallery-3d.js sets the per-card
+ * transforms, the ring rotation and (for Back Fade) per-card opacity at runtime.
+ */
+
+.tdg {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	background: var(--tdg-bg, transparent);
+}
+
+.tdg__stage {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform-style: preserve-3d;
+	perspective-origin: 50% 50%;
+	/* perspective set by JS from the Perspective control */
+}
+
+.tdg__ring {
+	position: absolute;
+	transform-style: preserve-3d;
+	will-change: transform;
+	/* transform (rotateX tilt + rotateY spin) set by JS */
+}
+
+/* Panorama Wall — stacked rows, each a scrolling cylinder of cards. */
+.tdg__wall {
+	position: absolute;
+	transform-style: preserve-3d;
+	will-change: transform;
+}
+.tdg__row {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform-style: preserve-3d;
+	will-change: transform;
+}
+.tdg--panorama-wall .tdg__card { backface-visibility: hidden; }
+
+/* Card Sphere — bands (latitude rings) wrapped on a sphere. */
+.tdg__globe {
+	position: absolute;
+	transform-style: preserve-3d;
+	will-change: transform;
+}
+.tdg__band {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform-style: preserve-3d;
+	will-change: transform;
+}
+.tdg--card-sphere .tdg__card { backface-visibility: hidden; }
+
+.tdg__card {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	aspect-ratio: var(--tdg-ratio, 1 / 1);
+	transform-style: preserve-3d;
+	will-change: transform, opacity;
+	backface-visibility: visible;
+	/* width / margins / transform set by JS */
+}
+
+.tdg__inner {
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	border-radius: var(--tdg-radius, 14px);
+	padding: var(--tdg-pad, 0);
+	overflow: hidden;
+	background: #14161c;
+	box-shadow: var(--tdg-shadow, 0 14px 40px -8px rgba(0, 0, 0, 0.45));
+}
+
+.tdg__link {
+	display: block;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border-radius: inherit;
+	overflow: hidden;
+	text-decoration: none;
+}
+
+.tdg__img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: inherit;
+}
+
+.tdg__overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: flex-end;
+	padding: 10px 12px;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.62), transparent 62%);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	pointer-events: none;
+}
+.tdg__card:hover .tdg__overlay { opacity: 1; }
+.tdg__overlay-text { color: #fff; font-size: 13px; line-height: 1.3; }
+
+.tdg__caption {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -1.6em;
+	text-align: center;
+	font-size: 12px;
+	opacity: 0.75;
+}
+
+.tdg--empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 180px;
+	border: 1px dashed rgba(127, 127, 127, 0.4);
+	border-radius: 10px;
+}
+.tdg__empty { margin: 0; opacity: 0.6; font-size: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+	.tdg__ring { will-change: auto; }
+}

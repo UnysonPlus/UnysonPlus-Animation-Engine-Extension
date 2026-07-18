@@ -31,6 +31,13 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		// pages that use it). Loaded before modules so they can register at load.
 		require_once dirname( __FILE__ ) . '/includes/asset-loader.php';
 
+		// `gallery-3d-preview` option type: a live, in-modal preview of the 3D Gallery designs
+		// (admin-only; value-less — renders nothing on the front end). Registered on the option-types
+		// init action, matching the shortcodes extension's own custom option types.
+		add_action( 'fw_option_types_init', function () {
+			require_once dirname( __FILE__ ) . '/includes/option-types/gallery-3d-preview/class-fw-option-type-gallery-3d-preview.php';
+		} );
+
 		// Modules. Each plugs into the shared Animations tab / wrapper / Theme Settings.
 		require_once dirname( __FILE__ ) . '/modules/scroll-motion/scroll-motion.php'; // Scroll Motion (GSAP)
 		require_once dirname( __FILE__ ) . '/modules/hover/hover.php';                  // Hover Interactions
