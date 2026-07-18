@@ -14,20 +14,15 @@
  */
 
 /* ------------------------------------------------------------------ *
- * 2) Emit the chosen effect(s) onto the element wrapper.
- *    Priority 21 → runs just after the entrance-animation filter (20).
+ * 2) Apply the chosen effect(s) onto an attribute array — the shared core used both by
+ *    the wrapper filter (stamps the element) AND by upw_hover_collection_item_attr()
+ *    (stamps EACH item of a collection). Emits class `sc-hover sc-hover--{fx}`, the
+ *    per-effect data-hover-* attrs + CSS-var styles, and `data-hover` for the JS runtime;
+ *    records each effect's on-demand asset. Returns the modified $attr.
  * ------------------------------------------------------------------ */
-add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
-	if ( ! upw_hover_enabled() ) {
-		return $attr;
-	}
-
-	$instances = upw_hover_instances( $atts );
-	if ( empty( $instances ) ) {
-		return $attr;
-	}
-
-	// Append a CSS custom-property string to whatever style is already on the wrapper.
+if ( ! function_exists( 'upw_hover_apply_instances' ) ) :
+function upw_hover_apply_instances( $attr, $instances ) {
+	// Append a CSS custom-property string to whatever style is already on the attr.
 	$add_style = function ( $css ) use ( &$attr ) {
 		$existing      = isset( $attr['style'] ) ? rtrim( (string) $attr['style'], '; ' ) . '; ' : '';
 		$attr['style'] = esc_attr( $existing . $css );
@@ -338,6 +333,53 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['data-hover'] = esc_attr( implode( ' ', $effects ) );
 
 	return $attr;
+}
+endif;
+
+/**
+ * Per-collection item hover: the hover class/attrs/style to stamp on EACH item of a collection
+ * element (Gallery, …), computed from the parent's hover instances — so the effect lands on each
+ * card instead of the whole wrapper. The collection's view calls this and applies the result per
+ * item. Returns an attr array (or [] when there's no hover / engine off); records on-demand assets.
+ */
+if ( ! function_exists( 'upw_hover_collection_item_attr' ) ) :
+function upw_hover_collection_item_attr( $atts ) {
+	if ( ! upw_hover_enabled() ) {
+		return array();
+	}
+	$instances = upw_hover_instances( $atts );
+	if ( empty( $instances ) ) {
+		return array();
+	}
+	return upw_hover_apply_instances( array(), $instances );
+}
+endif;
+
+/* ------------------------------------------------------------------ *
+ * Stamp the chosen effect(s) onto the element wrapper — EXCEPT for registered COLLECTION
+ * elements (Gallery, …), whose ITEMS carry the hover instead (via upw_hover_collection_item_attr,
+ * applied per item by the collection's view), so the effect lands on each card, not the whole grid.
+ * Priority 21 → runs just after the entrance-animation filter (20).
+ * ------------------------------------------------------------------ */
+add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
+	if ( ! upw_hover_enabled() ) {
+		return $attr;
+	}
+	$instances = upw_hover_instances( $atts );
+	if ( empty( $instances ) ) {
+		return $attr;
+	}
+	// Collection element whose view distributes hover to each item → don't stamp the wrapper.
+	// Uses the NARROW hover registry (wired views only), so hover still lands on the wrapper for
+	// collections not yet wired for per-item hover (rather than silently disappearing).
+	if ( function_exists( 'sc_hover_collection_items' ) ) {
+		$base = isset( $atts['base_class'] ) ? (string) $atts['base_class'] : '';
+		$map  = sc_hover_collection_items();
+		if ( $base !== '' && isset( $map[ $base ] ) && $map[ $base ] !== '' ) {
+			return $attr;
+		}
+	}
+	return upw_hover_apply_instances( $attr, $instances );
 }, 21, 2 );
 
 /* ------------------------------------------------------------------ *

@@ -26,15 +26,59 @@ if ( ! function_exists( 'upw_confetti_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_confetti_styles' ) ) :
+	/** Flat key => label of EVERY style — the source of truth for validation + the one runtime. */
 	function upw_confetti_styles() {
 		return array(
-			'confetti'  => __( 'Confetti', 'fw' ),
-			'stars'     => __( 'Stars', 'fw' ),
-			'fireworks' => __( 'Fireworks', 'fw' ),
-			'streamers' => __( 'Streamers', 'fw' ),
-			'hearts'    => __( 'Hearts', 'fw' ),
-			'snow'      => __( 'Snow', 'fw' ),
+			// Classic (flat vector look — best on flat / illustrated backgrounds).
+			'confetti'       => __( 'Confetti', 'fw' ),
+			'stars'          => __( 'Stars', 'fw' ),
+			'fireworks'      => __( 'Fireworks', 'fw' ),
+			'streamers'      => __( 'Streamers', 'fw' ),
+			'hearts'         => __( 'Hearts', 'fw' ),
+			'snow'           => __( 'Snow', 'fw' ),
+			// Realistic & foil (3D tumbling paper with sheen + shadow — sits on photo backgrounds).
+			'realistic'      => __( 'Realistic Confetti', 'fw' ),
+			'foil_gold'      => __( 'Gold Foil', 'fw' ),
+			'foil_silver'    => __( 'Silver Foil', 'fw' ),
+			'rose_gold'      => __( 'Rose Gold', 'fw' ),
+			'holographic'    => __( 'Holographic', 'fw' ),
+			'triangles'      => __( 'Triangles', 'fw' ),
+			'hexagons'       => __( 'Hexagons', 'fw' ),
+			'money'          => __( 'Money', 'fw' ),
+			'serpentine'     => __( 'Serpentine', 'fw' ),
+			// Nature.
+			'sakura'         => __( 'Sakura Petals', 'fw' ),
+			'autumn_leaves'  => __( 'Autumn Leaves', 'fw' ),
+			'realistic_snow' => __( 'Realistic Snow', 'fw' ),
+			'rain'           => __( 'Rain', 'fw' ),
+			// Glow & sparkle (additive soft light).
+			'glitter'        => __( 'Glitter', 'fw' ),
+			'bokeh'          => __( 'Bokeh', 'fw' ),
+			'fairy_dust'     => __( 'Fairy Dust', 'fw' ),
+			'fireflies'      => __( 'Fireflies', 'fw' ),
+			'embers'         => __( 'Embers', 'fw' ),
+			'champagne'      => __( 'Champagne', 'fw' ),
+			'bubbles'        => __( 'Bubbles', 'fw' ),
 		);
+	}
+endif;
+
+if ( ! function_exists( 'upw_confetti_style_groups' ) ) :
+	/** Group label => ordered style keys — organises the picker into tabs. */
+	function upw_confetti_style_groups() {
+		return array(
+			__( 'Classic', 'fw' )          => array( 'confetti', 'stars', 'fireworks', 'streamers', 'hearts', 'snow' ),
+			__( 'Realistic & Foil', 'fw' ) => array( 'realistic', 'foil_gold', 'foil_silver', 'rose_gold', 'holographic', 'triangles', 'hexagons', 'money', 'serpentine' ),
+			__( 'Nature', 'fw' )           => array( 'sakura', 'autumn_leaves', 'realistic_snow', 'rain' ),
+			__( 'Glow & Sparkle', 'fw' )   => array( 'glitter', 'bokeh', 'fairy_dust', 'fireflies', 'embers', 'champagne', 'bubbles' ),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'upw_confetti_palettes' ) ) :
+	/** Valid palette keys (shared by the select + the wrapper-filter validation). */
+	function upw_confetti_palettes() {
+		return array( 'brand', 'rainbow', 'gold', 'pastel', 'mono', 'silver', 'natural' );
 	}
 endif;
 
@@ -93,7 +137,10 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'gold'    => __( 'Gold', 'fw' ),
 				'pastel'  => __( 'Pastel', 'fw' ),
 				'mono'    => __( 'Monochrome', 'fw' ),
+				'silver'  => __( 'Silver', 'fw' ),
+				'natural' => __( 'Natural', 'fw' ),
 			),
+			'desc'    => __( 'Used by the colour-flexible styles; themed styles (Gold Foil, Sakura, Embers…) carry their own colours.', 'fw' ),
 		),
 		'replay'   => array(
 			'type'         => 'switch',
@@ -105,19 +152,28 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		),
 	);
 
+	$labels = upw_confetti_styles();
+	$reveal = array( 'none' => array() );
+	foreach ( $labels as $k => $lbl ) {
+		$reveal[ $k ] = array( 'group_confetti_' . $k => array( 'type' => 'group', 'options' => $opts ) );
+	}
+	// Grouped, tabbed picker tiles (organises the 26 styles into Classic / Realistic / Nature / Glow).
+	$gi            = 0;
 	$choices_tiles = array();
-	$reveal        = array( 'none' => array() );
-	foreach ( upw_confetti_styles() as $k => $lbl ) {
-		$choices_tiles[ $k ] = $tile( $k, $lbl );
-		$reveal[ $k ]        = array( 'group_confetti_' . $k => array( 'type' => 'group', 'options' => $opts ) );
+	foreach ( upw_confetti_style_groups() as $glabel => $keys ) {
+		$grp = array();
+		foreach ( $keys as $k ) {
+			if ( isset( $labels[ $k ] ) ) { $grp[ $k ] = $tile( $k, $labels[ $k ] ); }
+		}
+		$choices_tiles[ 'grp_cf_' . ( $gi++ ) ] = array( 'label' => $glabel, 'choices' => $grp );
 	}
 
 	$fields['confetti'] = array(
 		'type'         => 'multi-picker',
 		'popover'      => true,
 		'label'        => __( 'Confetti', 'fw' ),
-		'desc'         => __( 'A celebratory particle burst fired from this element on a trigger.', 'fw' ),
-		'help'         => __( 'Confetti (Animation Engine): a Canvas 2D particle burst — confetti, stars, fireworks, streamers, hearts or snow — fired on scroll-into-view, click, load or hover. One shared viewport canvas, no library. Honours "reduce motion" and loads only on pages that use it.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
+		'desc'         => __( 'A celebratory particle burst fired from this element on a trigger. 26 styles across Classic (flat/vector), Realistic & Foil (3D tumbling paper that sits on photo backgrounds), Nature and Glow.', 'fw' ),
+		'help'         => __( 'Confetti (Animation Engine): a Canvas 2D particle burst fired on scroll-into-view, click, load or hover. 26 styles — Classic flat (confetti / stars / fireworks / streamers / hearts / snow), Realistic & Foil (3D tumbling paper with sheen + shadow: realistic, gold/silver/rose foil, holographic, money, serpentine, triangles, hexagons), Nature (sakura, autumn leaves, realistic snow, rain) and Glow (glitter, bokeh, fairy dust, fireflies, embers, champagne, bubbles). One shared viewport canvas, no library, one on-demand script for all styles. Honours "reduce motion" and loads only on pages that use it.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'style' => 'none' ),
 		'placeholder'  => __( 'None', 'fw' ),
@@ -128,6 +184,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'label'      => false,
 				'desc'       => __( 'Hover a tile to preview it larger.', 'fw' ),
 				'value'      => 'none',
+				'layout'     => 'tabs',
 				'search'     => __( 'Search confetti styles…', 'fw' ),
 				'choices'    => $choices_tiles,
 			),
@@ -158,7 +215,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$triggers    = is_array( $raw_trigger ) ? $raw_trigger : ( $raw_trigger === '' ? array() : array( (string) $raw_trigger ) );
 	$triggers    = array_values( array_intersect( array_map( 'strval', $triggers ), array( 'view', 'click', 'load', 'hover' ) ) );
 	if ( empty( $triggers ) ) { $triggers = array( 'view' ); }
-	$palette = isset( $o['palette'] ) && in_array( $o['palette'], array( 'brand', 'rainbow', 'gold', 'pastel', 'mono' ), true ) ? $o['palette'] : 'brand';
+	$palette = isset( $o['palette'] ) && in_array( $o['palette'], upw_confetti_palettes(), true ) ? $o['palette'] : 'brand';
 
 	$attr['data-cf-style']    = esc_attr( $style );
 	$attr['data-cf-trigger']  = esc_attr( implode( ' ', $triggers ) );

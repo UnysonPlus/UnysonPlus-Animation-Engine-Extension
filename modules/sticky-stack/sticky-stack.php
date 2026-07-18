@@ -92,9 +92,9 @@ if ( ! function_exists( 'sc_get_sticky_stack_fields' ) ) :
 		return array(
 			'sticky_stack' => array(
 				'type'         => 'multi-picker',
-				'label'        => __( 'Sticky Card Stack', 'fw' ),
+				'label'        => __( 'Card Stack', 'fw' ),
 				'desc'         => __( 'Pin this Section\'s cards (its columns) one after another as you scroll — a stacking "deck of cards". Pick a style, then tune it. Build the Section with 2+ full-width columns as the cards.', 'fw' ),
-				'help'         => __( 'Sticky Card Stack (Animation Engine): the Apple / Stripe "deck of cards" scroll effect, in 11 styles — Card Stack, Scale & Fade, Fade / Blur / 3D-Tilt under, Fan, Messy, Side offset, Peel away, Push conveyor and Grow in. Each direct card of the Section is position:sticky and pins in turn; a passive scroll listener transforms the cards per style. No library. Honours "reduce motion" (cards just stack normally) and loads only on pages that use it. Section only.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
+				'help'         => __( 'Card Stack (Animation Engine): the Apple / Stripe "deck of cards" scroll effect, in 11 styles — Card Stack, Scale & Fade, Fade / Blur / 3D-Tilt under, Fan, Messy, Side offset, Peel away, Push conveyor and Grow in. Each direct card of the Section is position:sticky and pins in turn; a passive scroll listener transforms the cards per style. No library. Honours "reduce motion" (cards just stack normally) and loads only on pages that use it. Section only — it needs its cards stacked vertically, so it isn\'t offered on grid collections like the Gallery.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 				'popover'      => true,
 				'show_borders' => false,
 				'value'        => array( 'mode' => 'off' ),
@@ -124,8 +124,10 @@ if ( ! function_exists( 'upw_sticky_stack_styles' ) ) :
 endif;
 
 /**
- * Inject into the SECTION's Animations tab only, inside the animation-stack organizer (mirrors the
- * Scroll Loop module) so it becomes a card + inserter tile like the other modules.
+ * Inject the Card Stack control into the SECTION's Animations tab only, inside the animation-stack
+ * organizer (mirrors the Scroll Loop module) so it becomes a card + inserter tile like the other
+ * modules. Section only: the effect stacks cards VERTICALLY (position:sticky), which suits a
+ * Section's full-width columns but not a grid collection (Gallery, …).
  */
 add_filter( 'fw_shortcode_get_options', function ( $options, $tag = '' ) {
 	if ( $tag !== 'section' || ! is_array( $options ) || ! function_exists( 'sc_get_sticky_stack_fields' ) || ! upw_sticky_stack_enabled() ) {
@@ -156,6 +158,16 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	if ( ! in_array( $mode, upw_sticky_stack_styles(), true ) ) {
 		return $attr;
 	}
+	// Card Stack is a Section-only vertical-stack effect — never stamp a grid COLLECTION element
+	// (Gallery, …), so any stale sticky_stack atts left from earlier testing render nothing.
+	if ( function_exists( 'sc_anim_collection_items' ) ) {
+		$base = isset( $atts['base_class'] ) ? (string) $atts['base_class'] : '';
+		$map  = sc_anim_collection_items();
+		if ( $base !== '' && isset( $map[ $base ] ) ) {
+			return $attr;
+		}
+	}
+
 	$o = ( isset( $s[ $mode ] ) && is_array( $s[ $mode ] ) ) ? $s[ $mode ] : array();
 
 	$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';

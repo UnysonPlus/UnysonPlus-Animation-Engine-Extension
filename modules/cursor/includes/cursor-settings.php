@@ -216,8 +216,9 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'value' => 'View',
 										),
 										'label_font' => array(
-											'type'       => 'typography-v2',
+											'type'       => 'typography',
 											'label'      => __( 'Font', 'fw' ),
+											'size_format' => 'number', // cursor feeds size to JS as a pixel NUMBER
 											'desc'       => __( 'Family, weight, size, line-height & letter-spacing for the label. The pill background uses the Cursor color option above; label text stays white.', 'fw' ),
 											'components' => array( 'subset' => false, 'color' => false ),
 											'value'      => array(
@@ -238,8 +239,9 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 											'value' => 'scroll',
 										),
 										'word_font' => array(
-											'type'       => 'typography-v2',
+											'type'       => 'typography',
 											'label'      => __( 'Font', 'fw' ),
+											'size_format' => 'number', // cursor feeds size to JS as a pixel NUMBER
 											'desc'       => __( 'Family, weight, size, line-height & letter-spacing for the trailing word. Colour comes from the Cursor color option above.', 'fw' ),
 											'components' => array( 'subset' => false, 'color' => false ),
 											'value'      => array(
