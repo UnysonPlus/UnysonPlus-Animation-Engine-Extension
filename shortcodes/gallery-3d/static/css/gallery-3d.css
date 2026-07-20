@@ -58,6 +58,16 @@
 }
 .tdg--card-sphere .tdg__card { backface-visibility: hidden; }
 
+/* Orbit Globe — billboarded cards distributed through a sphere volume (JS translate3d's each card;
+ * the container itself does not rotate, so cards always face the camera). */
+.tdg__orbit {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform-style: preserve-3d;
+	will-change: transform;
+}
+
 .tdg__card {
 	position: absolute;
 	left: 50%;

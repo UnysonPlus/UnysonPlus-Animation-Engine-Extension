@@ -477,6 +477,121 @@
 		requestAnimationFrame( loop );
 	}
 
+	/* ------------------------------------------------------------------ *
+	 * Orbit Globe — cards distributed through a sphere VOLUME (Fibonacci points), each BILLBOARDED
+	 * (always facing the camera) rather than tangent to the surface like Card Sphere. The whole cloud
+	 * spins; the stage perspective makes near cards big + far cards small, and Back Fade dims the far
+	 * side — a depth-of-field orbit. Each card is positioned every frame from its rotated unit vector.
+	 * ------------------------------------------------------------------ */
+	function initOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		if ( ! cards.length ) { return; }
+
+		var drive    = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed    = num( el, 'data-tdg-speed', 20 );
+		var dir      = num( el, 'data-tdg-dir', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var globePct = num( el, 'data-tdg-globe', 50 ) / 100;
+		var backFade = clamp( num( el, 'data-tdg-backfade', 55 ) / 100, 0, 1 );
+		var tilt     = num( el, 'data-tdg-tilt', 27 );
+		var cardPct  = num( el, 'data-tdg-card', 28 ) / 100;
+
+		var n = cards.length;
+		// Fibonacci sphere: an even spread of unit directions, one per card.
+		var GA = Math.PI * ( 3 - Math.sqrt( 5 ) ); // golden angle
+		cards.forEach( function ( c, i ) {
+			var uy = 1 - ( i / Math.max( 1, n - 1 ) ) * 2;      // 1 .. -1
+			var rr = Math.sqrt( Math.max( 0, 1 - uy * uy ) );
+			var th = i * GA;
+			c.__u = [ Math.cos( th ) * rr, uy, Math.sin( th ) * rr ];
+		} );
+		var R = 0, tiltR = tilt * Math.PI / 180;
+		var angle = 0, vel = 0;
+
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1;
+			var H = stage.clientHeight || el.clientHeight || W;
+			var base = Math.min( W, H );
+			R = base * globePct / 2;
+			var cardW = Math.max( 8, base * globePct * cardPct );
+			// Perspective IS the effect here (near big / far small); orbit has no perspective control, so
+			// it is fixed + width-relative to read the same at any stage size.
+			stage.style.perspective = ( W * 0.9 ) + 'px';
+			cards.forEach( function ( c ) {
+				c.style.width = cardW + 'px';
+				c.style.marginLeft = ( -cardW / 2 ) + 'px';
+			} );
+			requestAnimationFrame( function () {
+				cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			} );
+		}
+
+		function applyOrbit() {
+			var ar = angle * Math.PI / 180, sa = Math.sin( ar ), ca = Math.cos( ar );
+			var st = Math.sin( tiltR ), ct = Math.cos( tiltR );
+			for ( var i = 0; i < n; i++ ) {
+				var u = cards[ i ].__u;
+				var x = u[ 0 ] * ca + u[ 2 ] * sa;      // spin around Y
+				var z = -u[ 0 ] * sa + u[ 2 ] * ca;
+				var y2 = u[ 1 ] * ct - z * st;          // then tilt around X
+				var z2 = u[ 1 ] * st + z * ct;
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + ( x * R ).toFixed( 1 ) + 'px,' + ( y2 * R ).toFixed( 1 ) + 'px,' + ( z2 * R ).toFixed( 1 ) + 'px)';
+				// far side (z2 < 0) fades toward the back
+				c.style.opacity = backFade > 0 ? ( 1 - clamp( ( 1 - z2 ) / 2, 0, 1 ) * backFade ).toFixed( 3 ) : '1';
+			}
+		}
+
+		layout();
+		applyOrbit();
+		window.addEventListener( 'resize', function () { layout(); applyOrbit(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var dragging = false, px = 0, scrollAngle = null;
+		var advance = function ( dt ) { angle += dir * ( 360 / speed ) * dt * hoverF(); };
+
+		// Drag to spin — layers over the base Motion (grabbing pauses it, releasing flings, then resumes).
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x ) { dragging = true; px = x; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x ) { if ( ! dragging ) { return; } var dx = x - px; px = x; angle += dx * 0.25; vel = dx * 0.25; };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			el.addEventListener( 'mousedown', function ( e ) { down( e.clientX ); e.preventDefault(); } );
+			window.addEventListener( 'mousemove', function ( e ) { move( e.clientX ); } );
+			window.addEventListener( 'mouseup', up );
+			el.addEventListener( 'touchstart', function ( e ) { down( e.touches[ 0 ].clientX ); }, { passive: true } );
+			window.addEventListener( 'touchmove', function ( e ) { move( e.touches[ 0 ].clientX ); }, { passive: true } );
+			window.addEventListener( 'touchend', up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { var r = el.getBoundingClientRect(); var vh = window.innerHeight || 1; scrollAngle = dir * clamp( 1 - ( r.top + r.height / 2 ) / ( vh + r.height ), 0, 1 ) * 360; };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( t ) {
+			if ( ! last ) { last = t; }
+			var dt = ( t - last ) / 1000; last = t;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.02 ) { angle += vel; vel *= 0.95; }
+				else if ( drive === 'scroll' && scrollAngle !== null ) { angle = scrollAngle; }
+			}
+			applyOrbit();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
 	function scan() {
 		var i, els;
 		els = document.querySelectorAll( '.tdg--carousel-ring' );
@@ -485,6 +600,8 @@
 		for ( i = 0; i < els.length; i++ ) { initWall( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--card-sphere' );
 		for ( i = 0; i < els.length; i++ ) { initGlobe( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--orbit-globe' );
+		for ( i = 0; i < els.length; i++ ) { initOrbit( els[ i ] ); }
 	}
 	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', scan ); } else { scan(); }
 	window.upwGallery3dRescan = scan;
@@ -496,5 +613,6 @@
 		if ( el.classList.contains( 'tdg--carousel-ring' ) ) { initRing( el ); }
 		else if ( el.classList.contains( 'tdg--panorama-wall' ) ) { initWall( el ); }
 		else if ( el.classList.contains( 'tdg--card-sphere' ) ) { initGlobe( el ); }
+		else if ( el.classList.contains( 'tdg--orbit-globe' ) ) { initOrbit( el ); }
 	};
 })();

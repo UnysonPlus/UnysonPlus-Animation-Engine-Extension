@@ -24,7 +24,8 @@
 	var DEFAULTS = {
 		carousel_ring: { drive: 'auto', allow_drag: 'no', speed: 16, direction: 'left', hover_behavior: 'slow', tilt: -28, ring_opening: 55, roll: 0, ring_size: 80, spacing: 100, perspective: 18, back_fade: 70, card_size: 21, card_ratio: '1-1', corner_radius: 6, padding: 0 },
 		panorama_wall: { drive: 'continuous', allow_drag: 'no', speed: 20, direction: 'left', hover_behavior: 'slow', rows: 5, columns: 11, curvature: -100, tilt: 0, gap: 5, edge_fade: 0, perspective: 68, card_size: 20, card_ratio: '16-9', corner_radius: 2, padding: 0 },
-		card_sphere: { drive: 'continuous', allow_drag: 'no', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 70, card_size: 20, gap: 2.5, back_fade: 55, tilt: 0, perspective: 55, card_ratio: '16-9', corner_radius: 2, padding: 0 }
+		card_sphere: { drive: 'continuous', allow_drag: 'no', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 70, card_size: 20, gap: 2.5, back_fade: 55, tilt: 0, perspective: 55, card_ratio: '16-9', corner_radius: 2, padding: 0 },
+		orbit_globe: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 50, card_size: 28, gap: 2.5, back_fade: 55, tilt: 27, card_ratio: '1-1', corner_radius: 2 }
 	};
 
 	// ---- placeholder cards (a gradient tile — the real photos render on the front end) ----
@@ -97,6 +98,18 @@
 				html += '<div class="tdg__band">' + cards + '</div>';
 			});
 			return '<div class="tdg tdg--card-sphere" style="' + style + '" ' + as + '><div class="tdg__stage"><div class="tdg__globe">' + html + '</div></div></div>';
+		}
+
+		if (design === 'orbit_globe') {
+			// count mirrors orbit-globe.php (denser cloud when cards are smaller / gap tighter)
+			var no = Math.max(14, Math.min(90, Math.round(5 / (o.card_size / 100) / (1 + o.gap / 100))));
+			var ao = attrStr($.extend({}, shared, {
+				'data-tdg-globe': o.globe_size, 'data-tdg-backfade': o.back_fade, 'data-tdg-tilt': o.tilt,
+				'data-tdg-card': o.card_size, 'data-tdg-count': 12
+			}));
+			cards = '';
+			for (i = 0; i < no; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--orbit-globe" style="' + style + '" ' + ao + '><div class="tdg__stage"><div class="tdg__orbit">' + cards + '</div></div></div>';
 		}
 
 		// carousel_ring

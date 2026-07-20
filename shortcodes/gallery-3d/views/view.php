@@ -48,7 +48,7 @@ foreach ( (array) $images as $img ) {
 }
 
 /* ---- chosen design + per-design option reader ---- */
-$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere' );
+$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe' );
 $design  = (string) $sc_get( 'design_settings/design', 'carousel_ring' );
 if ( ! in_array( $design, $designs, true ) ) { $design = 'carousel_ring'; }
 $dp = function ( $sub, $default = '' ) use ( $sc_get, $design ) { return $sc_get( 'design_settings/' . $design . '/' . $sub, $default ); };

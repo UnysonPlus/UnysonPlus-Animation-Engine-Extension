@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="og-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+  </defs>
+  <!-- Orbit Globe: billboarded cards spread through a sphere volume, orbiting. Each card
+       drifts horizontally along its latitude and grows+brightens at the front, shrinks+fades
+       to the back — a depth-of-field cloud (matches initOrbit). Cards stay upright. -->
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-0.00s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 8.0;48.0 8.0;48.0 8.0;48.0 8.0;48.0 8.0;48.0 8.0;48.0 8.0;48.0 8.0;48.0 8.0"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-0.00s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-0.00s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-4.58s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 11.7;59.3 11.7;64.0 11.7;59.3 11.7;48.0 11.7;36.7 11.7;32.0 11.7;36.7 11.7;48.0 11.7"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-4.58s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-4.58s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-9.17s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 15.4;63.3 15.4;69.6 15.4;63.3 15.4;48.0 15.4;32.7 15.4;26.4 15.4;32.7 15.4;48.0 15.4"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-9.17s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-9.17s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-1.75s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 19.1;65.9 19.1;73.3 19.1;65.9 19.1;48.0 19.1;30.1 19.1;22.7 19.1;30.1 19.1;48.0 19.1"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-1.75s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-1.75s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-6.33s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 22.8;67.6 22.8;75.7 22.8;67.6 22.8;48.0 22.8;28.4 22.8;20.3 22.8;28.4 22.8;48.0 22.8"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-6.33s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-6.33s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-10.92s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 26.5;68.6 26.5;77.2 26.5;68.6 26.5;48.0 26.5;27.4 26.5;18.8 26.5;27.4 26.5;48.0 26.5"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-10.92s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-10.92s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-3.50s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 30.2;69.2 30.2;77.9 30.2;69.2 30.2;48.0 30.2;26.8 30.2;18.1 30.2;26.8 30.2;48.0 30.2"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-3.50s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-3.50s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-8.09s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 33.8;69.2 33.8;77.9 33.8;69.2 33.8;48.0 33.8;26.8 33.8;18.1 33.8;26.8 33.8;48.0 33.8"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-8.09s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-8.09s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-0.67s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 37.5;68.6 37.5;77.2 37.5;68.6 37.5;48.0 37.5;27.4 37.5;18.8 37.5;27.4 37.5;48.0 37.5"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-0.67s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-0.67s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-5.25s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 41.2;67.6 41.2;75.7 41.2;67.6 41.2;48.0 41.2;28.4 41.2;20.3 41.2;28.4 41.2;48.0 41.2"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-5.25s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-5.25s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-9.84s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 44.9;65.9 44.9;73.3 44.9;65.9 44.9;48.0 44.9;30.1 44.9;22.7 44.9;30.1 44.9;48.0 44.9"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-9.84s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-9.84s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-2.42s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 48.6;63.3 48.6;69.6 48.6;63.3 48.6;48.0 48.6;32.7 48.6;26.4 48.6;32.7 48.6;48.0 48.6"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-2.42s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-2.42s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-7.00s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 52.3;59.3 52.3;64.0 52.3;59.3 52.3;48.0 52.3;36.7 52.3;32.0 52.3;36.7 52.3;48.0 52.3"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-7.00s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-7.00s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" additive="sum" dur="12.0s" begin="-11.59s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="48.0 56.0;48.0 56.0;48.0 56.0;48.0 56.0;48.0 56.0;48.0 56.0;48.0 56.0;48.0 56.0;48.0 56.0"/>
+      <g>
+        <rect x="-6.0" y="-4.5" width="12.0" height="9.0" rx="1.6" fill="url(#og-f)"/>
+        <animateTransform attributeName="transform" type="scale" dur="12.0s" begin="-11.59s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.400 1.400;1.276 1.276;0.975 0.975;0.674 0.674;0.550 0.550;0.674 0.674;0.975 0.975;1.276 1.276;1.400 1.400"/>
+        <animate attributeName="opacity" dur="12.0s" begin="-11.59s" repeatCount="indefinite" keyTimes="0.000;0.125;0.250;0.375;0.500;0.625;0.750;0.875;1.000" values="1.000;0.883;0.600;0.317;0.200;0.317;0.600;0.883;1.000"/>
+      </g>
+    </g>
+</svg>

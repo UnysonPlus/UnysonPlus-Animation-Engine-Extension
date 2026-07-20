@@ -66,6 +66,7 @@ $design_groups = array(
 			'carousel_ring' => __( 'Carousel Ring', 'fw' ),
 			'panorama_wall'     => __( 'Panorama Wall', 'fw' ),
 			'card_sphere'      => __( 'Card Sphere', 'fw' ),
+			'orbit_globe'      => __( 'Orbit Globe', 'fw' ),
 		),
 	),
 );
@@ -182,6 +183,35 @@ $card_sphere_opts = array(
 	'group_cg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
 );
 
+$orbit_globe_opts = array(
+	'group_og_motion' => array( 'type' => 'group', 'options' => array(
+		'drive' => array(
+			'label'   => __( 'Motion', 'fw' ),
+			'type'    => 'select',
+			'value'   => 'continuous',
+			'choices' => array( 'continuous' => __( 'Continuous', 'fw' ), 'scroll' => __( 'Scroll-scrub', 'fw' ), 'static' => __( 'Static', 'fw' ) ),
+			'desc'    => __( 'How the cloud orbits on its own.', 'fw' ),
+		),
+		'allow_drag'  => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the globe by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
+		'speed'       => $slider( __( 'Loop Duration (s)', 'fw' ), 20, 5, 90, 1, __( 'Seconds for one full orbit — lower is faster (Continuous).', 'fw' ) ),
+		'direction'   => array( 'label' => __( 'Direction', 'fw' ), 'type' => 'select', 'value' => 'left', 'choices' => array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'hover_behavior' => $hover( __( 'What happens when the visitor hovers the gallery (Continuous only). No effect when used as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_og_globe' => array( 'type' => 'group', 'options' => array(
+		'globe_size' => $slider( __( 'Globe Size (%)', 'fw' ), 50, 40, 95, 1, __( 'Diameter of the orbit sphere, as a % of the shorter side of the stage. A pure zoom: the cloud and its cards scale together.', 'fw' ) ),
+		'gap'        => $slider( __( 'Gap (%)', 'fw' ), 2.5, 0.5, 8, 0.5, __( 'Spacing between cards — larger values thin out the cloud (fewer cards).', 'fw' ) ),
+		'back_fade'  => $slider( __( 'Back Fade (%)', 'fw' ), 55, 0, 90, 1, __( 'How much cards on the far side of the orbit dim.', 'fw' ) ),
+		'tilt'       => $slider( __( 'Tilt (°)', 'fw' ), 27, -45, 45, 1, __( 'Tips the orbit axis up or down.', 'fw' ) ),
+	) ),
+	'group_og_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 28, 8, 30, 1, __( 'Size of each card as a % of the globe. Also the density control — smaller cards pack the cloud more densely (more cards).', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 2, 0, 60, 1 ),
+	) ),
+	'group_og_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
 $options = array(
 
 	/* ---------------------------------------------------------------- CONTENT */
@@ -236,6 +266,7 @@ $options = array(
 					'carousel_ring' => $carousel_ring_opts,
 					'panorama_wall'     => $panorama_wall_opts,
 					'card_sphere'      => $card_sphere_opts,
+					'orbit_globe'      => $orbit_globe_opts,
 				),
 			),
 		),
