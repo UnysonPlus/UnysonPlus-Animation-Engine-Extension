@@ -19,15 +19,13 @@
  * @var bool     $as_bg
  */
 
-$drive_raw = (string) $dp( 'drive', 'continuous' );
-$allowdrag = ( $dp( 'allow_drag', 'no' ) === 'yes' ) ? 1 : 0;
-if ( $drive_raw === 'drag' ) { $drive_raw = 'static'; $allowdrag = 1; } // legacy "Drag" motion = Static base + Drag-to-spin
-$drive    = in_array( $drive_raw, array( 'continuous', 'scroll', 'static' ), true ) ? $drive_raw : 'continuous';
+/* Motion comes pre-parsed from view.php ($motion_* — the nested Motion picker w/ legacy fallback). */
+$drive     = $motion_mode;                                    // 'continuous' | 'scroll' | 'static'
+$allowdrag = ( $dp( 'allow_drag', 'no' ) === 'yes' || $motion_legacy_drag ) ? 1 : 0;
 if ( ! empty( $as_bg ) ) { $drive = 'continuous'; $allowdrag = 0; }
-$speed    = max( 5, min( 90, (float) $dp( 'speed', 20 ) ) );
-$dir      = ( $dp( 'direction', 'left' ) === 'right' ) ? -1 : 1;
-$hover_raw = (string) $dp( 'hover_behavior', '' );
-$hover    = in_array( $hover_raw, array( 'none', 'pause', 'slow' ), true ) ? $hover_raw : ( $dp( 'pause_hover', 'yes' ) === 'yes' ? 'slow' : 'none' );
+$speed    = max( 5, min( 90, $motion_speed ) );
+$dir      = ( $motion_dir === 'right' ) ? -1 : 1;
+$hover    = $motion_hover;
 $momentum = $dp( 'drag_momentum', 'yes' ) === 'yes' ? 1 : 0;
 $globe    = max( 40, min( 95, (float) $dp( 'globe_size', 70 ) ) );  // sphere diameter, % of the stage's shorter side
 $card     = max( 8, min( 30, (float) $dp( 'card_size', 20 ) ) );

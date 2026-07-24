@@ -36,10 +36,14 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		// init action, matching the shortcodes extension's own custom option types.
 		add_action( 'fw_option_types_init', function () {
 			require_once dirname( __FILE__ ) . '/includes/option-types/gallery-3d-preview/class-fw-option-type-gallery-3d-preview.php';
+			// `gsap-code-preview`: the read-only "Show generated GSAP" teaching panel inside Scroll
+			// Motion's effect groups (admin-only; value-less — renders nothing on the front end).
+			require_once dirname( __FILE__ ) . '/includes/option-types/gsap-code-preview/class-fw-option-type-gsap-code-preview.php';
 		} );
 
 		// Modules. Each plugs into the shared Animations tab / wrapper / Theme Settings.
 		require_once dirname( __FILE__ ) . '/modules/scroll-motion/scroll-motion.php'; // Scroll Motion (GSAP)
+		require_once dirname( __FILE__ ) . '/modules/motion-sequence/motion-sequence.php'; // Motion Sequence (choreographs Scroll Motion children on one timeline)
 		require_once dirname( __FILE__ ) . '/modules/hover/hover.php';                  // Hover Interactions
 		require_once dirname( __FILE__ ) . '/modules/physics/physics.php';              // Physics Effects (per-element)
 		require_once dirname( __FILE__ ) . '/modules/parallax/parallax.php';            // Parallax Depth Layers (per-element)

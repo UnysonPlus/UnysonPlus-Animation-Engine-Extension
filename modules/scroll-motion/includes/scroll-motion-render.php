@@ -12,6 +12,32 @@
  */
 
 
+/* ============================================================================
+ * MOTION SNIPPET security gate.
+ *
+ * A Motion Snippet (Scroll Effect → Custom Code) is arbitrary author-written GSAP, base64-stamped as
+ * `data-upw-snip` on the element (baked into the stored post_content, exactly like every other
+ * `data-upw-g*` attribute — so it survives without re-running shortcodes on the front end). Because
+ * the code is static content, EXECUTION is gated per-request here: this emits a live "OK" flag on the
+ * footer ONLY when the current singular's AUTHOR has `unfiltered_html` (the WordPress bar for
+ * arbitrary JS — mirrors the theme's page_custom_js). The runtime runs a snippet only when the flag
+ * is set, so a lower-privilege author's baked code never executes. (Defense in depth: post_content
+ * from a non-unfiltered_html saver is also kses-filtered on save, which strips the data attribute.)
+ * ========================================================================== */
+if ( ! function_exists( 'upw_gsap_snippets_gate' ) ) :
+	function upw_gsap_snippets_gate() {
+		if ( ! function_exists( 'sc_gsap_flag' ) || ! sc_gsap_flag() ) { return; } // no GSAP on this page
+		if ( ! is_singular() ) { return; }
+		$pid    = get_queried_object_id();
+		$post   = $pid ? get_post( $pid ) : null;
+		$author = $post ? (int) $post->post_author : 0;
+		if ( ! $author || ! user_can( $author, 'unfiltered_html' ) ) { return; }
+		echo "\n" . '<script id="upw-snippets-ok">window.upwSnippetsOK=1;</script>' . "\n";
+	}
+endif;
+add_action( 'wp_footer', 'upw_gsap_snippets_gate', 4 ); // before the runtime enqueue (5)
+
+
 /**
  * Stamp the GSAP data-attributes (and, for hidden-start effects, the
  * `upw-g-pending` guard class) onto the shortcode wrapper.
@@ -24,7 +50,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     $g = ( isset( $atts['gsap_motion'] ) && is_array( $atts['gsap_motion'] ) ) ? $atts['gsap_motion'] : [];
 
     $effect  = isset( $g['effect'] ) ? (string) $g['effect'] : 'none';
-    $allowed = [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub', 'zoom', 'rotate', 'blur', 'clip', 'skew', 'flip', 'expand', 'counter', 'velocity_skew', 'tilt_scrub', 'scroll_spin', 'mask_wipe', 'color_scrub' ];
+    $allowed = [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub', 'zoom', 'rotate', 'blur', 'clip', 'skew', 'flip', 'expand', 'counter', 'velocity_skew', 'tilt_scrub', 'scroll_spin', 'mask_wipe', 'color_scrub', 'custom' ];
     if ( ! in_array( $effect, $allowed, true ) ) {
         return $attr;
     }
@@ -107,6 +133,19 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             $data['data-upw-g-pin-length'] = $num( 'pin_length', 100 );
             if ( $on( 'pin_fade', false ) ) $data['data-upw-g-pin-fade'] = '1';
             if ( ! $on( 'run_on_mobile', false ) ) $data['data-upw-g-mobile'] = '0';
+            break;
+
+        case 'custom':
+            // Motion Snippet: record the author's GSAP; the actual code is emitted (author-gated)
+            // in the footer, and this element carries only a marker id the runtime matches. Nothing
+            // is stamped when the field is empty, so an accidental "custom" with no code is inert.
+            $code = isset( $s['code'] ) ? (string) $s['code'] : '';
+            if ( trim( $code ) === '' ) { return $attr; }
+            // Base64 the code into a static attribute — quote/entity-safe, survives in post_content,
+            // read by the runtime (which only runs it when the per-request author gate flag is set).
+            $data['data-upw-snip'] = base64_encode( $code );
+            // No 'data-upw-g' — the snippet is run by the snippet runtime, not the effect builder.
+            unset( $data['data-upw-g'] );
             break;
 
         case 'scrub':
@@ -242,6 +281,43 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             break;
     }
 
+    /* ADVANCED (power users) — shared by every effect that exposes the Advanced picker. Values live
+     * at advanced.custom.* and are only stamped when the picker is on "Custom…", so a Default save
+     * emits nothing and the runtime keeps its Style-preset behaviour byte for byte. */
+    $adv = ( isset( $s['advanced'] ) && is_array( $s['advanced'] ) ) ? $s['advanced'] : [];
+    if ( isset( $adv['mode'] ) && $adv['mode'] === 'custom' ) {
+        $a = ( isset( $adv['custom'] ) && is_array( $adv['custom'] ) ) ? $adv['custom'] : [];
+
+        // Easing — a curated GSAP ease name, or the free-text one when set to "custom".
+        $ease_allow = [ 'none', 'power1.out', 'power2.out', 'power3.out', 'expo.out', 'back.out(1.7)', 'elastic.out(1,0.5)', 'circ.out', 'sine.inOut' ];
+        $ease       = isset( $a['ease'] ) ? (string) $a['ease'] : '';
+        if ( $ease === 'custom' ) {
+            $ease = isset( $a['ease_custom'] ) ? trim( (string) $a['ease_custom'] ) : '';
+            // Conservative allow-list for a hand-typed ease: GSAP names look like
+            // `power4.inOut` / `back.out(1.7)` / `steps(12)`. Anything else is ignored so a typo
+            // (or an injection attempt) can never reach the runtime.
+            if ( $ease !== '' && ! preg_match( '/^[A-Za-z][A-Za-z0-9]*(\.[A-Za-z]+)?(\(\s*-?[0-9.]+\s*(,\s*-?[0-9.]+\s*)*\))?$/', $ease ) ) {
+                $ease = '';
+            }
+        } elseif ( ! in_array( $ease, $ease_allow, true ) ) {
+            $ease = ''; // '' = inherit the Style preset's ease
+        }
+        if ( $ease !== '' ) { $attr['data-upw-g-ease'] = esc_attr( $ease ); }
+
+        // Scrub smoothing — 0 keeps the hard `scrub: true`; > 0 becomes the catch-up time.
+        if ( isset( $a['scrub_smooth'] ) && is_numeric( $a['scrub_smooth'] ) ) {
+            $sm = max( 0, min( 2, (float) $a['scrub_smooth'] ) );
+            if ( $sm > 0 ) { $attr['data-upw-g-scrub'] = esc_attr( rtrim( rtrim( number_format( $sm, 2, '.', '' ), '0' ), '.' ) ); }
+        }
+
+        // Debug markers — a build-time aid, so they are gated to users who can edit the site.
+        // A switch left on can therefore never render for a visitor.
+        if ( isset( $a['markers'] ) && $a['markers'] === 'yes'
+            && function_exists( 'current_user_can' ) && current_user_can( 'edit_theme_options' ) ) {
+            $attr['data-upw-g-markers'] = '1';
+        }
+    }
+
     // Merge data-* attributes (escaped).
     foreach ( $data as $k => $v ) {
         $attr[ $k ] = esc_attr( $v );
@@ -271,6 +347,9 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
     if ( $needs ) { return $needs; }
     $g      = ( isset( $atts['gsap_motion'] ) && is_array( $atts['gsap_motion'] ) ) ? $atts['gsap_motion'] : [];
     $effect = isset( $g['effect'] ) ? (string) $g['effect'] : 'none';
+    if ( $effect === 'custom' ) { // a Motion Snippet needs a wrapper to carry data-upw-snip
+        return isset( $g['custom']['code'] ) && trim( (string) $g['custom']['code'] ) !== '';
+    }
     return in_array( $effect, [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub', 'flip', 'expand', 'counter', 'velocity_skew', 'tilt_scrub', 'scroll_spin', 'mask_wipe', 'color_scrub' ], true );
 }, 10, 2 );
 

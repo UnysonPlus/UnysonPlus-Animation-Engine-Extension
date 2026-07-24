@@ -11,16 +11,13 @@
  * @var array    $attr        wrapper attributes (with base class + style vars)
  */
 
-$drive_raw = (string) $dp( 'drive', 'auto' );
-$allowdrag = ( $dp( 'allow_drag', 'no' ) === 'yes' ) ? 1 : 0;
-if ( $drive_raw === 'drag' ) { $drive_raw = 'static'; $allowdrag = 1; } // legacy "Drag" motion = Static base + Drag-to-spin
-$drive    = in_array( $drive_raw, array( 'auto', 'scroll', 'static' ), true ) ? $drive_raw : 'auto';
+/* Motion comes pre-parsed from view.php ($motion_* — the nested Motion picker w/ legacy fallback). */
+$drive     = $motion_mode;                                    // 'auto' | 'scroll' | 'static'
+$allowdrag = ( $dp( 'allow_drag', 'no' ) === 'yes' || $motion_legacy_drag ) ? 1 : 0;
 if ( ! empty( $as_bg ) ) { $drive = 'auto'; $allowdrag = 0; } // a Section background is non-interactive → auto-rotate, no drag
-$speed    = max( 3, min( 60, (float) $dp( 'speed', 16 ) ) );
-$dir      = ( $dp( 'direction', 'left' ) === 'right' ) ? -1 : 1;
-$hover_raw = (string) $dp( 'hover_behavior', '' );
-if ( $hover_raw === '' ) { $hover_raw = ( $dp( 'pause_hover', 'yes' ) === 'yes' ) ? 'pause' : 'none'; } // legacy pause_hover
-$hover    = in_array( $hover_raw, array( 'none', 'pause', 'slow' ), true ) ? $hover_raw : 'pause';
+$speed    = max( 3, min( 60, $motion_speed ) );
+$dir      = ( $motion_dir === 'right' ) ? -1 : 1;
+$hover    = $motion_hover;
 $momentum = $dp( 'drag_momentum', 'yes' ) === 'yes' ? 1 : 0;
 $tilt     = max( -60, min( 60, (float) $dp( 'tilt', -28 ) ) );
 $roll     = max( -45, min( 45, (float) $dp( 'roll', 0 ) ) );          // our extra "Diagonal Tilt"; off by default (animos has none)
@@ -30,6 +27,11 @@ $spacing  = max( 60, min( 180, (float) $dp( 'spacing', 100 ) ) );      // our ex
 $persp    = max( 8, min( 100, (float) $dp( 'perspective', 18 ) ) );
 $backfade = max( 0, min( 100, (float) $dp( 'back_fade', 70 ) ) );
 $card     = max( 6, min( 60, (float) $dp( 'card_size', 21 ) ) );
+
+/* Soft render cap: the Ring is the one 1:1 design (one card per pool image), so a 200-post source
+ * would build a comically huge ring — the radius grows with the count. 40 is well beyond any
+ * readable ring; the pool is simply truncated (the other designs cycle their pools instead). */
+if ( count( $items ) > 40 ) { $items = array_slice( $items, 0, 40 ); }
 
 $attr['data-tdg-drive']    = esc_attr( $drive );
 $attr['data-tdg-speed']    = esc_attr( $speed );

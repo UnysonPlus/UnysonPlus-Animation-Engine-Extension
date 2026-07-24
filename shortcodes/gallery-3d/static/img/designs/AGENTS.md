@@ -44,3 +44,4 @@ correct static composition too, so a SMIL-disabled viewer still shows a sensible
 - `carousel-ring.svg` — animated (diagonal elliptical ring). ✅
 - `panorama-wall.svg` — animated (horizontal barrel conveyor). ✅
 - `card-sphere.svg` — animated (spinning globe; cards ride elliptical latitude bands). ✅
+- `photo-scatter.svg` — animated (cards glide in from the edges, rest scattered, sweep out). ✅

@@ -14,18 +14,15 @@
  * @var bool     $as_bg
  */
 
-$drive_raw = (string) $dp( 'drive', 'continuous' );
-$allowdrag = ( $dp( 'allow_drag', 'no' ) === 'yes' ) ? 1 : 0;
-if ( $drive_raw === 'drag' ) { $drive_raw = 'static'; $allowdrag = 1; } // legacy "Drag" motion = Static base + Drag-to-spin
-$drive  = in_array( $drive_raw, array( 'continuous', 'scroll', 'static' ), true ) ? $drive_raw : 'continuous';
+/* Motion comes pre-parsed from view.php ($motion_* — the nested Motion picker w/ legacy fallback). */
+$drive     = $motion_mode;                                    // 'continuous' | 'scroll' | 'static'
+$allowdrag = ( $dp( 'allow_drag', 'no' ) === 'yes' || $motion_legacy_drag ) ? 1 : 0;
 if ( ! empty( $as_bg ) ) { $drive = 'continuous'; $allowdrag = 0; } // a Section background is non-interactive → scroll, no drag
 $momentum = $dp( 'drag_momentum', 'yes' ) === 'yes' ? 1 : 0;
-$speed  = max( 5, min( 90, (float) $dp( 'speed', 20 ) ) );
-$dirsel = $dp( 'direction', 'left' );
-$dir    = ( $dirsel === 'right' ) ? -1 : 1;
-$alt    = ( $dirsel === 'alternate' ) ? 1 : 0;
-$hover_raw = (string) $dp( 'hover_behavior', '' );
-$hover  = in_array( $hover_raw, array( 'none', 'pause', 'slow' ), true ) ? $hover_raw : ( $dp( 'pause_hover', 'yes' ) === 'yes' ? 'slow' : 'none' );
+$speed  = max( 5, min( 90, $motion_speed ) );
+$dir    = ( $motion_dir === 'right' ) ? -1 : 1;
+$alt    = ( $motion_dir === 'alternate' ) ? 1 : 0;
+$hover  = $motion_hover;
 $rows   = max( 1, min( 9, (int) $dp( 'rows', 5 ) ) );
 $cols   = max( 3, min( 24, (int) $dp( 'columns', 11 ) ) );
 $curv   = max( -150, min( 150, (float) $dp( 'curvature', -100 ) ) ); // signed: -concave .. +convex

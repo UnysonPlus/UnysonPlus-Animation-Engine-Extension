@@ -22,9 +22,9 @@
 
 	// Per-design fallbacks (mirror options.php defaults) — used when a value can't be read yet.
 	var DEFAULTS = {
-		carousel_ring: { drive: 'auto', allow_drag: 'no', speed: 16, direction: 'left', hover_behavior: 'slow', tilt: -28, ring_opening: 55, roll: 0, ring_size: 80, spacing: 100, perspective: 18, back_fade: 70, card_size: 21, card_ratio: '1-1', corner_radius: 6, padding: 0 },
-		panorama_wall: { drive: 'continuous', allow_drag: 'no', speed: 20, direction: 'left', hover_behavior: 'slow', rows: 5, columns: 11, curvature: -100, tilt: 0, gap: 5, edge_fade: 0, perspective: 68, card_size: 20, card_ratio: '16-9', corner_radius: 2, padding: 0 },
-		card_sphere: { drive: 'continuous', allow_drag: 'no', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 70, card_size: 20, gap: 2.5, back_fade: 55, tilt: 0, perspective: 55, card_ratio: '16-9', corner_radius: 2, padding: 0 },
+		carousel_ring: { drive: 'auto', allow_drag: 'yes', speed: 16, direction: 'left', hover_behavior: 'slow', tilt: -28, ring_opening: 55, roll: 0, ring_size: 80, spacing: 100, perspective: 18, back_fade: 70, card_size: 21, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		panorama_wall: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', rows: 5, columns: 11, curvature: -100, tilt: 0, gap: 5, edge_fade: 0, perspective: 68, card_size: 20, card_ratio: '16-9', corner_radius: 2, padding: 0 },
+		card_sphere: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 70, card_size: 20, gap: 2.5, back_fade: 55, tilt: 0, perspective: 55, card_ratio: '16-9', corner_radius: 2, padding: 0 },
 		orbit_globe: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 50, card_size: 28, gap: 2.5, back_fade: 55, tilt: 27, card_ratio: '1-1', corner_radius: 2 }
 	};
 
@@ -152,6 +152,16 @@
 			var $d = $(this);
 			var key = $d.attr('data-fw-option-id');
 			var type = $d.attr('data-fw-option-type');
+			// Skip anything inside a NESTED choice-group that isn't the active one (the Motion picker's
+			// hidden mode branches — otherwise auto's `direction` and scroll's `direction` would both be
+			// read, with the last one winning).
+			if ($d.parentsUntil($chosen, '.choice-group').not('.chosen').length) { return; }
+			// The nested Motion picker's own select (`mode`) IS the drive.
+			if (key === 'mode' && type === 'select') {
+				var mv = $d.find('select').val();
+				if (mv != null) { o.drive = mv; }
+				return;
+			}
 			if (!(key in o)) { return; } // only geometry/shared keys we know
 			if (type === 'slider' || type === 'short-slider') {
 				var $inp = $d.find('.fw-irs-range-slider');

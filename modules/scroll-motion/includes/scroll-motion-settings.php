@@ -124,7 +124,128 @@ function sc_get_gsap_fields() {
         'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
         'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
     ];
+    /**
+     * ADVANCED (power users) — the GSAP/ScrollTrigger knobs the Style presets normally decide for
+     * you. An INLINE multi-picker so it collapses to a single "Default" row: beginners never see
+     * the knobs, advanced users switch to "Custom…" and get exact control. Every field falls back
+     * to the current preset behaviour when left at Default, so existing saves are untouched.
+     *
+     * @param bool $with_scrub include Scrub smoothing (only meaningful for scroll-scrubbed effects)
+     */
+    $advanced = function ( $with_scrub = false ) {
+        $fields = [
+            'ease' => [
+                'type'    => 'select',
+                'label'   => __( 'Easing', 'fw' ),
+                'desc'    => __( 'The speed curve of the motion. "From the Style preset" keeps whatever the chosen Style uses.', 'fw' ),
+                'help'    => __( 'Under the hood: GSAP\'s `ease`. The Style presets map to Subtle `power1.out`, Standard `power2.out`, Dramatic `expo.out`, Bounce `back.out(1.7)`, Elastic `elastic.out(1,0.5)`. "out" curves start fast and settle — best for entrances.', 'fw' ),
+                'value'   => '',
+                'choices' => [
+                    ''                    => __( 'From the Style preset', 'fw' ),
+                    'none'                => __( 'Linear (no easing)', 'fw' ),
+                    'power1.out'          => __( 'Gentle  ·  power1.out', 'fw' ),
+                    'power2.out'          => __( 'Standard  ·  power2.out', 'fw' ),
+                    'power3.out'          => __( 'Strong  ·  power3.out', 'fw' ),
+                    'expo.out'            => __( 'Dramatic  ·  expo.out', 'fw' ),
+                    'back.out(1.7)'       => __( 'Overshoot  ·  back.out(1.7)', 'fw' ),
+                    'elastic.out(1,0.5)'  => __( 'Elastic  ·  elastic.out(1,0.5)', 'fw' ),
+                    'circ.out'            => __( 'Circular  ·  circ.out', 'fw' ),
+                    'sine.inOut'          => __( 'Smooth both ends  ·  sine.inOut', 'fw' ),
+                    'custom'              => __( 'Custom…', 'fw' ),
+                ],
+            ],
+            'ease_custom' => [
+                'type'  => 'text',
+                'label' => __( 'Custom easing', 'fw' ),
+                'desc'  => __( 'Used when Easing is set to Custom. Any GSAP ease string, e.g. power4.inOut or back.out(2).', 'fw' ),
+                'help'  => __( 'Under the hood: passed straight to GSAP as `ease`. Invalid strings fall back to the Style preset\'s ease, so a typo can\'t break the animation.', 'fw' ),
+                'value' => '',
+            ],
+        ];
+        if ( $with_scrub ) {
+            $fields['scrub_smooth'] = [
+                'type'       => 'slider',
+                'label'      => __( 'Scrub smoothing (s)', 'fw' ),
+                'desc'       => __( '0 = locked to the scrollbar exactly. Higher values let the motion glide a moment behind your scrolling, which feels softer.', 'fw' ),
+                'help'       => __( 'Under the hood: ScrollTrigger\'s `scrub`. 0 becomes `scrub: true` (hard-linked); any other value becomes `scrub: <seconds>`, the catch-up time.', 'fw' ),
+                'value'      => 0,
+                'properties' => [ 'min' => 0, 'max' => 2, 'step' => 0.1 ],
+            ];
+        }
+        $fields['markers'] = [
+            'type'         => 'switch',
+            'label'        => __( 'Debug markers', 'fw' ),
+            'desc'         => __( 'Draws start/end guides on screen so you can see exactly where the animation fires. For building only — turn off before going live.', 'fw' ),
+            'help'         => __( 'Under the hood: ScrollTrigger\'s `markers`. Only ever rendered for logged-in users who can edit the site, so a forgotten switch can\'t leak to visitors.', 'fw' ),
+            'value'        => 'no',
+            'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
+            'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
+        ];
+        return [
+            'advanced' => [
+                'type'         => 'multi-picker',
+                'label'        => false,
+                'desc'         => false,
+                'show_borders' => false,
+                'value'        => [ 'mode' => 'default' ],
+                'picker'       => [
+                    'mode' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Advanced', 'fw' ),
+                        'desc'    => __( 'Fine-tune the motion engine directly. Leave on Default unless you need exact control.', 'fw' ),
+                        'value'   => 'default',
+                        'choices' => [
+                            'default' => __( 'Default', 'fw' ),
+                            'custom'  => __( 'Custom…', 'fw' ),
+                        ],
+                    ],
+                ],
+                'choices' => [ 'custom' => $fields ],
+            ],
+        ];
+    };
+
+    // "Show generated GSAP" — the read-only teaching panel. Added right after the Advanced picker in
+    // each supported effect group; `effect` tells its JS which sibling values to translate.
+    $code_preview = function ( $effect ) {
+        return [ 'gsap_code' => [ 'type' => 'gsap-code-preview', 'label' => false, 'desc' => false, 'effect' => $effect ] ];
+    };
+
+    // NOTE: the Advanced picker is added per-effect (reveal / stagger / parallax / pin / scrub) —
+    // deliberately NOT to this shared tail, because an option that silently does nothing is worse
+    // than an absent one. As more effects are wired to honour it, add it to their groups too.
     $entrance_tail = array_merge( $timing(), [ 'once' => $once_field, 'run_on_mobile' => $run_on_mobile( true ) ] );
+
+    /**
+     * MOTION SNIPPET (power users) — write your own GSAP for this element. It's the lossless escape
+     * hatch: anything the options can't express, you write here — the runtime hands you `el` (this
+     * element) + `tl` (a fresh timeline already wired to a ScrollTrigger) + `gsap`, and manages
+     * registration and reduced-motion.
+     *
+     * SECURITY = EXECUTION GATE, not a UI gate. The `custom` choice is ALWAYS registered (WordPress's
+     * Custom-HTML-block model): gating the CHOICE by capability made the saved value fragile — any
+     * server-side re-validation that didn't see the cap (e.g. json_to_shortcodes) reset it to "none".
+     * Instead the snippet is only ever EXECUTED when the page AUTHOR has `unfiltered_html` (checked at
+     * the footer emit — see upw_gsap_snippets_emit()), so a lower-privilege author's code never runs.
+     */
+    $snippet_tile  = array( 'custom' => $fx( 'custom', __( 'Custom Code', 'fw' ) ) );
+    $snippet_group = array(
+        'custom' => array(
+            'group_gsap_custom' => array(
+                'type'    => 'group',
+                'options' => array(
+                    'code' => array(
+                        'type'  => 'code-editor',
+                        'mode'  => 'javascript',
+                        'label' => __( 'Motion Snippet (GSAP)', 'fw' ),
+                        'desc'  => __( 'Write GSAP for this element. You get: el (this element), tl (a timeline already tied to a ScrollTrigger), and gsap. Example: tl.from(el, { y: 60, opacity: 0 }).from(el.querySelectorAll(".card"), { scale: 0.8, stagger: 0.1 }, "<")', 'fw' ),
+                        'help'  => __( 'Under the hood: your code runs as new Function("el","tl","gsap", <your code>). The timeline `tl` already has scrollTrigger:{trigger:el, start:"top 80%"}. Add tweens to `tl` (they choreograph together) or use `gsap` directly for your own triggers. Only runs when the page author can unfiltered_html; honours reduce-motion (skipped). Tip: build the effect with the options first, hit Copy on "The GSAP your settings generate", paste it here, then tweak.', 'fw' ),
+                        'value' => '',
+                    ),
+                ),
+            ),
+        ),
+    );
 
     return [
         'gsap_motion' => [
@@ -146,7 +267,7 @@ function sc_get_gsap_fields() {
                     'search'  => __( 'Search scroll effects…', 'fw' ),
                     'layout'  => 'tabs',
                     'choices' => upw_ae_group_tiles(
-                        [
+                        $snippet_tile + [
                             'none'      => $fx( 'none',      __( 'None', 'fw' ) ),
                             'blur'      => $fx( 'blur',      __( 'Blur In', 'fw' ) ),
                             'clip'      => $fx( 'clip',      __( 'Clip Wipe', 'fw' ) ),
@@ -173,12 +294,13 @@ function sc_get_gsap_fields() {
                             'grp_3d' => array( 'label' => __( '3D & Rotate', 'fw' ), 'ids' => array( 'flip', 'rotate', 'scroll_spin', 'tilt_scrub', 'skew' ) ),
                             'grp_scrub' => array( 'label' => __( 'Scrub & Parallax', 'fw' ), 'ids' => array( 'scrub', 'parallax', 'pin', 'velocity_skew', 'color_scrub' ) ),
                             'grp_text' => array( 'label' => __( 'Text & Count', 'fw' ), 'ids' => array( 'counter', 'splittext', 'stagger' ) ),
+                            'grp_custom' => array( 'label' => __( 'Code', 'fw' ), 'ids' => array( 'custom' ) ), // empty when the user can't unfiltered_html (tile absent)
                         ),
                         array( 'none' )
                     ),
                 ],
             ],
-            'choices' => [
+            'choices' => $snippet_group + [
                 'reveal' => [
                     'group_gsap_reveal' => [
                         'type'    => 'group',
@@ -212,7 +334,8 @@ function sc_get_gsap_fields() {
                                     'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
                                 ],
                                 'run_on_mobile' => $run_on_mobile( true ),
-                            ]
+                            ],
+                            $advanced( false ), $code_preview( 'reveal' )
                         ),
                     ],
                 ],
@@ -268,7 +391,8 @@ function sc_get_gsap_fields() {
                                 ],
                             ],
                             $timing(),
-                            [ 'run_on_mobile' => $run_on_mobile( true ) ]
+                            [ 'run_on_mobile' => $run_on_mobile( true ) ],
+                            $advanced( false ), $code_preview( 'stagger' )
                         ),
                     ],
                 ],
@@ -383,7 +507,7 @@ function sc_get_gsap_fields() {
                                 'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
                             ],
                             'run_on_mobile' => $run_on_mobile( false ),
-                        ],
+                        ] + $advanced( true ) + $code_preview( 'parallax' ), // + = append the Advanced picker (no key collisions)
                     ],
                 ],
                 'pin' => [
@@ -408,7 +532,7 @@ function sc_get_gsap_fields() {
                                 'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
                             ],
                             'run_on_mobile' => $run_on_mobile( false ),
-                        ],
+                        ] + $advanced( true ) + $code_preview( 'pin' ),
                     ],
                 ],
                 'scrub' => [
@@ -444,7 +568,7 @@ function sc_get_gsap_fields() {
                                 'choices' => $start_choices,
                             ],
                             'run_on_mobile' => $run_on_mobile( true ),
-                        ],
+                        ] + $advanced( true ) + $code_preview( 'scrub' ),
                     ],
                 ],
                 'zoom' => [

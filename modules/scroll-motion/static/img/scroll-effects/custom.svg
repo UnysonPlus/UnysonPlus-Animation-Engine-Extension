@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="cc-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+  </defs>
+  <!-- Code brackets </> — the "write your own" tile. The middle slash pulses to hint "live code". -->
+  <g fill="none" stroke="url(#cc-f)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="34,22 22,32 34,42"/>
+    <polyline points="62,22 74,32 62,42"/>
+    <line x1="53" y1="18" x2="43" y2="46">
+      <animate attributeName="opacity" dur="1.6s" repeatCount="indefinite" values="1;0.35;1" keyTimes="0;0.5;1"/>
+    </line>
+  </g>
+</svg>

@@ -43,6 +43,43 @@ $hover = function ( $desc = '' ) {
 	if ( $desc !== '' ) { $f['desc'] = $desc; }
 	return $f;
 };
+/* Motion as an INLINE multi-picker (label on the picker, per the multi-picker conventions): each mode
+ * reveals ONLY its own settings — Auto shows loop/direction/hover, Scroll-scrub shows pin/length/
+ * direction, Static shows nothing. Drag to spin + Drag Momentum stay OUTSIDE (they layer over any
+ * mode). NOTE the key is `motion` (new) — never reuse the old scalar `drive` key: existing saves have
+ * nothing at `motion`, so the picker just renders its default (no value-shape migration needed; the
+ * views fall back to the legacy flat keys). */
+$motion_picker = function ( $auto_key, $auto_label, $speed_def, $speed_min, $speed_max, $dir_choices ) use ( $slider, $switch, $hover ) {
+	$dir = array( 'label' => __( 'Direction', 'fw' ), 'type' => 'select', 'value' => 'left', 'choices' => $dir_choices );
+	return array(
+		'type'         => 'multi-picker',
+		'label'        => false,
+		'desc'         => false,
+		'show_borders' => false,
+		'value'        => array( 'mode' => $auto_key ),
+		'picker'       => array(
+			'mode' => array(
+				'type'    => 'select',
+				'label'   => __( 'Motion', 'fw' ),
+				'desc'    => __( 'How it moves on its own — each mode shows only its own settings.', 'fw' ),
+				'choices' => array( $auto_key => $auto_label, 'scroll' => __( 'Scroll-scrub', 'fw' ), 'static' => __( 'Static', 'fw' ) ),
+			),
+		),
+		'choices' => array(
+			$auto_key => array(
+				'speed'          => $slider( __( 'Loop Duration (s)', 'fw' ), $speed_def, $speed_min, $speed_max, 1, __( 'Seconds for one full loop — lower is faster.', 'fw' ) ),
+				'direction'      => $dir,
+				'hover_behavior' => $hover( __( 'What happens when the visitor hovers the gallery. No effect when used as a Section Background.', 'fw' ) ),
+			),
+			'scroll' => array(
+				'pin'           => $switch( __( 'Pin while scrubbing', 'fw' ), 'yes', __( 'Hold the gallery on screen while the visitor scrolls — their scrolling drives the motion across the whole pinned stretch, then the page continues. Off = it scrolls past like normal content. No effect as a Section Background.', 'fw' ) ),
+				'scroll_length' => $slider( __( 'Scroll Length (viewports)', 'fw' ), 2.5, 1, 5, 0.5, __( 'How much scrolling the pin holds, in screen-heights. Longer = a slower, more cinematic scrub.', 'fw' ) ),
+				'direction'     => $dir,
+			),
+		),
+	);
+};
+
 $height_field = array(
 	'type'  => 'unit-input',
 	'label' => __( 'Stage Height', 'fw' ),
@@ -69,6 +106,12 @@ $design_groups = array(
 			'orbit_globe'      => __( 'Orbit Globe', 'fw' ),
 		),
 	),
+	'grp_stack' => array(
+		'label'   => __( 'Stack & Scatter', 'fw' ),
+		'designs' => array(
+			'photo_scatter' => __( 'Photo Scatter', 'fw' ),
+		),
+	),
 );
 $mk_tile = function ( $dk, $dl ) use ( $img_base ) {
 	$file = str_replace( '_', '-', $dk );
@@ -88,17 +131,8 @@ foreach ( $design_groups as $gk => $g ) {
 /* ---- Per-design reveal option sets ---- */
 $carousel_ring_opts = array(
 	'group_ss_motion' => array( 'type' => 'group', 'options' => array(
-		'drive' => array(
-			'label'   => __( 'Motion', 'fw' ),
-			'type'    => 'select',
-			'value'   => 'auto',
-			'choices' => array( 'auto' => __( 'Auto-rotate', 'fw' ), 'scroll' => __( 'Scroll-scrub', 'fw' ), 'static' => __( 'Static', 'fw' ) ),
-			'desc'    => __( 'How the ring turns on its own.', 'fw' ),
-		),
+		'motion'        => $motion_picker( 'auto', __( 'Auto-rotate', 'fw' ), 16, 3, 60, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
 		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the ring by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
-		'speed'         => $slider( __( 'Loop Duration (s)', 'fw' ), 16, 3, 60, 1, __( 'Seconds for one full rotation — lower is faster (Auto-rotate).', 'fw' ) ),
-		'direction'     => array( 'label' => __( 'Direction', 'fw' ), 'type' => 'select', 'value' => 'left', 'choices' => array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
-		'hover_behavior' => $hover( __( 'What happens when the visitor hovers the gallery (auto-rotate only). No effect when used as a Section Background.', 'fw' ) ),
 		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
 	) ),
 	'group_ss_ring' => array( 'type' => 'group', 'options' => array(
@@ -121,17 +155,8 @@ $carousel_ring_opts = array(
 
 $panorama_wall_opts = array(
 	'group_sw_motion' => array( 'type' => 'group', 'options' => array(
-		'drive' => array(
-			'label'   => __( 'Motion', 'fw' ),
-			'type'    => 'select',
-			'value'   => 'continuous',
-			'choices' => array( 'continuous' => __( 'Continuous', 'fw' ), 'scroll' => __( 'Scroll-scrub', 'fw' ), 'static' => __( 'Static', 'fw' ) ),
-			'desc'    => __( 'How the wall scrolls on its own.', 'fw' ),
-		),
-		'allow_drag' => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and scroll the wall by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
-		'speed'     => $slider( __( 'Loop Duration (s)', 'fw' ), 20, 5, 90, 1, __( 'Seconds to scroll one full loop — lower is faster (Continuous).', 'fw' ) ),
-		'direction' => array( 'label' => __( 'Direction', 'fw' ), 'type' => 'select', 'value' => 'left', 'choices' => array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ), 'alternate' => __( 'Alternate rows', 'fw' ) ) ),
-		'hover_behavior' => $hover( __( 'What happens when the visitor hovers the gallery (Continuous only). No effect when used as a Section Background.', 'fw' ) ),
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 20, 5, 90, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ), 'alternate' => __( 'Alternate rows', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and scroll the wall by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
 		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep scrolling after releasing a drag (Drag to spin).', 'fw' ) ),
 	) ),
 	'group_sw_wall' => array( 'type' => 'group', 'options' => array(
@@ -154,17 +179,8 @@ $panorama_wall_opts = array(
 
 $card_sphere_opts = array(
 	'group_cg_motion' => array( 'type' => 'group', 'options' => array(
-		'drive' => array(
-			'label'   => __( 'Motion', 'fw' ),
-			'type'    => 'select',
-			'value'   => 'continuous',
-			'choices' => array( 'continuous' => __( 'Continuous', 'fw' ), 'scroll' => __( 'Scroll-scrub', 'fw' ), 'static' => __( 'Static', 'fw' ) ),
-			'desc'    => __( 'How the globe spins on its own.', 'fw' ),
-		),
-		'allow_drag'  => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the globe by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
-		'speed'       => $slider( __( 'Loop Duration (s)', 'fw' ), 20, 5, 90, 1, __( 'Seconds for one full spin — lower is faster (Continuous).', 'fw' ) ),
-		'direction'   => array( 'label' => __( 'Direction', 'fw' ), 'type' => 'select', 'value' => 'left', 'choices' => array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
-		'hover_behavior' => $hover( __( 'What happens when the visitor hovers the gallery (Continuous only). No effect when used as a Section Background.', 'fw' ) ),
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 20, 5, 90, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the globe by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
 		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
 	) ),
 	'group_cg_globe' => array( 'type' => 'group', 'options' => array(
@@ -185,17 +201,8 @@ $card_sphere_opts = array(
 
 $orbit_globe_opts = array(
 	'group_og_motion' => array( 'type' => 'group', 'options' => array(
-		'drive' => array(
-			'label'   => __( 'Motion', 'fw' ),
-			'type'    => 'select',
-			'value'   => 'continuous',
-			'choices' => array( 'continuous' => __( 'Continuous', 'fw' ), 'scroll' => __( 'Scroll-scrub', 'fw' ), 'static' => __( 'Static', 'fw' ) ),
-			'desc'    => __( 'How the cloud orbits on its own.', 'fw' ),
-		),
-		'allow_drag'  => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the globe by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
-		'speed'       => $slider( __( 'Loop Duration (s)', 'fw' ), 20, 5, 90, 1, __( 'Seconds for one full orbit — lower is faster (Continuous).', 'fw' ) ),
-		'direction'   => array( 'label' => __( 'Direction', 'fw' ), 'type' => 'select', 'value' => 'left', 'choices' => array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
-		'hover_behavior' => $hover( __( 'What happens when the visitor hovers the gallery (Continuous only). No effect when used as a Section Background.', 'fw' ) ),
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 20, 5, 90, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the globe by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
 		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
 	) ),
 	'group_og_globe' => array( 'type' => 'group', 'options' => array(
@@ -212,6 +219,84 @@ $orbit_globe_opts = array(
 	'group_og_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
 );
 
+/* Photo Scatter — photos scattered flat on a tabletop (the "desk" look): seeded random positions +
+ * rotations, cards glide in from the edges, settle, then sweep out and the next set slides in.
+ * Shuffle rides its own inline multi-picker (NOT the shared Motion picker — dwell/enter semantics,
+ * not loop/scrub). */
+$photo_scatter_opts = array(
+	'group_ps_motion' => array( 'type' => 'group', 'options' => array(
+		'cycle' => array(
+			'type'         => 'multi-picker',
+			'label'        => false,
+			'desc'         => false,
+			'show_borders' => false,
+			'value'        => array( 'mode' => 'auto' ),
+			'picker'       => array(
+				'mode' => array(
+					'type'    => 'select',
+					'label'   => __( 'Shuffle', 'fw' ),
+					'desc'    => __( 'How the scatter cycles to the next set of photos (when there are more images than Cards per Set). As a Section Background it always shuffles automatically.', 'fw' ),
+					'choices' => array(
+						'auto'  => __( 'Automatically', 'fw' ),
+						'click' => __( 'On click', 'fw' ),
+						'off'   => __( 'Never (static scatter)', 'fw' ),
+					),
+				),
+			),
+			'choices' => array(
+				'auto' => array(
+					'dwell'       => $slider( __( 'Dwell (s)', 'fw' ), 6, 2, 20, 0.5, __( 'How long each set rests on the table before the next sweeps in.', 'fw' ) ),
+					'hover_pause' => $switch( __( 'Pause on Hover', 'fw' ), 'yes', __( 'Hold the current set while the visitor hovers the scatter.', 'fw' ) ),
+				),
+			),
+		),
+		'from' => array(
+			'label'   => __( 'Glide in from', 'fw' ),
+			'type'    => 'select',
+			'value'   => 'edges',
+			'choices' => array(
+				'edges'  => __( 'All edges', 'fw' ),
+				'top'    => __( 'Top', 'fw' ),
+				'sides'  => __( 'Left & right', 'fw' ),
+				'random' => __( 'Random', 'fw' ),
+			),
+		),
+		'exit' => array(
+			'label'   => __( 'How a set leaves', 'fw' ),
+			'type'    => 'select',
+			'desc'    => __( 'How the current photos clear before the next set glides in. Sweep flies them off the edges; Gather collects them into a pile at the centre; Fade dissolves them in place.', 'fw' ),
+			'value'   => 'sweep',
+			'choices' => array(
+				'sweep'  => __( 'Sweep off the edges', 'fw' ),
+				'gather' => __( 'Gather into a pile', 'fw' ),
+				'fade'   => __( 'Fade in place', 'fw' ),
+			),
+		),
+	) ),
+	'group_ps_scatter' => array( 'type' => 'group', 'options' => array(
+		'visible'       => $slider( __( 'Cards per Set', 'fw' ), 9, 3, 16, 1, __( 'How many photos rest on the table at once. Extra images form the next sets.', 'fw' ) ),
+		'rotation'      => $slider( __( 'Rotation Range (°)', 'fw' ), 12, 0, 35, 1, __( 'Each photo settles at a random tilt within this range — 0 lays them all straight.', 'fw' ) ),
+		'size_variance' => $slider( __( 'Size Variance (%)', 'fw' ), 30, 0, 60, 1, __( 'How much the photo sizes differ — 0 makes every photo the same size.', 'fw' ) ),
+		'spread'        => $slider( __( 'Spread (%)', 'fw' ), 90, 50, 100, 1, __( 'How much of the stage the scatter uses — lower gathers the pile toward the middle.', 'fw' ) ),
+	) ),
+	'group_ps_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 18, 8, 40, 1, __( 'Base photo width as a % of the stage width (Size Variance plays around it).', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 4, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 30, 0.5, __( 'Inner frame around each image — pair with a white Box Preset for the polaroid look.', 'fw' ) ),
+	) ),
+	'group_ps_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+/* Post types offered by the Post Type source: public + featured-image support, built dynamically so
+ * e.g. Portfolio simply appears when that extension is active (no hard dependency). */
+$pt_choices = array();
+foreach ( get_post_types( array( 'public' => true ), 'objects' ) as $pt_obj ) {
+	if ( 'attachment' === $pt_obj->name || ! post_type_supports( $pt_obj->name, 'thumbnail' ) ) { continue; }
+	$pt_choices[ $pt_obj->name ] = $pt_obj->labels->name;
+}
+if ( empty( $pt_choices ) ) { $pt_choices = array( 'post' => __( 'Posts', 'fw' ) ); }
+
 $options = array(
 
 	/* ---------------------------------------------------------------- CONTENT */
@@ -222,12 +307,62 @@ $options = array(
 			'group_content' => array(
 				'type'    => 'group',
 				'options' => array(
-					'images' => array(
-						'label'       => __( 'Images', 'fw' ),
-						'desc'        => __( 'The cards of the 3D showcase. Add or reorder images.', 'fw' ),
-						'help'        => __( 'Each image becomes a card in the 3D scene. Captions/alt read from the Media Library (see Caption Source on the Style tab).', 'fw' ),
-						'type'        => 'multi-upload',
-						'images_only' => true,
+					/* Where the cards come from. The picker natively reveals only the chosen source's
+					 * options: Media Library → the Images upload; Post Type → the query settings.
+					 * (Pre-source saves kept images at the old flat `images` key — the view still falls
+					 * back to it, per the user's call that no formal migration is needed pre-release.) */
+					'source' => array(
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'show_borders' => false,
+						'value'        => array( 'kind' => 'media' ),
+						'picker'       => array(
+							'kind' => array(
+								'type'    => 'select',
+								'label'   => __( 'Source', 'fw' ),
+								'desc'    => __( 'Media Library = the images you pick below. Post Type = a post type\'s featured images build the cards automatically (and stay fresh as you publish) — set On Card Click to "Open Link" on the Style tab to link each card to its post.', 'fw' ),
+								'choices' => array( 'media' => __( 'Media Library', 'fw' ), 'posts' => __( 'Post Type', 'fw' ) ),
+							),
+						),
+						'choices' => array(
+							'media' => array(
+								'images' => array(
+									'label'       => __( 'Images', 'fw' ),
+									'desc'        => __( 'The cards of the 3D showcase. Add or reorder images.', 'fw' ),
+									'help'        => __( 'Each image becomes a card in the 3D scene. Captions/alt read from the Media Library (see Caption Source on the Style tab), and the image\'s "Link URL" field is used when On Card Click is "Open Link".', 'fw' ),
+									'type'        => 'multi-upload',
+									'images_only' => true,
+								),
+							),
+							'posts' => array(
+								'post_type' => array(
+									'label'   => __( 'Post Type', 'fw' ),
+									'type'    => 'select',
+									'value'   => isset( $pt_choices['post'] ) ? 'post' : key( $pt_choices ),
+									'choices' => $pt_choices,
+									'desc'    => __( 'Public post types with featured-image support — e.g. Portfolio appears here when that extension is active.', 'fw' ),
+								),
+								'count'   => array(
+								'label' => __( 'Number of Cards', 'fw' ),
+								'type'  => 'text',
+								'value' => '12',
+								'attr'  => array( 'inputmode' => 'numeric', 'pattern' => '[0-9]*', 'style' => 'width:90px' ),
+								'desc'  => __( 'How many posts to pull (1–200). Only posts WITH a featured image become cards. Each design lays the pool out its own way — the Panorama Wall happily cycles hundreds.', 'fw' ) ),
+								'orderby' => array(
+									'label'   => __( 'Order', 'fw' ),
+									'type'    => 'select',
+									'value'   => 'date_desc',
+									'choices' => array(
+										'date_desc'  => __( 'Newest first', 'fw' ),
+										'date_asc'   => __( 'Oldest first', 'fw' ),
+										'title'      => __( 'Title (A–Z)', 'fw' ),
+										'menu_order' => __( 'Menu order', 'fw' ),
+										'rand'       => __( 'Random', 'fw' ),
+									),
+								),
+							),
+						),
 					),
 				),
 			),
@@ -267,6 +402,7 @@ $options = array(
 					'panorama_wall'     => $panorama_wall_opts,
 					'card_sphere'      => $card_sphere_opts,
 					'orbit_globe'      => $orbit_globe_opts,
+					'photo_scatter'    => $photo_scatter_opts,
 				),
 			),
 		),
@@ -321,12 +457,31 @@ $options = array(
 						'value'   => 'caption',
 						'choices' => array( 'caption' => __( 'Image Caption', 'fw' ), 'title' => __( 'Image Title', 'fw' ), 'alt' => __( 'Alt Text', 'fw' ), 'description' => __( 'Description', 'fw' ) ),
 					),
-					'click_action' => array(
-						'label'   => __( 'On Card Click', 'fw' ),
-						'type'    => 'select',
-						'value'   => 'none',
-						'choices' => array( 'lightbox' => __( 'Open Lightbox', 'fw' ), 'none' => __( 'Do Nothing', 'fw' ) ),
-						'desc'    => __( 'Open the full image in the shared gallery lightbox when a card is clicked. Off by default — the cards are moving, so clicking one is fiddly, and a 3D gallery is often decorative.', 'fw' ),
+					/* On Card Click as a multi-picker: each action reveals only its own settings. NEW key
+					 * (`click`) — the legacy flat `click_action` scalar stays honoured as a view fallback,
+					 * so no value-shape migration is needed. */
+					'click' => array(
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'show_borders' => false,
+						'value'        => array( 'action' => 'none' ),
+						'picker'       => array(
+							'action' => array(
+								'type'    => 'select',
+								'label'   => __( 'On Card Click', 'fw' ),
+								'desc'    => __( 'Open Lightbox shows the full image in the shared gallery lightbox. Open Link follows each card\'s link — its post\'s page with the Post Type source, or the image\'s "Link URL" field in the Media Library. Off by default — a 3D gallery is often decorative.', 'fw' ),
+								'choices' => array(
+									'lightbox' => __( 'Open Lightbox', 'fw' ),
+									'link'     => __( 'Open Link', 'fw' ),
+									'none'     => __( 'Do Nothing', 'fw' ),
+								),
+							),
+						),
+						/* No per-action reveals yet: Open Link's URL AND its "open in a new tab" checkbox both
+						 * live on the image itself (the Media Library fields), so one gallery can freely mix
+						 * internal and external links. External hosts always open a new tab automatically. */
+						'choices' => array(),
 					),
 				),
 			),

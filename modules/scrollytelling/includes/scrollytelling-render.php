@@ -59,6 +59,62 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['data-story-intensity'] = esc_attr( (string) max( 0, min( 1, (float) ( $o['intensity'] ?? 0.5 ) ) ) );
 	$attr['data-story-progress']  = esc_attr( $prog );
 
+	// Full-screen Stage layout: every column is a scene; optional scrubbed backdrop behind them.
+	$layout = ( isset( $o['layout'] ) && $o['layout'] === 'stage' ) ? 'stage' : 'panel';
+	$attr['data-story-layout'] = esc_attr( $layout );
+	if ( $layout === 'stage' ) {
+		$attr['data-story-scenelen'] = esc_attr( (string) max( 0.5, min( 3, (float) ( $o['scene_length'] ?? 1 ) ) ) );
+		// Exit hand-off — fade the pinned stage into the Section background near the end.
+		if ( isset( $o['exit'] ) && $o['exit'] === 'fade' ) {
+			$attr['data-story-exit']    = 'fade';
+			$attr['data-story-exit-at'] = esc_attr( (string) ( max( 50, min( 95, (int) ( $o['exit_at'] ?? 78 ) ) ) / 100 ) );
+		}
+		$b   = ( isset( $o['backdrop'] ) && is_array( $o['backdrop'] ) ) ? $o['backdrop'] : array();
+		$src = isset( $b['source'] ) ? (string) $b['source'] : 'none';
+		if ( in_array( $src, array( 'frames', 'sequence', 'video', 'image' ), true ) ) {
+			$bo  = ( isset( $b[ $src ] ) && is_array( $b[ $src ] ) ) ? $b[ $src ] : array();
+			$url = function ( $v ) { // upload value -> url string
+				if ( is_array( $v ) && isset( $v['url'] ) ) { return (string) $v['url']; }
+				return is_string( $v ) ? $v : '';
+			};
+			$cfg = array( 'type' => $src, 'fit' => ( isset( $bo['fit'] ) && $bo['fit'] === 'contain' ) ? 'contain' : 'cover' );
+			if ( $src === 'frames' ) {
+				// Media-Library frames (multi-upload) — the user-replaceable default.
+				$cfg['type']   = 'sequence';
+				$cfg['frames'] = array();
+				if ( isset( $bo['frames'] ) && is_array( $bo['frames'] ) ) {
+					foreach ( $bo['frames'] as $f ) {
+						$u = is_array( $f ) && isset( $f['url'] ) ? (string) $f['url'] : '';
+						if ( $u !== '' ) { $cfg['frames'][] = $u; }
+					}
+				}
+			} elseif ( $src === 'sequence' ) {
+				$cfg['pattern'] = isset( $bo['url_pattern'] ) ? (string) $bo['url_pattern'] : '';
+				$cfg['count']   = max( 2, (int) ( $bo['count'] ?? 120 ) );
+				$cfg['start']   = max( 0, (int) ( $bo['start'] ?? 0 ) );
+				$cfg['pad']     = max( 0, min( 8, (int) ( $bo['pad'] ?? 0 ) ) );
+			} elseif ( $src === 'video' ) {
+				$cfg['url'] = $url( $bo['video_file'] ?? '' );
+				if ( $cfg['url'] === '' ) { $cfg['url'] = isset( $bo['video_url'] ) ? (string) $bo['video_url'] : ''; }
+			} else {
+				$cfg['url'] = $url( $bo['image'] ?? '' );
+			}
+			$has_media = ( $src === 'frames' )
+				? count( $cfg['frames'] ) >= 2
+				: ( ( $src === 'sequence' ) ? $cfg['pattern'] !== '' : $cfg['url'] !== '' );
+			if ( $has_media ) {
+				// base64 — quote-free, so it survives the wrapper printer's own escaping.
+				$attr['data-story-backdrop'] = base64_encode( wp_json_encode( $cfg ) );
+				// A backdrop is almost always photographic/dark — so scene copy defaults to a
+				// legible light treatment (white + soft shadow + a low bottom scrim). This is a
+				// DEFAULT only: any explicit per-element colour option still wins. Authors who set
+				// a light backdrop can override the scene text colour as usual.
+				$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
+				$attr['class'] = esc_attr( trim( $cls . ' upw-story--has-backdrop' ) );
+			}
+		}
+	}
+
 	// Directional styles: stamp the chosen direction (only when not the style default).
 	$dir = isset( $o['direction'] ) ? (string) $o['direction'] : 'auto';
 	if ( in_array( $mode, upw_scrollytelling_directional(), true ) && in_array( $dir, array( 'up', 'down', 'left', 'right' ), true ) ) {

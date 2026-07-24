@@ -69,7 +69,31 @@
 
         function attr(el, name) { return el.getAttribute(name); }
         function num(v, d) { v = parseFloat(v); return isNaN(v) ? d : v; }
-        function styleOf(el) { return STYLES[attr(el, 'data-upw-g-style')] || STYLES.standard; }
+        // The Style preset decides the ease… unless Advanced → Easing overrides it. The preset
+        // object is SHARED across elements, so clone before overriding (never mutate STYLES).
+        function styleOf(el) {
+            var st = STYLES[attr(el, 'data-upw-g-style')] || STYLES.standard;
+            var ease = attr(el, 'data-upw-g-ease');
+            if (!ease) { return st; }
+            var out = {}, k;
+            for (k in st) { if (Object.prototype.hasOwnProperty.call(st, k)) { out[k] = st[k]; } }
+            out.ease = ease;
+            return out;
+        }
+
+        /**
+         * Apply the shared Advanced ScrollTrigger settings to a trigger config:
+         *   • Scrub smoothing — `scrub: true` becomes `scrub: <seconds>` (catch-up time).
+         *   • Debug markers — PHP only stamps this for users who can edit the site.
+         * Returns the same object so it can wrap a config inline: `scrollTrigger: trig(el, {…})`.
+         */
+        function trig(el, cfg) {
+            if (!cfg) { return cfg; }
+            var sm = parseFloat(attr(el, 'data-upw-g-scrub'));
+            if (cfg.scrub === true && !isNaN(sm) && sm > 0) { cfg.scrub = sm; }
+            if (attr(el, 'data-upw-g-markers') === '1') { cfg.markers = true; }
+            return cfg;
+        }
         function startPos(v) {
             return (typeof v === 'string' && /^[a-z]+ [a-z0-9%]+$/i.test(v)) ? v : 'top 85%';
         }
@@ -107,13 +131,13 @@
         function reveal(el) {
             var st = styleOf(el);
             var c = compound(el, st);
-            c.to.scrollTrigger = {
+            c.to.scrollTrigger = trig(el, {
                 trigger: el,
                 start: startPos(attr(el, 'data-upw-g-start')),
                 toggleActions: attr(el, 'data-upw-g-once') === '0'
                     ? 'play none none reverse'
                     : 'play none none none'
-            };
+            });
             gsap.fromTo(el, c.from, c.to);
             el.classList.remove('upw-g-pending');
         }
@@ -232,7 +256,7 @@
             var prop = attr(el, 'data-upw-g-axis') === 'x' ? 'xPercent' : 'yPercent';
             var speed = num(attr(el, 'data-upw-g-speed'), 20);
             var extra = attr(el, 'data-upw-g-pmotion') || 'none'; // none | rotate | scale
-            var from = {}, to = { ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } };
+            var from = {}, to = { ease: 'none', scrollTrigger: trig(el, { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }) };
             from[prop] = -speed; to[prop] = speed;
             if (extra === 'rotate') { from.rotation = -speed * 0.3; to.rotation = speed * 0.3; }
             else if (extra === 'scale') { from.scale = 1 - speed / 200; to.scale = 1 + speed / 200; }
@@ -242,14 +266,14 @@
 
         function pin(el) {
             var len = num(attr(el, 'data-upw-g-pin-length'), 100);
-            window.ScrollTrigger.create({
+            window.ScrollTrigger.create(trig(el, {
                 trigger: el,
                 start: 'top top',
                 end: '+=' + len + '%',
                 pin: true,
                 pinSpacing: true,
                 anticipatePin: 1 // smoother hand-off into the pin at speed
-            });
+            }));
             // Optional fade: dip opacity in at the start of the pin and out at the end.
             if (attr(el, 'data-upw-g-pin-fade') === '1') {
                 gsap.fromTo(el, { opacity: 0 }, {
@@ -268,12 +292,12 @@
             var intensity = num(attr(el, 'data-upw-g-intensity'), 20);
             var from = {}, to = {
                 ease: 'none',
-                scrollTrigger: {
+                scrollTrigger: trig(el, {
                     trigger: el,
                     start: startPos(attr(el, 'data-upw-g-start')),
                     end: 'center center',
                     scrub: true
-                }
+                })
             };
 
             if (kind === 'scale') {
@@ -573,7 +597,84 @@
             (root || document).querySelectorAll('[data-upw-g]').forEach(build);
         }
 
+        /**
+         * MOTION SEQUENCE (module: motion-sequence). A Section marked `.upw-seq` plays its descendant
+         * Reveal / Stagger animations as ONE gsap.timeline() in document order, instead of each firing
+         * independently. Reuses this runtime's config builders (compound / staggerVars). Must run
+         * BEFORE scan() so it can CLAIM its steps (mark __upwG) and stop them self-triggering.
+         */
+        function initSequences(root) {
+            (root || document).querySelectorAll('.upw-seq').forEach(function (sec) {
+                if (sec.__upwSeq) { return; }
+                sec.__upwSeq = true;
+                if (attr(sec, 'data-upw-seq-mobile') === '0' && isMobile) { return; } // children fall back to standalone
+
+                // Steps = descendant Reveal/Stagger elements in document order (querySelectorAll is
+                // already document-ordered). Only these two share the compound() entrance config;
+                // other effects inside the Section keep their own standalone behaviour.
+                var steps = [].slice.call(sec.querySelectorAll('[data-upw-g="reveal"], [data-upw-g="stagger"]'))
+                    .filter(function (el) { return !el.__upwG; });
+                if (!steps.length) { return; }
+
+                var overlap = num(attr(sec, 'data-upw-seq-overlap'), 0.35);
+                var scrub   = attr(sec, 'data-upw-seq-trigger') === 'scrub';
+                var start   = startPos(attr(sec, 'data-upw-seq-start')) || 'top 80%';
+
+                var st = scrub
+                    ? { trigger: sec, start: 'top 70%', end: 'bottom 60%', scrub: true }
+                    : { trigger: sec, start: start, toggleActions: 'play none none none' };
+                var tl = gsap.timeline({ scrollTrigger: st });
+
+                steps.forEach(function (el, i) {
+                    el.__upwG = true;                 // claim: scan()/build() will skip it
+                    el.classList.remove('upw-g-pending');
+                    var isStagger = attr(el, 'data-upw-g') === 'stagger';
+                    var c = compound(el, styleOf(el));
+                    var dur = (c.to && c.to.duration) || 0.6;
+                    // Position: first step at the start; each later step begins `overlap` seconds
+                    // before the previous tween ENDS (">-<overlap>"). overlap ≥ duration → sequential.
+                    var pos = i === 0 ? 0 : '>-' + Math.max(0, Math.min(dur, overlap));
+                    if (isStagger) {
+                        var kids = staggerTargets(el);
+                        var each = num(attr(el, 'data-upw-g-stagger'), 0.12);
+                        tl.fromTo(kids, c.from, Object.assign({}, c.to, { stagger: each }), pos);
+                    } else {
+                        tl.fromTo(el, c.from, c.to, pos);
+                    }
+                });
+            });
+        }
+
+        /**
+         * MOTION SNIPPETS (Scroll Effect → Custom Code). The author's GSAP is base64 in the element's
+         * `data-upw-snip` (baked into post_content). We run it with (el, tl, gsap), where `tl` is a
+         * fresh timeline already tied to a ScrollTrigger. EXECUTION IS GATED: only runs when
+         * window.upwSnippetsOK is set — the footer emits that flag solely when the page AUTHOR has
+         * unfiltered_html, so untrusted baked code never executes. Reduced motion already bailed above.
+         */
+        function runSnippets(root) {
+            if (!window.upwSnippetsOK) { return; } // per-request author gate; no flag = never run
+            (root || document).querySelectorAll('[data-upw-snip]').forEach(function (el) {
+                if (el.__upwSnip) { return; }
+                el.__upwSnip = true;
+                el.classList.remove('upw-g-pending');
+                if (isMobile && attr(el, 'data-upw-snip-mobile') === '0') { return; }
+                var code;
+                try { code = decodeURIComponent(escape(window.atob(attr(el, 'data-upw-snip') || ''))); }
+                catch (e) { try { code = window.atob(attr(el, 'data-upw-snip') || ''); } catch (e2) { return; } }
+                if (!code) { return; }
+                try {
+                    var tl = gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 80%' } });
+                    /* eslint-disable no-new-func */
+                    var fn = new Function('el', 'tl', 'gsap', code);
+                    fn(el, tl, gsap);
+                } catch (e) { if (window.console) { console.warn('[Motion Snippet]', e); } }
+            });
+        }
+
+        initSequences();
         scan();
+        runSnippets();
 
         // Pick up content injected late (AJAX, infinite scroll, etc.).
         if ('MutationObserver' in window) {
@@ -581,8 +682,11 @@
                 muts.forEach(function (m) {
                     m.addedNodes && m.addedNodes.forEach(function (n) {
                         if (n.nodeType !== 1) return;
+                        // A late-injected sequence must claim its steps BEFORE they're scanned.
+                        if (n.classList && n.classList.contains('upw-seq')) { initSequences(n.parentNode || n); }
+                        else if (n.querySelector && n.querySelector('.upw-seq')) { initSequences(n); }
                         if (n.hasAttribute && n.hasAttribute('data-upw-g')) build(n);
-                        if (n.querySelectorAll) scan(n);
+                        if (n.querySelectorAll) { scan(n); runSnippets(n); }
                     });
                 });
             });

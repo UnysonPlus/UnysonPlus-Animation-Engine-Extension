@@ -1,0 +1,59 @@
+/* Scroll Motion — "Show generated GSAP" panel (admin option). Read-only code, VS-Code-ish dark. */
+.fw-gsap-code {
+	margin-top: 8px;
+	border: 1px solid #2b2f36;
+	border-radius: 8px;
+	overflow: hidden;
+	background: #1e1e1e;
+}
+.fw-gsap-code__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 7px 10px;
+	background: #23272e;
+	border-bottom: 1px solid #2b2f36;
+}
+.fw-gsap-code__label {
+	color: #c8cdd6;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: .02em;
+}
+.fw-gsap-code__copy {
+	appearance: none;
+	border: 1px solid #3a4048;
+	background: #2b3038;
+	color: #cdd3dc;
+	font-size: 11px;
+	padding: 3px 10px;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background .15s, border-color .15s;
+}
+.fw-gsap-code__copy:hover { background: #343b44; border-color: #4a525c; }
+.fw-gsap-code__pre {
+	margin: 0;
+	padding: 12px 14px;
+	overflow-x: auto;
+	background: #1e1e1e;
+}
+.fw-gsap-code__pre code {
+	display: block;
+	white-space: pre;
+	font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+	font-size: 12.5px;
+	line-height: 1.65;
+	color: #d4d4d4;
+	background: none;
+	padding: 0;
+}
+.fw-gsap-code__note {
+	margin: 0;
+	padding: 7px 12px 9px;
+	background: #23272e;
+	border-top: 1px solid #2b2f36;
+	color: #8b93a0;
+	font-size: 11px;
+	line-height: 1.5;
+}

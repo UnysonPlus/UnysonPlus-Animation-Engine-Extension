@@ -110,6 +110,96 @@
 	transition: transform 0.2s linear;
 }
 
+/* ---------------------------------------------------------------------------
+ * Full-screen Stage layout (data-story-layout="stage"): the row pins as a
+ * full-viewport stage, every column becomes an absolutely-stacked SCENE (it
+ * reuses .upw-story-layer, so every per-style transition applies unchanged),
+ * and an optional backdrop (sequence canvas / scrubbed video / image) sits
+ * behind the scenes. Section height (the scroll runway) is set by the JS.
+ * ------------------------------------------------------------------------- */
+.upw-story--stage .upw-story-stage {
+	position: -webkit-sticky;
+	position: sticky;
+	top: var(--story-top, 0px);
+	height: var(--story-h, 100vh);
+	display: block;
+	overflow: hidden;
+	/* Full-bleed: escape any boxed container so the stage spans the viewport. */
+	width: 100vw;
+	margin-left: calc(50% - 50vw);
+}
+.upw-story--stage .upw-story-backdrop {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+}
+.upw-story--stage .upw-story-backdrop canvas,
+.upw-story--stage .upw-story-backdrop video,
+.upw-story--stage .upw-story-backdrop img {
+	width: 100%;
+	height: 100%;
+	display: block;
+	object-fit: cover;
+}
+.upw-story--stage .upw-story-scene {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	max-width: 100%;
+	z-index: 1;
+	pointer-events: none;
+	/* The scene's shortcodes are its DIRECT children — the scene itself is a
+	 * centering column: every element is its own centered row, and the runtime
+	 * groups consecutive CTAs (a/button) into an .upw-story-cta-row. */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding-left: 6vw;
+	padding-right: 6vw;
+}
+.upw-story--stage .upw-story-scene.is-active { pointer-events: auto; }
+/* Neutralize the panel-layout layer sizing for scene content. */
+.upw-story--stage .upw-story-scene > * {
+	width: auto;
+	height: auto;
+	max-width: 100%;
+}
+.upw-story--stage .upw-story-cta-row {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 14px;
+	margin-top: 12px;
+}
+/* A boxed container's side padding would offset the full-bleed math — zero it. */
+.upw-story--stage .fw-container { padding-left: 0; padding-right: 0; }
+.upw-story--stage .upw-story-progress { z-index: 3; }
+
+/* Backdrop present → default scene copy to a legible light treatment (photographic backdrops are
+ * almost always dark). DEFAULT ONLY: a per-element colour option emits its own inline style/class
+ * and wins. A soft bottom scrim lifts text off busy imagery without hiding the ride. */
+.upw-story--has-backdrop .upw-story-stage::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1; /* above the backdrop (0), below the scenes (2) */
+	pointer-events: none;
+	background: linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,0) 62%, rgba(0,0,0,0.42) 100%);
+}
+.upw-story--has-backdrop .upw-story-scene { color: #fff; z-index: 2; }
+.upw-story--has-backdrop .upw-story-scene :where(h1, h2, h3, h4, h5, h6, p, span, li, a) { color: inherit; }
+.upw-story--has-backdrop .upw-story-scene :where(h1, h2, h3, h4, h5, h6) { text-shadow: 0 1px 18px rgba(0,0,0,0.45); }
+.upw-story--has-backdrop .upw-story-scene :where(p, li) { text-shadow: 0 1px 10px rgba(0,0,0,0.5); }
+
+@media (max-width: 767px) {
+	/* Stage on mobile: unpin — scenes flow as a normal stack over a static backdrop frame. */
+	.upw-story--stage { height: auto !important; }
+	.upw-story--stage .upw-story-stage { position: static; height: auto; overflow: visible; }
+	.upw-story--stage .upw-story-scene { position: relative; opacity: 1; pointer-events: auto; min-height: 70vh; }
+	.upw-story--stage .upw-story-backdrop { position: absolute; inset: 0; }
+}
+
 @media (max-width: 767px) {
 	/* Mobile: unpin — media flows above its steps as a normal stack. */
 	.upw-story .fw-row { display: block; }

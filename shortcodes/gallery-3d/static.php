@@ -28,7 +28,10 @@ if ( ! function_exists( '_fw_gallery_3d_enqueue_instance' ) ) :
 		}
 		// Opt-in, and the fallback MUST match views/view.php: only an explicit 'lightbox' enqueues,
 		// otherwise an element with no saved value would ship lightbox.js the view never links to.
-		$click = function_exists( 'sc_get' ) ? sc_get( 'click_action', $atts, 'none' ) : 'none';
+		// Reads the NEW `click` multi-picker first, then the legacy flat `click_action` scalar.
+		$click = function_exists( 'sc_get' )
+			? sc_get( 'click/action', $atts, sc_get( 'click_action', $atts, 'none' ) )
+			: 'none';
 		if ( $click !== 'lightbox' ) { return; }
 		$sc = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
 		if ( ! $sc ) { return; }

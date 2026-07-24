@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="ps-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+  </defs>
+  <!-- Photo Scatter: five tilted photos glide in from the nearest edge, rest scattered on the
+       table (the dwell = keyPoints hold), then sweep back out — the loop reads as sets shuffling.
+       Each card: one animateMotion (enter → rest → exit via keyPoints/keyTimes) + opacity that is
+       0 at both ends (hides the recycle), all sharing the card's own begin offset. First frame =
+       a sensible static scatter for SMIL-less viewers. -->
+  <g transform="rotate(-8 22 18)">
+    <animateMotion dur="7s" begin="0s" repeatCount="indefinite" path="M-18 -14L0 0L0 0L-18 -14" keyPoints="0;1;1;0" keyTimes="0;.18;.72;1" calcMode="linear"/>
+    <animate attributeName="opacity" dur="7s" begin="0s" repeatCount="indefinite" keyTimes="0;.12;.18;.68;.78;1" values="0;.7;1;1;.4;0"/>
+    <rect x="12" y="9" width="18" height="15" rx="2" fill="url(#ps-f)"/>
+  </g>
+  <g transform="rotate(11 74 16)">
+    <animateMotion dur="7s" begin="-1.4s" repeatCount="indefinite" path="M20 -14L0 0L0 0L20 -14" keyPoints="0;1;1;0" keyTimes="0;.18;.72;1" calcMode="linear"/>
+    <animate attributeName="opacity" dur="7s" begin="-1.4s" repeatCount="indefinite" keyTimes="0;.12;.18;.68;.78;1" values="0;.7;1;1;.4;0"/>
+    <rect x="63" y="8" width="20" height="15" rx="2" fill="url(#ps-f)"/>
+  </g>
+  <g transform="rotate(-14 46 40)">
+    <animateMotion dur="7s" begin="-2.8s" repeatCount="indefinite" path="M0 26L0 0L0 0L0 26" keyPoints="0;1;1;0" keyTimes="0;.18;.72;1" calcMode="linear"/>
+    <animate attributeName="opacity" dur="7s" begin="-2.8s" repeatCount="indefinite" keyTimes="0;.12;.18;.68;.78;1" values="0;.7;1;1;.4;0"/>
+    <rect x="36" y="30" width="19" height="16" rx="2" fill="url(#ps-f)"/>
+  </g>
+  <g transform="rotate(7 20 48)">
+    <animateMotion dur="7s" begin="-4.2s" repeatCount="indefinite" path="M-20 12L0 0L0 0L-20 12" keyPoints="0;1;1;0" keyTimes="0;.18;.72;1" calcMode="linear"/>
+    <animate attributeName="opacity" dur="7s" begin="-4.2s" repeatCount="indefinite" keyTimes="0;.12;.18;.68;.78;1" values="0;.7;1;1;.4;0"/>
+    <rect x="10" y="40" width="17" height="14" rx="2" fill="url(#ps-f)"/>
+  </g>
+  <g transform="rotate(-6 76 46)">
+    <animateMotion dur="7s" begin="-5.6s" repeatCount="indefinite" path="M22 12L0 0L0 0L22 12" keyPoints="0;1;1;0" keyTimes="0;.18;.72;1" calcMode="linear"/>
+    <animate attributeName="opacity" dur="7s" begin="-5.6s" repeatCount="indefinite" keyTimes="0;.12;.18;.68;.78;1" values="0;.7;1;1;.4;0"/>
+    <rect x="66" y="38" width="19" height="15" rx="2" fill="url(#ps-f)"/>
+  </g>
+</svg>

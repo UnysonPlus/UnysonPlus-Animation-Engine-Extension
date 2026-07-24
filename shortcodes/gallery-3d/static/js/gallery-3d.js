@@ -23,6 +23,21 @@
 	function num( el, attr, dflt ) { var v = parseFloat( el.getAttribute( attr ) ); return isNaN( v ) ? dflt : v; }
 	function clamp( v, a, b ) { return v < a ? a : ( v > b ? b : v ); }
 
+	// Scroll-scrub progress 0..1, shared by every design. Pass-through mode: the element's travel
+	// through the viewport. Pinned mode (.tdg--pinned, "Pin while scrubbing"): progress through the
+	// pinned stretch — the stage sticks while the stretched wrapper passes, so the span is
+	// wrapperH − stageH and the stick offset mirrors the CSS `top:` rule (viewport-centred stage).
+	function scrollProgress( el, stage ) {
+		var r = el.getBoundingClientRect();
+		var vh = window.innerHeight || 1;
+		if ( el.classList.contains( 'tdg--pinned' ) ) {
+			var sh = ( stage && stage.offsetHeight ) || 1;
+			var stick = Math.max( 0, ( vh - sh ) / 2 );
+			return clamp( ( stick - r.top ) / Math.max( 1, r.height - sh ), 0, 1 );
+		}
+		return clamp( 1 - ( r.top + r.height / 2 ) / ( vh + r.height ), 0, 1 );
+	}
+
 	// Hover behaviour for auto-rotating drives: 'none' keeps full speed, 'pause' stops on hover,
 	// 'slow' eases to a crawl. Returns a getter for the current speed multiplier so each driver can
 	// scale its per-frame advance. (Legacy data-tdg-pause="1"/"0" is honoured as pause/none.)
@@ -183,11 +198,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () {
-				var r = el.getBoundingClientRect();
-				var vh = window.innerHeight || 1;
-				scrollAngle = dir * clamp( 1 - ( r.top + r.height / 2 ) / ( vh + r.height ), 0, 1 ) * 360;
-			};
+			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360; };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -322,12 +333,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () {
-				var r = el.getBoundingClientRect();
-				var vh = window.innerHeight || 1;
-				var prog = clamp( 1 - ( r.top + r.height / 2 ) / ( vh + r.height ), 0, 1 );
-				scrollBase = dir * prog * span * 2;
-			};
+			var onScroll = function () { scrollBase = dir * scrollProgress( el, stage ) * span * 2; };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -455,7 +461,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { var r = el.getBoundingClientRect(); var vh = window.innerHeight || 1; scrollAngle = dir * clamp( 1 - ( r.top + r.height / 2 ) / ( vh + r.height ), 0, 1 ) * 360; };
+			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360; };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -570,7 +576,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { var r = el.getBoundingClientRect(); var vh = window.innerHeight || 1; scrollAngle = dir * clamp( 1 - ( r.top + r.height / 2 ) / ( vh + r.height ), 0, 1 ) * 360; };
+			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360; };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -592,6 +598,167 @@
 		requestAnimationFrame( loop );
 	}
 
+	/**
+	 * Photo Scatter — photos scattered flat on a tabletop. The pool is server-rendered; the driver
+	 * picks which cards are "on the table", places them on a jittered grid (desk-like, no heavy
+	 * collision maths), glides them in from the chosen edge with a stagger, dwells, sweeps them out
+	 * and slides the next set in. Auto / click / off cycling; hover-pause; reduced-motion = static.
+	 */
+	function initScatter( el ) {
+		if ( el.__tdgInit ) { return; } el.__tdgInit = true;
+		var cards   = el.querySelectorAll( '.tdg__plane > .tdg__card' );
+		var pool    = cards.length;
+		if ( ! pool ) { return; }
+		var visible = clamp( num( el, 'data-tdg-visible', 9 ), 3, 16 );
+		var N       = Math.min( visible, pool );
+		var sets    = Math.max( 1, Math.ceil( pool / N ) );
+		var cycleMd = el.getAttribute( 'data-tdg-cycle' ) || 'auto';
+		var dwell   = clamp( num( el, 'data-tdg-dwell', 6 ), 2, 20 ) * 1000;
+		var hpause  = !! num( el, 'data-tdg-hpause', 1 );
+		var from    = el.getAttribute( 'data-tdg-from' ) || 'edges';
+		var rotMax  = clamp( num( el, 'data-tdg-rot', 12 ), 0, 35 );
+		var sizeVar = clamp( num( el, 'data-tdg-sizevar', 30 ), 0, 60 ) / 100;
+		var spread  = clamp( num( el, 'data-tdg-spread', 90 ), 50, 100 ) / 100;
+		var cardPct = clamp( num( el, 'data-tdg-card', 18 ), 8, 40 );
+		var exitStyle = el.getAttribute( 'data-tdg-exit' ) || 'sweep'; // sweep | gather | fade
+		if ( pool <= N ) { cycleMd = 'off'; } // one set — nothing to shuffle to
+
+		var setIdx = 0, hovering = false, timer = 0, inView = true, entered = false;
+
+		// One scattered placement for the N slots: a jittered ceil(√N) grid inside the spread box,
+		// shuffled so neighbours don't correlate — reads as a natural pile without collision maths.
+		function placements() {
+			var g = Math.ceil( Math.sqrt( N ) ), cells = [], i;
+			for ( i = 0; i < g * g; i++ ) { cells.push( i ); }
+			for ( i = cells.length - 1; i > 0; i-- ) { var j = ( Math.random() * ( i + 1 ) ) | 0, t = cells[ i ]; cells[ i ] = cells[ j ]; cells[ j ] = t; }
+			var out = [], pad = ( 1 - spread ) / 2;
+			for ( i = 0; i < N; i++ ) {
+				var c  = cells[ i ], cx = ( c % g + 0.5 ) / g, cy = ( ( c / g | 0 ) + 0.5 ) / g;
+				var jx = ( Math.random() - 0.5 ) * ( 0.55 / g ), jy = ( Math.random() - 0.5 ) * ( 0.55 / g );
+				out.push( {
+					x: ( pad + ( cx + jx ) * spread ) * 100,
+					y: ( pad + ( cy + jy ) * spread ) * 100,
+					r: ( Math.random() * 2 - 1 ) * rotMax,
+					s: 1 + ( Math.random() * 2 - 1 ) * sizeVar / 2,
+					z: 1 + ( ( Math.random() * N ) | 0 ),
+				} );
+			}
+			return out;
+		}
+
+		// Off-stage start/exit transform for a slot, per the "Glide in from" choice.
+		function offstage( p ) {
+			var side;
+			if ( from === 'top' ) { side = 'top'; }
+			else if ( from === 'sides' ) { side = ( p.x < 50 ) ? 'left' : 'right'; }
+			else if ( from === 'random' ) { side = [ 'top', 'right', 'bottom', 'left' ][ ( Math.random() * 4 ) | 0 ]; }
+			else { // edges — leave via the nearest edge
+				var dl = p.x, dr = 100 - p.x, dt = p.y, db = 100 - p.y;
+				var m = Math.min( dl, dr, dt, db );
+				side = ( m === dt ) ? 'top' : ( m === db ) ? 'bottom' : ( m === dl ) ? 'left' : 'right';
+			}
+			var dx = 0, dy = 0;
+			if ( side === 'top' ) { dy = -130; } else if ( side === 'bottom' ) { dy = 130; }
+			else if ( side === 'left' ) { dx = -130; } else { dx = 130; }
+			return { dx: dx, dy: dy };
+		}
+
+		function applySet( idx, animateIn ) {
+			var start = idx * N, i, k = 0;
+			for ( i = 0; i < pool; i++ ) {
+				var card = cards[ i ];
+				var active = ( i >= start && i < start + N ) || ( start + N > pool && i < ( start + N ) % pool );
+				if ( ! active ) { card.classList.remove( 'is-set' ); card.style.transitionDelay = '0ms'; card.style.opacity = ''; continue; }
+				var p = pts[ k ], off = offstage( p );
+				card.classList.add( 'is-set' );
+				card.style.width  = ( cardPct * p.s ) + '%';
+				card.style.zIndex = p.z;
+				if ( animateIn ) {
+					card.style.transitionDuration = '0ms';
+					card.style.transform = 'translate(-50%,-50%) translate(' + off.dx + '%,' + off.dy + '%) rotate(' + ( p.r * 2 ) + 'deg)';
+					card.style.left = p.x + '%'; card.style.top = p.y + '%';
+					card.style.opacity = '0';
+					void card.offsetWidth; // reflow → transition from the off-stage pose
+					card.style.transitionDuration = '';
+					card.style.transitionDelay = ( k * 90 ) + 'ms';
+				} else {
+					card.style.left = p.x + '%'; card.style.top = p.y + '%';
+				}
+				card.style.transform = 'translate(-50%,-50%) rotate(' + p.r + 'deg)';
+				card.style.opacity = '1';
+				k++;
+			}
+		}
+
+		function sweepOut( done ) {
+			var start = setIdx * N, i, k = 0;
+			for ( i = 0; i < pool; i++ ) {
+				var card = cards[ i ];
+				if ( ! card.classList.contains( 'is-set' ) ) { continue; }
+				var p = pts[ k ] || pts[ 0 ];
+				if ( exitStyle === 'gather' ) {
+					// Converge to a loose stack at the centre (the poly "collect into a pile" moment):
+					// each card slides to ~centre with a small residual offset + a lean, then fades.
+					var jx = ( Math.random() * 2 - 1 ) * 6, jy = ( Math.random() * 2 - 1 ) * 6;
+					card.style.transitionDelay = ( k * 45 ) + 'ms';
+					card.style.left = ( 50 + jx ) + '%'; card.style.top = ( 50 + jy ) + '%';
+					card.style.transform = 'translate(-50%,-50%) rotate(' + ( ( Math.random() * 2 - 1 ) * 10 ) + 'deg) scale(0.92)';
+					card.style.opacity = '0';
+				} else if ( exitStyle === 'fade' ) {
+					card.style.transitionDelay = ( k * 40 ) + 'ms';
+					card.style.opacity = '0';
+				} else { // sweep — fly out the nearest edge (default)
+					var off = offstage( p );
+					card.style.transitionDelay = ( k * 60 ) + 'ms';
+					card.style.transform = 'translate(-50%,-50%) translate(' + off.dx + '%,' + off.dy + '%) rotate(' + ( p.r * 1.6 ) + 'deg)';
+					card.style.opacity = '0';
+				}
+				k++;
+			}
+			setTimeout( done, 700 + N * 60 );
+		}
+
+		function shuffle() {
+			if ( sets < 2 ) { return; }
+			sweepOut( function () {
+				setIdx = ( setIdx + 1 ) % sets;
+				pts = placements();
+				applySet( setIdx, true );
+				schedule();
+			} );
+		}
+
+		function schedule() {
+			if ( cycleMd !== 'auto' ) { return; }
+			clearTimeout( timer );
+			timer = setTimeout( function tick() {
+				if ( ! inView || ( hpause && hovering ) ) { timer = setTimeout( tick, 600 ); return; }
+				shuffle();
+			}, dwell );
+		}
+
+		var pts = placements();
+		if ( reduce ) { applySet( 0, false ); return; } // reduced motion: static scatter, no cycling
+
+		// Enter once the scatter is actually in view (and pause auto-cycling off-screen).
+		if ( 'IntersectionObserver' in window ) {
+			var io = new IntersectionObserver( function ( es ) {
+				inView = es[ 0 ].isIntersecting;
+				if ( inView && ! entered ) { entered = true; applySet( 0, true ); schedule(); }
+			}, { threshold: 0.15 } );
+			io.observe( el );
+		} else { entered = true; applySet( 0, true ); schedule(); }
+
+		el.addEventListener( 'mouseenter', function () { hovering = true; } );
+		el.addEventListener( 'mouseleave', function () { hovering = false; } );
+		if ( cycleMd === 'click' ) {
+			el.addEventListener( 'click', function ( e ) {
+				if ( e.target && e.target.closest && e.target.closest( 'a' ) ) { return; } // links keep their job
+				shuffle();
+			} );
+		}
+	}
+
 	function scan() {
 		var i, els;
 		els = document.querySelectorAll( '.tdg--carousel-ring' );
@@ -602,6 +769,8 @@
 		for ( i = 0; i < els.length; i++ ) { initGlobe( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--orbit-globe' );
 		for ( i = 0; i < els.length; i++ ) { initOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--photo-scatter' );
+		for ( i = 0; i < els.length; i++ ) { initScatter( els[ i ] ); }
 	}
 	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', scan ); } else { scan(); }
 	window.upwGallery3dRescan = scan;
@@ -614,5 +783,6 @@
 		else if ( el.classList.contains( 'tdg--panorama-wall' ) ) { initWall( el ); }
 		else if ( el.classList.contains( 'tdg--card-sphere' ) ) { initGlobe( el ); }
 		else if ( el.classList.contains( 'tdg--orbit-globe' ) ) { initOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--photo-scatter' ) ) { initScatter( el ); }
 	};
 })();
