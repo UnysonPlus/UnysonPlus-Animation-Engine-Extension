@@ -124,6 +124,20 @@ function sc_get_gsap_fields() {
         'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
         'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
     ];
+    // Per-element position INSIDE a Motion Sequence (Section → Motion Sequence). Ignored when the
+    // element isn't in a sequence, so it's harmless everywhere; only Reveal/Stagger participate.
+    $seq_pos = [
+        'type'    => 'select',
+        'label'   => __( 'In a Motion Sequence', 'fw' ),
+        'desc'    => __( 'Only applies when this element is inside a Section with Motion Sequence on. "After the previous step" plays it in turn; "With the previous step" starts it at the same time as the one before, so a pair enters together.', 'fw' ),
+        'help'    => __( 'Under the hood: sets this tween\'s timeline position — "after" uses the Section\'s Overlap, "with" places it at "<" (the previous tween\'s start).', 'fw' ),
+        'value'   => 'after',
+        'choices' => [
+            'after' => __( 'After the previous step', 'fw' ),
+            'with'  => __( 'With the previous step', 'fw' ),
+        ],
+    ];
+
     /**
      * ADVANCED (power users) — the GSAP/ScrollTrigger knobs the Style presets normally decide for
      * you. An INLINE multi-picker so it collapses to a single "Default" row: beginners never see
@@ -335,7 +349,7 @@ function sc_get_gsap_fields() {
                                 ],
                                 'run_on_mobile' => $run_on_mobile( true ),
                             ],
-                            $advanced( false ), $code_preview( 'reveal' )
+                            ['seq_pos' => $seq_pos], $advanced( false ), $code_preview( 'reveal' )
                         ),
                     ],
                 ],
@@ -392,7 +406,7 @@ function sc_get_gsap_fields() {
                             ],
                             $timing(),
                             [ 'run_on_mobile' => $run_on_mobile( true ) ],
-                            $advanced( false ), $code_preview( 'stagger' )
+                            ['seq_pos' => $seq_pos], $advanced( false ), $code_preview( 'stagger' )
                         ),
                     ],
                 ],

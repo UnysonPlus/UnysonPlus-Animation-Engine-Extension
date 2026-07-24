@@ -90,6 +90,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
             if ( ! $on( 'once', true ) ) $data['data-upw-g-once'] = '0';
             if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            if ( $pick( 'seq_pos', array( 'after', 'with' ), 'after' ) === 'with' ) $data['data-upw-seq-pos'] = 'with';
             $pending = true;
             break;
 
@@ -104,6 +105,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
             $data['data-upw-g-start']    = $pick( 'start', $start_allow, 'top 85%' );
             if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            if ( $pick( 'seq_pos', array( 'after', 'with' ), 'after' ) === 'with' ) $data['data-upw-seq-pos'] = 'with';
             $pending = true;
             break;
 

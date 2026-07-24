@@ -633,7 +633,8 @@
                     var dur = (c.to && c.to.duration) || 0.6;
                     // Position: first step at the start; each later step begins `overlap` seconds
                     // before the previous tween ENDS (">-<overlap>"). overlap ≥ duration → sequential.
-                    var pos = i === 0 ? 0 : '>-' + Math.max(0, Math.min(dur, overlap));
+                    var pos = i === 0 ? 0
+                        : (attr(el, 'data-upw-seq-pos') === 'with' ? '<' : '>-' + Math.max(0, Math.min(dur, overlap)));
                     if (isStagger) {
                         var kids = staggerTargets(el);
                         var each = num(attr(el, 'data-upw-g-stagger'), 0.12);
