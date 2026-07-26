@@ -665,7 +665,14 @@
                 catch (e) { try { code = window.atob(attr(el, 'data-upw-snip') || ''); } catch (e2) { return; } }
                 if (!code) { return; }
                 try {
-                    var tl = gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 80%' } });
+                    // Trigger config from the field's baked attrs (absent = today's default: enter at
+                    // top 80%, play once). Scrub ties the timeline to the scrollbar.
+                    var snipStart = attr(el, 'data-upw-snip-start') || 'top 80%';
+                    var snipScrub = attr(el, 'data-upw-snip-scrub');
+                    var stCfg = { trigger: el, start: snipStart };
+                    if (snipScrub === 'yes') { stCfg.scrub = true; stCfg.end = 'bottom top'; }
+                    else if (snipScrub === 'smooth') { stCfg.scrub = 1; stCfg.end = 'bottom top'; }
+                    var tl = gsap.timeline({ scrollTrigger: stCfg });
                     /* eslint-disable no-new-func */
                     var fn = new Function('el', 'tl', 'gsap', code);
                     fn(el, tl, gsap);

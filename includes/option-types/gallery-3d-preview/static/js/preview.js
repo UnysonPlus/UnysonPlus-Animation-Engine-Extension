@@ -20,12 +20,29 @@
 	var MAXLAT = 80; // must match card-sphere.php
 	var rad = function (d) { return (d * Math.PI) / 180; };
 
+	// ─── ADDING A NEW DESIGN — the only two hooks ────────────────────────────────────────────────
+	//   1. DEFAULTS['<your_design_key>'] = { …geometry defaults mirroring options.php… }
+	//   2. a `if (design === '<your_design_key>') { … return html; }` branch in buildScene() below.
+	// That is ALL. Detection is registry-driven off DEFAULTS: findDesignMp() recognises the design
+	// picker by its DIRECT-CHILD choice-groups matching a DEFAULTS key, and readValues() resolves the
+	// chosen design from the picker's own value (not the fragile `.chosen` class). So a design added to
+	// DEFAULTS is detected automatically — no key lists to keep in sync, and no other design breaks.
+	// (Miss step 2 and only that one design falls back to the carousel_ring scene — a clear "add your
+	// build branch" signal, never a silent wrong-design-everywhere bug.)
+	// ─────────────────────────────────────────────────────────────────────────────────────────────
 	// Per-design fallbacks (mirror options.php defaults) — used when a value can't be read yet.
 	var DEFAULTS = {
 		carousel_ring: { drive: 'auto', allow_drag: 'yes', speed: 16, direction: 'left', hover_behavior: 'slow', tilt: -28, ring_opening: 55, roll: 0, ring_size: 80, spacing: 100, perspective: 18, back_fade: 70, card_size: 21, card_ratio: '1-1', corner_radius: 6, padding: 0 },
 		panorama_wall: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', rows: 5, columns: 11, curvature: -100, tilt: 0, gap: 5, edge_fade: 0, perspective: 68, card_size: 20, card_ratio: '16-9', corner_radius: 2, padding: 0 },
 		card_sphere: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 70, card_size: 20, gap: 2.5, back_fade: 55, tilt: 0, perspective: 55, card_ratio: '16-9', corner_radius: 2, padding: 0 },
-		orbit_globe: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 50, card_size: 28, gap: 2.5, back_fade: 55, tilt: 27, card_ratio: '1-1', corner_radius: 2 }
+		orbit_globe: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 50, card_size: 28, gap: 2.5, back_fade: 55, tilt: 27, card_ratio: '1-1', corner_radius: 2 },
+		sphere_cascade: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'up', hover_behavior: 'slow', columns: 5, curvature: -100, tilt: 0, gap: 5, edge_fade: 0, card_size: 18, card_ratio: '16-9', corner_radius: 4, padding: 13 },
+		// Flat tabletop scatter + device frame. The preview always runs these in AUTO cycle (there is no
+		// scroll in the modal), so the scatter's sets sweep in/out and the device cycles screens on a
+		// timer — a lively, representative preview of the design regardless of the saved cycle mode.
+		photo_scatter: { visible: 9, rotation: 12, size_variance: 30, spread: 90, card_size: 18, card_ratio: '3-4', corner_radius: 4, padding: 0, from: 'edges', exit: 'sweep' },
+		device_cycler: { device: 'laptop', transition: 'fade', card_size: 62, card_ratio: '16-9', corner_radius: 10, padding: 0 },
+		card_stack: { exit: 'down', behind: 3, stack_offset: 5, stack_scale: 6, card_size: 40, card_ratio: '4-3', corner_radius: 14, padding: 0 }
 	};
 
 	// ---- placeholder cards (a gradient tile — the real photos render on the front end) ----
@@ -112,6 +129,71 @@
 			return '<div class="tdg tdg--orbit-globe" style="' + style + '" ' + ao + '><div class="tdg__stage"><div class="tdg__orbit">' + cards + '</div></div></div>';
 		}
 
+		if (design === 'photo_scatter') {
+			// Flat scatter — mirror photo-scatter.php DOM. 18 placeholder cards so even a large "Cards
+			// per Set" still has a next set to cycle to; forced to AUTO so it animates in the modal.
+			var aps = attrStr({
+				'data-tdg-cycle': 'auto', 'data-tdg-dwell': 3, 'data-tdg-hpause': 0,
+				'data-tdg-from': o.from, 'data-tdg-exit': o.exit,
+				'data-tdg-visible': o.visible, 'data-tdg-rot': o.rotation, 'data-tdg-sizevar': o.size_variance,
+				'data-tdg-spread': o.spread, 'data-tdg-card': o.card_size, 'data-tdg-count': 18
+			});
+			cards = '';
+			for (i = 0; i < 18; i++) { cards += cardHtml(i, 18); }
+			return '<div class="tdg tdg--photo-scatter" style="' + style + '" ' + aps + '><div class="tdg__stage"><div class="tdg__plane">' + cards + '</div></div></div>';
+		}
+
+		if (design === 'device_cycler') {
+			// Device frame whose screen cycles — mirror device-cycler.php DOM (frame → screen → plane →
+			// cards, first .is-active). Forced to AUTO so the screens cross-fade in the modal.
+			var dev = o.device || 'laptop';
+			var adc = attrStr({
+				'data-tdg-device': dev, 'data-tdg-cycle': 'auto', 'data-tdg-dwell': 2,
+				'data-tdg-transition': o.transition, 'data-tdg-count': 6
+			});
+			cards = '';
+			for (i = 0; i < 6; i++) {
+				var dh = Math.round((i * 360) / 6);
+				var dbg = 'linear-gradient(135deg,hsl(' + dh + ',62%,60%),hsl(' + ((dh + 40) % 360) + ',58%,42%))';
+				cards += '<div class="tdg__card' + (i === 0 ? ' is-active' : '') + '"><div class="tdg__inner" style="background:' + dbg + '"></div></div>';
+			}
+			var dStyle = style + '--tdg-dev-w:' + o.card_size + '%;';
+			return '<div class="tdg tdg--device-cycler" style="' + dStyle + '" ' + adc + '>' +
+				'<div class="tdg__stage"><div class="tdg__device tdg__device--' + dev + '"><div class="tdg__screen">' +
+				'<div class="tdg__plane">' + cards + '</div></div></div></div></div>';
+		}
+
+		if (design === 'sphere_cascade') {
+			// per-column count mirrors sphere-cascade.php
+			var perCol = Math.max(12, Math.min(28, Math.round(320 / o.card_size)));
+			var ac = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'down' ? -1 : 1, // cascade is vertical (up/down), not left/right
+				'data-tdg-alt': o.direction === 'alternate' ? 1 : 0,
+				'data-tdg-curv': o.curvature, 'data-tdg-tilt': o.tilt, 'data-tdg-gap': o.gap,
+				'data-tdg-edge': o.edge_fade, 'data-tdg-card': o.card_size, 'data-tdg-count': 12
+			}));
+			var colsHtml = '';
+			for (var cc = 0; cc < o.columns; cc++) {
+				cards = '';
+				for (i = 0; i < perCol; i++) { cards += cardHtml((i * o.columns + cc) % 12, 12); }
+				colsHtml += '<div class="tdg__col">' + cards + '</div>';
+			}
+			return '<div class="tdg tdg--sphere-cascade" style="' + style + '" ' + ac + '><div class="tdg__stage"><div class="tdg__cascade">' + colsHtml + '</div></div></div>';
+		}
+
+		if (design === 'card_stack') {
+			// Deck of cards — mirror card-stack.php DOM. Forced to AUTO so the deck advances in the modal.
+			var acs = attrStr({
+				'data-tdg-cycle': 'auto', 'data-tdg-dwell': 1.6, 'data-tdg-exit': o.exit,
+				'data-tdg-behind': o.behind, 'data-tdg-offset': o.stack_offset, 'data-tdg-scale': o.stack_scale,
+				'data-tdg-count': 8
+			});
+			cards = '';
+			for (i = 0; i < 8; i++) { cards += cardHtml(i, 8); }
+			var csStyle = style + '--tdg-card-w:' + o.card_size + '%;';
+			return '<div class="tdg tdg--card-stack" style="' + csStyle + '" ' + acs + '><div class="tdg__stage"><div class="tdg__deck">' + cards + '</div></div></div>';
+		}
+
 		// carousel_ring
 		var ar = attrStr($.extend({}, shared, {
 			'data-tdg-tilt': o.tilt, 'data-tdg-roll': o.roll, 'data-tdg-opening': o.ring_opening,
@@ -124,17 +206,43 @@
 	}
 
 	// ---- read the sibling design_settings values from the DOM (same modal) ----
-	// The design_settings multi-picker is a SIBLING option, so scope up to the modal/form (not the
-	// preview's own .fw-inner) and pick the multi-picker that actually holds design choices.
+	// A registered design key (from DEFAULTS), or null. The ONE place detection + the registry agree,
+	// so adding a design to DEFAULTS is all it takes for detection to recognise it — no key lists to
+	// keep in sync here.
+	function knownDesign(k) { k = (k || '').replace(/-/g, '_'); return DEFAULTS[k] ? k : null; }
+
+	// The design picker's OWN value (image-picker: a <select>, a checked input, or a JSON-array hidden
+	// input, depending on layout). This is the authoritative choice — unlike the `.chosen` class, it is
+	// correct the instant the user picks, so the preview never lags a step behind.
+	function pickerValue($pg) {
+		var v = $pg.find('select').first().val();
+		if (v) { return v; }
+		var $c = $pg.find('input[type=radio]:checked, input[type=checkbox]:checked').first();
+		if ($c.length && $c.val()) { return $c.val(); }
+		var $h = $pg.find('input[type=hidden]').first();
+		if ($h.length && $h.val()) {
+			var hv = $h.val();
+			try { var arr = JSON.parse(hv); if (arr && arr.length) { return arr[0]; } } catch (e) {}
+			if (typeof hv === 'string' && hv.charAt(0) !== '[' && hv.charAt(0) !== '{') { return hv; }
+		}
+		var $sel = $pg.find('.selected, .active, [aria-selected="true"]').first();
+		if ($sel.length) { return $sel.attr('data-value') || $sel.attr('data-fw-value') || $sel.attr('value') || $sel.attr('data-choice-key'); }
+		return null;
+	}
+
+	// The design_settings multi-picker is a SIBLING option, so scope up to the modal/form. It is the
+	// multi-picker whose DIRECT-CHILD choice-groups are registered designs — registry-driven, so it
+	// recognises any new design automatically and never matches the nested Motion / Source / Click pickers.
 	function findDesignMp($preview) {
 		var $root = $preview.closest('.media-modal, .fw-options-modal, form');
 		if (!$root.length) { $root = $(document.body); }
 		var $found = $();
 		$root.find('.fw-option-type-multi-picker').each(function () {
-			var $m = $(this);
-			if ($m.find('.choice-group[data-choice-key="carousel_ring"], .choice-group[data-choice-key="panorama_wall"], .choice-group[data-choice-key="card_sphere"]').length) {
-				$found = $m; return false;
-			}
+			var $m = $(this), hit = false;
+			$m.find('> .choice-group[data-choice-key]').each(function () {
+				if (knownDesign($(this).attr('data-choice-key'))) { hit = true; return false; }
+			});
+			if (hit) { $found = $m; return false; }
 		});
 		return $found;
 	}
@@ -142,10 +250,20 @@
 	function readValues($preview) {
 		var $mp = findDesignMp($preview);
 		if (!$mp.length) { return null; }
-		var $chosen = $mp.find('.choice-group.chosen').first();
-		if (!$chosen.length) { $chosen = $mp.find('.choice-group').first(); }
-		var design = ($chosen.attr('data-choice-key') || 'carousel_ring').replace(/-/g, '_');
-		if (!DEFAULTS[design]) { design = 'carousel_ring'; }
+
+		// AUTHORITATIVE detection = the picker's value (see pickerValue). The `.chosen` class is NOT used
+		// to pick the design: the multi-picker stamps `.chosen` on the FIRST group at init and only
+		// corrects it asynchronously, so reading it showed EVERY design as carousel_ring. Fallbacks (a
+		// chosen design group, then the first design group) only run if the value can't be read.
+		var design = knownDesign( pickerValue( $mp.find('.picker-group').first() ) );
+		if (!design) { $mp.find('> .choice-group.chosen[data-choice-key]').each(function () { design = knownDesign($(this).attr('data-choice-key')); return !design; }); }
+		if (!design) { $mp.find('> .choice-group[data-choice-key]').each(function () { design = knownDesign($(this).attr('data-choice-key')); return !design; }); }
+		if (!design) { design = 'carousel_ring'; }
+
+		// Read leaves from the SELECTED design's own group (matched by key) — the revealed, populated
+		// one, never a lazily-empty sibling.
+		var $chosen = $mp.find('> .choice-group[data-choice-key]').filter(function () { return knownDesign($(this).attr('data-choice-key')) === design; }).first();
+		if (!$chosen.length) { $chosen = $mp.find('> .choice-group.chosen, > .choice-group').first(); }
 
 		var o = $.extend({}, DEFAULTS[design]);
 		$chosen.find('.fw-backend-option-descriptor[data-fw-option-id]').each(function () {
@@ -181,6 +299,7 @@
 	function render($preview) {
 		try {
 			var read = readValues($preview);
+			if (!read) { return; } // design picker not in the DOM yet — leave the stage as-is
 			var $stage = $preview.find('.fw-gallery-3d-preview__stage');
 			if (window.upwGallery3dBumpGen) { window.upwGallery3dBumpGen(); } // kill the previous scene's loops
 			$stage.html(buildScene(read.design, read.o));
@@ -200,13 +319,14 @@
 		var n = $els.find('.fw-gallery-3d-preview:not(.fw-preview-initialized)').length;
 		$els.find('.fw-gallery-3d-preview:not(.fw-preview-initialized)').each(function () {
 			var $preview = $(this).addClass('fw-preview-initialized');
+			$preview.data('g3dId', 'p' + Math.round(Math.random() * 1e9));
 			// Pin the whole preview OPTION — its parent (the options list) is tall so sticky travels, and
 			// the option's own padding keeps the card inset (the spacing). Also add the framework's
 			// .fw-bottom-border-hidden helper to the SAME wrapper (it carries fw-backend-option-design-
 			// default) so the option's bottom-border separator doesn't ride along as a line under the
 			// pinned card. Classes are added here, not in PHP, since only the JS knows the wrapper.
 			$preview.closest('.fw-backend-option').addClass('fw-g3d-sticky fw-bottom-border-hidden');
-			var id = 'p' + Math.round(Math.random() * 1e9);
+			var id = $preview.data('g3dId');
 			render($preview);
 
 			// Dark / Light stage background toggle (bound once — the bar is outside the rebuilt stage).
@@ -224,10 +344,21 @@
 		});
 	}
 
+	// A design switch lazily injects + inits the newly-chosen design's nested group AFTER the change
+	// event fired, so init any NEW previews and refresh already-initialized ones (their picker value is
+	// authoritative now, so they land on the right design + its revealed leaves).
+	function onOptionsInit(data) {
+		onInit(data);
+		$(document.body).find('.fw-gallery-3d-preview.fw-preview-initialized').each(function () {
+			var $preview = $(this);
+			scheduleRender($preview, $preview.data('g3dId'));
+		});
+	}
+
 	// preview.js has no hard dependency on fw-events.js, so it may load first — wait for fwEvents.
 	function boot() {
 		if (typeof fwEvents === 'undefined' || !fwEvents.on) { return setTimeout(boot, 50); }
-		fwEvents.on('fw:options:init', onInit);
+		fwEvents.on('fw:options:init', onOptionsInit);
 		onInit(); // catch any preview already in the DOM
 	}
 	boot();

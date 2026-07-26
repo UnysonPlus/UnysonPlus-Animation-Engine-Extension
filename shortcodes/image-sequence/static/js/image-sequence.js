@@ -5,6 +5,11 @@
  * sticks the canvas full-screen (position:sticky over a tall wrapper) and advances the frames as
  * you scroll through it; "inview" mode advances as the element passes the viewport. Frames are
  * drawn with cover/contain fit. Reduced motion → a single static frame, no scrubbing.
+ *
+ * Rides the shared frame scheduler (window.upwAnimRaf) and reads scroll position through the shared
+ * window.upwScrollProgress helper, so it stays in lockstep with smooth scroll and the other scroll
+ * effects; it only redraws when the scroll position actually changed. Falls back to a passive scroll
+ * listener + local math if the shared util isn't present.
  */
 (function () {
   'use strict';
@@ -14,7 +19,9 @@
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 
   ready(function () {
-    var REDUCE = cfg.reducedMotion && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var REDUCE = cfg.reducedMotion !== false && (typeof window.upwReduceMotion === 'function'
+      ? window.upwReduceMotion()
+      : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
     var seqs = Array.prototype.slice.call(document.querySelectorAll('.sc-seq'));
     if (!seqs.length) return;
     seqs.forEach(setup);
@@ -65,6 +72,11 @@
       }
 
       function progress() {
+        if (typeof window.upwScrollProgress === 'function') {
+          return mode === 'pin'
+            ? window.upwScrollProgress(el, { pin: true, stageH: window.innerHeight || 1, align: 'top' })
+            : window.upwScrollProgress(host, {});
+        }
         var vh = window.innerHeight || 1;
         if (mode === 'pin') { var r = el.getBoundingClientRect(), dist = r.height - vh; return dist <= 0 ? 0 : clamp(-r.top / dist, 0, 1); }
         var r2 = host.getBoundingClientRect(); return clamp((vh - r2.top) / (vh + r2.height), 0, 1);
@@ -77,8 +89,22 @@
       resize();
       draw(indexFor());
       if (REDUCE) return; // static frame only
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', function () { resize(); draw(cur < 0 ? indexFor() : cur); }, { passive: true });
+
+      // Ride the shared frame scheduler — redraw only when the scroll position changed (cheap when
+      // idle, frame-synced with smooth scroll). Fall back to a passive scroll listener otherwise.
+      window.addEventListener('resize', function () { resize(); draw(cur < 0 ? indexFor() : cur); lastY = -1; }, { passive: true });
+      var lastY = -1;
+      function frame() {
+        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+        if (y === lastY) return;
+        lastY = y;
+        draw(indexFor());
+      }
+      if (window.upwAnimRaf && window.upwAnimRaf.add) {
+        window.upwAnimRaf.add(frame);
+      } else {
+        window.addEventListener('scroll', onScroll, { passive: true });
+      }
     }
   });
 })();

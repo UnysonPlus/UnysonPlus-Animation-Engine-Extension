@@ -186,7 +186,10 @@ add_action( 'wp_footer', function () {
 	$cssv = file_exists( "$dir/static/css/scroll-color-shift.css" ) ? $ver . '.' . filemtime( "$dir/static/css/scroll-color-shift.css" ) : $ver;
 
 	wp_enqueue_style( 'upw-color-shift', $base . '/static/css/scroll-color-shift.css', array(), $cssv );
-	wp_enqueue_script( 'upw-color-shift', $base . '/static/js/scroll-color-shift.js', array(), $jsv, true );
+	// Depend on the shared frame scheduler (window.upwAnimRaf + window.upwReduceMotion): the runtime
+	// rides the one ordered tick and honours reduce-motion through the shared helper.
+	$raf_dep = function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array();
+	wp_enqueue_script( 'upw-color-shift', $base . '/static/js/scroll-color-shift.js', $raf_dep, $jsv, true );
 
 	$cfg = array(
 		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

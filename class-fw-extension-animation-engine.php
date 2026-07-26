@@ -53,6 +53,7 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/backgrounds/backgrounds.php';      // Animated Backgrounds (sections/rows)
 		require_once dirname( __FILE__ ) . '/modules/page-transitions/page-transitions.php'; // Page Transitions (site-wide)
 		require_once dirname( __FILE__ ) . '/modules/scroll-loop/scroll-loop.php';      // Seamless / Infinite Scroll Loop (Lenis)
+		require_once dirname( __FILE__ ) . '/modules/smooth-scroll/smooth-scroll.php';  // Smooth (inertia) Scroll (site-wide, Lenis)
 		require_once dirname( __FILE__ ) . '/modules/scroll-progress/scroll-progress.php'; // Scroll Progress indicator (site-wide)
 		require_once dirname( __FILE__ ) . '/modules/sticky-stack/sticky-stack.php';    // Sticky Card Stack (Section-level, scroll)
 		require_once dirname( __FILE__ ) . '/modules/horizontal-scroll/horizontal-scroll.php'; // Horizontal Scroll Section (Section-level, scroll)

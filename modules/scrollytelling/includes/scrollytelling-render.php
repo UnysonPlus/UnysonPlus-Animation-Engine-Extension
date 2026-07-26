@@ -111,6 +111,15 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 				// a light backdrop can override the scene text colour as usual.
 				$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
 				$attr['class'] = esc_attr( trim( $cls . ' upw-story--has-backdrop' ) );
+				// Backdrop Motion: pan / dolly the backdrop by story progress (the camera-glide illusion).
+				$bm = isset( $o['backdrop_motion'] ) ? (string) $o['backdrop_motion'] : 'none';
+				if ( in_array( $bm, array( 'pan', 'dolly', 'pan_dolly' ), true ) ) {
+					$bdir = isset( $o['motion_direction'] ) ? (string) $o['motion_direction'] : 'left';
+					if ( ! in_array( $bdir, array( 'left', 'right', 'up', 'down' ), true ) ) { $bdir = 'left'; }
+					$attr['data-story-bd-motion']    = esc_attr( $bm );
+					$attr['data-story-bd-dir']       = esc_attr( $bdir );
+					$attr['data-story-bd-intensity'] = esc_attr( (string) max( 0, min( 100, (int) ( $o['motion_intensity'] ?? 50 ) ) ) );
+				}
 			}
 		}
 	}
@@ -150,6 +159,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_dir'    => 'static/js/effects',
 			'base_css'  => 'static/css/base.css',
 			'base_js'   => 'static/js/scrollytelling-core.js',
+			'needs_raf' => true, // rides the shared frame scheduler (window.upwAnimRaf) + shared helpers
 			// Only 'parallax' + 'pixelate' ship a JS partial; the loader skips absent files, so the
 			// CSS-driven styles pull no JS. Listing all keys keeps it future-proof.
 			'js_styles' => upw_scrollytelling_style_keys(),

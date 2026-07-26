@@ -105,6 +105,27 @@ if ( ! function_exists( 'sc_get_scrollytelling_fields' ) ) :
 					),
 				),
 			),
+			'backdrop_motion' => array(
+				'type'    => 'select',
+				'label'   => __( 'Backdrop Motion', 'fw' ),
+				'desc'    => __( 'Stage only â move the backdrop as the story scrubs, to fake a camera gliding across it. Pan slides it; Dolly eases it closer (zoom); Pan + Dolly does both. The scene content sits still on top, so the motion reads as the camera, not the page.', 'fw' ),
+				'help'    => __( 'Under the hood: the backdrop is transformed by story progress (0 to 1) â a translate for Pan and a scale for Dolly â every frame. Extra scale is added automatically so a pan never reveals an edge.', 'fw' ),
+				'value'   => 'none',
+				'choices' => array(
+					'none'      => __( 'None (fixed)', 'fw' ),
+					'pan'       => __( 'Pan', 'fw' ),
+					'dolly'     => __( 'Dolly (zoom in)', 'fw' ),
+					'pan_dolly' => __( 'Pan + Dolly', 'fw' ),
+				),
+			),
+			'motion_direction' => array(
+				'type'    => 'select',
+				'label'   => __( 'Pan direction', 'fw' ),
+				'desc'    => __( 'Which way the backdrop pans (Pan / Pan + Dolly only).', 'fw' ),
+				'value'   => 'left',
+				'choices' => array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ), 'up' => __( 'Up', 'fw' ), 'down' => __( 'Down', 'fw' ) ),
+			),
+			'motion_intensity' => $slider( __( 'Motion intensity', 'fw' ), 50, 0, 100, 5, __( 'How far the backdrop pans and how much it zooms.', 'fw' ) ),
 			'pin_side' => array(
 				'type'    => 'select',
 				'label'   => __( 'Media side', 'fw' ),

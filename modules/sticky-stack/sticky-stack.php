@@ -211,6 +211,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_dir'    => 'static/js/effects',
 			'base_css'  => 'static/css/sticky-stack.css', // tiny, all-base (sticky card) — no per-style CSS
 			'base_js'   => 'static/js/sticky-stack-core.js',
+			'needs_raf' => true, // rides the shared frame scheduler (window.upwAnimRaf) + shared helpers
 			'js_styles' => upw_sticky_stack_styles(), // every style has a per-card partial
 			'js_cfg'    => function () {
 				$cfg = array(

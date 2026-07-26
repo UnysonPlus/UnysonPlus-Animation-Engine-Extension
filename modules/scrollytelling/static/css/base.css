@@ -117,6 +117,11 @@
  * and an optional backdrop (sequence canvas / scrubbed video / image) sits
  * behind the scenes. Section height (the scroll runway) is set by the JS.
  * ------------------------------------------------------------------------- */
+/* Root gets this class from the JS when a full-bleed stage exists: clip the ~15px the 100vw stage
+ * overshoots the content area by (the scrollbar gutter). `overflow: clip` clips without establishing
+ * a scroll container, so the pin's position:sticky keeps working and vertical scroll is untouched.
+ * Degrades gracefully (to `visible`) on browsers without `clip` support. */
+html.upw-fullbleed { overflow-x: clip; }
 .upw-story--stage .upw-story-stage {
 	position: -webkit-sticky;
 	position: sticky;
@@ -124,7 +129,11 @@
 	height: var(--story-h, 100vh);
 	display: block;
 	overflow: hidden;
-	/* Full-bleed: escape any boxed container so the stage spans the viewport. */
+	/* Full-bleed: escape any boxed container so the stage spans the viewport. The ~15px that 100vw
+	 * overshoots (it includes the vertical scrollbar) is CLIPPED at the root by `html.upw-fullbleed
+	 * { overflow-x: clip }` (added by the JS) — `clip` (unlike `hidden`) does NOT create a scroll
+	 * container, so it kills the stray horizontal scrollbar WITHOUT breaking the position:sticky pin,
+	 * and the stage still fills the content area exactly (no left/right gaps). */
 	width: 100vw;
 	margin-left: calc(50% - 50vw);
 }
@@ -159,6 +168,11 @@
 	padding-right: 6vw;
 }
 .upw-story--stage .upw-story-scene.is-active { pointer-events: auto; }
+/* Persistent layer: shown the whole ride (never fades), behind the beat scenes, and it must
+   not block clicks on the copy/CTAs above it. */
+/* Persist layers ride behind the beats and never block clicks. Their opacity is driven by
+   is-active (via the layer rules) so a RANGED persist can cross-fade out when out of range. */
+.upw-story--stage .upw-story-scene--persist { pointer-events: none; }
 /* Neutralize the panel-layout layer sizing for scene content. */
 .upw-story--stage .upw-story-scene > * {
 	width: auto;

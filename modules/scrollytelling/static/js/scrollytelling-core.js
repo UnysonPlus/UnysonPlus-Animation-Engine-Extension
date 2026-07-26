@@ -15,9 +15,10 @@
 
 	var cfg = window.upwStoryCfg || {};
 	var mql = window.matchMedia || function () { return { matches: false }; };
-	var reduce = cfg.reducedMotion !== false && mql('(prefers-reduced-motion: reduce)').matches;
-	var isMobile = (window.innerWidth || 1024) < 768;
+	var reduce = cfg.reducedMotion !== false && (window.upwReduceMotion ? window.upwReduceMotion() : mql('(prefers-reduced-motion: reduce)').matches);
+	var isMobile = window.upwIsMobile ? window.upwIsMobile() : ((window.innerWidth || 1024) < 768);
 	var FX = window.upwStoryFx || (window.upwStoryFx = {});
+
 
 	// Walk down single-child wrappers (fw-col > inner > ...) to the level holding the real items.
 	function contentKids(node) {
@@ -137,13 +138,33 @@
 		});
 		if (scenes.length < 1) { return false; }
 
+		// Persistent layer(s): a scene column marked `upw-story-persist` stays visible the WHOLE
+		// time (it does not cross-fade) while the remaining "beat" scenes play in order over it.
+		// Use it for a device/gallery that morphs with scroll while the copy beats change above it.
+		// With NO persist scene, beats === scenes and every path below behaves exactly as before.
+		// The marker may sit on the fw-col itself OR on the column's inner wrapper (that's where a
+		// builder column's CSS-class lands), so check the scene and its descendants.
+		var persistScenes = scenes.filter(function (s) {
+			return /(^|\s)upw-story-persist(\s|$)/.test(s.className) || (s.querySelector && s.querySelector('.upw-story-persist'));
+		});
+		var beats = scenes.filter(function (s) { return persistScenes.indexOf(s) === -1; });
+		if (beats.length < 1) { beats = scenes; persistScenes = []; } // all-persist → treat as normal
+		// Publish each beat's index on its scene element so a scroll-driven child (e.g. a photo_scatter
+		// gallery placed INSIDE a beat) can remap the story's global progress to its own beat's slice —
+		// letting the child's motion (scatter in/hold/out) sync to when that scene enters and leaves.
+		beats.forEach(function (s, k) { s.__beatIndex = k; });
+
 		el.classList.add('upw-story--stage');
+		// Clip the scrollbar-gutter overshoot of the 100vw full-bleed stage at the root (see base.css
+		// `html.upw-fullbleed`) — kills the stray horizontal scrollbar without breaking the sticky pin.
+		document.documentElement.classList.add('upw-fullbleed');
 		el.style.setProperty('--story-top', (parseFloat(el.getAttribute('data-story-top')) || 0) + 'px');
 		el.style.setProperty('--story-h', (parseFloat(el.getAttribute('data-story-h')) || 100) + 'vh');
 		el.style.setProperty('--story-trans', (parseFloat(el.getAttribute('data-story-trans')) || 0.6) + 's');
 		el.style.setProperty('--story-intensity', (parseFloat(el.getAttribute('data-story-intensity')) || 0.5));
-		// Section height = scroll runway: one viewport for the pin + sceneLen per scene.
-		el.style.height = 'calc(' + (scenes.length * sceneLen * 100) + 'vh + var(--story-h, 100vh))';
+		// Section height = scroll runway: one viewport for the pin + sceneLen per BEAT scene
+		// (persistent layers don't own scroll time — they span the whole ride).
+		el.style.height = 'calc(' + (beats.length * sceneLen * 100) + 'vh + var(--story-h, 100vh))';
 
 		row.classList.add('upw-story-stage');
 		scenes.forEach(function (s) { s.classList.add('upw-story-layer', 'upw-story-scene'); });
@@ -189,7 +210,7 @@
 				var fill = document.createElement('span'); fill.className = 'upw-story-progress__fill';
 				rail.appendChild(fill);
 			} else {
-				scenes.forEach(function (s, k) {
+				beats.forEach(function (s, k) {
 					var d = document.createElement('button');
 					d.type = 'button'; d.className = 'upw-story-dot';
 					d.addEventListener('click', function () {
@@ -206,19 +227,34 @@
 
 		var style = el.getAttribute('data-story-style') || 'crossfade';
 		var def = FX[style] || null;
-		var ctx = { intensity: parseFloat(el.getAttribute('data-story-intensity')) || 0.5, layers: scenes, steps: scenes, media: row, section: el };
+		var ctx = { intensity: parseFloat(el.getAttribute('data-story-intensity')) || 0.5, layers: beats, steps: beats, media: row, section: el };
+		el.__storyBeats = beats.length;   // published so a ranged-persist child can remap progress to its range
+		// Persistent layers: mark for styling + parse an optional beat RANGE. A persist scene with
+		// `upw-persist-from-A` / `upw-persist-to-B` (on the scene or its inner wrapper) is shown only
+		// while the active beat is within [A,B] and cross-fades in/out at the edges — so one Stage can
+		// hand a persistent element (a morphing gallery) off to a different one a few beats later. No
+		// range = the whole ride. activate() toggles their is-active by range on each beat change.
+		persistScenes.forEach(function (s) {
+			s.classList.add('upw-story-scene--persist');
+			var marker = (s.querySelector && s.querySelector('.upw-story-persist')) || s;
+			var cls = (marker.className || '') + ' ' + (s.className || '');
+			var mf = cls.match(/upw-persist-from-(\d+)/), mt = cls.match(/upw-persist-to-(\d+)/);
+			s.__pFrom = mf ? parseInt(mf[1], 10) : 0;
+			s.__pTo   = mt ? parseInt(mt[1], 10) : (beats.length - 1);
+		});
 		var current = -1;
 		function activate(i) {
-			i = Math.max(0, Math.min(scenes.length - 1, i));
+			i = Math.max(0, Math.min(beats.length - 1, i));
 			if (i === current) { return; }
 			current = i;
-			scenes.forEach(function (s, k) {
+			beats.forEach(function (s, k) {
 				s.classList.toggle('is-active', k === i);
 				s.classList.toggle('is-past', k < i);
 			});
+			persistScenes.forEach(function (s) { s.classList.toggle('is-active', i >= s.__pFrom && i <= s.__pTo); });
 			if (rail && !rail.__isBar) { dots.forEach(function (d, k) { d.classList.toggle('is-active', k === i); }); }
 			if (def && typeof def.onActivate === 'function') {
-				try { def.onActivate(scenes[i], i, ctx); } catch (e) {}
+				try { def.onActivate(beats[i], i, ctx); } catch (e) {}
 			}
 		}
 
@@ -229,18 +265,58 @@
 		var exitAt = parseFloat(el.getAttribute('data-story-exit-at'));
 		if (isNaN(exitAt)) { exitAt = 0.78; }
 
-		// rAF progress loop while the section is in view: scene switching + backdrop scrub.
-		var running = false, raf = 0, inView = true, lastFade = -1;
+		// Progress loop while the section is in view: scene switching + backdrop scrub. Rides the shared
+		// frame scheduler (window.upwAnimRaf) — one ordered tick that pauses when the tab is hidden — and
+		// falls back to a private rAF loop if the scheduler isn't present.
+		var raf = 0, inView = true, lastFade = -1;
+		// Backdrop Motion — a scroll-scrubbed CAMERA move on the backdrop (the "camera glide"), not a
+		// flat parallax slide. The backdrop is treated as a PLANE the camera glides across: it pans
+		// (translate) AND yaws through a real perspective (rotateY/rotateX). The yaw is the crux — it
+		// gives the plane a keystone so the near edge sweeps faster than the far edge (depth-parallax
+		// WITHIN the one image), which reads as a camera physically turning across the space rather
+		// than a background layer sliding behind fixed content. A gentle counter-arc on the cross axis
+		// adds the organic drift of a real camera. Dolly (scale) pushes in over the ride. Generous
+		// cover-scale so neither the pan nor the yaw's far edge ever reveals a gap.
+		var bdMotion = el.getAttribute('data-story-bd-motion') || 'none';
+		var bdMedia = ( bdMotion !== 'none' && backdrop && backdrop.el ) ? backdrop.el : null;
+		var bdApply = function () {};
+		if ( bdMedia ) {
+			var bdDir = el.getAttribute('data-story-bd-dir') || 'left';
+			var bdInt = Math.max(0, Math.min(100, parseFloat(el.getAttribute('data-story-bd-intensity')) || 50)) / 100;
+			var bdPan = ( bdMotion === 'pan' || bdMotion === 'pan_dolly' );
+			var bdDolly = ( bdMotion === 'dolly' || bdMotion === 'pan_dolly' );
+			var panMax = 11 * bdInt;      // % of travel — a real sweep, not a nudge
+			var yawMax = 6 * bdInt;       // deg of camera yaw through the perspective (the depth cue)
+			var arcMax = 2.2 * bdInt;     // % of gentle cross-axis drift (organic camera arc)
+			var dollyMax = 0.14 * bdInt;
+			var baseScale = 1.05 + ( bdPan ? ( panMax * 2 / 100 + yawMax / 60 ) : 0 );
+			bdMedia.style.willChange = 'transform';
+			bdMedia.style.transformOrigin = '50% 50%';
+			bdApply = function ( p ) {
+				var sc = baseScale + ( bdDolly ? p * dollyMax : 0 );
+				var tx = 0, ty = 0, ry = 0, rx = 0;
+				if ( bdPan ) {
+					var d = ( 0.5 - p ) * 2;               // -1 … +1 across the ride (continuous sweep)
+					var arc = Math.sin( p * Math.PI ) * arcMax; // 0 → peak → 0: a soft camera arc
+					if ( bdDir === 'left' )      { tx =  d * panMax; ry = -d * yawMax; ty = -arc; }
+					else if ( bdDir === 'right' ) { tx = -d * panMax; ry =  d * yawMax; ty = -arc; }
+					else if ( bdDir === 'up' )    { ty =  d * panMax; rx =  d * yawMax; tx =  arc; }
+					else                          { ty = -d * panMax; rx = -d * yawMax; tx =  arc; }
+				}
+				bdMedia.style.transform = 'perspective(1400px) translate(' + tx.toFixed(3) + '%,' + ty.toFixed(3) + '%) rotateY(' + ry.toFixed(3) + 'deg) rotateX(' + rx.toFixed(3) + 'deg) scale(' + sc.toFixed(4) + ')';
+			};
+		}
 		function frame() {
-			if (!running) { return; }
-			raf = requestAnimationFrame(frame);
 			var r = el.getBoundingClientRect();
 			var vh = window.innerHeight || 1;
 			var runway = Math.max(1, r.height - vh);
 			var p = Math.max(0, Math.min(1, -r.top / runway));
-			activate(Math.min(scenes.length - 1, Math.floor(p * scenes.length)));
+			el.__storyProgress = p;           // publish for child scrubbers (galleries, group moves)
+			el.style.setProperty('--story-progress', p.toFixed(4));
+			activate(Math.min(beats.length - 1, Math.floor(p * beats.length)));
 			if (rail && rail.__isBar) { rail.firstChild.style.transform = 'scaleY(' + p + ')'; }
 			if (backdrop) { backdrop.update(p); }
+			bdApply(p);
 			if (def && def.scrub && typeof def.onProgress === 'function') {
 				try { def.onProgress(el, p, ctx); } catch (e) {}
 			}
@@ -251,8 +327,15 @@
 				if (f !== lastFade) { row.style.opacity = String(1 - f); lastFade = f; }
 			}
 		}
-		function run() { if (!running && inView) { running = true; raf = requestAnimationFrame(frame); } }
-		function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+		function run() {
+			if (!inView) { return; }
+			if (window.upwAnimRaf && window.upwAnimRaf.add) { window.upwAnimRaf.add(frame); }
+			else if (!raf) { var loop = function () { frame(); raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop); }
+		}
+		function stop() {
+			if (window.upwAnimRaf && window.upwAnimRaf.remove) { window.upwAnimRaf.remove(frame); }
+			if (raf) { cancelAnimationFrame(raf); raf = 0; }
+		}
 		if ('IntersectionObserver' in window) {
 			var io = new IntersectionObserver(function (es) {
 				inView = es[0].isIntersecting; if (inView) { run(); } else { stop(); }
@@ -262,6 +345,7 @@
 		} else { run(); }
 		activate(0);
 		if (backdrop) { backdrop.update(0); }
+		bdApply(0);
 		return true;
 	}
 
@@ -393,18 +477,24 @@
 		}
 		activate(0);
 
-		// Scrub styles: run a rAF loop while the Section is in view, feeding 0..1 progress.
+		// Scrub styles: feed 0..1 progress while the Section is in view. Rides the shared frame
+		// scheduler (window.upwAnimRaf), with a private-rAF fallback.
 		if (def && def.scrub && typeof def.onProgress === 'function') {
-			var running = false, raf = 0, inView = true;
+			var raf = 0, inView = true;
 			function frame() {
-				if (!running) { return; }
-				raf = requestAnimationFrame(frame);
 				var r = el.getBoundingClientRect();
 				var p = Math.max(0, Math.min(1, (window.innerHeight - r.top) / ((r.height + window.innerHeight) || 1)));
 				try { def.onProgress(el, p, ctx); } catch (e) {}
 			}
-			function run() { if (!running && inView) { running = true; raf = requestAnimationFrame(frame); } }
-			function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+			function run() {
+				if (!inView) { return; }
+				if (window.upwAnimRaf && window.upwAnimRaf.add) { window.upwAnimRaf.add(frame); }
+				else if (!raf) { var loop = function () { frame(); raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop); }
+			}
+			function stop() {
+				if (window.upwAnimRaf && window.upwAnimRaf.remove) { window.upwAnimRaf.remove(frame); }
+				if (raf) { cancelAnimationFrame(raf); raf = 0; }
+			}
 			if ('IntersectionObserver' in window) {
 				var scrubIo = new IntersectionObserver(function (es) {
 					inView = es[0].isIntersecting; if (inView) { run(); } else { stop(); }

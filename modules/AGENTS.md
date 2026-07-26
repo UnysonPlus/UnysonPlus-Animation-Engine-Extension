@@ -231,12 +231,40 @@ Wiring:
   defined before your JS runs. In your core: `var RAF = window.upwAnimRaf; …; RAF.add(fn);`.
 - **Site-wide modules** (own `wp_enqueue_scripts`): add the scheduler as a script dep —
   `array( upw_anim_raf_handle() )` (see cursor.php).
-- **This does NOT apply to scroll/pointer-driven rAF** (a `requestAnimationFrame` used to *throttle*
-  a `scroll`/`pointermove` handler, e.g. sticky-stack / scroll-progress). Those are idle when nothing
-  happens, so they stay as-is. Only CONTINUOUS per-frame loops migrate. Reference migrations:
-  physics-core (the model), backgrounds-core `loop()`, cursor's per-style loops.
+- **Scroll-driven modules ALSO ride `upwAnimRaf` (Phase 0 "one scroll clock").** The scroll-scrub
+  modules — `scroll-color-shift`, `sticky-stack`, `horizontal-scroll`, `scrollytelling`, and the
+  `image-sequence` shortcode — subscribe a per-frame reader to `window.upwAnimRaf` instead of a private
+  `scroll`-listener rAF throttle, so they share ONE ordered tick, pause in background tabs, and stay
+  frame-synced with the site-wide **Smooth Scroll** (Lenis). Keep them cheap when idle with a
+  scroll-changed guard, and self-clean by returning `false` when the section leaves the DOM:
+  `var lastY=-1; function frame(){ if(!document.documentElement.contains(sec)){return false;} var y=window.pageYOffset||document.documentElement.scrollTop||0; if(y===lastY){return;} lastY=y; …; }`.
+  Pointer/drag interactions (horizontal-scroll `drag`) and continuous easing loops (horizontal-scroll
+  `skew`) stay as they are. Reference migrations: `scroll-color-shift` (smallest), `sticky-stack`,
+  `scrollytelling`. Continuous loops: physics-core (the model), backgrounds-core `loop()`, cursor's loops.
 - **User-facing:** the "pauses in background tabs / never wastes CPU" benefit is surfaced in every
   module's help text via `upw_perf_note()` — keep using it.
+
+---
+
+## 3e. Shared runtime helpers (`window.upw*`) — use them, don't re-roll (REQUIRED)
+
+`static/js/upw-raf.js` also exposes small shared helpers every scroll/animation module should call
+instead of re-testing `matchMedia` or re-deriving scroll math. They're available wherever
+`window.upwAnimRaf` is (loader modules: `'needs_raf' => true`; site-wide: `upw_anim_raf_handle()` dep),
+each defined idempotently and combined with the module's own PHP-injected `cfg` flag:
+
+- **`window.upwReduceMotion()`** → true when the visitor asked to reduce motion. Combine with your
+  respect flag: `if (cfg.reducedMotion !== false && window.upwReduceMotion()) return;`.
+- **`window.upwIsMobile()`** → true on a small screen (`max-width: 767px`). Combine with the setting:
+  `if (cfg.disableMobile && window.upwIsMobile()) return;`.
+- **`window.upwScrollProgress(el, opts)`** → one 0..1 scroll-progress formula. `opts.pin === true` →
+  progress through a pinned stretch (`opts.stageH` default vh; `opts.align` `'top'` (default) |
+  `'center'` | a px offset); default → pass-through (0 as `el` enters from the bottom, 1 as it clears
+  the top). Guard `typeof window.upwScrollProgress === 'function'` and keep a local fallback.
+
+The PHP side still injects `reducedMotion` / `disableMobile` into the module `cfg`
+(from `upw_anim_engine_setting(...)`) — the JS just reads the *current* media state through the shared
+helper rather than each module re-writing the same `matchMedia` query.
 
 ---
 

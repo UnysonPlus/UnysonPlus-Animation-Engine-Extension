@@ -19,7 +19,7 @@
 
 $cycle_raw = $dp( 'cycle', null );
 if ( is_array( $cycle_raw ) ) {
-	$cycle_mode = ( isset( $cycle_raw['mode'] ) && in_array( $cycle_raw['mode'], array( 'auto', 'click', 'off' ), true ) ) ? $cycle_raw['mode'] : 'auto';
+	$cycle_mode = ( isset( $cycle_raw['mode'] ) && in_array( $cycle_raw['mode'], array( 'scroll_cycle', 'auto', 'click', 'scroll', 'off' ), true ) ) ? $cycle_raw['mode'] : 'auto';
 	$co         = ( isset( $cycle_raw[ $cycle_mode ] ) && is_array( $cycle_raw[ $cycle_mode ] ) ) ? $cycle_raw[ $cycle_mode ] : array();
 } else {
 	$cycle_mode = 'auto';
@@ -29,9 +29,13 @@ if ( ! empty( $as_bg ) ) { $cycle_mode = 'auto'; } // a Section background is no
 
 $dwell    = isset( $co['dwell'] ) ? max( 2, min( 20, (float) $co['dwell'] ) ) : 6;
 $hpause   = ( ! isset( $co['hover_pause'] ) || $co['hover_pause'] === 'yes' ) ? 1 : 0;
-$from     = in_array( $dp( 'from', 'edges' ), array( 'edges', 'top', 'sides', 'random' ), true ) ? $dp( 'from', 'edges' ) : 'edges';
-$exit     = in_array( $dp( 'exit', 'sweep' ), array( 'sweep', 'gather', 'fade' ), true ) ? $dp( 'exit', 'sweep' ) : 'sweep';
-$visible  = max( 3, min( 16, (int) $dp( 'visible', 9 ) ) );
+// Scroll-cycle nuances (only meaningful for the scroll_cycle mode).
+$final_org = ( ! isset( $co['final_organized'] ) || $co['final_organized'] === 'yes' ) ? 1 : 0;
+$corners   = ( isset( $co['corners'] ) && $co['corners'] === 'yes' ) ? 1 : 0;
+$from     = in_array( $dp( 'from', 'edges' ), array( 'edges', 'top', 'bottom', 'sides', 'random' ), true ) ? $dp( 'from', 'edges' ) : 'edges';
+$exit     = in_array( $dp( 'exit', 'sweep' ), array( 'sweep', 'up', 'down', 'sides', 'gather', 'fade' ), true ) ? $dp( 'exit', 'sweep' ) : 'sweep';
+$center_clear = ( 'yes' === $dp( 'center_clear', 'no' ) ) ? 1 : 0;
+$visible  = max( 3, min( 50, (int) $dp( 'visible', 9 ) ) );
 $rot      = max( 0, min( 35, (float) $dp( 'rotation', 12 ) ) );
 $sizevar  = max( 0, min( 60, (float) $dp( 'size_variance', 30 ) ) );
 $spread   = max( 50, min( 100, (float) $dp( 'spread', 90 ) ) );
@@ -41,11 +45,14 @@ $card     = max( 8, min( 40, (float) $dp( 'card_size', 18 ) ) );
  * DOM sane; 60 cards = several sets of even the densest table. */
 if ( count( $items ) > 60 ) { $items = array_slice( $items, 0, 60 ); }
 
-$attr['data-tdg-cycle']   = esc_attr( $cycle_mode );
-$attr['data-tdg-dwell']   = esc_attr( $dwell );
-$attr['data-tdg-hpause']  = esc_attr( $hpause );
-$attr['data-tdg-from']    = esc_attr( $from );
-$attr['data-tdg-exit']    = esc_attr( $exit );
+$attr['data-tdg-cycle']    = esc_attr( $cycle_mode );
+$attr['data-tdg-dwell']    = esc_attr( $dwell );
+$attr['data-tdg-hpause']   = esc_attr( $hpause );
+$attr['data-tdg-final-org'] = esc_attr( $final_org );
+$attr['data-tdg-corners']  = esc_attr( $corners );
+$attr['data-tdg-center-clear'] = esc_attr( $center_clear );
+$attr['data-tdg-from']     = esc_attr( $from );
+$attr['data-tdg-exit']     = esc_attr( $exit );
 $attr['data-tdg-visible'] = esc_attr( $visible );
 $attr['data-tdg-rot']     = esc_attr( $rot );
 $attr['data-tdg-sizevar'] = esc_attr( $sizevar );

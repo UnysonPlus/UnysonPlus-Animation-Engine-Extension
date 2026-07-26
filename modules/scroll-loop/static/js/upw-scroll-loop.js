@@ -97,22 +97,27 @@
 		measure();
 		if (cycle <= 0) return;                // degenerate layout — leave native scroll
 
-		// --- Lenis ----------------------------------------------------------
-		var lenis = new window.Lenis({ lerp: 0.1, smoothWheel: true, wheelMultiplier: 1 });
+		// --- Lenis (shared singleton) ---------------------------------------
+		// Reuse the instance if the site-wide Smooth Scroll module (or a prior loop) already
+		// created one, so the two features never spawn two Lenis instances.
+		var lenis = window.__upwLenis || new window.Lenis({ lerp: 0.1, smoothWheel: true, wheelMultiplier: 1 });
 		window.__upwLenis = lenis;
 
-		// One global bridge: GSAP drives Lenis + ScrollTrigger when present, else rAF.
-		var gsap = window.gsap;
-		if (gsap && gsap.ticker) {
-			gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
-			gsap.ticker.lagSmoothing(0);
-			if (window.ScrollTrigger) {
-				lenis.on('scroll', window.ScrollTrigger.update);
-				window.ScrollTrigger.refresh();
+		// One global bridge, set up ONCE: GSAP drives Lenis + ScrollTrigger when present, else rAF.
+		if (!window.__upwLenisBridged) {
+			window.__upwLenisBridged = true;
+			var gsap = window.gsap;
+			if (gsap && gsap.ticker) {
+				gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+				gsap.ticker.lagSmoothing(0);
+				if (window.ScrollTrigger) {
+					lenis.on('scroll', window.ScrollTrigger.update);
+					window.ScrollTrigger.refresh();
+				}
+			} else {
+				var raf = function (time) { lenis.raf(time); requestAnimationFrame(raf); };
+				requestAnimationFrame(raf);
 			}
-		} else {
-			var raf = function (time) { lenis.raf(time); requestAnimationFrame(raf); };
-			requestAnimationFrame(raf);
 		}
 
 		// --- Seamless downward wrap -----------------------------------------

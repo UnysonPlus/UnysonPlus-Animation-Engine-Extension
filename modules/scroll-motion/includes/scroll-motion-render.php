@@ -146,6 +146,13 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             // Base64 the code into a static attribute — quote/entity-safe, survives in post_content,
             // read by the runtime (which only runs it when the per-request author gate flag is set).
             $data['data-upw-snip'] = base64_encode( $code );
+            // Trigger controls (the field owns the timeline+ScrollTrigger; these tune it). Only stamp
+            // non-defaults so an existing snippet with no trigger settings is byte-identical to before.
+            $snip_start = $pick( 'snip_start', [ 'top 100%', 'top 80%', 'top 60%', 'top center', 'top 30%' ], 'top 80%' );
+            if ( $snip_start !== 'top 80%' ) { $data['data-upw-snip-start'] = $snip_start; }
+            $snip_scrub = $pick( 'snip_scrub', [ 'no', 'yes', 'smooth' ], 'no' );
+            if ( $snip_scrub !== 'no' ) { $data['data-upw-snip-scrub'] = $snip_scrub; }
+            if ( ! $on( 'run_on_mobile', true ) ) { $data['data-upw-snip-mobile'] = '0'; }
             // No 'data-upw-g' — the snippet is run by the snippet runtime, not the effect builder.
             unset( $data['data-upw-g'] );
             break;

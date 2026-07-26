@@ -12,8 +12,8 @@
 	if (typeof window === 'undefined' || typeof document === 'undefined') return;
 	var cfg = window.upwHScrollCfg || {};
 
-	function reducedMotion() { return cfg.reducedMotion && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
-	function isMobile() { return cfg.disableMobile && window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }
+	function reducedMotion() { return cfg.reducedMotion && (window.upwReduceMotion ? window.upwReduceMotion() : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)); }
+	function isMobile() { return cfg.disableMobile && (window.upwIsMobile ? window.upwIsMobile() : (window.matchMedia && window.matchMedia('(max-width: 767px)').matches)); }
 	function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 	function num(el, attr, d) { var v = parseFloat(el.getAttribute(attr)); return isNaN(v) ? d : v; }
 
@@ -111,12 +111,28 @@
 				});
 			}
 		} else {
-			var pending = false;
-			function tick() { pending = false; var s = scrolledNow(); paintTrack(s, 0); paintPanels(); }
-			function onScroll() { if (pending) return; pending = true; requestAnimationFrame(tick); }
-			window.addEventListener('scroll', onScroll, { passive: true });
-			window.addEventListener('resize', function () { dist = distance(); onScroll(); }, { passive: true });
-			window.addEventListener('load', function () { dist = distance(); onScroll(); });
+			// Standard / reverse / snap / wall (+ per-panel styles): ride the shared frame scheduler.
+			// Recompute only when the scroll position changed; the loop pauses when the tab is hidden;
+			// returning false unsubscribes when a builder re-render removes the section.
+			function tick() { var s = scrolledNow(); paintTrack(s, 0); paintPanels(); }
+			var lastY = -1;
+			function frame() {
+				if (!document.documentElement.contains(sec)) { return false; }
+				var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+				if (y === lastY) { return; }
+				lastY = y;
+				tick();
+			}
+			function recompute() { dist = distance(); lastY = -1; tick(); }
+			window.addEventListener('resize', recompute, { passive: true });
+			window.addEventListener('load', recompute);
+			if (window.upwAnimRaf && window.upwAnimRaf.add) {
+				window.upwAnimRaf.add(frame);
+			} else {
+				var pending = false;
+				var onScroll = function () { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; tick(); }); };
+				window.addEventListener('scroll', onScroll, { passive: true });
+			}
 			tick();
 		}
 	}

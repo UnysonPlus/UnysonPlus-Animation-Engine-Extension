@@ -10,8 +10,8 @@
 	if (typeof window === 'undefined' || typeof document === 'undefined') return;
 	var cfg = window.upwStickyStackCfg || {};
 
-	function reducedMotion() { return cfg.reducedMotion && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
-	function isMobile() { return cfg.disableMobile && window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }
+	function reducedMotion() { return cfg.reducedMotion && (window.upwReduceMotion ? window.upwReduceMotion() : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)); }
+	function isMobile() { return cfg.disableMobile && (window.upwIsMobile ? window.upwIsMobile() : (window.matchMedia && window.matchMedia('(max-width: 767px)').matches)); }
 	function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 	function num(el, attr, dflt) { var v = parseFloat(el.getAttribute(attr)); return isNaN(v) ? dflt : v; }
 
@@ -54,16 +54,8 @@
 		}
 
 		var ctx = { intensity: intensity, center: center };
-		var pending = false;
 		function tick() {
-			pending = false;
 			if (!fx) { return; } // per-style partial not loaded — cards still stick, just no transform
-			// Self-clean on a builder re-render: the section left the DOM.
-			if (!document.documentElement.contains(sec)) {
-				window.removeEventListener('scroll', onScroll);
-				window.removeEventListener('resize', onScroll);
-				return;
-			}
 			var sr = sec.getBoundingClientRect();
 			if (sr.bottom < -200 || sr.top > (window.innerHeight || 0) + 200) { return; } // off-screen: skip
 			// READ phase — gather every rect first (cover() reads two card rects), THEN write, so we
@@ -82,9 +74,27 @@
 				prev = covers[j];
 			}
 		}
-		function onScroll() { if (pending) return; pending = true; requestAnimationFrame(tick); }
-		window.addEventListener('scroll', onScroll, { passive: true });
-		window.addEventListener('resize', onScroll, { passive: true });
+
+		// Ride the shared frame scheduler: recompute only when the scroll position changed, and the
+		// whole loop pauses when the tab is hidden. Returning false unsubscribes — the self-clean for
+		// when a builder re-render removes the section from the DOM.
+		var lastY = -1;
+		function frame() {
+			if (!document.documentElement.contains(sec)) { return false; }
+			var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+			if (y === lastY) { return; }
+			lastY = y;
+			tick();
+		}
+		window.addEventListener('resize', function () { lastY = -1; }, { passive: true });
+		if (window.upwAnimRaf && window.upwAnimRaf.add) {
+			window.upwAnimRaf.add(frame);
+		} else {
+			var pending = false;
+			var onScroll = function () { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; tick(); }); };
+			window.addEventListener('scroll', onScroll, { passive: true });
+			window.addEventListener('resize', onScroll, { passive: true });
+		}
 		tick();
 	}
 

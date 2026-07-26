@@ -2,14 +2,26 @@
  * Animation Engine — Scroll Color Shift runtime.
  *
  * Watches every .sc-colorshift Section and morphs the page (body) background — and optionally text —
- * to the colour of whichever section is crossing the middle of the viewport. One passive,
- * rAF-throttled scroll handler; the CSS transition does the smoothing.
+ * to the colour of whichever section is crossing the middle of the viewport; the CSS transition does
+ * the smoothing.
+ *
+ * Rides the shared frame scheduler (window.upwAnimRaf): one ordered tick that pauses while the tab is
+ * hidden and stays in lockstep with smooth scroll. It only recomputes when the scroll position
+ * actually changed, so it costs nothing while idle. Honours "reduce motion" via the shared helper.
+ * Falls back to a passive scroll listener if the scheduler isn't present.
  */
 (function () {
 	'use strict';
 	if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
+	function reduced() {
+		var c = window.upwColorShiftCfg || {};
+		return c.reducedMotion !== false && typeof window.upwReduceMotion === 'function' && window.upwReduceMotion();
+	}
+
 	function init() {
+		if (reduced()) return; // reduce motion → leave the page colours static
+
 		var sections = Array.prototype.slice.call(document.querySelectorAll('.sc-colorshift[data-cs-bg]'));
 		if (!sections.length) return;
 
@@ -19,7 +31,7 @@
 		var origColor = cs.color;
 		body.classList.add('upw-cs-on');
 
-		var lastBg = null, lastColor = null, ticking = false;
+		var lastBg = null, lastColor = null;
 
 		function pick() {
 			var vh = window.innerHeight || document.documentElement.clientHeight;
@@ -44,15 +56,31 @@
 			body.style.color = col ? col : origColor;
 		}
 
-		function onScroll() {
-			if (ticking) return;
-			ticking = true;
-			requestAnimationFrame(function () { pick(); ticking = false; });
+		// Recompute only when the scroll position moved (or on resize) — cheap when idle, frame-synced
+		// with smooth scroll when scrolling.
+		var lastY = -1;
+		function frame() {
+			var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+			if (y === lastY) return;
+			lastY = y;
+			pick();
 		}
+		window.addEventListener('resize', function () { lastY = -1; }, { passive: true });
 
-		window.addEventListener('scroll', onScroll, { passive: true });
-		window.addEventListener('resize', onScroll);
-		pick();
+		if (window.upwAnimRaf && window.upwAnimRaf.add) {
+			window.upwAnimRaf.add(frame);
+		} else {
+			// Fallback: the original passive, rAF-throttled scroll handler.
+			var ticking = false;
+			var onScroll = function () {
+				if (ticking) return;
+				ticking = true;
+				requestAnimationFrame(function () { pick(); ticking = false; });
+			};
+			window.addEventListener('scroll', onScroll, { passive: true });
+			window.addEventListener('resize', onScroll, { passive: true });
+		}
+		pick(); // initial paint
 	}
 
 	document.readyState !== 'loading' ? init() : document.addEventListener('DOMContentLoaded', init);

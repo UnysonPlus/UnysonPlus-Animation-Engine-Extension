@@ -16,7 +16,10 @@ $js_ver   = file_exists( $js_path ) ? ( $version . '.' . filemtime( $js_path ) )
 $css_ver  = file_exists( $css_path ) ? ( $version . '.' . filemtime( $css_path ) ) : $version;
 
 wp_enqueue_style( 'fw-shortcode-image-sequence', $base . '/static/css/image-sequence.css', array(), $css_ver );
-wp_enqueue_script( 'fw-shortcode-image-sequence', $base . '/static/js/image-sequence.js', array(), $js_ver, true );
+// Depend on the shared frame scheduler (window.upwAnimRaf + upwScrollProgress + upwReduceMotion): the
+// runtime rides the one ordered tick and reads scroll progress through the shared helper.
+$raf_dep = function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array();
+wp_enqueue_script( 'fw-shortcode-image-sequence', $base . '/static/js/image-sequence.js', $raf_dep, $js_ver, true );
 
 $cfg = array(
 	'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
