@@ -95,6 +95,12 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			$add_style( '--text-c1:' . $ca . '; --text-c2:' . $cb . '; --text-speed:' . (float) ( $o['speed'] ?? 3 ) . 's;' );
 			break;
 
+		case 'spotlight_text':
+			$sa = upw_text_color( $o['color_a'] ?? '', '#8a8f98' );
+			$sb = upw_text_color( $o['color_b'] ?? '', '#ffffff' );
+			$add_style( '--tt-a:' . $sa . '; --tt-b:' . $sb . '; --tt-r:' . (int) ( $o['radius'] ?? 180 ) . 'px; --tt-soft:' . (int) ( $o['softness'] ?? 60 ) . '%;' );
+			break;
+
 		case 'wave':
 			$attr['data-text-split'] = 'chars';
 			$add_style( '--text-wave-amp:' . (int) ( $o['amplitude'] ?? 6 ) . 'px; --text-wave-speed:' . (float) ( $o['speed'] ?? 1.4 ) . 's;' );

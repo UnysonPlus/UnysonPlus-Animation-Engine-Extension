@@ -1,0 +1,20 @@
+/* Animation Engine — Text effect "spotlight_text".
+ * A radial gradient clipped to the glyphs whose center tracks the pointer (--tt-x/--tt-y,
+ * set by the JS partial). Scoped off the always-present wrapper attribute so it renders even
+ * when the JS doesn't run (reduced motion) — a static, centered, still-readable spotlight. */
+[data-text="spotlight_text"] h1,
+[data-text="spotlight_text"] h2,
+[data-text="spotlight_text"] h3,
+[data-text="spotlight_text"] h4,
+[data-text="spotlight_text"] h5,
+[data-text="spotlight_text"] h6,
+[data-text="spotlight_text"] p,
+[data-text="spotlight_text"] li,
+[data-text="spotlight_text"] blockquote,
+[data-text="spotlight_text"] .sc-text-target,
+[data-text="spotlight_text"].sc-text {
+	background-image: radial-gradient(circle var(--tt-r, 180px) at var(--tt-x, 50%) var(--tt-y, 50%),
+		var(--tt-b, #fff) 0%, var(--tt-a, #8a8f98) var(--tt-soft, 60%));
+	-webkit-background-clip: text; background-clip: text;
+	-webkit-text-fill-color: transparent; color: transparent;
+}

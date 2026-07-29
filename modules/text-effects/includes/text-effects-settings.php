@@ -173,6 +173,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 						'scramble'     => $tx( 'scramble',     __( 'Scramble', 'fw' ) ),
 						'shimmer'      => $tx( 'shimmer',      __( 'Shimmer', 'fw' ) ),
 						'skew'         => $tx( 'skew',         __( 'Skew Reveal', 'fw' ) ),
+						'spotlight_text' => $tx( 'spotlight-text', __( 'Spotlight', 'fw' ) ),
 						'slide'        => $tx( 'slide',        __( 'Slide', 'fw' ) ),
 						'split_reveal' => $tx( 'split-reveal', __( 'Split Reveal', 'fw' ) ),
 						'splitflap'    => $tx( 'splitflap',    __( 'Split-Flap', 'fw' ) ),
@@ -186,7 +187,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 						'grp_reveal' => array( 'label' => __( 'Reveal', 'fw' ), 'ids' => array( 'blur', 'mask', 'split_reveal', 'slide', 'skew', 'fill_sweep', 'image_mask', 'outline_fill', 'strikebox', 'marker' ) ),
 						'grp_motion' => array( 'label' => __( 'Motion', 'fw' ), 'ids' => array( 'bounce', 'float', 'wave', 'jitter', 'letter_jump', 'scale', 'breathing', 'kinetic', 'magnetic' ) ),
 						'grp_decode' => array( 'label' => __( 'Decode & Type', 'fw' ), 'ids' => array( 'scramble', 'random', 'matrix', 'typewriter', 'splitflap', 'countup', 'rotating_words' ) ),
-						'grp_color' => array( 'label' => __( 'Color & Glow', 'fw' ), 'ids' => array( 'chromatic', 'color_wave', 'gradient_flow', 'neon', 'rainbow', 'shimmer', 'glitch' ) ),
+						'grp_color' => array( 'label' => __( 'Color & Glow', 'fw' ), 'ids' => array( 'chromatic', 'color_wave', 'gradient_flow', 'neon', 'rainbow', 'shimmer', 'spotlight_text', 'glitch' ) ),
 						'grp_type' => array( 'label' => __( 'Type & 3D', 'fw' ), 'ids' => array( 'expand_spacing', 'vf_weight', 'width_sweep', 'flip3d' ) ),
 					),
 					array( 'none' )
@@ -281,6 +282,12 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'value'      => 3,
 					'properties' => array( 'min' => 1, 'max' => 6, 'step' => 0.5 ),
 				),
+			),
+			'spotlight_text' => array(
+				'color_a'  => upw_text_color_field( __( 'Base color', 'fw' ), 'text', '#8a8f98', __( 'The dim letters outside the spotlight.', 'fw' ) ),
+				'color_b'  => upw_text_color_field( __( 'Spotlight color', 'fw' ), 'text', '#ffffff', __( 'The bright letters under the pointer.', 'fw' ) ),
+				'radius'   => array( 'type' => 'slider', 'label' => __( 'Radius (px)', 'fw' ), 'value' => 180, 'properties' => array( 'min' => 60, 'max' => 400, 'step' => 10 ) ),
+				'softness' => array( 'type' => 'slider', 'label' => __( 'Softness (%)', 'fw' ), 'value' => 60, 'properties' => array( 'min' => 0, 'max' => 100, 'step' => 5 ) ),
 			),
 			'wave' => array(
 				'amplitude' => array(

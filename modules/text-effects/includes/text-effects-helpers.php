@@ -31,7 +31,7 @@ if ( ! function_exists( 'upw_text_effects' ) ) :
 			// Wave A — reveal variants
 			'blur', 'mask', 'flip3d', 'scale', 'slide', 'bounce', 'random', 'skew',
 			// Wave B — CSS-driven (continuous + emphasis)
-			'gradient_flow', 'rainbow', 'neon', 'breathing', 'jitter', 'float',
+			'gradient_flow', 'rainbow', 'neon', 'breathing', 'jitter', 'float', 'spotlight_text',
 			'marker', 'strikebox', 'outline_fill', 'chromatic', 'width_sweep',
 			// Wave C — JS-driven (type/decode + interactive + media)
 			'rotating_words', 'countup', 'splitflap', 'matrix', 'fill_sweep',
