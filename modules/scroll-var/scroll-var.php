@@ -6,14 +6,16 @@
  * Animation Engine — Scroll Var module.
  *
  * Publishes an element's in-view scroll progress (0→1 as it crosses the viewport) to a CSS custom
- * property the builder names, so ANY custom CSS can be driven by scroll — StringTune's
- * "attribute-driven progress" idea, generalized. Per-element (attaches from the Animations tab).
- * The runtime uses an IntersectionObserver to activate + a passive, rAF-throttled scroll check that
- * reads getBoundingClientRect() (so it rides Lenis smooth-scroll automatically) and sets the named
- * property to a clamped 0..1 value. No GSAP. Assets load only on pages that use it.
+ * property the builder names, so ANY custom CSS can be driven by scroll — the "attribute-driven
+ * progress" idea, generalized. Per-element (attaches from the Animations tab via the "Add Animation"
+ * inserter). The runtime uses an IntersectionObserver to activate + a passive, rAF-throttled scroll
+ * check that reads getBoundingClientRect() (so it rides Lenis smooth-scroll automatically) and sets
+ * the named property to a clamped 0..1 value. No GSAP. Assets load only on pages that use it.
  *
- * Saved value shape (group `scroll_var`):
- *   [ 'enable' => 'yes'|'no', 'var_name' => '--progress', 'axis' => 'y'|'x', 'range' => 'cover'|'enter'|'center' ]
+ * FIELD shape — a popover multi-picker (picker id `mode`), so the inserter treats it as an add-tile
+ * and keeps its options collapsed until added (matches every other per-element module; a plain group
+ * would render always-open, which is the bug this file replaced):
+ *   [ 'mode' => 'off'|'on', 'on' => [ 'var_name' => '--progress', 'axis' => 'y'|'x', 'range' => 'cover'|'enter'|'center' ] ]
  */
 
 if ( ! function_exists( 'upw_scroll_var_enabled' ) ) :
@@ -40,30 +42,10 @@ if ( ! function_exists( 'upw_scroll_var_sanitize_name' ) ) :
 	}
 endif;
 
-/* 1) The per-element "Scroll → CSS Variable" control, appended to the Animations tab. */
-add_filter( 'sc_animation_fields', function ( $fields ) {
-	if ( ! is_array( $fields ) ) {
-		return $fields;
-	}
-
-	$fields['scroll_var'] = array(
-		'type'      => 'group',
-		'label'     => false,
-		'desc'      => false,
-		'anim_meta' => array(
-			'category' => __( 'Scroll', 'fw' ),
-			'label'    => __( 'Scroll → CSS Variable', 'fw' ),
-		),
-		'options'   => array(
-			'enable' => array(
-				'type'         => 'switch',
-				'label'        => __( 'Scroll → CSS Variable', 'fw' ),
-				'desc'         => __( 'Publish this element\'s in-view scroll progress (0→1 as it crosses the viewport) to a CSS custom property you can drive any custom CSS with.', 'fw' ),
-				'help'         => __( 'Scroll Var (Animation Engine): sets a CSS custom property (e.g. --progress) on this element to a clamped 0..1 value as it scrolls through the viewport. Use it in the element\'s Custom CSS — e.g. transform: scale(calc(1 + var(--progress))). Uses one passive, rAF-throttled scroll check + getBoundingClientRect() (rides smooth-scroll automatically), no library. Loads only on pages that use it.', 'fw' ),
-				'value'        => 'no',
-				'left-choice'  => array( 'value' => 'no',  'label' => __( 'Off', 'fw' ) ),
-				'right-choice' => array( 'value' => 'yes', 'label' => __( 'On', 'fw' ) ),
-			),
+/** The revealed options behind the tile (shared by the single `on` mode). */
+if ( ! function_exists( 'upw_scroll_var_options' ) ) :
+	function upw_scroll_var_options() {
+		return array(
 			'var_name' => array(
 				'type'  => 'text',
 				'label' => __( 'Variable name', 'fw' ),
@@ -90,6 +72,47 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'center' => __( 'Center — element centre crosses viewport centre', 'fw' ),
 				),
 			),
+		);
+	}
+endif;
+
+/* 1) The per-element "Scroll → CSS Variable" control — a popover multi-picker so it lives inside the
+ *    "Add Animation" inserter (collapsed until added), like every other per-element module. */
+add_filter( 'sc_animation_fields', function ( $fields ) {
+	if ( ! is_array( $fields ) ) {
+		return $fields;
+	}
+
+	$ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+	$base = $ext ? $ext->get_declared_URI( '/modules/scroll-var/static/img' ) : '';
+	$tile = array(
+		'small' => array( 'src' => $base . '/scroll-var.svg', 'height' => 53 ),
+		'large' => array( 'src' => $base . '/scroll-var.svg', 'height' => 132 ),
+		'label' => __( 'Scroll → CSS Variable', 'fw' ),
+	);
+
+	$fields['scroll_var'] = array(
+		'type'         => 'multi-picker',
+		'popover'      => true,
+		'label'        => __( 'Scroll → CSS Variable', 'fw' ),
+		'desc'         => __( 'Publish this element\'s in-view scroll progress (0→1 as it crosses the viewport) to a CSS custom property you can drive any custom CSS with.', 'fw' ),
+		'help'         => __( 'Scroll Var (Animation Engine): sets a CSS custom property (e.g. --progress) on this element to a clamped 0..1 value as it scrolls through the viewport. Use it in the element\'s Custom CSS — e.g. transform: scale(calc(1 + var(--progress))). Uses one passive, rAF-throttled scroll check + getBoundingClientRect() (rides smooth-scroll automatically), no library. Loads only on pages that use it.', 'fw' ),
+		'show_borders' => false,
+		'value'        => array( 'mode' => 'off' ),
+		'placeholder'  => __( 'Off', 'fw' ),
+		'anim_meta'    => array( 'category' => __( 'Scroll', 'fw' ) ),
+		'picker'       => array(
+			'mode' => array(
+				'type'    => 'image-picker',
+				'label'   => false,
+				'value'   => 'off',
+				'choices' => array( 'on' => $tile ),
+			),
+		),
+		'choices' => array(
+			'on' => array(
+				'group_scroll_var' => array( 'type' => 'group', 'options' => upw_scroll_var_options() ),
+			),
 		),
 	);
 
@@ -101,14 +124,16 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	if ( ! upw_scroll_var_enabled() ) {
 		return $attr;
 	}
-	$f = ( isset( $atts['scroll_var'] ) && is_array( $atts['scroll_var'] ) ) ? $atts['scroll_var'] : array();
-	if ( ! isset( $f['enable'] ) || $f['enable'] !== 'yes' ) {
+	$f    = ( isset( $atts['scroll_var'] ) && is_array( $atts['scroll_var'] ) ) ? $atts['scroll_var'] : array();
+	$mode = isset( $f['mode'] ) ? (string) $f['mode'] : 'off';
+	if ( $mode !== 'on' ) {
 		return $attr;
 	}
+	$o = ( isset( $f['on'] ) && is_array( $f['on'] ) ) ? $f['on'] : array();
 
-	$name  = upw_scroll_var_sanitize_name( isset( $f['var_name'] ) ? $f['var_name'] : '--progress' );
-	$axis  = ( isset( $f['axis'] ) && $f['axis'] === 'x' ) ? 'x' : 'y';
-	$range = ( isset( $f['range'] ) && in_array( $f['range'], array( 'cover', 'enter', 'center' ), true ) ) ? $f['range'] : 'cover';
+	$name  = upw_scroll_var_sanitize_name( isset( $o['var_name'] ) ? $o['var_name'] : '--progress' );
+	$axis  = ( isset( $o['axis'] ) && $o['axis'] === 'x' ) ? 'x' : 'y';
+	$range = ( isset( $o['range'] ) && in_array( $o['range'], array( 'cover', 'enter', 'center' ), true ) ) ? $o['range'] : 'cover';
 
 	$attr['data-upw-svar']       = '1';
 	$attr['data-upw-svar-name']  = esc_attr( $name );
@@ -125,7 +150,7 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
 		return $needs;
 	}
 	$f = ( isset( $atts['scroll_var'] ) && is_array( $atts['scroll_var'] ) ) ? $atts['scroll_var'] : array();
-	return ( isset( $f['enable'] ) && $f['enable'] === 'yes' );
+	return ( isset( $f['mode'] ) && $f['mode'] === 'on' );
 }, 10, 2 );
 
 /* 3) On-demand asset — the runtime ships only on pages that actually use a scroll var. */
