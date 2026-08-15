@@ -65,6 +65,41 @@ label is the style name.
 
 ---
 
+## 1b. Your module's options are rendered on EVERY element modal ⚠
+
+Each module contributes a card to the Animations tab via `sc_animation_fields`, and that tab is part
+of **every** shortcode's options. So a module's option set is rendered every time anyone opens any
+element — not just when someone uses your animation.
+
+That made the Animations tab the single most expensive thing in the admin: **6,261 KB and ~840 ms**
+per modal, ~95% of it markup for effects nobody had selected.
+
+It is now **1,679 KB / ~60 ms**, because the animation-stack container sets `lazy_choices` on every
+card, so a `multi-picker`'s unselected choices ship their schema and render on demand. **You get that
+for free** — a normal module card needs no extra work.
+
+What you still owe:
+
+- **Keep per-effect options inside the picker's `choices`**, so they ride the lazy path. Options
+  hoisted to the card's top level render eagerly for everyone, whether or not the effect is chosen.
+- **Don't inline large data** (long `choices` arrays with base64 previews, big JSON blobs in
+  attributes) — that is shipped on every modal open regardless of laziness.
+- **Measure after adding a module.** The whole tab should stay near 1,700 KB:
+
+  ```php
+  $sc = fw_ext( 'shortcodes' )->get_shortcode( 'accordion' );
+  $v  = fw_get_variables_from_file( $sc->locate_path( '/options.php' ), array( 'options' => array() ) );
+  $t = microtime( true );
+  $html = fw()->backend->render_options( array( 'tab_animation' => $v['options']['tab_animation'] ), array() );
+  printf( "%.1f ms  %.1f KB\n", ( microtime( true ) - $t ) * 1000, strlen( $html ) / 1024 );
+  ```
+
+  A jump of a few hundred KB from one new module means something is rendering eagerly — check that
+  your effect options live under `choices`.
+
+Background and the safety rules (especially **never defer a whole field**) are in
+`framework/includes/option-types/AUTHORING.md` → *"Don't render what the save path won't read"*.
+
 ## 2. Module PHP structure
 
 ```php
