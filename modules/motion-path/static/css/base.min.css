@@ -1,0 +1,1 @@
+.sc-motion-path{transform-box:view-box;will-change:transform}.sc-motion-path:not(.sc-mp-ready){transform:none}@media (prefers-reduced-motion:reduce){.sc-motion-path{will-change:auto}}

@@ -1,0 +1,1 @@
+.sc-hover--brightness{transition:filter .3s ease}.sc-hover--brightness:is(:hover,:focus-visible){filter:var(--hover-bright-filter,brightness(1.2))}

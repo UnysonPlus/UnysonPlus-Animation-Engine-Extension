@@ -1,0 +1,1 @@
+.sc-sth .sth-w{display:inline-block;transition:color var(--sth-dur,.5s) ease,opacity var(--sth-dur,.5s) ease,filter var(--sth-dur,.5s) ease,background-size var(--sth-dur,.5s) ease;will-change:opacity,filter}.sc-sth .sth-sp{display:inline-block;white-space:pre}@media (prefers-reduced-motion:reduce){.sc-sth .sth-w{transition:none}}

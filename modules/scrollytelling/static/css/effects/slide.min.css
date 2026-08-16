@@ -1,0 +1,1 @@
+.upw-story[data-story-style=slide] .upw-story-layer{--story-dist:30%;opacity:0;transform:translate(var(--story-tx,0),var(--story-ty,30%));transition:opacity var(--story-trans,.6s) ease,transform var(--story-trans,.6s) cubic-bezier(.22,1,.36,1)}.upw-story[data-story-style=slide] .upw-story-layer.is-active{opacity:1;transform:translate(0)}

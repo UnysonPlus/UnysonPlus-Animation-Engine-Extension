@@ -1,0 +1,1 @@
+.upw-story[data-story-style=duotone] .upw-story-layer{filter:grayscale(1) contrast(1.15);opacity:0;transition:opacity var(--story-trans,.6s) ease,filter var(--story-trans,.6s) ease}.upw-story[data-story-style=duotone] .upw-story-layer.is-active{filter:grayscale(0) contrast(1);opacity:1}

@@ -1,0 +1,1 @@
+[data-pt-type=iris] .upw-pt__p1{animation:pt-rev-in var(--pt-dur,.6s) cubic-bezier(.5,0,.1,1) backwards;box-shadow:inset 0 0 0 4px color-mix(in srgb,var(--pt-color,#0e1524) 40%,#fff);clip-path:circle(0 at 50% 50%)}.is-exiting[data-pt-type=iris] .upw-pt__p1{animation:pt-rev-out var(--pt-dur,.6s) cubic-bezier(.5,0,.1,1) forwards}

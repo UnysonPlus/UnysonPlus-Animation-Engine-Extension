@@ -1,0 +1,1 @@
+.sc-seq{position:relative}.sc-seq--pin{height:calc(var(--seq-screens, 3)*100vh)}.sc-seq__pin{height:100vh;position:sticky;top:0}.sc-seq--inview,.sc-seq__pin{background:var(--seq-bg,#0b0f1a);overflow:hidden}.sc-seq__canvas{display:block;height:100%;width:100%}

@@ -1,0 +1,1 @@
+.sc-hover--depth_layers{transform-style:preserve-3d}.sc-hover--depth_layers>*{transition:transform .3s cubic-bezier(.22,1,.36,1);will-change:transform}@media (prefers-reduced-motion:reduce){.sc-hover--depth_layers>*{transition:none}}

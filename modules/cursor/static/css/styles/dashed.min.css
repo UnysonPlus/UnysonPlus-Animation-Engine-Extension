@@ -1,0 +1,1 @@
+.upw-cursor--dashed{height:calc(var(--s)*4);width:calc(var(--s)*4)}.upw-cursor--dashed:before{animation:upw-cursor-rot 4s linear infinite;border:1.5px dashed var(--c);border-radius:50%;content:"";inset:0;position:absolute}

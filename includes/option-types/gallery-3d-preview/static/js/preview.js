@@ -255,7 +255,11 @@
 		// to pick the design: the multi-picker stamps `.chosen` on the FIRST group at init and only
 		// corrects it asynchronously, so reading it showed EVERY design as carousel_ring. Fallbacks (a
 		// chosen design group, then the first design group) only run if the value can't be read.
-		var design = knownDesign( pickerValue( $mp.find('.picker-group').first() ) );
+		var rawPick = pickerValue( $mp.find('.picker-group').first() );
+		// A "coming soon" family tile (soon_*): not a real design — show a placeholder, don't fall back
+		// to a spinning carousel (which would be confusing while the reveal says "coming soon").
+		if ( rawPick && String( rawPick ).indexOf( 'soon_' ) === 0 ) { return { soon: true }; }
+		var design = knownDesign( rawPick );
 		if (!design) { $mp.find('> .choice-group.chosen[data-choice-key]').each(function () { design = knownDesign($(this).attr('data-choice-key')); return !design; }); }
 		if (!design) { $mp.find('> .choice-group[data-choice-key]').each(function () { design = knownDesign($(this).attr('data-choice-key')); return !design; }); }
 		if (!design) { design = 'carousel_ring'; }
@@ -302,6 +306,7 @@
 			if (!read) { return; } // design picker not in the DOM yet — leave the stage as-is
 			var $stage = $preview.find('.fw-gallery-3d-preview__stage');
 			if (window.upwGallery3dBumpGen) { window.upwGallery3dBumpGen(); } // kill the previous scene's loops
+			if (read.soon) { $stage.html('<div class="tdg-soon"><div class="tdg-soon__badge">' + 'COMING SOON' + '</div><div class="tdg-soon__t">This design isn’t available yet</div></div>'); return; }
 			$stage.html(buildScene(read.design, read.o));
 			var el = $stage.children('.tdg')[0];
 			if (el && window.upwGallery3dInitEl) { window.upwGallery3dInitEl(el); }

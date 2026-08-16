@@ -1,0 +1,1 @@
+.upw-cursor--sticky{border:1.5px solid var(--c);border-radius:50%;height:calc(var(--s)*4);transition:width .2s ease,height .2s ease,border-radius .2s ease,background-color .2s ease;width:calc(var(--s)*4)}.upw-cursor--sticky.is-stuck{background:color-mix(in srgb,var(--c) 12%,transparent)}

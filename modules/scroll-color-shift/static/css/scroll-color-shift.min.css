@@ -1,0 +1,1 @@
+body.upw-cs-on{transition:background-color var(--cs-dur,.6s) ease,color var(--cs-dur,.6s) ease}@media (prefers-reduced-motion:reduce){body.upw-cs-on{transition:none}}

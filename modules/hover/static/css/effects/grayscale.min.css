@@ -1,0 +1,1 @@
+.sc-hover--grayscale{filter:var(--hover-filter,grayscale(100%));transition:filter .35s ease}.sc-hover--grayscale:is(:hover,:focus-visible){filter:none}

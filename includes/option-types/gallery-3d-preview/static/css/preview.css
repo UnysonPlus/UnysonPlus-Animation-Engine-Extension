@@ -60,3 +60,17 @@
 	cursor: pointer;
 }
 .fw-gallery-3d-preview__bg button.is-active { background: #2f74e6; border-color: #2f74e6; color: #fff; }
+
+/* "Coming soon" family reveal + preview placeholder (see gallery-3d/options.php). The SOON tiles
+   themselves are badged in their SVG art; these style the click-through states. */
+.upw-soon-note { margin: 2px 0; padding: 12px 14px; border: 1px solid #dfe4ec; border-left: 3px solid #2f74e6;
+  border-radius: 6px; background: #f5f8ff; font-size: 12px; line-height: 1.55; color: #4a5566; }
+.upw-soon-note__b { font-weight: 700; color: #1e2531; }
+.upw-soon-note a { color: #2f74e6; text-decoration: none; }
+.upw-soon-note a:hover { text-decoration: underline; }
+/* Live-preview placeholder shown when a SOON tile is selected. */
+.tdg-soon { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px; color: #aab4c4; }
+.tdg-soon__badge { padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 800;
+  letter-spacing: .12em; color: #cdd6e4; border: 1px solid #3a4658; background: rgba(255,255,255,.04); }
+.tdg-soon__t { font-size: 13px; color: #8b96a8; }

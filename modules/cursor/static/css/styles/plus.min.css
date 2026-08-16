@@ -1,0 +1,1 @@
+.upw-cursor--plus{height:calc(var(--s)*2.6);width:calc(var(--s)*2.6)}.upw-cursor--plus:after,.upw-cursor--plus:before{background:var(--c);border-radius:2px;content:"";position:absolute}.upw-cursor--plus:before{height:70%;left:50%;top:15%;transform:translateX(-50%);width:2.5px}.upw-cursor--plus:after{height:2.5px;left:15%;top:50%;transform:translateY(-50%);width:70%}

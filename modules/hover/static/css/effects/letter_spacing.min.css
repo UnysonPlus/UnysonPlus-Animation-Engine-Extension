@@ -1,0 +1,1 @@
+.sc-hover--letter_spacing{transition:letter-spacing .3s ease}.sc-hover--letter_spacing:is(:hover,:focus-visible){letter-spacing:var(--hover-letter,3px)}@media (prefers-reduced-motion:reduce){.sc-hover--letter_spacing,.sc-hover--letter_spacing:is(:hover,:focus-visible){animation:none!important;transition:none!important}}

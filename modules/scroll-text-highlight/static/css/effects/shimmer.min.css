@@ -1,0 +1,1 @@
+.sc-sth--shimmer .sth-w{opacity:.5}.sc-sth--shimmer .sth-w.is-on{animation:sth-shimmer .9s ease;opacity:1}@keyframes sth-shimmer{0%{filter:brightness(1)}50%{filter:brightness(1.65)}to{filter:brightness(1)}}

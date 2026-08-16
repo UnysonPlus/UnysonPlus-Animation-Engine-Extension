@@ -1,0 +1,1 @@
+.upw-text-width{font-stretch:calc(var(--text-wdth-from, 75)*1%);font-variation-settings:"wdth" var(--text-wdth-from,75);transition:font-variation-settings .5s ease,font-stretch .5s ease}.sc-text--width_sweep:hover .upw-text-width,.upw-text-width.is-on{font-stretch:calc(var(--text-wdth-to, 125)*1%);font-variation-settings:"wdth" var(--text-wdth-to,125)}

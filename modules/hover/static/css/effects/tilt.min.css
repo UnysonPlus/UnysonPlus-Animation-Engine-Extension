@@ -1,0 +1,1 @@
+.sc-hover--tilt{transition:transform .25s cubic-bezier(.22,.61,.36,1);will-change:transform}.sc-hover-glare{border-radius:inherit;inset:0;mix-blend-mode:overlay;opacity:0;pointer-events:none;position:absolute;transition:opacity .3s ease;z-index:2}@media (prefers-reduced-motion:reduce){.sc-hover--tilt{transition:none}}

@@ -1,0 +1,1 @@
+.upw-story[data-story-style=cover] .upw-story-layer{--story-dist:100%;opacity:1;transform:translate(var(--story-tx,100%),var(--story-ty,0));transition:transform var(--story-trans,.6s) cubic-bezier(.7,0,.3,1)}.upw-story[data-story-style=cover] .upw-story-layer.is-active{transform:translate(0)}

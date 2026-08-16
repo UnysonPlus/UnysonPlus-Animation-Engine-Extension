@@ -124,6 +124,17 @@ $design_groups = array(
 			'device_cycler' => __( 'Device Cycler', 'fw' ),
 		),
 	),
+	/* Coming-soon FAMILIES — each is one badged "SOON" tile in its own category tab. These `soon_*`
+	 * keys are deliberately NOT in the render registry (DEFAULTS / view whitelist), so selecting one
+	 * can never render an empty gallery — the preview and the view both fall back to carousel_ring.
+	 * Their reveal (below) is a "coming soon" note instead of controls. Tile art: static/img/designs/
+	 * soon-*.svg (a muted family glyph + a SOON ribbon). */
+	'grp_carousel'  => array( 'label' => __( 'Carousel & Flow', 'fw' ),   'designs' => array( 'soon_carousel_flow' => __( 'Carousel & Flow', 'fw' ) ),   'soon' => true ),
+	'grp_grid'      => array( 'label' => __( 'Grid', 'fw' ),              'designs' => array( 'soon_grid' => __( 'Grid', 'fw' ) ),                     'soon' => true ),
+	'grp_iso'       => array( 'label' => __( 'Isometric', 'fw' ),         'designs' => array( 'soon_isometric' => __( 'Isometric', 'fw' ) ),           'soon' => true ),
+	'grp_orbit'     => array( 'label' => __( 'Orbit', 'fw' ),             'designs' => array( 'soon_orbit' => __( 'Orbit', 'fw' ) ),                   'soon' => true ),
+	'grp_reveal'    => array( 'label' => __( 'Reveal & Wipe', 'fw' ),     'designs' => array( 'soon_reveal_wipe' => __( 'Reveal & Wipe', 'fw' ) ),     'soon' => true ),
+	'grp_spotlight' => array( 'label' => __( 'Spotlight & Focus', 'fw' ), 'designs' => array( 'soon_spotlight' => __( 'Spotlight & Focus', 'fw' ) ), 'soon' => true ),
 );
 $mk_tile = function ( $dk, $dl ) use ( $img_base, $img_ver ) {
 	$file = str_replace( '_', '-', $dk );
@@ -138,6 +149,35 @@ foreach ( $design_groups as $gk => $g ) {
 	$grp = array();
 	foreach ( $g['designs'] as $dk => $dl ) { $grp[ $dk ] = $mk_tile( $dk, $dl ); }
 	$design_tiles[ $gk ] = array( 'label' => $g['label'], 'choices' => $grp );
+}
+
+/* ---- "Coming soon" family reveal --------------------------------------------------------------
+ * The coming-soon FAMILIES render as badged SOON tiles in the picker (grp_* with 'soon'=>true above;
+ * tile art = static/img/designs/soon-*.svg). Clicking one is harmless — soon_* is not a registered
+ * design, so the live preview and the front-end view both fall back to carousel_ring — so instead of
+ * design controls we reveal this "coming soon" note (with the roadmap link). One shared note, mapped
+ * to every soon_* key. */
+$roadmap_url = 'https://unysonplus.github.io/animation-engine/3d-motion-roadmap';
+$soon_reveal = array(
+	'group_soon' => array( 'type' => 'group', 'options' => array(
+		'soon_note' => array(
+			'type'  => 'html',
+			'label' => false,
+			'desc'  => false,
+			'html'  => '<div class="upw-soon-note"><span class="upw-soon-note__b">' . esc_html__( 'Coming soon.', 'fw' ) . '</span> '
+				. sprintf(
+					/* translators: %s = roadmap link */
+					esc_html__( 'This design isn\'t available yet — the 3D Gallery library is growing, with 50+ designs planned across these families. Pick an available design above, or %s.', 'fw' ),
+					'<a href="' . esc_url( $roadmap_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'see the roadmap →', 'fw' ) . '</a>'
+				) . '</div>',
+		),
+	) ),
+);
+// Map every soon_* family key (collected from the groups flagged 'soon') to the shared reveal.
+$soon_choices = array();
+foreach ( $design_groups as $g ) {
+	if ( empty( $g['soon'] ) ) { continue; }
+	foreach ( array_keys( $g['designs'] ) as $dk ) { $soon_choices[ $dk ] = $soon_reveal; }
 }
 
 /* ---- Per-design reveal option sets ---- */
@@ -503,7 +543,7 @@ $options = array(
 						'choices' => $design_tiles,
 					),
 				),
-				'choices' => array(
+				'choices' => array_merge( array(
 					'carousel_ring' => $carousel_ring_opts,
 					'panorama_wall'     => $panorama_wall_opts,
 					'card_sphere'      => $card_sphere_opts,
@@ -512,7 +552,7 @@ $options = array(
 					'photo_scatter'    => $photo_scatter_opts,
 					'card_stack'       => $card_stack_opts,
 					'device_cycler'    => $device_cycler_opts,
-				),
+				), $soon_choices ),
 			),
 		),
 	),

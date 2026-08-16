@@ -1,0 +1,1 @@
+.upw-story[data-story-style=flip] .upw-story-media{perspective:1400px}.upw-story[data-story-style=flip] .upw-story-layer{backface-visibility:hidden;opacity:1;transform:rotateY(90deg);transition:transform var(--story-trans,.6s) ease}.upw-story[data-story-style=flip] .upw-story-layer.is-active{transform:rotateY(0deg)}

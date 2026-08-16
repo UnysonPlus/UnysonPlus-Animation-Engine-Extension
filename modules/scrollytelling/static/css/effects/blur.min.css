@@ -1,0 +1,1 @@
+.upw-story[data-story-style=blur] .upw-story-layer{filter:blur(calc(var(--story-intensity, .5)*24px));opacity:0;transition:opacity var(--story-trans,.6s) ease,filter var(--story-trans,.6s) ease}.upw-story[data-story-style=blur] .upw-story-layer.is-active{filter:blur(0);opacity:1}

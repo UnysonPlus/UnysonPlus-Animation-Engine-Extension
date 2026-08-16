@@ -1,0 +1,1 @@
+.upw-cursor--crosshair{height:calc(var(--s)*3);width:calc(var(--s)*3)}.upw-cursor--crosshair:after,.upw-cursor--crosshair:before{background:var(--c);content:"";position:absolute}.upw-cursor--crosshair:before{height:100%;left:50%;top:0;transform:translateX(-50%);width:1.5px}.upw-cursor--crosshair:after{height:1.5px;left:0;top:50%;transform:translateY(-50%);width:100%}

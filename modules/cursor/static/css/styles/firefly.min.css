@@ -1,0 +1,1 @@
+.upw-cursor--dot,.upw-cursor--dot-ring{background:var(--c);border-radius:50%;height:var(--s);width:var(--s)}.upw-cursor-p{opacity:0;transition:none}.upw-cursor-p-firefly{background:var(--c);border-radius:50%;box-shadow:0 0 6px 2px var(--c),0 0 12px 4px color-mix(in srgb,var(--c) 45%,transparent);height:calc(var(--s)*.8);width:calc(var(--s)*.8)}

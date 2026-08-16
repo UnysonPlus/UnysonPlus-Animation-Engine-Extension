@@ -1,0 +1,1 @@
+.upw-story[data-story-style=flash] .upw-story-layer{opacity:0;transition:opacity calc(var(--story-trans, .6s)*.5) ease}.upw-story[data-story-style=flash] .upw-story-layer.is-active{animation:upw-story-flash var(--story-trans,.6s) ease;opacity:1}@keyframes upw-story-flash{0%{filter:brightness(5) contrast(.4)}35%{filter:brightness(1.5)}to{filter:brightness(1)}}

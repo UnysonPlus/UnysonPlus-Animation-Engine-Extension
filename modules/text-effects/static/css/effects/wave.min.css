@@ -1,0 +1,1 @@
+.upw-text-wave-ch{animation:upw-text-wave var(--text-wave-speed,1.4s) ease-in-out infinite;display:inline-block}@keyframes upw-text-wave{0%,to{transform:translateY(0)}50%{transform:translateY(calc(var(--text-wave-amp, 6px)*-1))}}@media (prefers-reduced-motion:reduce){.upw-text-wave-ch{animation:none}}

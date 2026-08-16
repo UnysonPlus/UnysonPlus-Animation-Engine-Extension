@@ -1,0 +1,1 @@
+.sc-sth--pill .sth-w{border-radius:6px;opacity:.7;padding:0 3px;transition:background-color var(--sth-dur,.5s) ease,opacity var(--sth-dur,.5s) ease}.sc-sth--pill .sth-w.is-on{background-color:var(--sth-active,#ffe08a);opacity:1}

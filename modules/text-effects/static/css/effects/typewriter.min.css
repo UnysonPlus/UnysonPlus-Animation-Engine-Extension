@@ -1,0 +1,1 @@
+.upw-text-caret{animation:upw-text-blink 1s step-end infinite;border-right:.08em solid;padding-right:.04em}@keyframes upw-text-blink{0%,to{border-color:currentColor}50%{border-color:transparent}}@media (prefers-reduced-motion:reduce){.upw-text-caret{animation:none}}

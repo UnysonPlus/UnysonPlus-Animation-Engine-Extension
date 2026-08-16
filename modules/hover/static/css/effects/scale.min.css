@@ -1,0 +1,1 @@
+.sc-hover--scale{transition:transform .3s cubic-bezier(.22,.61,.36,1)}.sc-hover--scale:is(:hover,:focus-visible){transform:scale(var(--hover-scale-to,1.04))}@media (prefers-reduced-motion:reduce){.sc-hover--scale:is(:hover,:focus-visible){transform:none}}

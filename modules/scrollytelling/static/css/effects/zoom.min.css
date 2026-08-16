@@ -1,0 +1,1 @@
+.upw-story[data-story-style=zoom] .upw-story-layer{opacity:0;transform:scale(calc(1 + var(--story-intensity, .5)*.18));transition:opacity var(--story-trans,.6s) ease,transform var(--story-trans,.6s) cubic-bezier(.22,1,.36,1)}.upw-story[data-story-style=zoom] .upw-story-layer.is-active{opacity:1;transform:scale(1)}

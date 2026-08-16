@@ -1,0 +1,1 @@
+[data-pt-type=fade] .upw-pt__p1{animation:pt-fade-in var(--pt-dur,.6s) ease backwards;opacity:0}.is-exiting[data-pt-type=fade] .upw-pt__p1{animation:pt-fade-out var(--pt-dur,.6s) ease forwards}
