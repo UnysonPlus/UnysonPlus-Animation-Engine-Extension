@@ -12,6 +12,10 @@
 	var CFG = window.upwPreloaderCfg || {};
 	var minMs = (CFG.minDisplay || 0) * 1000;
 	var fadeMs = (CFG.fadeOut || 0.5) * 1000;
+	// prefers-reduced-motion: snap the overlay away instead of fading it (CSS already stops the spinner
+	// keyframes; the overlay fade is the remaining motion).
+	var reduce = (window.upwReduceMotion ? window.upwReduceMotion() : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
+	if (reduce) { fadeMs = 0; }
 	var startT = Date.now();
 	var done = false;
 
@@ -38,6 +42,7 @@
 		applyProg(100);
 		var wait = Math.max(0, minMs - (Date.now() - startT));
 		setTimeout(function () {
+			if (reduce) { el.style.transition = 'none'; } // instant hide, no fade
 			el.classList.add('is-done');
 			document.documentElement.classList.remove('upw-pl-lock');
 			setTimeout(function () { if (el.parentNode) { el.parentNode.removeChild(el); } }, fadeMs + 140);

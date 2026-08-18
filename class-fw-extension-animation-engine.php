@@ -31,6 +31,9 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		// pages that use it). Loaded before modules so they can register at load.
 		require_once dirname( __FILE__ ) . '/includes/asset-loader.php';
 
+		// Shared module helpers (upw_anim_slider, …) — before the modules so their settings can use them.
+		require_once dirname( __FILE__ ) . '/includes/module-helpers.php';
+
 		// `gallery-3d-preview` option type: a live, in-modal preview of the 3D Gallery designs
 		// (admin-only; value-less — renders nothing on the front end). Registered on the option-types
 		// init action, matching the shortcodes extension's own custom option types.

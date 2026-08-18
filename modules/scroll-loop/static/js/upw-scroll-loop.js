@@ -51,7 +51,7 @@
 		return el.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
 	}
 
-	var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	var reducedMotion = window.upwReduceMotion ? window.upwReduceMotion() : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 	ready(function () {
 		// --- Bail conditions ------------------------------------------------

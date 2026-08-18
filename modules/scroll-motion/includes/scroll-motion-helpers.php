@@ -36,3 +36,39 @@ function sc_gsap_used( $effect = null ) {
     return $set;
 }
 endif;
+
+if ( ! function_exists( 'upw_gsap_effects' ) ) :
+	/**
+	 * Canonical Scroll-Motion effect list — the SINGLE source of truth for the effect KEYS + labels.
+	 * The picker tiles (settings.php) and the render-time allow-list (render.php) both derive from this,
+	 * so those two can never drift again (the drift is what shipped the data-upw-g-each stagger bug).
+	 * The tile SVG slug is the key with `_` -> `-`. NOTE: the JS BUILDERS map (upw-gsap.js) implements
+	 * each key and must carry the SAME keys (it can't share a PHP literal) — keep it in step. `custom`
+	 * (the code snippet) is handled separately (own tile + gated runtime), so it is NOT listed here.
+	 *
+	 * @return array<string,string> key => translated label, in tile order.
+	 */
+	function upw_gsap_effects() {
+		return array(
+			'blur'          => __( 'Blur In', 'fw' ),
+			'clip'          => __( 'Clip Wipe', 'fw' ),
+			'color_scrub'   => __( 'Color Scrub', 'fw' ),
+			'counter'       => __( 'Count Up', 'fw' ),
+			'expand'        => __( 'Expand / Grow', 'fw' ),
+			'flip'          => __( 'Flip In (3D)', 'fw' ),
+			'mask_wipe'     => __( 'Mask Wipe', 'fw' ),
+			'parallax'      => __( 'Parallax', 'fw' ),
+			'pin'           => __( 'Pin', 'fw' ),
+			'reveal'        => __( 'Reveal', 'fw' ),
+			'rotate'        => __( 'Rotate In', 'fw' ),
+			'scroll_spin'   => __( 'Scroll Spin', 'fw' ),
+			'scrub'         => __( 'Scrub', 'fw' ),
+			'skew'          => __( 'Skew Settle', 'fw' ),
+			'splittext'     => __( 'Split Text', 'fw' ),
+			'stagger'       => __( 'Stagger', 'fw' ),
+			'tilt_scrub'    => __( 'Tilt Scrub (3D)', 'fw' ),
+			'velocity_skew' => __( 'Velocity Skew', 'fw' ),
+			'zoom'          => __( 'Zoom In', 'fw' ),
+		);
+	}
+endif;

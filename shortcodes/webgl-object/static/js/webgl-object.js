@@ -362,6 +362,21 @@
 		return { object: new THREE.Mesh(geo, mat), uniforms: uniforms, geometry: geo, material: mat };
 	}
 
+	// Per-page WebGL budget + deterministic teardown. Browsers hard-cap ~16 live contexts; past that the
+	// oldest canvases silently go blank. We cap well under that and fall back to the poster/CSS when the
+	// budget is spent, and REAP a context the moment its element leaves the DOM — even while paused /
+	// off-screen. (The old code only disposed from inside the running rAF loop, so a node removed while
+	// stopped leaked its renderer + GL context — common in the builder preview / any AJAX re-render.)
+	var LIVE = 0, MAX_LIVE = 8, INSTANCES = [], reaper = null;
+	function removeInstance(root) { for (var i = 0; i < INSTANCES.length; i++) { if (INSTANCES[i].root === root) { INSTANCES.splice(i, 1); return; } } }
+	function ensureReaper() {
+		if (reaper || !('MutationObserver' in window)) { return; }
+		reaper = new MutationObserver(function () {
+			for (var i = INSTANCES.length - 1; i >= 0; i--) { if (!document.contains(INSTANCES[i].root)) { INSTANCES[i].dispose(); } }
+		});
+		reaper.observe(document.documentElement, { childList: true, subtree: true });
+	}
+
 	function initOne(root) {
 		if (root.__webglReady) { return; }
 		root.__webglReady = true;
@@ -394,10 +409,12 @@
 		var host = root.querySelector('.fw-webgl__canvas') || root;
 		var transparent = (cfg.background === 'transparent');
 
+		if (LIVE >= MAX_LIVE) { fallback(root); return; } // per-page WebGL budget spent → poster/CSS fallback
 		var renderer;
 		try {
 			renderer = new THREE.WebGLRenderer({ alpha: transparent, antialias: cfg.quality !== 'low', powerPreference: 'high-performance' });
 		} catch (e) { fallback(root); return; }
+		LIVE++;
 
 		var dprCap = cfg.dprCap || 2;
 		if (cfg.quality === 'low') { dprCap = Math.min(dprCap, 1.5); }
@@ -550,7 +567,10 @@
 		function start() { if (running) { return; } running = true; loop(); }
 		function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
 
+		var disposed = false;
 		function dispose() {
+			if (disposed) { return; }
+			disposed = true;
 			stop();
 			if (built.geometry) { built.geometry.dispose(); }
 			if (built.material) { built.material.dispose(); }
@@ -558,8 +578,12 @@
 			if (env) { env.dispose(); }
 			renderer.dispose();
 			if (renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); }
+			LIVE = Math.max(0, LIVE - 1);
+			removeInstance(root);
 		}
 		root.__webglDispose = dispose;
+		INSTANCES.push({ root: root, dispose: dispose });
+		ensureReaper();
 
 		// Resize.
 		if (window.ResizeObserver) {

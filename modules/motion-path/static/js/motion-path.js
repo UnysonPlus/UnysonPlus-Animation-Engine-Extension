@@ -19,7 +19,8 @@
 
 	var cfg = window.upwMotionPathCfg || {};
 	var reduce = cfg.reducedMotion !== false &&
-		window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		(window.upwReduceMotion ? window.upwReduceMotion() : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
+	var disableMobile = cfg.disableMobile && window.innerWidth < 768; // match the sibling modules' mobile opt-out
 
 	var SVGNS = 'http://www.w3.org/2000/svg';
 	var host = null;
@@ -143,7 +144,7 @@
 	function kick() { if (!raf) { raf = requestAnimationFrame(tick); } }
 
 	function init() {
-		if (reduce) { return; }
+		if (reduce || disableMobile) { return; }
 		var els = document.querySelectorAll('.sc-motion-path');
 		if (!els.length) { return; }
 
@@ -182,7 +183,11 @@
 		}
 
 		if (scrubItems.length) {
-			window.addEventListener('scroll', scrubUpdate, { passive: true });
+			// rAF-throttle the scroll handler: scroll fires more often than frames, and scrubUpdate does
+			// getPointAtLength() + style writes — running it once per frame (not per event) removes the jank.
+			var scrubTick = false;
+			function onScrubScroll() { if (scrubTick) { return; } scrubTick = true; requestAnimationFrame(function () { scrubTick = false; scrubUpdate(); }); }
+			window.addEventListener('scroll', onScrubScroll, { passive: true });
 			window.addEventListener('resize', function () {
 				for (var j = 0; j < scrubItems.length; j++) { measure(scrubItems[j]); }
 				scrubUpdate();

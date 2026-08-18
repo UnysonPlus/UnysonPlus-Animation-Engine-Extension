@@ -27,6 +27,32 @@ if ( ! function_exists( 'fw_model_allowed_mimes' ) ) {
 	}
 }
 
+if ( ! function_exists( 'upw_model_content_ok' ) ) {
+	/**
+	 * Cheap content sanity-check before we override WordPress's finfo veto — so the bypass only ever
+	 * applies to a file that really is a glTF model, not anything that merely ends in .glb/.gltf.
+	 *   - .glb  → binary glTF; the first 4 bytes are the magic "glTF" (0x676C5446).
+	 *   - .gltf → a JSON document; the first non-whitespace byte must be "{".
+	 */
+	function upw_model_content_ok( $ext, $file ) {
+		if ( ! is_string( $file ) || ! is_readable( $file ) ) {
+			return false;
+		}
+		$head = (string) file_get_contents( $file, false, null, 0, 64 );
+		if ( $head === '' ) {
+			return false;
+		}
+		if ( 'glb' === $ext ) {
+			return strncmp( $head, 'glTF', 4 ) === 0;
+		}
+		if ( 'gltf' === $ext ) {
+			$t = ltrim( $head );
+			return $t !== '' && $t[0] === '{';
+		}
+		return false;
+	}
+}
+
 add_filter(
 	'upload_mimes',
 	function ( $mimes ) {
@@ -69,7 +95,10 @@ add_filter(
 		}
 		$ext   = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
 		$allow = fw_model_allowed_mimes();
-		if ( isset( $allow[ $ext ] ) ) {
+		// Only assert the type when the file's CONTENT actually looks like a model — never on the
+		// extension alone (that would let a mislabelled payload through the finfo bypass). And require
+		// the current user to be allowed to upload, so this override never widens who can add files.
+		if ( isset( $allow[ $ext ] ) && current_user_can( 'upload_files' ) && upw_model_content_ok( $ext, $file ) ) {
 			$data['ext']  = $ext;
 			$data['type'] = $allow[ $ext ];
 		}

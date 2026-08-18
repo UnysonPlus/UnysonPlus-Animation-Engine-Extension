@@ -306,11 +306,14 @@
 				bdMedia.style.transform = 'perspective(1400px) translate(' + tx.toFixed(3) + '%,' + ty.toFixed(3) + '%) rotateY(' + ry.toFixed(3) + 'deg) rotateX(' + rx.toFixed(3) + 'deg) scale(' + sc.toFixed(4) + ')';
 			};
 		}
+		var lastP = -1;
 		function frame() {
 			var r = el.getBoundingClientRect();
 			var vh = window.innerHeight || 1;
 			var runway = Math.max(1, r.height - vh);
 			var p = Math.max(0, Math.min(1, -r.top / runway));
+			if (p === lastP) { return; } // no scroll change while pinned → skip the whole read/write pass
+			lastP = p;
 			el.__storyProgress = p;           // publish for child scrubbers (galleries, group moves)
 			el.style.setProperty('--story-progress', p.toFixed(4));
 			activate(Math.min(beats.length - 1, Math.floor(p * beats.length)));
@@ -480,10 +483,12 @@
 		// Scrub styles: feed 0..1 progress while the Section is in view. Rides the shared frame
 		// scheduler (window.upwAnimRaf), with a private-rAF fallback.
 		if (def && def.scrub && typeof def.onProgress === 'function') {
-			var raf = 0, inView = true;
+			var raf = 0, inView = true, lastP = -1;
 			function frame() {
 				var r = el.getBoundingClientRect();
 				var p = Math.max(0, Math.min(1, (window.innerHeight - r.top) / ((r.height + window.innerHeight) || 1)));
+				if (p === lastP) { return; } // no scroll change → skip the scrub callback
+				lastP = p;
 				try { def.onProgress(el, p, ctx); } catch (e) {}
 			}
 			function run() {

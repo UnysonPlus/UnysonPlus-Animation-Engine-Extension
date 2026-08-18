@@ -98,7 +98,7 @@
       var span = vertical ? el.clientHeight : el.clientWidth, size = function () { return vertical ? track.scrollHeight : track.scrollWidth; }, g = 0;
       do { addUnit(); g++; } while (size() < Math.max(1, span) && g < 80);
       var fill = size(), pass = track.children.length;
-      for (var i = 0; i < pass; i++) track.appendChild(track.children[i].cloneNode(true));
+      for (var i = 0; i < pass; i++) { var _cl = track.children[i].cloneNode(true); _cl.setAttribute('aria-hidden', 'true'); track.appendChild(_cl); } // seamless-loop duplicate: hide from SR so text isn't announced twice
       m.apply = function () {
         var pos = ((m.offset % fill) + fill) % fill, v = m.reverse ? (pos - fill) : -pos;
         track.style.transform = (vertical ? 'translateY(' : 'translateX(') + v.toFixed(1) + 'px)';

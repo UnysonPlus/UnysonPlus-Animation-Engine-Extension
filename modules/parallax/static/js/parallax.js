@@ -85,6 +85,7 @@
           s.tmx = clamp(((e.clientX - s.rect.left) / s.rect.width - 0.5) * 2, -1, 1);
           s.tmy = clamp(((e.clientY - s.rect.top) / s.rect.height - 0.5) * 2, -1, 1);
         }
+        kick();
       }, { passive: true });
     }
 
@@ -98,9 +99,9 @@
     }
     var ticking = false;
     window.addEventListener('scroll', function () {
-      if (!ticking) { ticking = true; requestAnimationFrame(function () { updateScroll(); ticking = false; }); }
+      if (!ticking) { ticking = true; requestAnimationFrame(function () { updateScroll(); ticking = false; kick(); }); }
     }, { passive: true });
-    window.addEventListener('resize', function () { measure(); updateScroll(); }, { passive: true });
+    window.addEventListener('resize', function () { measure(); updateScroll(); kick(); }, { passive: true });
     updateScroll();
 
     // Cull off-screen layers.
@@ -109,19 +110,30 @@
         entries.forEach(function (en) {
           for (var i = 0; i < layers.length; i++) { if (layers[i].el === en.target) { layers[i].visible = en.isIntersecting; break; } }
         });
+        kick(); // a newly-visible layer needs one pass to be positioned
       }, { rootMargin: '25%' });
       layers.forEach(function (l) { io.observe(l.el); });
     }
 
-    var running = true;
+    var running = true, rafId = 0;
+    // (Re)start the loop. No-op if already scheduled or paused — the scroll / mouse / IO / visibility
+    // handlers call this when there's new input, so an idle page stops rescheduling entirely instead of
+    // burning a permanent 60fps wake-up.
+    function kick() { if (!running || rafId) { return; } rafId = requestAnimationFrame(tick); }
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden) { running = false; }
-      else if (!running) { running = true; requestAnimationFrame(tick); }
+      if (document.hidden) { running = false; if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
+      else if (!running) { running = true; kick(); }
     });
 
     function tick() {
+      rafId = 0;
       if (!running) return;
-      for (var i = 0; i < scenes.length; i++) { var s = scenes[i]; s.mx += (s.tmx - s.mx) * s.ease; s.my += (s.tmy - s.my) * s.ease; }
+      var moving = false;
+      for (var i = 0; i < scenes.length; i++) {
+        var s = scenes[i];
+        s.mx += (s.tmx - s.mx) * s.ease; s.my += (s.tmy - s.my) * s.ease;
+        if (Math.abs(s.tmx - s.mx) > 0.0015 || Math.abs(s.tmy - s.my) > 0.0015) { moving = true; }
+      }
       for (var j = 0; j < layers.length; j++) {
         var l = layers[j]; if (!l.visible) continue;
         var sc = l.scene, f = l.depth, I = sc.intensity;
@@ -142,8 +154,10 @@
         l.el.style.transform = t;
         if (l.blur) l.el.style.filter = 'blur(' + (f * 2.2).toFixed(2) + 'px)';
       }
-      requestAnimationFrame(tick);
+      // Keep running only while the mouse-ease is still settling; scroll / mouse / IO handlers re-kick
+      // when there's new input.
+      if (moving) { rafId = requestAnimationFrame(tick); }
     }
-    requestAnimationFrame(tick);
+    kick();
   });
 })();

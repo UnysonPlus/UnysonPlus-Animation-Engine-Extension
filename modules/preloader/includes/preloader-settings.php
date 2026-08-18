@@ -31,11 +31,8 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 		$style_reveals[ $k ] = array();
 	}
 
-	// Alphabetize picker tiles by label (None/Off first, Custom last) for easier scanning.
+	// Alphabetize picker tiles by label for easier scanning.
 	uksort( $style_choices, function ( $a, $b ) use ( $style_choices ) {
-		$rank = function ( $k ) { return 1; };
-		$ra = $rank( $a ); $rb = $rank( $b );
-		if ( $ra !== $rb ) { return $ra - $rb; }
 		$la = isset( $style_choices[ $a ]['label'] ) ? $style_choices[ $a ]['label'] : $a;
 		$lb = isset( $style_choices[ $b ]['label'] ) ? $style_choices[ $b ]['label'] : $b;
 		return strcasecmp( (string) $la, (string) $lb );

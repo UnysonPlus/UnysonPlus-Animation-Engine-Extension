@@ -9,7 +9,9 @@ H.rotating_words = function (el, target) {
 		var interval = (parseFloat(el.getAttribute('data-text-interval')) || 1.8) * 1000, i = 0;
 		t.style.display = 'inline-block';
 		t.style.transition = 'opacity .3s ease, transform .3s ease';
-		setInterval(function () {
+		var id = setInterval(function () {
+			if (!document.documentElement.contains(t)) { clearInterval(id); return; } // self-clean on builder re-render
+			if (document.hidden) { return; } // don't flip on a hidden tab
 			t.style.opacity = '0'; t.style.transform = 'translateY(-.25em)';
 			setTimeout(function () {
 				i = (i + 1) % list.length; t.textContent = list[i]; t.style.transform = 'translateY(.25em)';

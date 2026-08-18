@@ -4,7 +4,8 @@
  * Entrance is CSS (auto). Here we: (1) intercept same-origin link clicks to play the cover
  * animation (.is-exiting) then navigate; (2) run the optional first-visit loader. Skips
  * new-tab / download / hash / external / modified clicks. Under reduced motion, does nothing
- * (normal navigation). A safety timeout always navigates in case animationend never fires.
+ * (normal navigation). Navigation is driven by a timeout sized to the cover animation, so it always
+ * fires (there is no animationend listener to depend on).
  */
 (function () {
 	'use strict';

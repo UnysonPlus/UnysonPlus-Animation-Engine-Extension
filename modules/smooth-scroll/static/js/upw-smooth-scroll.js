@@ -20,8 +20,8 @@
 	var cfg = window.upwSmoothScrollCfg || {};
 
 	function prefersReduced() {
-		return !!cfg.reducedMotion && window.matchMedia &&
-			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		return !!cfg.reducedMotion && (window.upwReduceMotion ? window.upwReduceMotion() :
+			(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
 	}
 	function isTouch() {
 		return window.matchMedia ? window.matchMedia('(pointer: coarse)').matches

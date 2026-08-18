@@ -637,7 +637,7 @@
                         : (attr(el, 'data-upw-seq-pos') === 'with' ? '<' : '>-' + Math.max(0, Math.min(dur, overlap)));
                     if (isStagger) {
                         var kids = staggerTargets(el);
-                        var each = num(attr(el, 'data-upw-g-stagger'), 0.12);
+                        var each = num(attr(el, 'data-upw-g-each'), 0.12);
                         tl.fromTo(kids, c.from, Object.assign({}, c.to, { stagger: each }), pos);
                     } else {
                         tl.fromTo(el, c.from, c.to, pos);

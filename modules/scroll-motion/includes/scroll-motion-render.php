@@ -32,10 +32,33 @@ if ( ! function_exists( 'upw_gsap_snippets_gate' ) ) :
 		$post   = $pid ? get_post( $pid ) : null;
 		$author = $post ? (int) $post->post_author : 0;
 		if ( ! $author || ! user_can( $author, 'unfiltered_html' ) ) { return; }
+		// Hardening: the AUTHOR of record clearing the bar isn't enough — a *different* user who edited
+		// the post (e.g. has edit_others_posts but NOT unfiltered_html) could have baked a snippet whose
+		// data attribute survived. Require the LAST EDITOR to also clear the bar, so "can edit others'
+		// posts" can never be escalated into running JS that editor wasn't allowed to author.
+		$editor = (int) get_post_meta( $pid, '_edit_last', true );
+		if ( $editor && $editor !== $author && ! user_can( $editor, 'unfiltered_html' ) ) { return; }
 		echo "\n" . '<script id="upw-snippets-ok">window.upwSnippetsOK=1;</script>' . "\n";
 	}
 endif;
 add_action( 'wp_footer', 'upw_gsap_snippets_gate', 4 ); // before the runtime enqueue (5)
+
+
+/* ==========================================================================
+ * Critical FOUC guard — the `.upw-g-pending` hide rules MUST be in <head>, not the footer stylesheet
+ * (upw-gsap.css). A hidden-start entrance element above the fold otherwise paints VISIBLE for a beat
+ * before the footer CSS loads, then jumps to hidden — a flash of un-animated content. These rules are
+ * tiny, hide-ONLY, and only match elements the server actually stamped with `.upw-g-pending`, so
+ * printing them on every front-end page is safe (nothing else is affected). No `!important` — GSAP's
+ * inline opacity still wins the reveal; the reduced-motion branch reveals everything.
+ * ========================================================================== */
+if ( ! function_exists( 'upw_gsap_critical_css' ) ) :
+	function upw_gsap_critical_css() {
+		if ( is_admin() ) { return; }
+		echo '<style id="upw-gsap-critical">.upw-g-pending,.upw-g-pending[data-upw-g="stagger"]>*{opacity:0}@media (prefers-reduced-motion:reduce){.upw-g-pending,.upw-g-pending[data-upw-g="stagger"]>*{opacity:1!important;transform:none!important}}</style>' . "\n";
+	}
+endif;
+add_action( 'wp_head', 'upw_gsap_critical_css', 8 );
 
 
 /**
@@ -50,7 +73,9 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     $g = ( isset( $atts['gsap_motion'] ) && is_array( $atts['gsap_motion'] ) ) ? $atts['gsap_motion'] : [];
 
     $effect  = isset( $g['effect'] ) ? (string) $g['effect'] : 'none';
-    $allowed = [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub', 'zoom', 'rotate', 'blur', 'clip', 'skew', 'flip', 'expand', 'counter', 'velocity_skew', 'tilt_scrub', 'scroll_spin', 'mask_wipe', 'color_scrub', 'custom' ];
+    // Allow-list DERIVED from the canonical effect list (upw_gsap_effects) + 'custom' — single source
+    // of truth with the picker tiles, so the two can't drift.
+    $allowed = array_merge( array_keys( upw_gsap_effects() ), array( 'custom' ) );
     if ( ! in_array( $effect, $allowed, true ) ) {
         return $attr;
     }

@@ -37,9 +37,7 @@ endif;
 /* small option-builders to keep the (large) choices array readable */
 if ( ! function_exists( 'upw_phys_slider' ) ) :
 	function upw_phys_slider( $label, $val, $min, $max, $step, $desc = '' ) {
-		$f = array( 'type' => 'slider', 'label' => $label, 'value' => $val, 'properties' => array( 'min' => $min, 'max' => $max, 'step' => $step ) );
-		if ( $desc !== '' ) { $f['desc'] = $desc; }
-		return $f;
+		return upw_anim_slider( $label, $val, $min, $max, $step, $desc ); // delegates to the shared builder
 	}
 endif;
 if ( ! function_exists( 'upw_phys_trigger' ) ) :

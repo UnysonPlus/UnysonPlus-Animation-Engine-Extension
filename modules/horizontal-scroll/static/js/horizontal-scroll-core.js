@@ -102,6 +102,10 @@
 			var curSkew = 0;
 			if (window.upwAnimRaf) {
 				window.upwAnimRaf.add(function () {
+					if (!document.documentElement.contains(sec)) { return false; } // self-clean on builder re-render
+					var r = sec.getBoundingClientRect();
+					var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+					if (r.bottom < 0 || r.top > vh) { curSkew = 0; vel = 0; return; } // off-screen: nothing to skew
 					var s = scrolledNow();
 					var target = clamp(vel * intensity * 3, -16, 16);
 					vel *= 0.8;
@@ -123,7 +127,7 @@
 				lastY = y;
 				tick();
 			}
-			function recompute() { dist = distance(); lastY = -1; tick(); }
+			function recompute() { if (!document.documentElement.contains(sec)) { window.removeEventListener('resize', recompute); window.removeEventListener('load', recompute); return; } dist = distance(); lastY = -1; tick(); }
 			window.addEventListener('resize', recompute, { passive: true });
 			window.addEventListener('load', recompute);
 			if (window.upwAnimRaf && window.upwAnimRaf.add) {
@@ -154,8 +158,9 @@
 		track.addEventListener('touchstart', down, { passive: true });
 		track.addEventListener('touchmove', move, { passive: false });
 		track.addEventListener('touchend', up);
-		window.addEventListener('resize', function () { bounds(); apply(); });
-		window.addEventListener('load', function () { bounds(); apply(); });
+		function onDragResize() { if (!document.documentElement.contains(sec)) { window.removeEventListener('resize', onDragResize); window.removeEventListener('load', onDragResize); return; } bounds(); apply(); }
+		window.addEventListener('resize', onDragResize);
+		window.addEventListener('load', onDragResize);
 		bounds(); apply();
 	}
 

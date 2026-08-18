@@ -123,23 +123,28 @@
 		}
 
 		if (isAuto) {
+			// Reduced-motion: never auto-flip (perpetual autonomous motion). Keyboard flip below stays —
+			// it's user-initiated, an accessibility affordance, not autoplay.
+			var reduce = window.upwReduceMotion ? window.upwReduceMotion() : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 			var iv = parseFloat(el.getAttribute('data-flip-interval')) || 3;
 			var timer = null, inView = true;
 			var tick = function () { setFlipped(!el.classList.contains('is-flipped')); };
-			var start = function () { if (!timer) { timer = setInterval(tick, Math.max(500, iv * 1000)); } };
-			var stop = function () { if (timer) { clearInterval(timer); timer = null; } };
-			if ('IntersectionObserver' in window) {
-				new IntersectionObserver(function (entries) {
-					entries.forEach(function (en) {
-						inView = en.isIntersecting;
-						(inView && !document.hidden) ? start() : stop();
-					});
-				}, { threshold: 0.2 }).observe(el);
-			} else { start(); }
-			document.addEventListener('visibilitychange', function () {
-				if (document.hidden) { stop(); } else if (inView) { start(); }
-			});
-			// Keyboard flip for accessibility.
+			if (!reduce) {
+				var start = function () { if (!timer) { timer = setInterval(tick, Math.max(500, iv * 1000)); } };
+				var stop = function () { if (timer) { clearInterval(timer); timer = null; } };
+				if ('IntersectionObserver' in window) {
+					new IntersectionObserver(function (entries) {
+						entries.forEach(function (en) {
+							inView = en.isIntersecting;
+							(inView && !document.hidden) ? start() : stop();
+						});
+					}, { threshold: 0.2 }).observe(el);
+				} else { start(); }
+				document.addEventListener('visibilitychange', function () {
+					if (document.hidden) { stop(); } else if (inView) { start(); }
+				});
+			}
+			// Keyboard flip for accessibility (always available).
 			el.setAttribute('tabindex', '0');
 			el.addEventListener('keydown', function (e) {
 				if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tick(); }

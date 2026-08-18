@@ -66,5 +66,15 @@ add_action( 'wp_body_open', function () {
 	echo '<div class="upw-preloader upw-pl--' . esc_attr( $style ) . '" style="' . esc_attr( $vars ) . '" role="status" aria-label="' . esc_attr__( 'Loading', 'fw' ) . '">'
 		. $content // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — built from esc_url + whitelisted markup
 		. '</div>'
-		. '<script>document.documentElement.classList.add("upw-pl-lock");</script>';
+		// Belt: with JS disabled the runtime never dismisses the overlay — hide it so the page is
+		// never permanently covered.
+		. '<noscript><style>.upw-preloader{display:none!important}</style></noscript>'
+		// Suspenders: this inline lock runs immediately (JS present) AND arms a standalone fail-safe so
+		// that even if the external preloader.js is blocked / throws and never runs its own 8s net, the
+		// overlay still clears (never a permanent black-out).
+		. '<script>document.documentElement.classList.add("upw-pl-lock");'
+		. '(function(){setTimeout(function(){var e=document.querySelector(".upw-preloader");'
+		. 'if(e&&e.classList.contains("is-done")===false){e.classList.add("is-done");'
+		. 'document.documentElement.classList.remove("upw-pl-lock");'
+		. 'setTimeout(function(){if(e.parentNode){e.parentNode.removeChild(e);}},900);}},12000);})();</script>';
 }, 1 );

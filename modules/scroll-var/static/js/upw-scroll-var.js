@@ -50,7 +50,6 @@
 	var ticking = false;
 
 	function update() {
-		ticking = false;
 		var vw = window.innerWidth || document.documentElement.clientWidth;
 		var vh = window.innerHeight || document.documentElement.clientHeight;
 		for ( var i = 0; i < active.length; i++ ) {
@@ -59,6 +58,11 @@
 			var p    = progressFor( rect, vw, vh, el.__svarAxis, el.__svarRange );
 			el.style.setProperty( el.__svarName, p.toFixed( 4 ) );
 		}
+		ticking = false;
+		// One-shot: unsubscribe from the shared loop after running (schedule() re-arms it on the next
+		// scroll). Returning false is how upwAnimRaf drops a callback — without it this became a permanent
+		// per-frame subscriber recomputing rects forever, defeating "costs nothing while idle".
+		return false;
 	}
 
 	function schedule() {

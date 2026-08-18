@@ -69,7 +69,9 @@ if ( ! function_exists( 'upw_hover_color' ) ) :
 	 */
 	function upw_hover_color( $val ) {
 		if ( is_string( $val ) ) {
-			return $val;
+			// A legacy plain-string color still lands in an inline-style CSS var, so it gets the same
+			// character allow-list as the custom-hex branch below (esc_attr won't neutralise `;:{}`).
+			return preg_replace( '/[^A-Za-z0-9#\(\),.%\s]/', '', $val );
 		}
 		if ( ! is_array( $val ) ) {
 			return '';

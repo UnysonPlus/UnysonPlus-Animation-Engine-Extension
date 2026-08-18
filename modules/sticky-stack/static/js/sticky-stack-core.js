@@ -86,7 +86,10 @@
 			lastY = y;
 			tick();
 		}
-		window.addEventListener('resize', function () { lastY = -1; }, { passive: true });
+		// Self-removing on the first resize after the section leaves the DOM, so repeated builder
+		// rescans don't accumulate leaked global resize listeners holding the detached section.
+		function onResize() { if (!document.documentElement.contains(sec)) { window.removeEventListener('resize', onResize); return; } lastY = -1; }
+		window.addEventListener('resize', onResize, { passive: true });
 		if (window.upwAnimRaf && window.upwAnimRaf.add) {
 			window.upwAnimRaf.add(frame);
 		} else {

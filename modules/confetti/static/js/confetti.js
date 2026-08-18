@@ -87,6 +87,7 @@
 	};
 
 	var canvas, ctx, dpr = 1, particles = [], running = false;
+	var MAX_PARTICLES = 1200; // hard ceiling so rapid hover/click can't flood the shared loop with thousands
 
 	function clamp( v, a, b ) { return Math.max( a, Math.min( b, v ) ); }
 	function rand( a, b ) { return a + Math.random() * ( b - a ); }
@@ -162,6 +163,7 @@
 				seed: rand( 0, 100 )
 			} );
 		}
+		if ( particles.length > MAX_PARTICLES ) { particles.splice( 0, particles.length - MAX_PARTICLES ); } // trim oldest
 		start();
 	}
 

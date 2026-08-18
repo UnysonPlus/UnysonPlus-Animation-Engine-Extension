@@ -33,9 +33,7 @@ endif;
 
 if ( ! function_exists( 'upw_prlx_slider' ) ) :
 	function upw_prlx_slider( $label, $val, $min, $max, $step, $desc = '' ) {
-		$f = array( 'type' => 'slider', 'label' => $label, 'value' => $val, 'properties' => array( 'min' => $min, 'max' => $max, 'step' => $step ) );
-		if ( $desc !== '' ) { $f['desc'] = $desc; }
-		return $f;
+		return upw_anim_slider( $label, $val, $min, $max, $step, $desc ); // delegates to the shared builder
 	}
 endif;
 if ( ! function_exists( 'upw_prlx_switch' ) ) :

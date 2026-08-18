@@ -97,6 +97,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_cfg'    => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),
+					'disableMobile' => ( function_exists( 'upw_anim_engine_setting' ) && upw_anim_engine_setting( 'disable_on_mobile', 'no' ) === 'yes' ),
 				);
 				return 'window.upwMotionPathCfg=' . wp_json_encode( $cfg ) . ';';
 			},

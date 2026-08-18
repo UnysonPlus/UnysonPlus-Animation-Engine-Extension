@@ -243,6 +243,10 @@ function sc_get_gsap_fields() {
      * the footer emit — see upw_gsap_snippets_emit()), so a lower-privilege author's code never runs.
      */
     $snippet_tile  = array( 'custom' => $fx( 'custom', __( 'Custom Code', 'fw' ) ) );
+    // Effect tiles DERIVED from the canonical list (upw_gsap_effects) so they can never drift from
+    // the render-time allow-list. 'none' (no effect) first, then the shared set; slug = key with _ -> -.
+    $effect_tiles = array( 'none' => $fx( 'none', __( 'None', 'fw' ) ) );
+    foreach ( upw_gsap_effects() as $ek => $elabel ) { $effect_tiles[ $ek ] = $fx( str_replace( '_', '-', $ek ), $elabel ); }
     $snippet_group = array(
         'custom' => array(
             'group_gsap_custom' => array(
@@ -313,28 +317,7 @@ function sc_get_gsap_fields() {
                     'search'  => __( 'Search scroll effects…', 'fw' ),
                     'layout'  => 'tabs',
                     'choices' => upw_ae_group_tiles(
-                        $snippet_tile + [
-                            'none'      => $fx( 'none',      __( 'None', 'fw' ) ),
-                            'blur'      => $fx( 'blur',      __( 'Blur In', 'fw' ) ),
-                            'clip'      => $fx( 'clip',      __( 'Clip Wipe', 'fw' ) ),
-                            'color_scrub' => $fx( 'color-scrub', __( 'Color Scrub', 'fw' ) ),
-                            'counter'   => $fx( 'counter',   __( 'Count Up', 'fw' ) ),
-                            'expand'    => $fx( 'expand',    __( 'Expand / Grow', 'fw' ) ),
-                            'flip'      => $fx( 'flip',      __( 'Flip In (3D)', 'fw' ) ),
-                            'mask_wipe' => $fx( 'mask-wipe', __( 'Mask Wipe', 'fw' ) ),
-                            'parallax'  => $fx( 'parallax',  __( 'Parallax', 'fw' ) ),
-                            'pin'       => $fx( 'pin',       __( 'Pin', 'fw' ) ),
-                            'reveal'    => $fx( 'reveal',    __( 'Reveal', 'fw' ) ),
-                            'rotate'    => $fx( 'rotate',    __( 'Rotate In', 'fw' ) ),
-                            'scroll_spin' => $fx( 'scroll-spin', __( 'Scroll Spin', 'fw' ) ),
-                            'scrub'     => $fx( 'scrub',     __( 'Scrub', 'fw' ) ),
-                            'skew'      => $fx( 'skew',      __( 'Skew Settle', 'fw' ) ),
-                            'splittext' => $fx( 'splittext', __( 'Split Text', 'fw' ) ),
-                            'stagger'   => $fx( 'stagger',   __( 'Stagger', 'fw' ) ),
-                            'tilt_scrub' => $fx( 'tilt-scrub', __( 'Tilt Scrub (3D)', 'fw' ) ),
-                            'velocity_skew' => $fx( 'velocity-skew', __( 'Velocity Skew', 'fw' ) ),
-                            'zoom'      => $fx( 'zoom',      __( 'Zoom In', 'fw' ) ),
-                        ],
+                        $snippet_tile + $effect_tiles,
                         array(
                             'grp_reveal' => array( 'label' => __( 'Reveal & Wipe', 'fw' ), 'ids' => array( 'reveal', 'clip', 'mask_wipe', 'blur', 'expand', 'zoom' ) ),
                             'grp_3d' => array( 'label' => __( '3D & Rotate', 'fw' ), 'ids' => array( 'flip', 'rotate', 'scroll_spin', 'tilt_scrub', 'skew' ) ),

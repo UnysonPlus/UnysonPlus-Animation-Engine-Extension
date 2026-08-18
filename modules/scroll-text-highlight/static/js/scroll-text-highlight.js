@@ -10,7 +10,7 @@
 	if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
 	var CFG = window.upwSthCfg || {};
-	var reduce = !!CFG.reducedMotion && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	var reduce = !!CFG.reducedMotion && (window.upwReduceMotion ? window.upwReduceMotion() : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
 
 	function splitEl(el, mode) {
 		var words = [];
@@ -94,7 +94,12 @@
 		if (ticking) return;
 		ticking = true;
 		requestAnimationFrame(function () {
-			for (var i = 0; i < items.length; i++) { update(items[i]); }
+			for (var i = 0; i < items.length; i++) {
+				var it = items[i];
+				if (!document.documentElement.contains(it.el)) { items.splice(i, 1); i--; continue; } // self-clean
+				if (it.vis === false) { continue; } // IO says off-screen — skip the rect read
+				update(it);
+			}
 			ticking = false;
 		});
 	}
@@ -102,6 +107,15 @@
 	function init() {
 		Array.prototype.forEach.call(document.querySelectorAll('.sc-sth'), build);
 		if (!items.length) return;
+		// Gate per-item rect reads to on-screen items only (was reading every item's rect every scroll
+		// frame — O(n) forced reflows on long pages). Off-screen items are skipped in the loop above.
+		if ('IntersectionObserver' in window) {
+			var io = new IntersectionObserver(function (entries) {
+				entries.forEach(function (en) { for (var i = 0; i < items.length; i++) { if (items[i].el === en.target) { items[i].vis = en.isIntersecting; break; } } });
+				onScroll();
+			}, { rootMargin: '15%' });
+			items.forEach(function (it) { it.vis = false; io.observe(it.el); });
+		}
 		window.addEventListener('scroll', onScroll, { passive: true });
 		window.addEventListener('resize', onScroll);
 		onScroll();

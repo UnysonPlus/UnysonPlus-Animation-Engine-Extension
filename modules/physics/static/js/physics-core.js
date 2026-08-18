@@ -25,15 +25,19 @@
 	function num(el, attr, dflt) { var v = parseFloat(el.getAttribute('data-phys-' + attr)); return isNaN(v) ? dflt : v; }
 	function TF(el, s) { el.style.transform = s; }
 
-	/* ---- Continuous: run only while on-screen + tab visible ---- */
+	/* ---- Continuous: run only while on-screen + tab visible. ONE shared observer drives every physics
+	   element (was a NEW IntersectionObserver per element, never disconnected — dozens on a busy section). ---- */
+	var contMap = ('WeakMap' in window) ? new WeakMap() : null;
+	var contIO = ('IntersectionObserver' in window && contMap) ? new IntersectionObserver(function (entries) {
+		entries.forEach(function (en) { var h = contMap.get(en.target); if (h) { en.isIntersecting ? h.show() : h.hide(); } });
+	}, { threshold: 0.01 }) : null;
 	function observe(el, fn) {
 		el.style.willChange = 'transform';
 		el.__pvis = false;
 		function show() { if (!el.__pvis && !document.hidden) { el.__pvis = true; add(fn); } }
 		function hide() { el.__pvis = false; remove(fn); }
-		if ('IntersectionObserver' in window) {
-			new IntersectionObserver(function (e) { e.forEach(function (en) { return en.isIntersecting ? show() : hide(); }); }, { threshold: 0.01 }).observe(el);
-		} else { show(); }
+		if (contIO) { contMap.set(el, { show: show, hide: hide }); contIO.observe(el); }
+		else { show(); }
 		// (Tab-hidden pausing is handled centrally by the shared RAF scheduler — no per-element
 		// visibilitychange listener, which would leak one document listener per physics element.)
 	}

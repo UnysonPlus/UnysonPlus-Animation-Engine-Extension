@@ -15,7 +15,7 @@
 	var cfg = window.upwScrollRevealCfg || {};
 
 	function reducedMotion() {
-		return cfg.reducedMotion && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		return cfg.reducedMotion && (window.upwReduceMotion ? window.upwReduceMotion() : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
 	}
 
 	var items = [];
@@ -24,6 +24,7 @@
 		var vh = window.innerHeight || document.documentElement.clientHeight;
 		for (var i = 0; i < items.length; i++) {
 			var el = items[i].el, replay = items[i].replay;
+			if (!document.documentElement.contains(el)) { items.splice(i, 1); i--; continue; } // self-clean on builder re-render
 			var r = el.getBoundingClientRect(); // layout box — unaffected by clip-path
 			var inView = r.top < vh * 0.88 && r.bottom > vh * 0.06;
 			if (inView) {
