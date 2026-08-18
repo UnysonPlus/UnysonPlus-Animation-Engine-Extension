@@ -110,7 +110,10 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			),
 		),
 		'choices' => array(
-			'on' => array(
+			// The DEFAULT value ('off') must exist as a choice or the multi-picker can't resolve and the
+			// image-picker tile never renders (matches scroll-keyframes' 'none' => array()).
+			'off' => array(),
+			'on'  => array(
 				'group_scroll_var' => array( 'type' => 'group', 'options' => upw_scroll_var_options() ),
 			),
 		),

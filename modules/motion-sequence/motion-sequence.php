@@ -82,6 +82,10 @@ if ( ! function_exists( 'sc_get_motion_sequence_fields' ) ) :
 		return array(
 			'motion_sequence' => array(
 				'type'         => 'multi-picker',
+				// A POPOVER tile in the Animations "Add Animation" inserter, like every sibling. The top-level
+				// label names the tile (the inserter reads it); the picker sub-option's label is false so the
+				// label isn't rendered twice.
+				'popover'      => true,
 				'label'        => __( 'Motion Sequence', 'fw' ),
 				'desc'         => __( 'Play this Section\'s child animations as one choreographed sequence, in order, on a single trigger — instead of each firing on its own. Give the children (heading, text, button, cards…) a Scroll Motion Reveal/Stagger, then turn this on.', 'fw' ),
 				'help'         => __( 'Motion Sequence (Animation Engine): assembles the descendant Reveal/Stagger animations into ONE gsap.timeline() on the Section, in document order, with an Overlap knob for how they flow together. Other Scroll Motion effects inside the Section keep firing independently. Reuses the Scroll Motion runtime; honours "reduce motion".', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
@@ -91,7 +95,7 @@ if ( ! function_exists( 'sc_get_motion_sequence_fields' ) ) :
 				'picker'       => array(
 					'mode' => array(
 						'type'    => 'select',
-						'label'   => __( 'Motion Sequence', 'fw' ),
+						'label'   => false,
 						'desc'    => __( 'Off = children animate independently. On = they play as one sequence.', 'fw' ),
 						'value'   => 'off',
 						'choices' => array(

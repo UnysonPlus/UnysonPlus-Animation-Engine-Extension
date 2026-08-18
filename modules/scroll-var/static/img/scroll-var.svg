@@ -4,7 +4,7 @@
   <rect x="34" y="16" width="10" height="24" rx="5" fill="#2f74e6"/>
   <!-- maps-to arrow -->
   <path d="M56 39 h14 M64 33 l8 6 l-8 6" fill="none" stroke="#c3ccd8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- the CSS custom property: "--" then a value bar -->
+  <!-- the CSS custom property name, then a value bar -->
   <rect x="84" y="30" width="14" height="5" rx="2.5" fill="#2f74e6"/>
   <rect x="102" y="30" width="14" height="5" rx="2.5" fill="#2f74e6"/>
   <rect x="84" y="44" width="32" height="5" rx="2.5" fill="#bcd3f7"/>

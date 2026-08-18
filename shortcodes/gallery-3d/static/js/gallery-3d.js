@@ -23,6 +23,18 @@
 	function num( el, attr, dflt ) { var v = parseFloat( el.getAttribute( attr ) ); return isNaN( v ) ? dflt : v; }
 	function clamp( v, a, b ) { return v < a ? a : ( v > b ? b : v ); }
 
+	// Shared drag wiring (mouse + touch) — extracted from the 5 designs that each repeated it verbatim.
+	// Passes BOTH (clientX, clientY) to the design's down/move callbacks; each uses the coordinate it
+	// needs (X for the horizontal designs, Y for the vertical cascade, both for the ring's hit-test).
+	function attachDrag( el, down, move, up ) {
+		el.addEventListener( 'mousedown', function ( e ) { down( e.clientX, e.clientY ); e.preventDefault(); } );
+		window.addEventListener( 'mousemove', function ( e ) { move( e.clientX, e.clientY ); } );
+		window.addEventListener( 'mouseup', up );
+		el.addEventListener( 'touchstart', function ( e ) { down( e.touches[ 0 ].clientX, e.touches[ 0 ].clientY ); }, { passive: true } );
+		window.addEventListener( 'touchmove', function ( e ) { move( e.touches[ 0 ].clientX, e.touches[ 0 ].clientY ); }, { passive: true } );
+		window.addEventListener( 'touchend', up );
+	}
+
 	// Scroll-scrub progress 0..1, shared by every design. Pass-through mode: the element's travel
 	// through the viewport. Pinned mode (.tdg--pinned, "Pin while scrubbing"): progress through the
 	// pinned stretch — the stage sticks while the stretched wrapper passes, so the span is
@@ -189,12 +201,7 @@
 			};
 			var move = function ( x ) { if ( ! dragging ) { return; } var dx = ( x - px ) * flipDrag; px = x; angle += dx * 0.3; vel = dx * 0.3; };
 			var up = function () { dragging = false; el.style.cursor = 'grab'; };
-			el.addEventListener( 'mousedown', function ( e ) { down( e.clientX, e.clientY ); e.preventDefault(); } );
-			window.addEventListener( 'mousemove', function ( e ) { move( e.clientX ); } );
-			window.addEventListener( 'mouseup', up );
-			el.addEventListener( 'touchstart', function ( e ) { down( e.touches[ 0 ].clientX, e.touches[ 0 ].clientY ); }, { passive: true } );
-			window.addEventListener( 'touchmove', function ( e ) { move( e.touches[ 0 ].clientX ); }, { passive: true } );
-			window.addEventListener( 'touchend', up );
+			attachDrag( el, down, move, up );
 		}
 
 		if ( drive === 'scroll' ) {
@@ -324,12 +331,7 @@
 			var down = function ( x ) { dragging = true; px = x; vel = 0; el.style.cursor = 'grabbing'; };
 			var move = function ( x ) { if ( ! dragging ) { return; } var dx = x - px; px = x; base -= dx * 0.12; vel = -dx * 0.12; };
 			var up = function () { dragging = false; el.style.cursor = 'grab'; };
-			el.addEventListener( 'mousedown', function ( e ) { down( e.clientX ); e.preventDefault(); } );
-			window.addEventListener( 'mousemove', function ( e ) { move( e.clientX ); } );
-			window.addEventListener( 'mouseup', up );
-			el.addEventListener( 'touchstart', function ( e ) { down( e.touches[ 0 ].clientX ); }, { passive: true } );
-			window.addEventListener( 'touchmove', function ( e ) { move( e.touches[ 0 ].clientX ); }, { passive: true } );
-			window.addEventListener( 'touchend', up );
+			attachDrag( el, down, move, up );
 		}
 
 		if ( drive === 'scroll' ) {
@@ -452,12 +454,7 @@
 			var down = function ( x ) { dragging = true; px = x; vel = 0; el.style.cursor = 'grabbing'; };
 			var move = function ( x ) { if ( ! dragging ) { return; } var dx = x - px; px = x; bandData.forEach( function ( bd ) { bd.angle += dx * 0.25; } ); vel = dx * 0.25; };
 			var up = function () { dragging = false; el.style.cursor = 'grab'; };
-			el.addEventListener( 'mousedown', function ( e ) { down( e.clientX ); e.preventDefault(); } );
-			window.addEventListener( 'mousemove', function ( e ) { move( e.clientX ); } );
-			window.addEventListener( 'mouseup', up );
-			el.addEventListener( 'touchstart', function ( e ) { down( e.touches[ 0 ].clientX ); }, { passive: true } );
-			window.addEventListener( 'touchmove', function ( e ) { move( e.touches[ 0 ].clientX ); }, { passive: true } );
-			window.addEventListener( 'touchend', up );
+			attachDrag( el, down, move, up );
 		}
 
 		if ( drive === 'scroll' ) {
@@ -567,12 +564,7 @@
 			var down = function ( x ) { dragging = true; px = x; vel = 0; el.style.cursor = 'grabbing'; };
 			var move = function ( x ) { if ( ! dragging ) { return; } var dx = x - px; px = x; angle += dx * 0.25; vel = dx * 0.25; };
 			var up = function () { dragging = false; el.style.cursor = 'grab'; };
-			el.addEventListener( 'mousedown', function ( e ) { down( e.clientX ); e.preventDefault(); } );
-			window.addEventListener( 'mousemove', function ( e ) { move( e.clientX ); } );
-			window.addEventListener( 'mouseup', up );
-			el.addEventListener( 'touchstart', function ( e ) { down( e.touches[ 0 ].clientX ); }, { passive: true } );
-			window.addEventListener( 'touchmove', function ( e ) { move( e.touches[ 0 ].clientX ); }, { passive: true } );
-			window.addEventListener( 'touchend', up );
+			attachDrag( el, down, move, up );
 		}
 
 		if ( drive === 'scroll' ) {
@@ -1123,15 +1115,10 @@
 
 		if ( allowDrag ) {
 			el.style.cursor = 'grab';
-			var down = function ( y ) { dragging = true; py = y; vel = 0; el.style.cursor = 'grabbing'; };
-			var move = function ( y ) { if ( ! dragging ) { return; } var dy = y - py; py = y; Y += dy * 0.15; vel = dy * 0.15; };
+			var down = function ( x, y ) { dragging = true; py = y; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var dy = y - py; py = y; Y += dy * 0.15; vel = dy * 0.15; };
 			var up = function () { dragging = false; el.style.cursor = 'grab'; };
-			el.addEventListener( 'mousedown', function ( e ) { down( e.clientY ); e.preventDefault(); } );
-			window.addEventListener( 'mousemove', function ( e ) { move( e.clientY ); } );
-			window.addEventListener( 'mouseup', up );
-			el.addEventListener( 'touchstart', function ( e ) { down( e.touches[ 0 ].clientY ); }, { passive: true } );
-			window.addEventListener( 'touchmove', function ( e ) { move( e.touches[ 0 ].clientY ); }, { passive: true } );
-			window.addEventListener( 'touchend', up );
+			attachDrag( el, down, move, up );
 		}
 
 		if ( drive === 'scroll' ) {
