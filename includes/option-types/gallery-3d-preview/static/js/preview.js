@@ -37,6 +37,16 @@
 		card_sphere: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 70, card_size: 20, gap: 2.5, back_fade: 55, tilt: 0, perspective: 55, card_ratio: '16-9', corner_radius: 2, padding: 0 },
 		orbit_globe: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', globe_size: 50, card_size: 28, gap: 2.5, back_fade: 55, tilt: 27, card_ratio: '1-1', corner_radius: 2 },
 		sphere_cascade: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'up', hover_behavior: 'slow', columns: 5, curvature: -100, tilt: 0, gap: 5, edge_fade: 0, card_size: 18, card_ratio: '16-9', corner_radius: 4, padding: 13 },
+		totem_wall: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'up', hover_behavior: 'slow', zoom: 10, curvature: -150, tilt: -45, gap: 0.5, edge_fade: 0, card_ratio: '16-9', corner_radius: 0, padding: 0 },
+		parallax_totem: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'up', hover_behavior: 'slow', zoom: 10, scatter: 0, size_variance: 0, parallax_depth: 0, curvature: -150, gap: 0.5, edge_fade: 0, card_ratio: '16-9', corner_radius: 0, padding: 0 },
+		card_tunnel: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'forward', hover_behavior: 'slow', tunnel_size: 60, card_length: 30, gap: 2, depth_fade: 0, corner_radius: 0 },
+		spiral_stream: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'forward', hover_behavior: 'slow', card_count: 8, spiral_turns: 1, spiral_size: 35, taper: -90, card_gap: 0, ring_tilt: -45, perspective: 0, back_fade: 10, scale_pulse: 0, card_size: 12, card_ratio: '3-4', corner_radius: 0, padding: 0 },
+		depth_stack: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'forward', hover_behavior: 'slow', card_count: 4, depth_gap: 18, spread: 0, spread_angle: -180, wobble: 0, depth_fade: 0, depth_blur: 0, layout: 'fan', card_size: 20, card_ratio: '4-5', corner_radius: 0, padding: 0 },
+		card_reel: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'up', hover_behavior: 'slow', snap: 'no', curve_3d: -100, card_size: 22, gap: 1, card_ratio: '1-1', corner_radius: 0, padding: 0 },
+		film_strip: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'left', hover_behavior: 'slow', snap: 'no', curve_3d: -100, card_size: 22, gap: 1, card_ratio: '1-1', corner_radius: 0, padding: 0 },
+		wheel_carousel: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'cw', hover_behavior: 'slow', wheel_size: 70, card_size: 40, anticipation: 0, overshoot: 0, hold: 0, card_ratio: '1-1', corner_radius: 0, padding: 0 },
+		cover_flow: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'forward', hover_behavior: 'slow', snap: 'yes', orientation: 'horizontal', side_tilt: 40, card_size: 46, gap: 4, card_ratio: '1-1', corner_radius: 0, padding: 0 },
+		carousel_flow: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'forward', hover_behavior: 'slow', snap: 'yes', orientation: 'horizontal', side_scale: 82, card_size: 50, gap: 5, card_ratio: '1-1', corner_radius: 0, padding: 0 },
 		// Flat tabletop scatter + device frame. The preview always runs these in AUTO cycle (there is no
 		// scroll in the modal), so the scatter's sets sweep in/out and the device cycles screens on a
 		// timer — a lively, representative preview of the design regardless of the saved cycle mode.
@@ -179,6 +189,142 @@
 				colsHtml += '<div class="tdg__col">' + cards + '</div>';
 			}
 			return '<div class="tdg tdg--sphere-cascade" style="' + style + '" ' + ac + '><div class="tdg__stage"><div class="tdg__cascade">' + colsHtml + '</div></div></div>';
+		}
+
+		if (design === 'totem_wall') {
+			// A flat row of independent vertical totems — mirror totem-wall.php DOM (9 columns × 14 cards).
+			var twCols = 9, twPer = 14;
+			var at = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'down' ? -1 : 1, // cascade is vertical (up/down), not left/right
+				'data-tdg-alt': o.direction === 'alternate' ? 1 : 0,
+				'data-tdg-curv': o.curvature, 'data-tdg-tilt': o.tilt, 'data-tdg-gap': o.gap,
+				'data-tdg-edge': o.edge_fade, 'data-tdg-zoom': o.zoom, 'data-tdg-count': 12
+			}));
+			var twHtml = '';
+			for (var tc = 0; tc < twCols; tc++) {
+				cards = '';
+				for (i = 0; i < twPer; i++) { cards += cardHtml((i * twCols + tc) % 12, 12); }
+				twHtml += '<div class="tdg__col">' + cards + '</div>';
+			}
+			return '<div class="tdg tdg--totem-wall" style="' + style + '" ' + at + '><div class="tdg__stage"><div class="tdg__cascade">' + twHtml + '</div></div></div>';
+		}
+
+		if (design === 'parallax_totem') {
+			// Depth-scatter sibling of Totem Wall — same 9×14 grid DOM; initParallax adds the depth/scatter.
+			var ptCols = 9, ptPer = 14;
+			var ap = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'down' ? -1 : 1,
+				'data-tdg-curv': o.curvature, 'data-tdg-gap': o.gap, 'data-tdg-edge': o.edge_fade,
+				'data-tdg-zoom': o.zoom, 'data-tdg-scatter': o.scatter, 'data-tdg-sizevar': o.size_variance,
+				'data-tdg-parallax': o.parallax_depth, 'data-tdg-count': 12
+			}));
+			var ptHtml = '';
+			for (var pc = 0; pc < ptCols; pc++) {
+				cards = '';
+				for (i = 0; i < ptPer; i++) { cards += cardHtml((i * ptCols + pc) % 12, 12); }
+				ptHtml += '<div class="tdg__col">' + cards + '</div>';
+			}
+			return '<div class="tdg tdg--parallax-totem" style="' + style + '" ' + ap + '><div class="tdg__stage"><div class="tdg__cascade">' + ptHtml + '</div></div></div>';
+		}
+
+		if (design === 'card_tunnel') {
+			// Four walls of cards receding to a vanishing point — mirror card-tunnel.php DOM (18/wall).
+			var ctPer = 18, ctWalls = ['top', 'bottom', 'left', 'right'];
+			var act = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'backward' ? -1 : 1,
+				'data-tdg-tsize': o.tunnel_size, 'data-tdg-clen': o.card_length, 'data-tdg-gap': o.gap,
+				'data-tdg-dfade': o.depth_fade, 'data-tdg-count': 12
+			}));
+			var ctHtml = '';
+			for (var cw = 0; cw < 4; cw++) {
+				cards = '';
+				for (i = 0; i < ctPer; i++) { cards += cardHtml((i * 4 + cw) % 12, 12); }
+				ctHtml += '<div class="tdg__wall tdg__wall--' + ctWalls[cw] + '">' + cards + '</div>';
+			}
+			return '<div class="tdg tdg--card-tunnel" style="' + style + '" ' + act + '><div class="tdg__stage"><div class="tdg__tunnel">' + ctHtml + '</div></div></div>';
+		}
+
+		if (design === 'spiral_stream') {
+			// Cards threaded on a tapering helix — mirror spiral-stream.php (Card Count cards).
+			var spN = Math.max(3, Math.min(48, o.card_count));
+			var asp = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'backward' ? -1 : 1,
+				'data-tdg-turns': o.spiral_turns, 'data-tdg-size': o.spiral_size, 'data-tdg-taper': o.taper,
+				'data-tdg-card': o.card_size, 'data-tdg-backfade': o.back_fade, 'data-tdg-persp': o.perspective,
+				'data-tdg-tilt': o.ring_tilt, 'data-tdg-gap': o.card_gap, 'data-tdg-pulse': o.scale_pulse,
+				'data-tdg-count': 12
+			}));
+			cards = '';
+			for (i = 0; i < spN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--spiral-stream" style="' + style + '" ' + asp + '><div class="tdg__stage"><div class="tdg__spiral">' + cards + '</div></div></div>';
+		}
+
+		if (design === 'depth_stack') {
+			// Deck receding into depth — mirror depth-stack.php (Card Count cards).
+			var dzN = Math.max(3, Math.min(50, o.card_count));
+			var adz = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'backward' ? -1 : 1,
+				'data-tdg-gap': o.depth_gap, 'data-tdg-card': o.card_size, 'data-tdg-spread': o.spread,
+				'data-tdg-angle': o.spread_angle, 'data-tdg-wobble': o.wobble, 'data-tdg-dfade': o.depth_fade,
+				'data-tdg-dblur': o.depth_blur, 'data-tdg-layout': o.layout, 'data-tdg-count': 12
+			}));
+			cards = '';
+			for (i = 0; i < dzN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--depth-stack" style="' + style + '" ' + adz + '><div class="tdg__stage"><div class="tdg__depth">' + cards + '</div></div></div>';
+		}
+
+		if (design === 'card_reel') {
+			// Vertical cover-flow carousel — mirror card-reel.php (a loop of cards on a cylinder).
+			var crN = 9;
+			var acr = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'down' ? -1 : 1,
+				'data-tdg-curve': o.curve_3d, 'data-tdg-card': o.card_size, 'data-tdg-gap': o.gap,
+				'data-tdg-snap': o.snap, 'data-tdg-count': 12
+			}));
+			cards = '';
+			for (i = 0; i < crN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--card-reel" style="' + style + '" ' + acr + '><div class="tdg__stage"><div class="tdg__reel">' + cards + '</div></div></div>';
+		}
+
+		if (design === 'film_strip') {
+			// Horizontal cover-flow strip — mirror film-strip.php (Card Reel runtime, axis = horizontal).
+			var fsN = 9;
+			var afs = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'right' ? -1 : 1,
+				'data-tdg-curve': o.curve_3d, 'data-tdg-card': o.card_size, 'data-tdg-gap': o.gap,
+				'data-tdg-snap': o.snap, 'data-tdg-axis': 'h', 'data-tdg-count': 12
+			}));
+			cards = '';
+			for (i = 0; i < fsN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--film-strip" style="' + style + '" ' + afs + '><div class="tdg__stage"><div class="tdg__reel">' + cards + '</div></div></div>';
+		}
+
+		if (design === 'wheel_carousel') {
+			// Cards fanned on a Ferris wheel — mirror wheel-carousel.php (a loop of cards on the arc).
+			var wcN = 11;
+			var awc = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'ccw' ? -1 : 1,
+				'data-tdg-card': o.card_size, 'data-tdg-wheel': o.wheel_size, 'data-tdg-antic': o.anticipation,
+				'data-tdg-over': o.overshoot, 'data-tdg-hold': o.hold, 'data-tdg-count': 12
+			}));
+			cards = '';
+			for (i = 0; i < wcN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--wheel-carousel" style="' + style + '" ' + awc + '><div class="tdg__stage"><div class="tdg__wheel">' + cards + '</div></div></div>';
+		}
+
+		if (design === 'cover_flow' || design === 'carousel_flow') {
+			// Center-focus carousels (Cover Flow / Carousel Flow) — mirror the *-flow.php DOM (a loop of cards).
+			var flN = 9, cover = (design === 'cover_flow');
+			var afl = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'backward' ? -1 : 1,
+				'data-tdg-flow': cover ? 'cover' : 'carousel',
+				'data-tdg-axis': o.orientation === 'vertical' ? 'v' : 'h',
+				'data-tdg-card': o.card_size, 'data-tdg-gap': o.gap, 'data-tdg-snap': o.snap,
+				'data-tdg-tilt': o.side_tilt, 'data-tdg-sidescale': o.side_scale, 'data-tdg-count': 12
+			}));
+			cards = '';
+			for (i = 0; i < flN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--' + (cover ? 'cover' : 'carousel') + '-flow" style="' + style + '" ' + afl + '><div class="tdg__stage"><div class="tdg__flow">' + cards + '</div></div></div>';
 		}
 
 		if (design === 'card_stack') {

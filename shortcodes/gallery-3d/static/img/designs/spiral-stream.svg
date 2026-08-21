@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="sp-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+  </defs>
+  <!-- Spiral Stream: cards on a helix, foreshortening to slivers as they rotate through the back. -->
+  <g>
+    <g>
+      <rect x="-7.5" y="-5.5" width="15" height="11" rx="2" fill="url(#sp-f)">
+        <animate attributeName="width" dur="4s" begin="0.00s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="15;2;15;2;15"/>
+        <animate attributeName="x" dur="4s" begin="0.00s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="-7.5;-1;-7.5;-1;-7.5"/>
+        <animate attributeName="opacity" dur="4s" begin="0.00s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="0.95;0.5;0.95;0.5;0.95"/>
+      </rect>
+      <animateTransform attributeName="transform" type="translate" dur="4s" begin="0.00s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="62.0 8.0;48 8.0;34.0 8.0;48 8.0;62.0 8.0"/>
+    </g>
+    <g>
+      <rect x="-7.5" y="-5.5" width="15" height="11" rx="2" fill="url(#sp-f)">
+        <animate attributeName="width" dur="4s" begin="-0.57s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="15;2;15;2;15"/>
+        <animate attributeName="x" dur="4s" begin="-0.57s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="-7.5;-1;-7.5;-1;-7.5"/>
+        <animate attributeName="opacity" dur="4s" begin="-0.57s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="0.95;0.5;0.95;0.5;0.95"/>
+      </rect>
+      <animateTransform attributeName="transform" type="translate" dur="4s" begin="-0.57s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="61.2 16.0;48 16.0;34.8 16.0;48 16.0;61.2 16.0"/>
+    </g>
+    <g>
+      <rect x="-7.5" y="-5.5" width="15" height="11" rx="2" fill="url(#sp-f)">
+        <animate attributeName="width" dur="4s" begin="-1.14s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="15;2;15;2;15"/>
+        <animate attributeName="x" dur="4s" begin="-1.14s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="-7.5;-1;-7.5;-1;-7.5"/>
+        <animate attributeName="opacity" dur="4s" begin="-1.14s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="0.95;0.5;0.95;0.5;0.95"/>
+      </rect>
+      <animateTransform attributeName="transform" type="translate" dur="4s" begin="-1.14s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="60.4 24.0;48 24.0;35.6 24.0;48 24.0;60.4 24.0"/>
+    </g>
+    <g>
+      <rect x="-7.5" y="-5.5" width="15" height="11" rx="2" fill="url(#sp-f)">
+        <animate attributeName="width" dur="4s" begin="-1.71s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="15;2;15;2;15"/>
+        <animate attributeName="x" dur="4s" begin="-1.71s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="-7.5;-1;-7.5;-1;-7.5"/>
+        <animate attributeName="opacity" dur="4s" begin="-1.71s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="0.95;0.5;0.95;0.5;0.95"/>
+      </rect>
+      <animateTransform attributeName="transform" type="translate" dur="4s" begin="-1.71s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="59.5 32.0;48 32.0;36.5 32.0;48 32.0;59.5 32.0"/>
+    </g>
+    <g>
+      <rect x="-7.5" y="-5.5" width="15" height="11" rx="2" fill="url(#sp-f)">
+        <animate attributeName="width" dur="4s" begin="-2.29s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="15;2;15;2;15"/>
+        <animate attributeName="x" dur="4s" begin="-2.29s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="-7.5;-1;-7.5;-1;-7.5"/>
+        <animate attributeName="opacity" dur="4s" begin="-2.29s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="0.95;0.5;0.95;0.5;0.95"/>
+      </rect>
+      <animateTransform attributeName="transform" type="translate" dur="4s" begin="-2.29s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="58.7 40.0;48 40.0;37.3 40.0;48 40.0;58.7 40.0"/>
+    </g>
+    <g>
+      <rect x="-7.5" y="-5.5" width="15" height="11" rx="2" fill="url(#sp-f)">
+        <animate attributeName="width" dur="4s" begin="-2.86s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="15;2;15;2;15"/>
+        <animate attributeName="x" dur="4s" begin="-2.86s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="-7.5;-1;-7.5;-1;-7.5"/>
+        <animate attributeName="opacity" dur="4s" begin="-2.86s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="0.95;0.5;0.95;0.5;0.95"/>
+      </rect>
+      <animateTransform attributeName="transform" type="translate" dur="4s" begin="-2.86s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="57.9 48.0;48 48.0;38.1 48.0;48 48.0;57.9 48.0"/>
+    </g>
+    <g>
+      <rect x="-7.5" y="-5.5" width="15" height="11" rx="2" fill="url(#sp-f)">
+        <animate attributeName="width" dur="4s" begin="-3.43s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="15;2;15;2;15"/>
+        <animate attributeName="x" dur="4s" begin="-3.43s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="-7.5;-1;-7.5;-1;-7.5"/>
+        <animate attributeName="opacity" dur="4s" begin="-3.43s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="0.95;0.5;0.95;0.5;0.95"/>
+      </rect>
+      <animateTransform attributeName="transform" type="translate" dur="4s" begin="-3.43s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" values="57.1 56.0;48 56.0;38.9 56.0;48 56.0;57.1 56.0"/>
+    </g>
+  </g>
+</svg>

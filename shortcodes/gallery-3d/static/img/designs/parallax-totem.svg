@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="pt-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+    <clipPath id="pt-clip"><rect x="0" y="0" width="96" height="64"/></clipPath>
+  </defs>
+  <!-- Parallax Totem: a scattered depth field of cards at varied sizes and opacity (depth); each
+       card drifts vertically at its own rate (near cards faster) for a parallax read. -->
+  <g clip-path="url(#pt-clip)">
+    <g transform="translate(46.6,0)"><g>
+      <rect x="-4.1" y="4.2" width="8.2" height="4.6" rx="1.2" fill="url(#pt-f)" opacity="0.36"/>
+      <rect x="-4.1" y="-5.5" width="8.2" height="4.6" rx="1.2" fill="url(#pt-f)" opacity="0.36"/>
+      <rect x="-4.1" y="14.0" width="8.2" height="4.6" rx="1.2" fill="url(#pt-f)" opacity="0.36"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-2.69s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -9.7"/>
+    </g></g>
+    <g transform="translate(70.4,0)"><g>
+      <rect x="-7.9" y="12.9" width="15.8" height="8.9" rx="2.2" fill="url(#pt-f)" opacity="0.80"/>
+      <rect x="-7.9" y="-1.7" width="15.8" height="8.9" rx="2.2" fill="url(#pt-f)" opacity="0.80"/>
+      <rect x="-7.9" y="27.5" width="15.8" height="8.9" rx="2.2" fill="url(#pt-f)" opacity="0.80"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-0.70s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -14.6"/>
+    </g></g>
+    <g transform="translate(67.1,0)"><g>
+      <rect x="-7.0" y="14.7" width="13.9" height="7.8" rx="1.9" fill="url(#pt-f)" opacity="0.69"/>
+      <rect x="-7.0" y="1.3" width="13.9" height="7.8" rx="1.9" fill="url(#pt-f)" opacity="0.69"/>
+      <rect x="-7.0" y="28.1" width="13.9" height="7.8" rx="1.9" fill="url(#pt-f)" opacity="0.69"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-2.45s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -13.4"/>
+    </g></g>
+    <g transform="translate(50.8,0)"><g>
+      <rect x="-7.8" y="14.4" width="15.6" height="8.8" rx="2.2" fill="url(#pt-f)" opacity="0.78"/>
+      <rect x="-7.8" y="-0.0" width="15.6" height="8.8" rx="2.2" fill="url(#pt-f)" opacity="0.78"/>
+      <rect x="-7.8" y="28.9" width="15.6" height="8.8" rx="2.2" fill="url(#pt-f)" opacity="0.78"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-2.07s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -14.4"/>
+    </g></g>
+    <g transform="translate(76.5,0)"><g>
+      <rect x="-6.6" y="19.2" width="13.2" height="7.4" rx="1.8" fill="url(#pt-f)" opacity="0.65"/>
+      <rect x="-6.6" y="6.3" width="13.2" height="7.4" rx="1.8" fill="url(#pt-f)" opacity="0.65"/>
+      <rect x="-6.6" y="32.2" width="13.2" height="7.4" rx="1.8" fill="url(#pt-f)" opacity="0.65"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-4.08s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -12.9"/>
+    </g></g>
+    <g transform="translate(58.7,0)"><g>
+      <rect x="-8.9" y="29.1" width="17.8" height="10.0" rx="2.5" fill="url(#pt-f)" opacity="0.91"/>
+      <rect x="-8.9" y="13.2" width="17.8" height="10.0" rx="2.5" fill="url(#pt-f)" opacity="0.91"/>
+      <rect x="-8.9" y="44.9" width="17.8" height="10.0" rx="2.5" fill="url(#pt-f)" opacity="0.91"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-5.64s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -15.9"/>
+    </g></g>
+    <g transform="translate(66.5,0)"><g>
+      <rect x="-8.5" y="29.7" width="17.1" height="9.6" rx="2.4" fill="url(#pt-f)" opacity="0.87"/>
+      <rect x="-8.5" y="14.3" width="17.1" height="9.6" rx="2.4" fill="url(#pt-f)" opacity="0.87"/>
+      <rect x="-8.5" y="45.2" width="17.1" height="9.6" rx="2.4" fill="url(#pt-f)" opacity="0.87"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-0.40s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -15.4"/>
+    </g></g>
+    <g transform="translate(55.9,0)"><g>
+      <rect x="-8.0" y="35.2" width="16.0" height="9.0" rx="2.2" fill="url(#pt-f)" opacity="0.81"/>
+      <rect x="-8.0" y="20.4" width="16.0" height="9.0" rx="2.2" fill="url(#pt-f)" opacity="0.81"/>
+      <rect x="-8.0" y="49.9" width="16.0" height="9.0" rx="2.2" fill="url(#pt-f)" opacity="0.81"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-4.43s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -14.8"/>
+    </g></g>
+    <g transform="translate(71.4,0)"><g>
+      <rect x="-8.7" y="41.5" width="17.4" height="9.8" rx="2.4" fill="url(#pt-f)" opacity="0.89"/>
+      <rect x="-8.7" y="25.8" width="17.4" height="9.8" rx="2.4" fill="url(#pt-f)" opacity="0.89"/>
+      <rect x="-8.7" y="57.1" width="17.4" height="9.8" rx="2.4" fill="url(#pt-f)" opacity="0.89"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-4.97s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -15.6"/>
+    </g></g>
+    <g transform="translate(14.4,0)"><g>
+      <rect x="-7.6" y="44.4" width="15.2" height="8.6" rx="2.1" fill="url(#pt-f)" opacity="0.76"/>
+      <rect x="-7.6" y="30.1" width="15.2" height="8.6" rx="2.1" fill="url(#pt-f)" opacity="0.76"/>
+      <rect x="-7.6" y="58.6" width="15.2" height="8.6" rx="2.1" fill="url(#pt-f)" opacity="0.76"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-2.15s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -14.2"/>
+    </g></g>
+    <g transform="translate(76.0,0)"><g>
+      <rect x="-7.1" y="47.3" width="14.1" height="8.0" rx="2.0" fill="url(#pt-f)" opacity="0.70"/>
+      <rect x="-7.1" y="33.8" width="14.1" height="8.0" rx="2.0" fill="url(#pt-f)" opacity="0.70"/>
+      <rect x="-7.1" y="60.9" width="14.1" height="8.0" rx="2.0" fill="url(#pt-f)" opacity="0.70"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-5.40s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -13.5"/>
+    </g></g>
+    <g transform="translate(44.9,0)"><g>
+      <rect x="-4.6" y="58.1" width="9.3" height="5.2" rx="1.3" fill="url(#pt-f)" opacity="0.43"/>
+      <rect x="-4.6" y="47.6" width="9.3" height="5.2" rx="1.3" fill="url(#pt-f)" opacity="0.43"/>
+      <rect x="-4.6" y="68.5" width="9.3" height="5.2" rx="1.3" fill="url(#pt-f)" opacity="0.43"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-3.92s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -10.4"/>
+    </g></g>
+    <g transform="translate(69.8,0)"><g>
+      <rect x="-8.6" y="61.1" width="17.3" height="9.7" rx="2.4" fill="url(#pt-f)" opacity="0.88"/>
+      <rect x="-8.6" y="45.6" width="17.3" height="9.7" rx="2.4" fill="url(#pt-f)" opacity="0.88"/>
+      <rect x="-8.6" y="76.7" width="17.3" height="9.7" rx="2.4" fill="url(#pt-f)" opacity="0.88"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-1.50s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -15.6"/>
+    </g></g>
+    <g transform="translate(24.4,0)"><g>
+      <rect x="-4.2" y="56.7" width="8.3" height="4.7" rx="1.2" fill="url(#pt-f)" opacity="0.37"/>
+      <rect x="-4.2" y="46.9" width="8.3" height="4.7" rx="1.2" fill="url(#pt-f)" opacity="0.37"/>
+      <rect x="-4.2" y="66.6" width="8.3" height="4.7" rx="1.2" fill="url(#pt-f)" opacity="0.37"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-5.28s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -9.8"/>
+    </g></g>
+  </g>
+</svg>

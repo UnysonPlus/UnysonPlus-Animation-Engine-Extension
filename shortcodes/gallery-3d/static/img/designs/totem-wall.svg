@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="tw-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+    <clipPath id="tw-clip"><rect x="0" y="0" width="96" height="64"/></clipPath>
+  </defs>
+  <!-- Totem Wall: a flat row of independent vertical totems (rounded pillars); each column of
+       cards cascades vertically in a seamless loop. Outer totems dimmed (edge fade / depth). -->
+  <g clip-path="url(#tw-clip)">
+    <rect x="7.5" y="4" width="15" height="56" rx="7.5" fill="none" stroke="url(#tw-f)" stroke-width="1" opacity="0.31"/>
+    <clipPath id="tw-c0"><rect x="7.5" y="4" width="15" height="56" rx="7.5"/></clipPath>
+    <g clip-path="url(#tw-c0)"><g transform="translate(15.0,0)">
+      <rect x="-6.5" y="-3.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="7.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="17.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="28.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="38.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="49.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="59.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="70.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="80.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="0.00s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -10.5"/>
+    </g></g>
+    <rect x="30.5" y="4" width="15" height="56" rx="7.5" fill="none" stroke="url(#tw-f)" stroke-width="1" opacity="0.46"/>
+    <clipPath id="tw-c1"><rect x="30.5" y="4" width="15" height="56" rx="7.5"/></clipPath>
+    <g clip-path="url(#tw-c1)"><g transform="translate(38.0,0)">
+      <rect x="-6.5" y="-3.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="7.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="17.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="28.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="38.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="49.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="59.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="70.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="80.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-1.50s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -10.5"/>
+    </g></g>
+    <rect x="53.5" y="4" width="15" height="56" rx="7.5" fill="none" stroke="url(#tw-f)" stroke-width="1" opacity="0.46"/>
+    <clipPath id="tw-c2"><rect x="53.5" y="4" width="15" height="56" rx="7.5"/></clipPath>
+    <g clip-path="url(#tw-c2)"><g transform="translate(61.0,0)">
+      <rect x="-6.5" y="-3.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="7.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="17.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="28.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="38.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="49.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="59.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="70.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <rect x="-6.5" y="80.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.92"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-3.00s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -10.5"/>
+    </g></g>
+    <rect x="76.5" y="4" width="15" height="56" rx="7.5" fill="none" stroke="url(#tw-f)" stroke-width="1" opacity="0.31"/>
+    <clipPath id="tw-c3"><rect x="76.5" y="4" width="15" height="56" rx="7.5"/></clipPath>
+    <g clip-path="url(#tw-c3)"><g transform="translate(84.0,0)">
+      <rect x="-6.5" y="-3.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="7.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="17.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="28.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="38.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="49.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="59.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="70.0" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <rect x="-6.5" y="80.5" width="13" height="6.5" rx="1.5" fill="url(#tw-f)" opacity="0.62"/>
+      <animateTransform attributeName="transform" type="translate" dur="6.0s" begin="-4.50s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 -10.5"/>
+    </g></g>
+  </g>
+</svg>

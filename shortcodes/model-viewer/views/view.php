@@ -23,6 +23,12 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 		$src  = ( is_array( $file ) && ! empty( $file['url'] ) ) ? $file['url'] : (string) sc_get( 'model_url', $atts, '' );
 		$src  = trim( (string) $src );
 		if ( $src === '' ) {
+			// Editor-only note. A dynamic block that returns an empty string shows
+			// "Block rendered as empty", which is what a broken block looks like —
+			// so say which of the two it is. Visitors still get nothing.
+			if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+				return sc_editor_notice( __( 'Choose a 3D model file, or paste a model URL (.glb / .gltf).', 'fw' ) );
+			}
 			return '';
 		}
 

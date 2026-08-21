@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="cr-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+  </defs>
+  <!-- Card Reel: a vertical cover-flow carousel — centre card flat/forward, neighbours curve back. -->
+  <clipPath id="cr-clip"><rect x="0" y="0" width="96" height="64"/></clipPath>
+  <g clip-path="url(#cr-clip)"><g>
+    <g>
+      <rect x="-15.0" y="-11" width="30" height="22" rx="3" fill="url(#cr-f)" transform="translate(48 -13)">
+        <animateTransform attributeName="transform" type="translate" dur="4s" begin="0s" repeatCount="indefinite" additive="sum" keyTimes="0;1" values="0 0;0 -30"/>
+      </rect>
+    </g>
+    <g>
+      <rect x="-15.0" y="-11" width="30" height="22" rx="3" fill="url(#cr-f)" transform="translate(48 17)">
+        <animateTransform attributeName="transform" type="translate" dur="4s" begin="0s" repeatCount="indefinite" additive="sum" keyTimes="0;1" values="0 0;0 -30"/>
+      </rect>
+    </g>
+    <g>
+      <rect x="-15.0" y="-11" width="30" height="22" rx="3" fill="url(#cr-f)" transform="translate(48 47)">
+        <animateTransform attributeName="transform" type="translate" dur="4s" begin="0s" repeatCount="indefinite" additive="sum" keyTimes="0;1" values="0 0;0 -30"/>
+      </rect>
+    </g>
+    <g>
+      <rect x="-15.0" y="-11" width="30" height="22" rx="3" fill="url(#cr-f)" transform="translate(48 77)">
+        <animateTransform attributeName="transform" type="translate" dur="4s" begin="0s" repeatCount="indefinite" additive="sum" keyTimes="0;1" values="0 0;0 -30"/>
+      </rect>
+    </g>
+  <animateTransform attributeName="transform" type="translate" dur="4s" begin="0s" repeatCount="indefinite" keyTimes="0;1" values="0 0;0 0"/></g></g>
+  <rect x="0" y="0" width="96" height="64" fill="url(#cr-fade)" opacity="0"/>
+</svg>

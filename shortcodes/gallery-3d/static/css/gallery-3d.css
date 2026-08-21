@@ -246,6 +246,44 @@
 	transform-style: preserve-3d;
 }
 .tdg--sphere-cascade .tdg__card { backface-visibility: hidden; }
+/* Totem Wall — reuses the cascade DOM (.tdg__cascade > .tdg__col > .tdg__card); each column is an
+   independent vertical cylinder, so hide the card backs as they wrap around behind the totem. */
+.tdg--totem-wall .tdg__card { backface-visibility: hidden; }
+/* Parallax Totem — same cascade DOM; cards float at seeded depths, so keep their backs hidden too. */
+.tdg--parallax-totem .tdg__card { backface-visibility: hidden; }
+
+/* Card Tunnel — four walls of cards receding to a vanishing point. The tunnel is centred at the stage
+   origin; JS sizes each card to its wall (so drop the ratio-driven aspect) and sets its 3D transform. */
+.tdg__tunnel { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
+.tdg__wall { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
+.tdg--card-tunnel .tdg__card { aspect-ratio: auto; backface-visibility: hidden; }
+
+/* Spiral Stream — cards threaded on a tapering helix, each rotating around its vertical axis. Backs
+   stay VISIBLE so a card turned away shows its mirrored face (part of the stream's character). */
+.tdg__spiral { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
+.tdg--spiral-stream .tdg__card { backface-visibility: visible; }
+
+/* Depth Stack — a deck receding into depth, billboarded (facing the camera) with a depth-of-field
+   blur/fade toward the back. JS sets each card's translate3d + wobble + filter. */
+.tdg__depth { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
+.tdg--depth-stack .tdg__card { will-change: transform, opacity, filter; }
+
+/* Card Reel — a vertical cover-flow carousel: a single column of cards wrapped on a horizontal
+   cylinder, the centre card flat and forward. JS sets each card's translate + rotateX. */
+.tdg__reel { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
+.tdg--card-reel .tdg__card,
+.tdg--film-strip .tdg__card { backface-visibility: hidden; }
+
+/* Wheel Carousel — cards fanned on a flat 2D wheel (hub below the frame); JS sets each card's
+   translate + in-plane rotate + scale as the wheel steps around. */
+.tdg__wheel { position: absolute; left: 50%; top: 50%; }
+.tdg--wheel-carousel .tdg__card { transform-origin: 50% 50%; }
+
+/* Cover Flow + Carousel Flow — center-focus carousels sliding horizontally or vertically. JS sets each
+   card's translate + (Cover Flow) tilt / (Carousel Flow) scale + opacity. */
+.tdg__flow { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
+.tdg--cover-flow .tdg__card,
+.tdg--carousel-flow .tdg__card { backface-visibility: hidden; }
 
 /* =====================================================================================
    Card Stack — a deck of image cards; the top is featured, the rest peek behind it, and the

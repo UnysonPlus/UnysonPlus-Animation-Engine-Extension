@@ -96,7 +96,7 @@ if ( $src_kind === 'posts' ) {
 }
 
 /* ---- chosen design + per-design option reader ---- */
-$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'photo_scatter', 'card_stack', 'device_cycler' );
+$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'photo_scatter', 'card_stack', 'device_cycler' );
 $design  = (string) $sc_get( 'design_settings/design', 'carousel_ring' );
 if ( ! in_array( $design, $designs, true ) ) { $design = 'carousel_ring'; }
 $dp = function ( $sub, $default = '' ) use ( $sc_get, $design ) { return $sc_get( 'design_settings/' . $design . '/' . $sub, $default ); };

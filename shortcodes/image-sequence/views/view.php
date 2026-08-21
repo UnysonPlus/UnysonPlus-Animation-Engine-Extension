@@ -62,7 +62,7 @@ $height = max( 160, (int) sc_get( 'height', $atts, 520 ) );
 $bg     = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( sc_get( 'bg', $atts, '' ), '#0b0f1a' ) : '#0b0f1a';
 
 if ( empty( $frames ) ) {
-	if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+	if ( fw_is_editor_context() ) {
 		echo '<div class="sc-seq__empty" style="padding:2rem;text-align:center;color:#888;border:1px dashed #ccd;border-radius:8px;">'
 			. esc_html__( 'Image Sequence — add frames (upload or a URL pattern) to preview.', 'fw' ) . '</div>';
 	}

@@ -43,38 +43,47 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 				'title'   => __( 'Smooth Scroll', 'fw' ),
 				'type'    => 'box',
 				'options' => array(
-					'animation_smoothscroll' => array(
-						'type'          => 'multi',
-						'label'         => false,
-						'inner-options' => array(
-							'enable' => array(
-								'label'        => __( 'Smooth (inertia) scrolling', 'fw' ),
-								'desc'         => __( 'Add momentum wheel/trackpad smoothing across the whole page. This is separate from the theme\'s anchor-link "Smooth Scroll" (which only eases jumps to #anchors). Front end only, and automatically disabled for visitors who prefer reduced motion.', 'fw' ),
+					// Grouped (show_borders => false) so the rows read as one panel with no
+					// divider between each option. Visual only — the group flattens on save,
+					// so every leaf key stays top-level (no migration).
+					'smooth_scroll_group' => array(
+						'type'         => 'group',
+						'show_borders' => false,
+						'options'      => array(
+							'animation_smoothscroll' => array(
+								'type'          => 'multi',
+								'label'         => false,
+								'inner-options' => array(
+									'enable' => array(
+										'label'        => __( 'Smooth (inertia) scrolling', 'fw' ),
+										'desc'         => __( 'Add momentum wheel/trackpad smoothing across the whole page. This is separate from the theme\'s anchor-link "Smooth Scroll" (which only eases jumps to #anchors). Front end only, and automatically disabled for visitors who prefer reduced motion.', 'fw' ),
+										'type'         => 'switch',
+										'value'        => 'no',
+										'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+										'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+									),
+								),
+							),
+							'ss_smoothness' => $slider(
+								__( 'Smoothness', 'fw' ),
+								__( 'How floaty the scroll feels. Lower is snappier (closer to native); higher glides longer.', 'fw' ),
+								50, 0, 100, 1
+							),
+							'ss_speed' => $slider(
+								__( 'Scroll speed (%)', 'fw' ),
+								__( 'How far one wheel notch travels, relative to normal.', 'fw' ),
+								100, 50, 200, 5
+							),
+							'ss_touch' => array(
 								'type'         => 'switch',
+								'label'        => __( 'Enable on touch devices', 'fw' ),
+								'desc'         => __( 'Off by default — smoothing touch scrolling can feel wrong. Phones/tablets keep native scrolling unless you turn this on.', 'fw' ),
 								'value'        => 'no',
 								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
 								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
 							),
-						),
-					),
-					'ss_smoothness' => $slider(
-						__( 'Smoothness', 'fw' ),
-						__( 'How floaty the scroll feels. Lower is snappier (closer to native); higher glides longer.', 'fw' ),
-						50, 0, 100, 1
-					),
-					'ss_speed' => $slider(
-						__( 'Scroll speed (%)', 'fw' ),
-						__( 'How far one wheel notch travels, relative to normal.', 'fw' ),
-						100, 50, 200, 5
-					),
-					'ss_touch' => array(
-						'type'         => 'switch',
-						'label'        => __( 'Enable on touch devices', 'fw' ),
-						'desc'         => __( 'Off by default — smoothing touch scrolling can feel wrong. Phones/tablets keep native scrolling unless you turn this on.', 'fw' ),
-						'value'        => 'no',
-						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
-						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
-					),
+						), // close group 'options'
+					), // close smooth_scroll_group
 				),
 			),
 		),
