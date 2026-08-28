@@ -5,8 +5,8 @@
   </style>
   <defs><clipPath id="blinds-c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
   <g clip-path="url(#blinds-c)">
-    <rect x="40" y="10" width="52" height="44" fill="#7ea9e8"/><circle cx="78" cy="24" r="6" fill="#fbbf24"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#2f74e6"/>
-    <g class="blinds-s" shape-rendering="crispEdges" fill="#bcd3f7">
+    <rect x="40" y="10" width="52" height="44" fill="#7b90ff"/><circle cx="78" cy="24" r="6" fill="#fbbf24"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#3858e9"/>
+    <g class="blinds-s" shape-rendering="crispEdges" fill="#7b90ff">
       <rect x="40" y="10" width="52" height="8"/><rect x="40" y="21" width="52" height="8"/><rect x="40" y="32" width="52" height="8"/><rect x="40" y="43" width="52" height="8"/>
     </g>
   </g>

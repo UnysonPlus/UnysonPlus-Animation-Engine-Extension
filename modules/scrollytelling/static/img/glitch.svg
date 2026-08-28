@@ -9,10 +9,10 @@
   </style>
   <defs><clipPath id="gl-c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
   <g clip-path="url(#gl-c)" shape-rendering="crispEdges">
-    <rect x="40" y="10" width="52" height="44" fill="#2f74e6"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#bcd3f7"/>
+    <rect x="40" y="10" width="52" height="44" fill="#3858e9"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#7b90ff"/>
     <rect class="gl-r" x="40" y="18" width="52" height="10" fill="#ff3b60" opacity="0"/>
-    <rect class="gl-b" x="40" y="34" width="52" height="9" fill="#2f74e6" opacity="0"/>
-    <rect class="gl-s" x="40" y="26" width="52" height="8" fill="#7ea9e8"/>
+    <rect class="gl-b" x="40" y="34" width="52" height="9" fill="#3858e9" opacity="0"/>
+    <rect class="gl-s" x="40" y="26" width="52" height="8" fill="#7b90ff"/>
   </g>
   
 </svg>

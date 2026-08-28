@@ -7,9 +7,9 @@
   </style>
   <defs><clipPath id="barn-c"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
   <g clip-path="url(#barn-c)">
-    <rect x="40" y="10" width="52" height="44" fill="#7ea9e8"/><circle cx="66" cy="28" r="7" fill="#fbbf24"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#2f74e6"/>
-    <g class="barn-l"><rect x="40" y="10" width="26" height="44" fill="#bcd3f7"/><path d="M40 54 L54 36 L66 46 L66 54 Z" fill="#5b8fe0"/></g>
-    <g class="barn-r"><rect x="66" y="10" width="26" height="44" fill="#5b8fe0"/><circle cx="80" cy="24" r="5" fill="#fbbf24"/></g>
+    <rect x="40" y="10" width="52" height="44" fill="#7b90ff"/><circle cx="66" cy="28" r="7" fill="#fbbf24"/><path d="M40 54 L52 40 L66 50 L82 34 L92 54 Z" fill="#3858e9"/>
+    <g class="barn-l"><rect x="40" y="10" width="26" height="44" fill="#7b90ff"/><path d="M40 54 L54 36 L66 46 L66 54 Z" fill="#3858e9"/></g>
+    <g class="barn-r"><rect x="66" y="10" width="26" height="44" fill="#3858e9"/><circle cx="80" cy="24" r="5" fill="#fbbf24"/></g>
   </g>
   
 </svg>

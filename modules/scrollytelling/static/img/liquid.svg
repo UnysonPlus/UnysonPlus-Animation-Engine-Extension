@@ -7,10 +7,10 @@
   </style>
   <defs><clipPath id="lq"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
   <g clip-path="url(#lq)">
-    <rect class="lqa" x="40" y="10" width="52" height="44" fill="#7ea9e8"/>
+    <rect class="lqa" x="40" y="10" width="52" height="44" fill="#7b90ff"/>
     <circle cx="56" cy="22" r="5" fill="#fbbf24"/>
-    <path class="lqw" d="M40 54 L40 30 Q53 22 66 30 T92 30 L92 54 Z" fill="#2f74e6"/>
-    <path class="lqw" d="M40 54 L40 38 Q53 30 66 38 T92 38 L92 54 Z" fill="#5b8fe0" opacity=".8"/>
+    <path class="lqw" d="M40 54 L40 30 Q53 22 66 30 T92 30 L92 54 Z" fill="#3858e9"/>
+    <path class="lqw" d="M40 54 L40 38 Q53 30 66 38 T92 38 L92 54 Z" fill="#3858e9" opacity=".8"/>
   </g>
   
 </svg>

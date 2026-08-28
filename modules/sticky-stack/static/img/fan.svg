@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Fan Deck">
   <g transform="translate(66 58)">
-    <rect x="-16" y="-46" width="32" height="44" rx="4" fill="#bcd3f7" transform="rotate(-20)"/>
-    <rect x="-16" y="-46" width="32" height="44" rx="4" fill="#7aa9ee"/>
-    <rect x="-16" y="-46" width="32" height="44" rx="4" fill="#2f74e6" transform="rotate(20)"/>
+    <rect x="-16" y="-46" width="32" height="44" rx="4" fill="#7b90ff" transform="rotate(-20)"/>
+    <rect x="-16" y="-46" width="32" height="44" rx="4" fill="#7b90ff"/>
+    <rect x="-16" y="-46" width="32" height="44" rx="4" fill="#3858e9" transform="rotate(20)"/>
   </g>
   
 </svg>

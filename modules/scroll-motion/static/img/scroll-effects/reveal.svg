@@ -4,6 +4,6 @@
     @keyframes rv{0%{transform:translateY(16px);opacity:0}30%,70%{transform:translateY(0);opacity:1}100%{transform:translateY(16px);opacity:0}}
   </style>
   <path d="M66 8 v12 M60 14 l6 -6 6 6" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect class="rv" x="44" y="26" width="44" height="28" rx="5" fill="#2f74e6"/>
+  <rect class="rv" x="44" y="26" width="44" height="28" rx="5" fill="#3858e9"/>
   </g>
 </svg>

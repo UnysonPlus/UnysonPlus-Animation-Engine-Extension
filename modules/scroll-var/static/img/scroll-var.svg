@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Scroll to CSS Variable">
   <!-- scroll progress track (filled portion = current progress) -->
   <rect x="34" y="16" width="10" height="46" rx="5" fill="#e3eaf5"/>
-  <rect x="34" y="16" width="10" height="24" rx="5" fill="#2f74e6"/>
+  <rect x="34" y="16" width="10" height="24" rx="5" fill="#3858e9"/>
   <!-- maps-to arrow -->
   <path d="M56 39 h14 M64 33 l8 6 l-8 6" fill="none" stroke="#c3ccd8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <!-- the CSS custom property name, then a value bar -->
-  <rect x="84" y="30" width="14" height="5" rx="2.5" fill="#2f74e6"/>
-  <rect x="102" y="30" width="14" height="5" rx="2.5" fill="#2f74e6"/>
+  <rect x="84" y="30" width="14" height="5" rx="2.5" fill="#3858e9"/>
+  <rect x="102" y="30" width="14" height="5" rx="2.5" fill="#3858e9"/>
   <rect x="84" y="44" width="32" height="5" rx="2.5" fill="#bcd3f7"/>
 </svg>

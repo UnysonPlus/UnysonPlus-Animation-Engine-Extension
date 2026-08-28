@@ -7,9 +7,9 @@
   </style>
   <defs><clipPath id="pl"><rect x="40" y="10" width="52" height="44" rx="5"/></clipPath></defs>
   <g clip-path="url(#pl)">
-    <rect x="40" y="10" width="52" height="44" fill="#dbeafe"/>
-    <g class="plb"><path d="M32 54 L54 30 L76 54 Z" fill="#7ea9e8"/><path d="M60 54 L84 32 L100 54 Z" fill="#bcd3f7"/></g>
-    <g class="plf"><circle cx="66" cy="46" r="9" fill="#2f74e6"/></g>
+    <rect x="40" y="10" width="52" height="44" fill="#dbe1fe"/>
+    <g class="plb"><path d="M32 54 L54 30 L76 54 Z" fill="#7b90ff"/><path d="M60 54 L84 32 L100 54 Z" fill="#7b90ff"/></g>
+    <g class="plf"><circle cx="66" cy="46" r="9" fill="#3858e9"/></g>
   </g>
   
 </svg>

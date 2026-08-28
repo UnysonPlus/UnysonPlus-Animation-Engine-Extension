@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="strike">
   
-  <style>.w{fill:#2f74e6}.s{fill:#8a96a6;transform-box:fill-box;transform-origin:100% 50%;animation:ts 3.2s ease-in-out infinite}@keyframes ts{0%,12%{transform:scaleX(1)}30%,68%{transform:scaleX(0)}88%,100%{transform:scaleX(1)}}</style>
+  <style>.w{fill:#3858e9}.s{fill:#9b9b9b;transform-box:fill-box;transform-origin:100% 50%;animation:ts 3.2s ease-in-out infinite}@keyframes ts{0%,12%{transform:scaleX(1)}30%,68%{transform:scaleX(0)}88%,100%{transform:scaleX(1)}}</style>
   <g>
     <rect class="w" x="30" y="22" width="18" height="9" rx="3" style="animation-delay:0.00s" />
     <rect class="w" x="52" y="22" width="26" height="9" rx="3" style="animation-delay:0.16s" />

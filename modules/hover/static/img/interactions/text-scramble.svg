@@ -5,7 +5,7 @@
     .tx{animation:txf 2.2s ease-in-out infinite}
     @keyframes txf{0%,32%{opacity:0}48%,100%{opacity:1}}
   </style>
-  <text class="gl" x="66" y="44" text-anchor="middle" font-family="Consolas,Menlo,monospace" font-size="21" font-weight="700" fill="#94a3b8">#%&amp;@</text>
-  <text class="tx" x="66" y="44" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="22" font-weight="700" fill="#2f74e6">Text</text>
+  <text class="gl" x="66" y="44" text-anchor="middle" font-family="Consolas,Menlo,monospace" font-size="21" font-weight="700" fill="#9b9b9b">#%&amp;@</text>
+  <text class="tx" x="66" y="44" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="22" font-weight="700" fill="#3858e9">Text</text>
   </g>
 </svg>

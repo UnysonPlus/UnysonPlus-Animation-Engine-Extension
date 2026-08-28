@@ -4,13 +4,13 @@
     @keyframes spm{0%,100%{transform:translateX(-15px)}50%{transform:translateX(15px)}}
   </style>
   <defs>
-    <radialGradient id="hg"><stop offset="0" stop-color="#6aa6ff" stop-opacity=".95"/><stop offset="1" stop-color="#6aa6ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="hg"><stop offset="0" stop-color="#7b90ff" stop-opacity=".95"/><stop offset="1" stop-color="#7b90ff" stop-opacity="0"/></radialGradient>
     <clipPath id="hcard"><rect x="34" y="18" width="64" height="36" rx="6"/></clipPath>
   </defs>
   <rect x="34" y="18" width="64" height="36" rx="6" fill="#1e293b"/>
   <g clip-path="url(#hcard)">
     <circle class="sp" cx="66" cy="36" r="17" fill="url(#hg)"/>
   </g>
-  <g class="sp" transform="translate(60,30)"><path d="M0 0 L0 14 L3.5 10.5 L6 16 L8 15 L5.5 9.5 L10 9.5 Z" fill="#e2e8f0"/></g>
+  <g class="sp" transform="translate(60,30)"><path d="M0 0 L0 14 L3.5 10.5 L6 16 L8 15 L5.5 9.5 L10 9.5 Z" fill="#ececec"/></g>
   </g>
 </svg>

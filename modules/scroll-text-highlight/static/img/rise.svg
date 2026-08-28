@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="rise">
   
   <style>.w{transform-box:fill-box;transform-origin:50% 50%}
-.w{fill:#2f74e6;animation:tw 3.2s ease-in-out infinite}@keyframes tw{0%,12%{opacity:0;transform:translateY(6px)}30%,68%{opacity:1;transform:none}88%,100%{opacity:0;transform:translateY(6px)}}</style>
+.w{fill:#3858e9;animation:tw 3.2s ease-in-out infinite}@keyframes tw{0%,12%{opacity:0;transform:translateY(6px)}30%,68%{opacity:1;transform:none}88%,100%{opacity:0;transform:translateY(6px)}}</style>
   <g>
     <rect class="w" x="30" y="22" width="18" height="9" rx="3" style="animation-delay:0.00s" />
     <rect class="w" x="52" y="22" width="26" height="9" rx="3" style="animation-delay:0.16s" />
