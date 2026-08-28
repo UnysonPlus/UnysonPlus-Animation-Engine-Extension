@@ -23,6 +23,7 @@ if ( ! function_exists( 'upw_scrollprog_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_sp_color' ) ) :
+	/** Returns a compact color option field for the scroll-progress bar, defaulting to the given hex. */
 	function upw_sp_color( $default_hex, $label = null ) {
 		$label = $label ?: __( 'Color', 'fw' );
 		if ( function_exists( 'sc_color_field_compact' ) ) {

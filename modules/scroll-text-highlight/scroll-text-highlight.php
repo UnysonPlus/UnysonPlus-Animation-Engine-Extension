@@ -28,6 +28,7 @@ if ( ! function_exists( 'upw_scroll_text_highlight_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_sth_styles' ) ) :
+	/** Returns the map of scroll-text-highlight style keys to their translated labels. */
 	function upw_sth_styles() {
 		return array(
 			'fill'       => __( 'Fill (colour)', 'fw' ),

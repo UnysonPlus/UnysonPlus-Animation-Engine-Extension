@@ -14,6 +14,7 @@
  */
 
 if ( ! function_exists( 'sc_get' ) ) {
+	/** Returns a value from the shortcode atts array by path via fw_akg, falling back to a default. */
 	function sc_get( $path, $atts, $default = '' ) {
 		if ( function_exists( 'fw_akg' ) ) {
 			$v = fw_akg( $path, $atts, null );
@@ -96,7 +97,7 @@ if ( $src_kind === 'posts' ) {
 }
 
 /* ---- chosen design + per-design option reader ---- */
-$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'photo_scatter', 'card_stack', 'device_cycler' );
+$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'hero_reel', 'mosaic_marquee', 'photo_scatter', 'card_stack', 'device_cycler' );
 $design  = (string) $sc_get( 'design_settings/design', 'carousel_ring' );
 if ( ! in_array( $design, $designs, true ) ) { $design = 'carousel_ring'; }
 $dp = function ( $sub, $default = '' ) use ( $sc_get, $design ) { return $sc_get( 'design_settings/' . $design . '/' . $sub, $default ); };
@@ -145,6 +146,19 @@ $cap_source = (string) $sc_get( 'caption_source', 'caption' );
 $click_raw = (string) $sc_get( 'click/action', (string) $sc_get( 'click_action', 'none' ) );
 $click     = in_array( $click_raw, array( 'lightbox', 'link' ), true ) ? $click_raw : 'none';
 $lb_group   = function_exists( 'wp_unique_id' ) ? wp_unique_id( 'tdg-lb-' ) : uniqid( 'tdg-lb-' );
+
+/* Lightbox click needs the SHARED Gallery lightbox runtime (a delegated click handler) + its overlay
+ * styles. The 3D gallery lives in the Animation Engine, so it isn't guaranteed a Gallery shortcode is
+ * also on the page — enqueue the same handles (deduped if the Gallery shortcode already did) only when
+ * a card actually opens the lightbox. Without this the data-fw-lightbox links do nothing. */
+if ( $click === 'lightbox' && function_exists( 'fw_ext' ) ) {
+	$sc_ext_lb = fw_ext( 'shortcodes' );
+	if ( $sc_ext_lb ) {
+		$lb_ver = $sc_ext_lb->manifest->get_version();
+		wp_enqueue_style( 'fw-shortcode-gallery', $sc_ext_lb->get_declared_URI( '/shortcodes/gallery/static/css/styles.css' ), array(), $lb_ver );
+		wp_enqueue_script( 'fw-shortcode-gallery', $sc_ext_lb->get_declared_URI( '/shortcodes/gallery/static/js/lightbox.js' ), array(), $lb_ver, true );
+	}
+}
 $cap_text   = function ( $item ) use ( $cap_source ) {
 	$key = in_array( $cap_source, array( 'title', 'alt', 'description', 'caption' ), true ) ? $cap_source : 'caption';
 	return isset( $item[ $key ] ) ? trim( (string) $item[ $key ] ) : '';
@@ -212,6 +226,33 @@ $atts['base_class']       = 'tdg';
 $atts['unique_id_prefix'] = 'tdg-';
 $attr = function_exists( 'sc_build_wrapper_attr' ) ? sc_build_wrapper_attr( $atts ) : array( 'class' => 'tdg' );
 $attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' tdg--' . str_replace( '_', '-', $design ) );
+
+/* Per-item entrance + hover for the FLAT bento design (Mosaic Marquee): its cards are independent
+ * grid tiles, so the entrance can cascade across them and hover can land on each card. The true-3D
+ * designs re-write every card's transform each frame, so per-item motion there would fight the
+ * design — they stay whole-element. */
+$tdg_flat       = ( 'mosaic_marquee' === $design );
+$tdg_hover_item = array();
+if ( $tdg_flat && ! empty( $attr['data-sc-anim'] ) && ( ! isset( $attr['data-sc-anim-seq'] ) || $attr['data-sc-anim-seq'] !== 'no' ) ) {
+	// Cascade the entrance across .tdg__card. The cards are built by JS after load, so DEFER the
+	// wrapper bind — gallery-3d.js calls upwScAnimBind() once the grid exists (no children yet at scan).
+	$attr['data-sc-anim-children'] = '.tdg__card';
+	$attr['data-sc-anim-defer']    = '1';
+}
+if ( $tdg_flat && function_exists( 'upw_hover_scope' ) && upw_hover_scope( $atts ) === 'each'
+	&& function_exists( 'upw_hover_collection_item_attr' ) ) {
+	$tdg_hover_item = upw_hover_collection_item_attr( $atts );
+	if ( ! empty( $tdg_hover_item ) ) {
+		// Move the hover OFF the wrapper and ONTO each card (each tile reacts on its own): strip the
+		// wrapper's hover attrs + sc-hover classes; mosaic-marquee.php stamps the item attrs per card.
+		foreach ( array_keys( $attr ) as $k ) {
+			if ( is_string( $k ) && strpos( $k, 'data-hover' ) === 0 ) { unset( $attr[ $k ] ); }
+		}
+		if ( isset( $attr['class'] ) ) {
+			$attr['class'] = trim( preg_replace( '/\s+/', ' ', preg_replace( '/\bsc-hover\S*/', '', (string) $attr['class'] ) ) );
+		}
+	}
+}
 /* "Use as Section Background" — fill the parent Section behind its content (shared runtime). In
  * that mode sc-bg-fill governs the size, so the fixed Stage Height is dropped. */
 $as_bg = function_exists( 'sc_section_background_is_on' ) && sc_section_background_is_on( $sc_get( 'as_background', 'no' ) );

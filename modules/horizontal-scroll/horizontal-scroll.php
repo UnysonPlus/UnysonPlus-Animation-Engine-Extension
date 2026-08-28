@@ -18,6 +18,7 @@
  */
 
 if ( ! function_exists( 'upw_hscroll_enabled' ) ) :
+	/** Returns whether the Horizontal Scroll module is enabled in Theme Settings (defaults to enabled). */
 	function upw_hscroll_enabled() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
 			return true;
@@ -36,6 +37,7 @@ if ( ! function_exists( 'upw_hscroll_styles' ) ) :
 endif;
 
 if ( ! function_exists( 'sc_get_hscroll_fields' ) ) :
+	/** Builds the horizontal-scroll module option fields, including per-style preview tiles and shared controls. */
 	function sc_get_hscroll_fields() {
 		$ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
 		$base = $ext ? $ext->get_declared_URI( '/modules/horizontal-scroll/static/img' ) : '';

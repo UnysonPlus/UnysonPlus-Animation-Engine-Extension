@@ -4,6 +4,7 @@
 
 // Colour field helper — the shortcodes Styling-tab preset selector when available.
 if ( ! function_exists( 'sc_svg_draw_color' ) ) {
+	/** Returns a color option field (compact styling-tab picker or a plain color-picker fallback) for the SVG Draw options. */
 	function sc_svg_draw_color( $label, $kind, $default_hex, $desc = '' ) {
 		if ( function_exists( 'sc_color_field_compact' ) ) {
 			return sc_color_field_compact( array( 'label' => $label, 'kind' => $kind, 'value' => array( 'predefined' => '', 'custom' => $default_hex ), 'desc' => $desc ) );

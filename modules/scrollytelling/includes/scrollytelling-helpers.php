@@ -71,6 +71,7 @@ if ( ! function_exists( 'upw_scrollytelling_directional' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_scrollytelling_style_keys' ) ) :
+	/** Returns the keys of the available scrollytelling styles. */
 	function upw_scrollytelling_style_keys() {
 		return array_keys( upw_scrollytelling_styles() );
 	}

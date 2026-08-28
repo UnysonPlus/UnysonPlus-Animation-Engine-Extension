@@ -17,6 +17,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_model_viewer_render' ) ) {
+	/** Renders the model-viewer shortcode, resolving the 3D model source from a media pick or pasted URL. */
 	function sc_model_viewer_render( $atts ) {
 		// --- Source: media pick wins over a pasted URL; nothing renders without one. ---
 		$file = sc_get( 'model_file', $atts, array() );

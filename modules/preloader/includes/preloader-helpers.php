@@ -101,6 +101,7 @@ if ( ! function_exists( 'upw_preloader_settings' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_preloader_enabled' ) ) :
+	/** Returns whether the site preloader is enabled in its settings. */
 	function upw_preloader_enabled() {
 		$s = upw_preloader_settings();
 		return ! empty( $s['enabled'] );

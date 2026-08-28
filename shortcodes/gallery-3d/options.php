@@ -135,7 +135,7 @@ $design_groups = array(
 	 * can never render an empty gallery — the preview and the view both fall back to carousel_ring.
 	 * Their reveal (below) is a "coming soon" note instead of controls. Tile art: static/img/designs/
 	 * soon-*.svg (a muted family glyph + a SOON ribbon). */
-	'grp_carousel'  => array( 'label' => __( 'Carousel & Flow', 'fw' ),   'designs' => array( 'card_reel' => __( 'Card Reel', 'fw' ), 'film_strip' => __( 'Film Strip', 'fw' ), 'wheel_carousel' => __( 'Wheel Carousel', 'fw' ), 'cover_flow' => __( 'Cover Flow', 'fw' ), 'carousel_flow' => __( 'Carousel Flow', 'fw' ) ) ),
+	'grp_carousel'  => array( 'label' => __( 'Carousel & Flow', 'fw' ),   'designs' => array( 'card_reel' => __( 'Card Reel', 'fw' ), 'film_strip' => __( 'Film Strip', 'fw' ), 'wheel_carousel' => __( 'Wheel Carousel', 'fw' ), 'cover_flow' => __( 'Cover Flow', 'fw' ), 'carousel_flow' => __( 'Carousel Flow', 'fw' ), 'hero_reel' => __( 'Hero Reel', 'fw' ), 'mosaic_marquee' => __( 'Mosaic Marquee', 'fw' ) ) ),
 	'grp_grid'      => array( 'label' => __( 'Grid', 'fw' ),              'designs' => array( 'soon_grid' => __( 'Grid', 'fw' ) ),                     'soon' => true ),
 	'grp_iso'       => array( 'label' => __( 'Isometric', 'fw' ),         'designs' => array( 'soon_isometric' => __( 'Isometric', 'fw' ) ),           'soon' => true ),
 	'grp_orbit'     => array( 'label' => __( 'Orbit', 'fw' ),             'designs' => array( 'soon_orbit' => __( 'Orbit', 'fw' ) ),                   'soon' => true ),
@@ -419,7 +419,7 @@ $device_cycler_opts = array(
 	) ),
 	'group_dc_screen' => array( 'type' => 'group', 'options' => array(
 		'card_ratio'    => array( 'label' => __( 'Screen Ratio', 'fw' ), 'type' => 'select', 'value' => '16-9', 'choices' => $ratio_choices ),
-		'card_size'     => $slider( __( 'Device Size (%)', 'fw' ), 62, 30, 100, 1, __( 'Device width as a % of the stage width.', 'fw' ) ),
+		'card_size'     => $slider( __( 'Device Size (%)', 'fw' ), 62, 8, 100, 1, __( 'Device width as a % of the stage width. Small values make a compact device (e.g. a phone tucked in a corner).', 'fw' ) ),
 		'corner_radius' => $slider( __( 'Screen Corner (px)', 'fw' ), 4, 0, 40, 1 ),
 	) ),
 	'group_dc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
@@ -705,6 +705,56 @@ $carousel_flow_opts = array(
 	'group_caf_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
 );
 
+/* Hero Reel — a horizontal reel of thumbnail cards over a full-bleed HERO background. The card stepping
+ * through the centre is the active one: it scales up + lifts, and its image fills the stage as a dimmed,
+ * slowly-zooming (Ken Burns) hero behind the reel, cross-fading as the reel advances. A flat 2D design. */
+$hero_reel_opts = array(
+	'group_hr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 24, 5, 90, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and step the reel by hand — layers on top of any Motion (grabbing pauses it, releasing snaps to the nearest card). No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep flowing after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_hr_reel' => array( 'type' => 'group', 'options' => array(
+		'card_size'    => $slider( __( 'Card Size (%)', 'fw' ), 18, 8, 40, 1, __( 'Thumbnail width as a % of the stage width.', 'fw' ) ),
+		'card_spacing' => $slider( __( 'Card Spacing (%)', 'fw' ), 4, 0, 20, 0.5, __( 'Gap between the reel thumbnails, as a % of the card width.', 'fw' ) ),
+		'active_scale' => $slider( __( 'Active Scale (%)', 'fw' ), 112, 100, 160, 1, __( 'How much the centre (active) card grows above the others.', 'fw' ) ),
+		'active_lift'  => $slider( __( 'Active Lift (%)', 'fw' ), 8, 0, 30, 1, __( 'How far the active card lifts up, as a % of its height.', 'fw' ) ),
+	) ),
+	'group_hr_hero' => array( 'type' => 'group', 'options' => array(
+		'hero_opacity' => $slider( __( 'Hero Opacity (%)', 'fw' ), 55, 0, 100, 1, __( 'How strongly the active card fills the stage as a background behind the reel. 0 hides it (just the stage colour shows).', 'fw' ) ),
+		'ken_burns'    => $slider( __( 'Ken Burns (%)', 'fw' ), 60, 0, 100, 1, __( 'Slow zoom on the hero background — higher pushes in further over each card.', 'fw' ) ),
+		'hold'         => $slider( __( 'Hold (%)', 'fw' ), 55, 0, 100, 1, __( 'How long the reel holds on each card before stepping to the next.', 'fw' ) ),
+	) ),
+	'group_hr_card' => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 8, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_hr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+/* Mosaic Marquee — a horizontal marquee of cards packed masonry-style (varied sizes), scrolling
+ * sideways forever. Card Height sets the tile scale (fewer, bigger rows as it rises); Layout 1/2/3 are
+ * three mosaic patterns. A flat 2D design. */
+$mosaic_marquee_opts = array(
+	'group_mm_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 24, 5, 90, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and scrub the marquee by hand — layers on top of any Motion (grabbing pauses it, releasing flings). No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep scrolling after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_mm_mosaic' => array( 'type' => 'group', 'options' => array(
+		'layout'      => array( 'label' => __( 'Layout', 'fw' ), 'type' => 'select', 'value' => '1', 'choices' => array( '1' => __( 'Layout 1', 'fw' ), '2' => __( 'Layout 2', 'fw' ), '3' => __( 'Layout 3', 'fw' ) ), 'desc' => __( 'Three different mosaic tile patterns.', 'fw' ) ),
+		'card_height' => $slider( __( 'Card Height (%)', 'fw' ), 55, 10, 90, 1, __( 'Tile scale — higher makes fewer, bigger rows of cards; lower packs more, smaller tiles.', 'fw' ) ),
+		'gap'         => $slider( __( 'Gap (%)', 'fw' ), 3, 0, 8, 0.5, __( 'Space between the mosaic tiles.', 'fw' ) ),
+	) ),
+	'group_mm_card' => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 18, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Padding (%)', 'fw' ), 6, 0, 20, 0.5, __( 'Inset around the whole mosaic — the background shows in this margin and in the empty cells.', 'fw' ) ),
+	) ),
+	'group_mm_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
 $options = array(
 
 	/* ---------------------------------------------------------------- CONTENT */
@@ -821,6 +871,8 @@ $options = array(
 					'wheel_carousel'   => $wheel_carousel_opts,
 					'cover_flow'       => $cover_flow_opts,
 					'carousel_flow'    => $carousel_flow_opts,
+					'hero_reel'        => $hero_reel_opts,
+					'mosaic_marquee'   => $mosaic_marquee_opts,
 					'photo_scatter'    => $photo_scatter_opts,
 					'card_stack'       => $card_stack_opts,
 					'device_cycler'    => $device_cycler_opts,

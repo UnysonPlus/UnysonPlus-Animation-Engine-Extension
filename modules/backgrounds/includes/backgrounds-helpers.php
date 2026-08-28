@@ -22,6 +22,7 @@ if ( ! function_exists( 'upw_bg_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_bg_effects' ) ) :
+	/** Returns the list of available background effect ids. */
 	function upw_bg_effects() {
 		return array(
 			'aurora', 'gradient', 'dots', 'particles', 'constellation', 'waves', 'starfield', 'noise',
@@ -43,6 +44,7 @@ if ( ! function_exists( 'upw_bg_containers' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_bg_color_field' ) ) :
+	/** Builds a background-effect color-picker field, delegating to the shared color helper when available. */
 	function upw_bg_color_field( $label, $kind, $default_hex, $desc = '' ) {
 		if ( function_exists( 'upw_color_field' ) ) {
 			return upw_color_field( $label, $kind, $default_hex, $desc );

@@ -402,5 +402,29 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		),
 	);
 
+	// Scope — on a COLLECTION element (gallery, grid, the 3D gallery, …), apply the hover to each ITEM
+	// (only the hovered card reacts) instead of the whole block. `anim_attach => 'interaction'` makes the
+	// animation-stack render this INSIDE the Hover Interaction card (below the effect picker), like the
+	// Entrance card's shared settings. As a `multi` it saves under the fixed key `interaction_scope`
+	// (value: array( 'scope' => 'each' )) — read via upw_hover_scope().
+	$fields['interaction_scope'] = array(
+		'type'          => 'multi',
+		'label'         => false,
+		'desc'          => false,
+		'anim_attach'   => 'interaction',
+		'inner-options' => array(
+			'scope' => array(
+				'type'    => 'select',
+				'label'   => __( 'Hover Target', 'fw' ),
+				'desc'    => __( 'For galleries / grids / the 3D gallery: apply the hover to each item (only the hovered card reacts) instead of the whole block. Ignored on single elements.', 'fw' ),
+				'value'   => 'each',
+				'choices' => array(
+					'each'  => __( 'Each item', 'fw' ),
+					'whole' => __( 'Whole element', 'fw' ),
+				),
+			),
+		),
+	);
+
 	return $fields;
 } );

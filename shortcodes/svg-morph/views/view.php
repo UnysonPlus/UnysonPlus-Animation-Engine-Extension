@@ -42,7 +42,6 @@ if ( ! function_exists( 'sc_svg_morph_shapes' ) ) {
  * Curated morph SETS — an ordered sequence of shape keys the element cycles through. Chosen because
  * each pair reads well as a morph. `loopback` closes the cycle (…→ last → first) for a seamless loop.
  */
-/** Turn an SVG `points` list into a path `d`. */
 if ( ! function_exists( 'sc_svg_morph_points_to_path' ) ) {
 	function sc_svg_morph_points_to_path( $pts, $close ) {
 		$pts  = trim( preg_replace( '/\s+/', ' ', str_replace( ',', ' ', (string) $pts ) ) );
@@ -97,6 +96,7 @@ if ( ! function_exists( 'sc_svg_morph_extract_path' ) ) {
 }
 
 if ( ! function_exists( 'sc_svg_morph_render' ) ) {
+	/** Renders the SVG Morph shortcode from its atts, collecting and sanitizing each shape's path and timing. */
 	function sc_svg_morph_render( $atts ) {
 		$shapes_lib = sc_svg_morph_shapes();
 		$paths      = array();

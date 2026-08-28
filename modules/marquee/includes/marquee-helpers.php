@@ -22,6 +22,7 @@ if ( ! function_exists( 'upw_marquee_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_marquee_flag' ) ) :
+	/** Static used-flag for Marquee; sets it when passed true and returns whether the module was used on the page. */
 	function upw_marquee_flag( $set = false ) {
 		static $used = false;
 		if ( $set ) {
@@ -32,6 +33,7 @@ if ( ! function_exists( 'upw_marquee_flag' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_mq_slider' ) ) :
+	/** Builds a marquee slider option field by delegating to the shared upw_anim_slider builder. */
 	function upw_mq_slider( $label, $val, $min, $max, $step, $desc = '' ) {
 		return upw_anim_slider( $label, $val, $min, $max, $step, $desc ); // delegates to the shared builder
 	}

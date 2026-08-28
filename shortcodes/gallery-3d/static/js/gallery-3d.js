@@ -983,7 +983,21 @@
 		var mode  = el.getAttribute( 'data-tdg-cycle' ) || 'scroll';
 		var dwell = clamp( num( el, 'data-tdg-dwell', 3 ), 1, 12 ) * 1000;
 		var stage = el.querySelector( '.tdg__stage' );
+		var device = el.querySelector( '.tdg__device' );
 		var cur = -1;
+
+		// Fit the device to the stage: a tall device (a 9:16 phone) sized purely by Device Size (width)
+		// can be TALLER than the stage and get clipped top/bottom by the stage's overflow. Reset to the
+		// width-based size, and if that overflows the stage height, scale the width down so it fits.
+		function fit() {
+			if ( ! device || ! stage ) { return; }
+			device.style.width = '';
+			var maxH = ( stage.clientHeight || 1 ) * 0.95;
+			var dh = device.offsetHeight;
+			if ( dh > maxH ) { device.style.width = ( device.offsetWidth * ( maxH / dh ) ) + 'px'; }
+		}
+		fit();
+		window.addEventListener( 'resize', fit, { passive: true } );
 		function activate( i ) {
 			i = Math.max( 0, Math.min( N - 1, i ) );
 			if ( i === cur ) { return; } cur = i;
@@ -1204,7 +1218,10 @@
 			// its X slot and depth-centred so its NEAR face sits at z≈0 for ANY radius (cards translateZ
 			// (zSign·R); the column translates by -zSign·R). So concave (curv<0) curls the totem away, and
 			// convex (curv>0) bulges it toward the viewer — each column independent, in a flat row.
-			cascade.style.transform = 'rotateX(' + tilt + 'deg)';
+			// Tilt tips the wall; perspective then foreshortens it and drags the projected centre down, so
+			// re-centre with a translateY that scales with the radius and the tilt (keeps it filling the stage).
+			var comp = R * Math.sin( tilt * Math.PI / 180 );
+			cascade.style.transform = 'translateY(' + comp.toFixed( 1 ) + 'px) rotateX(' + tilt + 'deg)';
 			var latHalf = latSpan / 2;
 			var xHalf   = ( C - 1 ) / 2;
 			for ( var j = 0; j < C; j++ ) {
@@ -1739,7 +1756,7 @@
 		var gap   = clamp( num( el, 'data-tdg-gap', 1 ), 0, 20 ) / 100;
 		var snap  = ( el.getAttribute( 'data-tdg-snap' ) === 'yes' );
 		var horiz = ( el.getAttribute( 'data-tdg-axis' ) === 'h' );  // Film Strip = horizontal; Card Reel = vertical
-		var dTheta = 0, R = 0, zSign = 1, cardW = 0, cardH = 0, pos = 0, vel = 0;
+		var dTheta = 0, R = 0, zSign = 1, cardW = 0, cardH = 0, pos = 0, vel = 0, stepPx = 0, flat = false;
 
 		function layout() {
 			var W = stage.clientWidth || el.clientWidth || 1;
@@ -1747,11 +1764,20 @@
 			cardH = ( cards[ 0 ] && cards[ 0 ].offsetHeight ) ? cards[ 0 ].offsetHeight : cardW;
 			var dim = horiz ? cardW : cardH;                    // cards step along the reel's own axis
 			var step = dim + dim * gap;
-			var amt = clamp( Math.abs( curve ) / 100, 0.06, 1 );
-			dTheta = amt * 34;                                     // degrees between cards on the cylinder
-			var half = dTheta / 2 * Math.PI / 180;
-			R = step / ( 2 * Math.max( 0.02, Math.sin( half ) ) ); // radius so neighbours sit edge-to-edge
-			zSign = curve >= 0 ? -1 : 1;                           // negative curve = edges bend BACK (the default look)
+			stepPx = step;
+			// 3D Curve exactly 0 → a TRULY flat strip: cards just translate along the axis at z=0 with no
+			// rotation. Any curve was previously clamped to a 0.06 minimum, leaving a ~2° tilt that
+			// foreshortened each card and made its left/right edges shimmer as it slid.
+			flat = ( curve === 0 );
+			if ( flat ) {
+				dTheta = 0; R = 0; zSign = 1;
+			} else {
+				var amt = clamp( Math.abs( curve ) / 100, 0.06, 1 );
+				dTheta = amt * 34;                                 // degrees between cards on the cylinder
+				var half = dTheta / 2 * Math.PI / 180;
+				R = step / ( 2 * Math.max( 0.02, Math.sin( half ) ) ); // radius so neighbours sit edge-to-edge
+				zSign = curve >= 0 ? -1 : 1;                       // negative curve = edges bend BACK (the default look)
+			}
 			stage.style.perspective = ( W * 1.4 ) + 'px';
 			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
 			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
@@ -1763,6 +1789,14 @@
 				var c = cards[ i ];
 				var p = ( ( i - pos ) % N + N ) % N;               // 0..N
 				if ( p > N / 2 ) { p -= N; }                        // wrap into [-N/2, N/2)
+				if ( flat ) {
+					// Flat strip — pure translation along the axis (no z, no rotation → no edge wobble).
+					var sf = p * stepPx;
+					c.style.transform = horiz ? ( 'translate3d(' + sf.toFixed( 1 ) + 'px,0,0)' ) : ( 'translate3d(0,' + sf.toFixed( 1 ) + 'px,0)' );
+					c.style.opacity = '1';
+					c.style.zIndex = String( 1000 - Math.round( Math.abs( p ) ) );
+					continue;
+				}
 				var th = p * dTheta;                                // degrees from centre
 				var thr = th * Math.PI / 180;
 				var s = R * Math.sin( thr );                        // position along the reel axis
@@ -2047,6 +2081,179 @@
 		requestAnimationFrame( loop );
 	}
 
+	/* Mosaic Marquee — a horizontal marquee of cards packed masonry-style (varied row/column spans) that
+	 * scrolls sideways forever. The tiles fill a fixed number of rows (derived from Card Height) via CSS
+	 * grid dense packing; two identical copies of the grid ride a track that translates by exactly one
+	 * copy's width and wraps, so the scroll is seamless. Layout 1/2/3 are three seeded span patterns. A
+	 * flat 2D design (no perspective). */
+	function initMosaic( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var track = el.querySelector( '.tdg__mosaic-track' );
+		if ( ! stage || ! track ) { return; }
+		var grids = Array.prototype.slice.call( track.querySelectorAll( '.tdg__mosaic' ) );
+		if ( ! grids.length ) { return; }
+
+		var drive = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed = num( el, 'data-tdg-speed', 20 );
+		var dir   = num( el, 'data-tdg-dir', 1 );                 // +1 scroll left, -1 scroll right
+		var cardH = clamp( num( el, 'data-tdg-card', 30 ), 10, 90 ) / 100;
+		var gap   = clamp( num( el, 'data-tdg-gap', 0.5 ), 0, 8 ) / 100;
+		var layout = String( el.getAttribute( 'data-tdg-layout' ) || '1' );
+		var ratioW = num( el, 'data-tdg-rw', 1 ), ratioH = num( el, 'data-tdg-rh', 1 );
+		var corner = num( el, 'data-tdg-corner', 18 );
+		var seed = ( layout === '2' ) ? 3.3 : ( layout === '3' ) ? 7.1 : 0.5;
+
+		function rnd( i, s ) { var x = Math.sin( ( i + 1 ) * 63.7 + s * 17.3 + seed * 41.2 ) * 43758.5453; return x - Math.floor( x ); }
+		// Airy BENTO masonry on an R-row square grid (R≈2 at the default card height). Each step drops a
+		// group into the column flow: a BIG 2×2 tile, a TALL 1×2 tile, a STACK of two 1×1 squares, or a
+		// SINGLE 1×1 square top- OR bottom-aligned with an empty cell (background showing) beside it — the
+		// exact floating-card variety of the reference. Deterministic per step ⇒ every copy matches ⇒
+		// seamless loop. (R>2 falls back to a tall/short/gap partition per single column.)
+		var pool = Array.prototype.slice.call( grids[ 0 ].querySelectorAll( '.tdg__card' ) ).map( function ( c ) { return c.cloneNode( true ); } );
+		if ( ! pool.length ) { return; }
+		var R = 2;
+		var cellH = 0, colW = 0, gapPx = 0, setW = 0;
+		// Column KINDS split into two categories: FULL-height (big 2×2, tall 1×2) and PARTIAL (stack of two
+		// squares, or a single square + empty cell). Rules: (1) two PARTIAL columns are never adjacent — a
+		// full-height column always sits between any two halves, so the grid never reads as "too many
+		// halves"; (2) never the same family twice in a row. Deterministic per column ⇒ copies match ⇒
+		// seamless loop.
+		var CAT = { big: 'full', tall: 'full', stack: 'partial', single: 'partial' };
+		var FREE = [ [ 'big', 0.26 ], [ 'tall', 0.24 ], [ 'stack', 0.28 ], [ 'single', 0.22 ] ];
+		var FULLS = [ [ 'big', 0.55 ], [ 'tall', 0.45 ] ];
+		function pickW( list, ci ) {
+			var tot = list.reduce( function ( a, f ) { return a + f[ 1 ]; }, 0 );
+			var r = rnd( ci * 11 + 5, 1 ) * tot, acc = 0;
+			for ( var i = 0; i < list.length; i++ ) { acc += list[ i ][ 1 ]; if ( r < acc ) { return list[ i ][ 0 ]; } }
+			return list[ list.length - 1 ][ 0 ];
+		}
+		function nextFamily( ci, lastFam, lastCat ) {
+			// The FIRST column of a set (lastCat '') and any column after a PARTIAL one MUST be full-height —
+			// the former keeps the wrap seam (…partial | full…) clean, the latter guarantees a full-height
+			// column between any two halves. Otherwise choose freely. Always exclude the previous family so
+			// no style repeats back-to-back.
+			var forceFull = ( lastCat === 'partial' || lastCat === '' );
+			var list = ( forceFull ? FULLS : FREE ).filter( function ( f ) { return f[ 0 ] !== lastFam; } );
+			return pickW( list, ci );
+		}
+		function buildSet( grid, hidden ) {
+			grid.innerHTML = '';
+			var idx = 0, ci = 0, lastFam = '', lastCat = '', lastSrc = '', singleAlt = false;
+			var srcOf = function ( c ) { var im = c.querySelector( 'img' ); return im ? ( im.getAttribute( 'src' ) || '' ) : ''; };
+			var addCard = function ( rs, cs ) {
+				// Skip an image identical to the previously placed one (the pool may repeat to pad small sets).
+				if ( pool.length > 1 && srcOf( pool[ idx % pool.length ] ) === lastSrc ) { idx++; }
+				var src0 = pool[ idx % pool.length ];
+				var c = src0.cloneNode( true );
+				c.setAttribute( 'aria-hidden', hidden ? 'true' : 'false' );
+				c.style.borderRadius = corner + 'px'; c.style.overflow = 'hidden';
+				c.style.gridRow = 'span ' + rs; c.style.gridColumn = 'span ' + cs;
+				// A wide 2×2 "full square" carries the --wide flag so CSS can halve its % frame (a %-padding
+				// resolves against width, so a double-width tile would otherwise get a double-thick frame).
+				if ( cs === 2 ) { c.className += ' tdg__card--wide'; }
+				lastSrc = srcOf( src0 ); grid.appendChild( c ); idx++;
+			};
+			var addGap = function ( rs, cs ) {
+				var s = document.createElement( 'div' ); s.setAttribute( 'aria-hidden', 'true' );
+				s.style.gridRow = 'span ' + rs; s.style.gridColumn = 'span ' + cs; grid.appendChild( s );
+			};
+			do {
+				if ( R === 2 ) {
+					var fam = nextFamily( ci, lastFam, lastCat ); lastFam = fam; lastCat = CAT[ fam ];
+					if ( fam === 'big' ) { addCard( 2, 2 ); }                              // BIG 2×2
+					else if ( fam === 'tall' ) { addCard( 2, 1 ); }                        // TALL 1×2
+					else if ( fam === 'stack' ) { addCard( 1, 1 ); addCard( 1, 1 ); }      // STACK two squares
+					// SINGLE — alternate top-aligned / bottom-aligned each time so both variants reliably
+					// appear (a lone square with space below, and a lone square with space above).
+					else { if ( singleAlt ) { addCard( 1, 1 ); addGap( 1, 1 ); } else { addGap( 1, 1 ); addCard( 1, 1 ); } singleAlt = ! singleAlt; }
+				} else {
+					var sum = 0, k = ci * 13 + 4, has = false, seq = [];
+					while ( sum < R ) { var rem = R - sum; var sp = ( rem >= 2 && rnd( k++, 1 ) < 0.45 ) ? 2 : 1; var em = ( sp === 1 && rnd( k++, 4 ) < 0.2 ); seq.push( [ sp, em ] ); if ( ! em ) { has = true; } sum += sp; }
+					if ( ! has ) { seq[ 0 ][ 1 ] = false; }
+					for ( var j = 0; j < seq.length; j++ ) { if ( seq[ j ][ 1 ] ) { addGap( seq[ j ][ 0 ], 1 ); } else { addCard( seq[ j ][ 0 ], 1 ); } }
+				}
+				ci++;
+			} while ( idx < pool.length );
+		}
+		function styleGrid( g ) {
+			g.style.gridTemplateRows = 'repeat(' + R + ',' + cellH.toFixed( 1 ) + 'px)';
+			g.style.gridAutoColumns = colW.toFixed( 1 ) + 'px';
+			g.style.gap = gapPx.toFixed( 1 ) + 'px';
+		}
+		var pad = clamp( num( el, 'data-tdg-pad', 6 ), 0, 20 ) / 100;
+		function layoutFn() {
+			var H0 = stage.clientHeight || el.clientHeight || 1;
+			var W = stage.clientWidth || el.clientWidth || 1;
+			var padPx = Math.round( pad * H0 );               // inset — background shows in this margin
+			stage.style.padding = padPx + 'px';
+			track.style.left = padPx + 'px';
+			var H = Math.max( 1, H0 - padPx * 2 );            // grid height inside the inset
+			R = Math.max( 2, Math.min( 3, Math.round( 1 / cardH ) ) ); // rows of square cells (2 at the default height)
+			var g0 = ( H / R ) * gap;
+			cellH = ( H - ( R - 1 ) * g0 ) / R;              // square cell, gaps subtracted so the grid fits the stage
+			colW = cellH * ( ratioW / ratioH );              // 1:1 → square cell; a TALL/BIG tile reads accordingly
+			gapPx = Math.max( 2, g0 );
+			track.style.gap = gapPx.toFixed( 1 ) + 'px';
+			track.innerHTML = '';
+			// Build one real set, style + measure it, then clone identical copies to cover the viewport (+1)
+			// so wrapping by exactly one set width is seamless.
+			var first = document.createElement( 'div' ); first.className = 'tdg__mosaic';
+			track.appendChild( first ); buildSet( first, false ); styleGrid( first );
+			setW = first.getBoundingClientRect().width + gapPx;
+			var need = Math.max( 2, Math.ceil( W / Math.max( 1, setW ) ) + 1 );
+			for ( var c = 1; c < need; c++ ) { var cl = first.cloneNode( true ); cl.setAttribute( 'aria-hidden', 'true' ); track.appendChild( cl ); }
+			grids = Array.prototype.slice.call( track.querySelectorAll( '.tdg__mosaic' ) );
+		}
+
+		var pos = 0, vel = 0;
+		function apply() { track.style.transform = 'translateY(-50%) translateX(' + ( -pos ).toFixed( 1 ) + 'px)'; }
+		layoutFn();
+		apply();
+		// The cards exist now — release the deferred Entrance sequencing (the wrapper waited for them)
+		// and let per-card Hover bind the freshly built tiles.
+		if ( el.getAttribute( 'data-sc-anim-defer' ) ) { el.removeAttribute( 'data-sc-anim-defer' ); if ( window.upwScAnimBind ) { window.upwScAnimBind( el ); } }
+		if ( window.upwHoverRescan ) { window.upwHoverRescan(); }
+		window.addEventListener( 'resize', function () { layoutFn(); apply(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, px = 0, scrollX = null;
+		var wrap = function () { if ( setW > 0 ) { pos = ( ( pos % setW ) + setW ) % setW; } };
+		var advance = function ( dt ) { pos += dir * ( setW / Math.max( 3, speed ) ) * dt * hoverF(); wrap(); }; // one loop = one copy in `speed`s
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x ) { dragging = true; px = x; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x ) { if ( ! dragging ) { return; } var dx = x - px; px = x; pos -= dx; vel = -dx; wrap(); };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			attachDrag( el, down, move, up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollX = dir * scrollProgress( el, stage ) * setW * 2; };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( t ) {
+			if ( ! last ) { last = t; }
+			var dt = Math.min( 0.05, ( t - last ) / 1000 ); last = t;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.3 ) { pos += vel; vel *= 0.94; wrap(); }
+				else if ( drive === 'scroll' && scrollX !== null ) { pos = scrollX; wrap(); }
+			}
+			apply();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
 	/* Card Stack — a deck of image cards. The top card is featured; the rest peek behind it (offset up,
 	 * shrunk) forming a stack. A continuous "position" (0 = card 0 on top … N-1 = last on top) advances
 	 * the deck: as position passes a card it PEELS OFF (translates out the exit edge + fades) while the
@@ -2130,6 +2337,109 @@
 		void timer;
 	}
 
+	/* Hero Reel — a horizontal reel of thumbnail cards over a full-bleed HERO background. The card
+	 * stepping through the centre is "active": it scales up + lifts, and its image fills the stage as a
+	 * dimmed, slowly-zooming (Ken Burns) hero behind the reel, cross-fading as the reel advances. Flat 2D. */
+	function initHeroReel( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var reel  = el.querySelector( '.tdg__reel' );
+		var hero  = el.querySelector( '.tdg__hero' );
+		if ( ! stage || ! reel ) { return; }
+		var cards = Array.prototype.slice.call( reel.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var layers = hero ? Array.prototype.slice.call( hero.querySelectorAll( '.tdg__hero-layer' ) ) : [];
+
+		var drive  = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed  = num( el, 'data-tdg-speed', 24 );
+		var dir    = num( el, 'data-tdg-dir', 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 18 ), 8, 40 ) / 100;
+		var gap    = clamp( num( el, 'data-tdg-gap', 4 ), 0, 20 ) / 100;
+		var ascale = clamp( num( el, 'data-tdg-ascale', 112 ), 100, 160 ) / 100;
+		var alift  = clamp( num( el, 'data-tdg-alift', 8 ), 0, 30 ) / 100;
+		var hop    = clamp( num( el, 'data-tdg-hop', 55 ), 0, 100 ) / 100;
+		var kb     = clamp( num( el, 'data-tdg-kb', 60 ), 0, 100 ) / 100;
+		var hold   = clamp( num( el, 'data-tdg-hold', 55 ), 0, 100 ) / 100;
+
+		var srcOf = function ( c ) { var im = c.querySelector( 'img' ); return im ? ( im.getAttribute( 'src' ) || '' ) : ''; };
+
+		var cardW = 0, cardH = 0, step = 0, pos = 0, vel = 0, target = 0, dwellT = 0, lastActive = -1, layerOn = 0;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 40, W * cardPct );
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cardH = ( cards[ 0 ] && cards[ 0 ].offsetHeight ) ? cards[ 0 ].offsetHeight : cardW;
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			step = cardW + cardW * gap;
+			if ( hero ) { hero.style.opacity = hop.toFixed( 3 ); }
+		}
+		function apply() {
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var p = ( ( i - pos ) % N + N ) % N;
+				if ( p > N / 2 ) { p -= N; }                    // wrap into [-N/2, N/2)
+				var x = p * step;
+				var d = Math.abs( p );
+				var act = Math.max( 0, 1 - d );                  // 1 at centre → 0 one card away
+				var sc = 1 + ( ascale - 1 ) * act;
+				var ly = -alift * cardH * act;
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + ly.toFixed( 1 ) + 'px,0) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.zIndex = String( 1000 - Math.round( d * 10 ) );
+				c.style.opacity = ( d > N / 2 - 0.6 ? Math.max( 0, ( N / 2 - d ) / 0.6 ) : 1 ).toFixed( 3 );
+			}
+		}
+		function setHero( idx ) {
+			if ( ! layers.length ) { return; }
+			var src = srcOf( cards[ ( ( idx % N ) + N ) % N ] );
+			if ( ! src ) { return; }
+			layerOn = 1 - layerOn;
+			var on = layers[ layerOn ], off = layers[ 1 - layerOn ];
+			on.style.backgroundImage = 'url("' + src + '")';
+			on.style.transition = 'none'; on.style.transform = 'scale(1)';
+			void on.offsetWidth;                                 // restart the Ken Burns zoom
+			on.style.transition = 'opacity .8s ease, transform ' + Math.max( 4, speed ) + 's linear';
+			on.style.opacity = '1'; on.style.transform = 'scale(' + ( 1 + kb * 0.16 ).toFixed( 3 ) + ')';
+			off.style.transition = 'opacity .8s ease'; off.style.opacity = '0';
+		}
+		layout();
+		apply();
+		setHero( 0 ); lastActive = 0;
+		window.addEventListener( 'resize', function () { layout(); apply(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, px = 0;
+		var perCard = Math.max( 0.7, speed / Math.max( 1, N ) ) * ( 0.6 + hold * 0.9 ); // Hold lengthens the dwell
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x ) { dragging = true; px = x; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x ) { if ( ! dragging ) { return; } var dx = x - px; px = x; pos -= dx / Math.max( 1, step ); vel = -dx / Math.max( 1, step ); };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; target = Math.round( pos ); };
+			attachDrag( el, down, move, up );
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag ) ) { return; }
+		var last = 0;
+		var loop = function ( t ) {
+			if ( ! last ) { last = t; }
+			var dt = Math.min( 0.05, ( t - last ) / 1000 ); last = t;
+			if ( ! dragging ) {
+				if ( autoRun ) { dwellT += dt * hoverF(); if ( dwellT >= perCard ) { dwellT = 0; target += dir; } }
+				if ( momentum && Math.abs( vel ) > 0.002 ) { pos += vel; vel *= 0.9; }
+				else { pos += ( target - pos ) * Math.min( 1, dt * 5 ); }
+			}
+			apply();
+			var active = ( ( Math.round( pos ) % N ) + N ) % N;
+			if ( active !== lastActive ) { setHero( active ); lastActive = active; }
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
 	function scan() {
 		var i, els;
 		els = document.querySelectorAll( '.tdg--carousel-ring' );
@@ -2160,6 +2470,10 @@
 		for ( i = 0; i < els.length; i++ ) { initWheel( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--carousel-flow, .tdg--cover-flow' );
 		for ( i = 0; i < els.length; i++ ) { initFlow( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--mosaic-marquee' );
+		for ( i = 0; i < els.length; i++ ) { initMosaic( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--hero-reel' );
+		for ( i = 0; i < els.length; i++ ) { initHeroReel( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--photo-scatter' );
 		for ( i = 0; i < els.length; i++ ) { initScatter( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--device-cycler' );
@@ -2188,6 +2502,8 @@
 		else if ( el.classList.contains( 'tdg--film-strip' ) ) { initReel( el ); }
 		else if ( el.classList.contains( 'tdg--wheel-carousel' ) ) { initWheel( el ); }
 		else if ( el.classList.contains( 'tdg--carousel-flow' ) || el.classList.contains( 'tdg--cover-flow' ) ) { initFlow( el ); }
+		else if ( el.classList.contains( 'tdg--mosaic-marquee' ) ) { initMosaic( el ); }
+		else if ( el.classList.contains( 'tdg--hero-reel' ) ) { initHeroReel( el ); }
 		else if ( el.classList.contains( 'tdg--photo-scatter' ) ) { initScatter( el ); }
 		else if ( el.classList.contains( 'tdg--device-cycler' ) ) { initDeviceCycler( el ); }
 		else if ( el.classList.contains( 'tdg--card-stack' ) ) { initCardStack( el ); }

@@ -30,7 +30,7 @@ if ( ! empty( $as_bg ) ) { $cycle_mode = 'auto'; } // a Section background is no
 
 $dwell      = isset( $co['dwell'] ) ? max( 1, min( 12, (float) $co['dwell'] ) ) : 3;
 $transition = in_array( $dp( 'transition', 'fade' ), array( 'fade', 'slide_up', 'none' ), true ) ? $dp( 'transition', 'fade' ) : 'fade';
-$dev_w      = max( 30, min( 100, (float) $dp( 'card_size', 62 ) ) );
+$dev_w      = max( 8, min( 100, (float) $dp( 'card_size', 62 ) ) );
 
 /* Soft cap — screens are cross-faded, so a handful is the norm; keep the DOM sane. */
 if ( count( $items ) > 24 ) { $items = array_slice( $items, 0, 24 ); }
@@ -40,7 +40,17 @@ $attr['data-tdg-cycle']      = esc_attr( $cycle_mode );
 $attr['data-tdg-dwell']      = esc_attr( $dwell );
 $attr['data-tdg-transition'] = esc_attr( $transition );
 $attr['data-tdg-count']      = esc_attr( count( $items ) );
-$attr['style']               = ( isset( $attr['style'] ) ? rtrim( $attr['style'], '; ' ) . ';' : '' ) . '--tdg-dev-w:' . $dev_w . '%;';
+
+/* Orientation follows the device frame: a laptop / browser is always LANDSCAPE and a phone always
+ * PORTRAIT — swap the chosen Screen Ratio if it's the wrong way round so the frame never looks absurd
+ * (a portrait laptop). Tablet / No Frame keep the ratio as-is. */
+$ratio_key = (string) $dp( 'card_ratio', '16-9' );
+$rp = preg_match( '/^(\d+)-(\d+)$/', $ratio_key, $rm ) ? array( (int) $rm[1], (int) $rm[2] ) : array( 16, 9 );
+$rw = $rp[0]; $rh = $rp[1];
+if ( in_array( $device, array( 'laptop', 'browser' ), true ) && $rw < $rh ) { $rt = $rw; $rw = $rh; $rh = $rt; }
+if ( 'phone' === $device && $rw > $rh ) { $rt = $rw; $rw = $rh; $rh = $rt; }
+
+$attr['style'] = ( isset( $attr['style'] ) ? rtrim( $attr['style'], '; ' ) . ';' : '' ) . '--tdg-dev-w:' . $dev_w . '%;--tdg-ratio:' . $rw . ' / ' . $rh . ';';
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="tdg__stage">

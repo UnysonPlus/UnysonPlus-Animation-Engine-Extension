@@ -36,6 +36,7 @@ if ( ! function_exists( 'upw_skf_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_skf_flag' ) ) :
+	/** Static used-flag for Scroll Keyframes; sets it when passed true and returns whether the module was used on the page. */
 	function upw_skf_flag( $set = false ) {
 		static $used = false;
 		if ( $set ) {

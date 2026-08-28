@@ -44,9 +44,12 @@
 	/* transform (rotateX tilt + rotateY spin) set by JS */
 }
 
-/* Panorama Wall — stacked rows, each a scrolling cylinder of cards. */
+/* Panorama Wall — stacked rows, each a scrolling cylinder of cards. Anchored at the stage centre so
+   it lines up with the perspective-origin (50% 50%) — otherwise the barrel skews to one corner. */
 .tdg__wall {
 	position: absolute;
+	left: 50%;
+	top: 50%;
 	transform-style: preserve-3d;
 	will-change: transform;
 }
@@ -170,6 +173,10 @@
  * the dark default card fill reading as an unwanted black border. Opaque photos fill the card as
  * usual. (The generic dark `.tdg__inner` fill still applies to the 3D designs on dark stages.) */
 .tdg--photo-scatter .tdg__inner { background: transparent; box-shadow: none; }
+/* The scatter card is portrait (Card Ratio), but a square source image left its height:100% collapsing
+ * to the image's own square aspect — so the photo only filled the TOP of the card and the card's
+ * box-shadow sat detached below it (a "spaced polaroid shadow"). Pin the image to fill the whole card. */
+.tdg--photo-scatter .tdg__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .tdg--photo-scatter .tdg__plane {
 	position: absolute;
 	inset: 0;
@@ -196,14 +203,14 @@
 /* =====================================================================================
    Device Cycler — a device frame whose SCREEN cross-fades through the images (view modes).
    ===================================================================================== */
-.tdg--device-cycler .tdg__stage { display: flex; align-items: center; justify-content: center; }
-.tdg--device-cycler .tdg__device { position: relative; width: var(--tdg-dev-w, 62%); max-width: 100%; }
+.tdg--device-cycler .tdg__stage { display: flex; align-items: center; justify-content: center; width: 100%; }
+.tdg--device-cycler .tdg__device { position: relative; width: var(--tdg-dev-w, 62%); max-width: 100%; margin-inline: auto; flex: 0 0 auto; }
 .tdg--device-cycler .tdg__screen {
 	position: relative; width: 100%; aspect-ratio: var(--tdg-ratio, 16 / 9);
 	overflow: hidden; border-radius: var(--tdg-radius, 4px); background: #0b0b0d;
 }
 .tdg--device-cycler .tdg__plane { position: absolute; inset: 0; }
-.tdg--device-cycler .tdg__card { position: absolute; inset: 0; opacity: 0; transition: opacity .55s ease, transform .55s ease; }
+.tdg--device-cycler .tdg__card { position: absolute; inset: 0; aspect-ratio: auto; opacity: 0; transition: opacity .55s ease, transform .55s ease; }
 .tdg--device-cycler .tdg__card.is-active { opacity: 1; }
 .tdg--device-cycler .tdg__inner, .tdg--device-cycler .tdg__link { position: absolute; inset: 0; display: block; padding: 0; border-radius: 0; }
 .tdg--device-cycler .tdg__img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -219,12 +226,17 @@
 .tdg--device-cycler .tdg__device--laptop::after { content: ""; display: block; width: 116%; margin: -1px 0 0 -8%; height: 15px; background: linear-gradient(#cbced4, #a7abb4); border-radius: 0 0 13px 13px; box-shadow: 0 9px 18px rgba(0,0,0,.22); }
 .tdg--device-cycler .tdg__device--laptop::before { content: ""; position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); width: 11%; height: 6px; background: rgba(0,0,0,.22); border-radius: 0 0 7px 7px; z-index: 3; }
 
-/* Tablet */
+/* Tablet — even bezels + a front-camera dot, iPad-style */
+.tdg--device-cycler .tdg__device--tablet { position: relative; }
 .tdg--device-cycler .tdg__device--tablet .tdg__screen { border: 12px solid #16161a; border-radius: 24px; box-shadow: 0 22px 50px rgba(0,0,0,.35); }
+.tdg--device-cycler .tdg__device--tablet::before { content: ""; position: absolute; top: 5px; left: 0; right: 0; margin-inline: auto; width: 6px; height: 6px; border-radius: 50%; background: #34353c; box-shadow: 0 0 0 1.5px rgba(0,0,0,.3); z-index: 10; }
 
-/* Phone — rounded body + notch */
-.tdg--device-cycler .tdg__device--phone .tdg__screen { border: 10px solid #101012; border-radius: 36px; box-shadow: 0 18px 44px rgba(0,0,0,.4); }
-.tdg--device-cycler .tdg__device--phone::before { content: ""; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 34%; height: 16px; background: #101012; border-radius: 0 0 13px 13px; z-index: 4; }
+/* Phone — rounded body, a dynamic-island pill, and a home indicator (centred via auto margins so the
+   pills stay dead-centre regardless of any transform on the preview/stage). */
+.tdg--device-cycler .tdg__device--phone { position: relative; }
+.tdg--device-cycler .tdg__device--phone .tdg__screen { border: 10px solid #0d0d11; border-radius: 36px; box-shadow: 0 18px 44px rgba(0,0,0,.4); }
+.tdg--device-cycler .tdg__device--phone::before { content: ""; position: absolute; top: 18px; left: 0; right: 0; margin-inline: auto; width: 28%; max-width: 110px; height: 18px; background: #0d0d11; border-radius: 10px; z-index: 10; }
+.tdg--device-cycler .tdg__device--phone::after { content: ""; position: absolute; bottom: 12px; left: 0; right: 0; margin-inline: auto; width: 30%; max-width: 120px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.7); z-index: 10; }
 
 /* Browser window — title bar with traffic-light dots */
 .tdg--device-cycler .tdg__device--browser .tdg__screen { border: 1px solid rgba(0,0,0,.14); border-top: 32px solid #e8e8ec; border-radius: 10px; box-shadow: 0 18px 44px rgba(0,0,0,.22); }
@@ -255,7 +267,9 @@
 /* Card Tunnel — four walls of cards receding to a vanishing point. The tunnel is centred at the stage
    origin; JS sizes each card to its wall (so drop the ratio-driven aspect) and sets its 3D transform. */
 .tdg__tunnel { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
-.tdg__wall { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
+/* Scoped to Card Tunnel — the four wall groups sit at the tunnel origin. (Unscoped, this collided with
+   Panorama Wall's own .tdg__wall and skewed its barrel to a corner.) */
+.tdg--card-tunnel .tdg__wall { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
 .tdg--card-tunnel .tdg__card { aspect-ratio: auto; backface-visibility: hidden; }
 
 /* Spiral Stream — cards threaded on a tapering helix, each rotating around its vertical axis. Backs
@@ -274,6 +288,14 @@
 .tdg--card-reel .tdg__card,
 .tdg--film-strip .tdg__card { backface-visibility: hidden; }
 
+/* Hero Reel — a reel of thumbnail cards over a dimmed, Ken-Burns HERO background (the active card).
+   The stage colour sits behind the hero; the reel sits above it. */
+.tdg--hero-reel .tdg__stage { display: block; overflow: hidden; }
+.tdg--hero-reel .tdg__hero { position: absolute; inset: 0; z-index: 0; will-change: opacity; }
+.tdg--hero-reel .tdg__hero-layer { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; will-change: opacity, transform; }
+.tdg--hero-reel .tdg__reel { position: absolute; left: 50%; top: 50%; z-index: 2; transform: none; will-change: auto; }
+.tdg--hero-reel .tdg__card { position: absolute; left: 50%; top: 50%; will-change: transform; transform-origin: 50% 50%; }
+
 /* Wheel Carousel — cards fanned on a flat 2D wheel (hub below the frame); JS sets each card's
    translate + in-plane rotate + scale as the wheel steps around. */
 .tdg__wheel { position: absolute; left: 50%; top: 50%; }
@@ -284,6 +306,19 @@
 .tdg__flow { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
 .tdg--cover-flow .tdg__card,
 .tdg--carousel-flow .tdg__card { backface-visibility: hidden; }
+
+/* Mosaic Marquee — airy bento tiles (varied 1×1 / 1×2 / 2×2 spans, some cells left empty so the
+ * background shows through) on a track that scrolls sideways forever. */
+.tdg--mosaic-marquee .tdg__stage { display: block; overflow: hidden; box-sizing: border-box; }
+.tdg__mosaic-track { position: absolute; top: 50%; left: 0; display: flex; align-items: flex-start; will-change: transform; }
+.tdg__mosaic { display: grid; grid-auto-flow: column; flex: 0 0 auto; }
+.tdg--mosaic-marquee .tdg__card { position: static; left: auto; top: auto; width: auto; height: auto; margin: 0; aspect-ratio: auto; overflow: hidden; }
+/* The "Padding" option frames each card (via the shared --tdg-pad inner padding). Because a CSS %
+ * padding resolves against the element's WIDTH, a 2×2 "full square" (double the width of a 1×1) would
+ * get double the pixel frame — so HALVE the padding on the wide tiles to keep the frame visually equal
+ * across sizes. The half / quarter tiles keep the full var(--tdg-pad). */
+.tdg--mosaic-marquee .tdg__card--wide .tdg__inner { padding: calc(var(--tdg-pad, 0%) / 2); }
+.tdg--mosaic-marquee .tdg__card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* =====================================================================================
    Card Stack — a deck of image cards; the top is featured, the rest peek behind it, and the

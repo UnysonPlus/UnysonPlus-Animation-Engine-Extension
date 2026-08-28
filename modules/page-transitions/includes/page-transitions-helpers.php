@@ -25,12 +25,14 @@ if ( ! function_exists( 'upw_pt_setting' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_pt_enabled' ) ) :
+	/** Returns whether page transitions are enabled and not in the admin. */
 	function upw_pt_enabled() {
 		return upw_pt_setting( 'enable', 'no' ) === 'yes' && ! is_admin();
 	}
 endif;
 
 if ( ! function_exists( 'upw_pt_types' ) ) :
+	/** Returns the list of valid page-transition type keys. */
 	function upw_pt_types() {
 		return array(
 			'fade', 'slide', 'zoom', 'rotate', 'curtain', 'doors', 'split', 'wipe', 'diagonal',

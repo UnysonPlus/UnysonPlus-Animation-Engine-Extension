@@ -21,6 +21,7 @@
  *    records each effect's on-demand asset. Returns the modified $attr.
  * ------------------------------------------------------------------ */
 if ( ! function_exists( 'upw_hover_apply_instances' ) ) :
+/** Applies hover effect instances onto a wrapper's attr array, adding classes, data-hover-* attrs, CSS vars, and asset records. */
 function upw_hover_apply_instances( $attr, $instances ) {
 	// Append a CSS custom-property string to whatever style is already on the attr.
 	$add_style = function ( $css ) use ( &$attr ) {
@@ -342,7 +343,25 @@ endif;
  * card instead of the whole wrapper. The collection's view calls this and applies the result per
  * item. Returns an attr array (or [] when there's no hover / engine off); records on-demand assets.
  */
+/**
+ * Hover target scope for an element: 'each' (per-item, only the hovered card reacts) or 'whole'.
+ * Defaults to 'each' so collections light up per card. Meaningful only on collection elements.
+ *
+ * @param array $atts
+ * @return string 'each'|'whole'
+ */
+if ( ! function_exists( 'upw_hover_scope' ) ) :
+function upw_hover_scope( $atts ) {
+	// `interaction_scope` saves as a `multi` panel attached to the Hover Interaction card:
+	// array( 'scope' => 'each'|'whole' ). Tolerate a bare string for older saves.
+	$raw = isset( $atts['interaction_scope'] ) ? $atts['interaction_scope'] : null;
+	$s   = is_array( $raw ) ? ( isset( $raw['scope'] ) ? (string) $raw['scope'] : 'each' ) : (string) $raw;
+	return ( $s === 'whole' ) ? 'whole' : 'each';
+}
+endif;
+
 if ( ! function_exists( 'upw_hover_collection_item_attr' ) ) :
+/** Builds the hover-effect attr array for a single collection item, or empty if hover is disabled or has no instances. */
 function upw_hover_collection_item_attr( $atts ) {
 	if ( ! upw_hover_enabled() ) {
 		return array();
@@ -375,7 +394,10 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	if ( function_exists( 'sc_hover_collection_items' ) ) {
 		$base = isset( $atts['base_class'] ) ? (string) $atts['base_class'] : '';
 		$map  = sc_hover_collection_items();
-		if ( $base !== '' && isset( $map[ $base ] ) && $map[ $base ] !== '' ) {
+		// Registered collection AND the user kept "Each item" (default) → the view stamps each card, so
+		// don't stamp the wrapper. "Whole element" falls through and hovers the whole block.
+		if ( $base !== '' && isset( $map[ $base ] ) && $map[ $base ] !== ''
+			&& ( ! function_exists( 'upw_hover_scope' ) || upw_hover_scope( $atts ) === 'each' ) ) {
 			return $attr;
 		}
 	}

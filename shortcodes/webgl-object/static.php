@@ -20,6 +20,7 @@ $js_ver   = file_exists( $js_path ) ? ( $version . '.' . filemtime( $js_path ) )
 $css_ver  = file_exists( $css_path ) ? ( $version . '.' . filemtime( $css_path ) ) : $version;
 
 // Vendored Three.js (UMD global `THREE`). Filterable so a site can swap in a CDN.
+/** Filters the URL of the vendored Three.js library script for the WebGL Object shortcode, letting a site swap in a CDN. */
 $three_src = apply_filters(
 	'fw_shortcode_webgl_three_src',
 	$base . '/static/js/vendor/three.min.js'

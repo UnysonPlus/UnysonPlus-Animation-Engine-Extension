@@ -20,6 +20,7 @@ $css_ver  = file_exists( $css_path ) ? ( $version . '.' . filemtime( $css_path )
 
 // Vendored <model-viewer> UMD bundle (registers the custom element; bundles its own
 // Three.js internally). Filterable so a site can swap in a CDN / different version.
+/** Filters the URL of the vendored <model-viewer> UMD bundle, letting a site swap in a CDN or different version. */
 $mv_src = apply_filters(
 	'fw_shortcode_model_viewer_src',
 	$base . '/static/js/vendor/model-viewer-umd.min.js'

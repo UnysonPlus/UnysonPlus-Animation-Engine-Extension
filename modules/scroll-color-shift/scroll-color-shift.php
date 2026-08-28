@@ -17,7 +17,6 @@
  * Best on full-bleed, transparent sections (so the morphing page colour shows through).
  */
 
-/** Resolve a compact-color value (array or legacy string) to a CSS color. */
 if ( ! function_exists( 'upw_cs_resolve_color' ) ) :
 	function upw_cs_resolve_color( $val ) {
 		if ( is_array( $val ) ) {
@@ -44,6 +43,7 @@ if ( ! function_exists( 'upw_color_shift_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_color_shift_flag' ) ) :
+	/** Tracks (and optionally sets) whether the Scroll Color Shift feature was used on the current request. */
 	function upw_color_shift_flag( $set = false ) {
 		static $used = false;
 		if ( $set ) {

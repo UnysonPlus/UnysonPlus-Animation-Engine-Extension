@@ -19,6 +19,7 @@
  */
 
 if ( ! function_exists( 'upw_scroll_var_enabled' ) ) :
+	/** Returns whether the Scroll Variable module is enabled in Theme Settings (defaults to enabled). */
 	function upw_scroll_var_enabled() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
 			return true;

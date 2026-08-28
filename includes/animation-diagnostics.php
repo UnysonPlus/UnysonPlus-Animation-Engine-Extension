@@ -53,6 +53,8 @@ endif;
 
 if ( ! function_exists( 'upw_anim_diagnose_post' ) ) :
 	/**
+	 * Walks a post's page-builder tree and reports which animation-engine fields are active on each element.
+	 *
 	 * @return array { key: string|null, elements: [ { type, active: [ 'fid'=>value, … ], count } ], total_active, all_on_signature: bool }
 	 */
 	function upw_anim_diagnose_post( $post_id ) {
@@ -139,6 +141,7 @@ add_action( 'admin_menu', function () {
 } );
 
 if ( ! function_exists( 'upw_anim_diagnostics_render_page' ) ) :
+	/** Renders the animation diagnostics admin page, handling the per-post reset action. */
 	function upw_anim_diagnostics_render_page() {
 		if ( ! current_user_can( 'manage_options' ) ) { return; }
 		$post_id = isset( $_REQUEST['pid'] ) ? (int) $_REQUEST['pid'] : 0;

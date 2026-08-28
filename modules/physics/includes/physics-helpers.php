@@ -36,11 +36,13 @@ endif;
 
 /* small option-builders to keep the (large) choices array readable */
 if ( ! function_exists( 'upw_phys_slider' ) ) :
+	/** Builds a physics slider option field by delegating to the shared upw_anim_slider builder. */
 	function upw_phys_slider( $label, $val, $min, $max, $step, $desc = '' ) {
 		return upw_anim_slider( $label, $val, $min, $max, $step, $desc ); // delegates to the shared builder
 	}
 endif;
 if ( ! function_exists( 'upw_phys_trigger' ) ) :
+	/** Returns a select option field for the physics trigger (hover or click/tap), with the given default. */
 	function upw_phys_trigger( $default = 'hover' ) {
 		return array(
 			'type'    => 'select',

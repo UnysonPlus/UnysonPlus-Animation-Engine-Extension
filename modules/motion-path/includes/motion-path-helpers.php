@@ -86,12 +86,14 @@ if ( ! function_exists( 'upw_motion_path_presets' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_motion_path_shape_keys' ) ) :
+	/** Returns the keys of the built-in motion-path shape presets. */
 	function upw_motion_path_shape_keys() {
 		return array_keys( upw_motion_path_presets() );
 	}
 endif;
 
 if ( ! function_exists( 'upw_motion_path_all_modes' ) ) :
+	/** Returns all motion-path mode keys — the shape preset keys plus 'custom'. */
 	function upw_motion_path_all_modes() {
 		return array_merge( upw_motion_path_shape_keys(), array( 'custom' ) );
 	}

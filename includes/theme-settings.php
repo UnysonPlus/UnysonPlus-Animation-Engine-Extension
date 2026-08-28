@@ -84,6 +84,7 @@ if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 	 * per-module area. Returns the section keyed `animation_engine_container`.
 	 */
 	function upw_anim_engine_settings_section() {
+		/** Filters the per-module tabs added to the Animation Engine Theme Settings section. */
 		$module_tabs = apply_filters( 'upw_anim_engine_module_tabs', array() );
 
 		$engine_tab = array(

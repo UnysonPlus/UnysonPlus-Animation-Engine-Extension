@@ -17,6 +17,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_webgl_object_render' ) ) {
+	/** Renders the WebGL Object shortcode, resolving the style preset, image URL, and HEX colors for the Three.js config. */
 	function sc_webgl_object_render( $atts ) {
 		$preset      = sc_get( 'style_preset/preset', $atts, 'glass' );
 		$preset_opts = sc_get( 'style_preset/' . $preset, $atts, array() );

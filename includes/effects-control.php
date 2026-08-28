@@ -22,6 +22,7 @@
 
 /* Scroll Motion enable (it ships without one). Mirrors the other modules' `upw_*_enabled()`. */
 if ( ! function_exists( 'upw_scroll_enabled' ) ) :
+	/** Returns whether the Scroll Motion module is enabled in Theme Settings (defaults to enabled). */
 	function upw_scroll_enabled() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
 			return true;
@@ -34,6 +35,7 @@ endif;
 
 /* Infinite Scroll Loop also ships without a global enable (it's per-section) — give it one. */
 if ( ! function_exists( 'upw_scroll_loop_enabled' ) ) :
+	/** Returns whether the Infinite Scroll Loop module is enabled in Theme Settings (defaults to enabled). */
 	function upw_scroll_loop_enabled() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
 			return true;
@@ -45,6 +47,7 @@ if ( ! function_exists( 'upw_scroll_loop_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_effects_recursive_unset' ) ) :
+	/** Recursively removes every occurrence of a given key from a nested array, by reference. */
 	function upw_effects_recursive_unset( &$arr, $key ) {
 		if ( ! is_array( $arr ) ) {
 			return;

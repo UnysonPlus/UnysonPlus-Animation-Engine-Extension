@@ -25,6 +25,7 @@
  * from a non-unfiltered_html saver is also kses-filtered on save, which strips the data attribute.)
  * ========================================================================== */
 if ( ! function_exists( 'upw_gsap_snippets_gate' ) ) :
+	/** Emits the window.upwSnippetsOK flag in the footer only when the singular's author and last editor both have unfiltered_html. */
 	function upw_gsap_snippets_gate() {
 		if ( ! function_exists( 'sc_gsap_flag' ) || ! sc_gsap_flag() ) { return; } // no GSAP on this page
 		if ( ! is_singular() ) { return; }
@@ -53,6 +54,7 @@ add_action( 'wp_footer', 'upw_gsap_snippets_gate', 4 ); // before the runtime en
  * inline opacity still wins the reveal; the reduced-motion branch reveals everything.
  * ========================================================================== */
 if ( ! function_exists( 'upw_gsap_critical_css' ) ) :
+	/** Prints the tiny in-head critical CSS that hides `.upw-g-pending` GSAP entrance elements to prevent FOUC. */
 	function upw_gsap_critical_css() {
 		if ( is_admin() ) { return; }
 		echo '<style id="upw-gsap-critical">.upw-g-pending,.upw-g-pending[data-upw-g="stagger"]>*{opacity:0}@media (prefers-reduced-motion:reduce){.upw-g-pending,.upw-g-pending[data-upw-g="stagger"]>*{opacity:1!important;transform:none!important}}</style>' . "\n";

@@ -18,6 +18,7 @@
  */
 
 if ( ! function_exists( 'upw_smoothscroll_enabled' ) ) :
+	/** Returns whether smooth scrolling is enabled in Theme Settings (defaults to off). */
 	function upw_smoothscroll_enabled() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
 			return false;

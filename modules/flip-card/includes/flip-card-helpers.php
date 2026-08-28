@@ -26,6 +26,7 @@ if ( ! function_exists( 'upw_flip_card_styles' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_flip_card_enabled' ) ) :
+	/** Returns whether the Flip Card module is enabled in Theme Settings (defaults to enabled). */
 	function upw_flip_card_enabled() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
 			return true;
@@ -37,6 +38,7 @@ if ( ! function_exists( 'upw_flip_card_enabled' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_flip_card_flag' ) ) :
+	/** Static used-flag for Flip Card; sets it when passed true and returns whether the module was used on the page. */
 	function upw_flip_card_flag( $set = false ) {
 		static $used = false;
 		if ( $set ) {

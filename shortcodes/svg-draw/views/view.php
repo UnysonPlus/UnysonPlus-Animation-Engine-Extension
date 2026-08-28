@@ -71,6 +71,7 @@ if ( ! function_exists( 'sc_svg_draw_preset' ) ) {
 }
 
 if ( ! function_exists( 'sc_svg_draw_render' ) ) {
+	/** Renders the SVG Draw shortcode from its atts, loading the SVG from preset, code, or a path-validated upload. */
 	function sc_svg_draw_render( $atts ) {
 		$source = sc_get( 'svg/source', $atts, 'preset' );
 		$svg    = '';

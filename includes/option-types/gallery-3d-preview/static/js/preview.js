@@ -47,6 +47,8 @@
 		wheel_carousel: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'cw', hover_behavior: 'slow', wheel_size: 70, card_size: 40, anticipation: 0, overshoot: 0, hold: 0, card_ratio: '1-1', corner_radius: 0, padding: 0 },
 		cover_flow: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'forward', hover_behavior: 'slow', snap: 'yes', orientation: 'horizontal', side_tilt: 40, card_size: 46, gap: 4, card_ratio: '1-1', corner_radius: 0, padding: 0 },
 		carousel_flow: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'forward', hover_behavior: 'slow', snap: 'yes', orientation: 'horizontal', side_scale: 82, card_size: 50, gap: 5, card_ratio: '1-1', corner_radius: 0, padding: 0 },
+		mosaic_marquee: { drive: 'continuous', allow_drag: 'yes', speed: 24, direction: 'left', hover_behavior: 'slow', layout: '1', card_height: 55, gap: 3, card_ratio: '1-1', corner_radius: 18, padding: 6, background: '' },
+		hero_reel: { drive: 'continuous', allow_drag: 'yes', speed: 24, direction: 'left', hover_behavior: 'slow', card_size: 18, card_spacing: 4, active_scale: 112, active_lift: 8, hero_opacity: 55, ken_burns: 60, hold: 55, card_ratio: '4-3', corner_radius: 8, padding: 0, background: '' },
 		// Flat tabletop scatter + device frame. The preview always runs these in AUTO cycle (there is no
 		// scroll in the modal), so the scatter's sets sweep in/out and the device cycles screens on a
 		// timer — a lively, representative preview of the design regardless of the saved cycle mode.
@@ -167,7 +169,11 @@
 				var dbg = 'linear-gradient(135deg,hsl(' + dh + ',62%,60%),hsl(' + ((dh + 40) % 360) + ',58%,42%))';
 				cards += '<div class="tdg__card' + (i === 0 ? ' is-active' : '') + '"><div class="tdg__inner" style="background:' + dbg + '"></div></div>';
 			}
-			var dStyle = style + '--tdg-dev-w:' + o.card_size + '%;';
+			// Orientation follows the device: laptop/browser landscape, phone portrait — swap the ratio if needed.
+			var drp = /^(\d+)-(\d+)$/.exec(o.card_ratio || '16-9'); var drw = drp ? +drp[1] : 16, drh = drp ? +drp[2] : 9;
+			if ((dev === 'laptop' || dev === 'browser') && drw < drh) { var dtmp = drw; drw = drh; drh = dtmp; }
+			if (dev === 'phone' && drw > drh) { var dtmp2 = drw; drw = drh; drh = dtmp2; }
+			var dStyle = style + '--tdg-dev-w:' + o.card_size + '%;--tdg-ratio:' + drw + ' / ' + drh + ';';
 			return '<div class="tdg tdg--device-cycler" style="' + dStyle + '" ' + adc + '>' +
 				'<div class="tdg__stage"><div class="tdg__device tdg__device--' + dev + '"><div class="tdg__screen">' +
 				'<div class="tdg__plane">' + cards + '</div></div></div></div></div>';
@@ -299,6 +305,20 @@
 			return '<div class="tdg tdg--film-strip" style="' + style + '" ' + afs + '><div class="tdg__stage"><div class="tdg__reel">' + cards + '</div></div></div>';
 		}
 
+		if (design === 'hero_reel') {
+			// Reel of thumbnails over a dimmed Ken-Burns hero — mirror hero-reel.php (initHeroReel).
+			var hrN = 9;
+			var ahr = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'right' ? -1 : 1,
+				'data-tdg-card': o.card_size, 'data-tdg-gap': o.card_spacing, 'data-tdg-ascale': o.active_scale,
+				'data-tdg-alift': o.active_lift, 'data-tdg-hop': o.hero_opacity, 'data-tdg-kb': o.ken_burns, 'data-tdg-hold': o.hold, 'data-tdg-count': 12
+			}));
+			cards = '';
+			for (i = 0; i < hrN; i++) { cards += cardHtml(i % 12, 12); }
+			var hrBg = (o.background && String(o.background).trim()) ? o.background : '#101014';
+			return '<div class="tdg tdg--hero-reel" style="' + style + '" ' + ahr + '><div class="tdg__stage" style="background:' + hrBg + '"><div class="tdg__hero"><span class="tdg__hero-layer"></span><span class="tdg__hero-layer"></span></div><div class="tdg__reel">' + cards + '</div></div></div>';
+		}
+
 		if (design === 'wheel_carousel') {
 			// Cards fanned on a Ferris wheel — mirror wheel-carousel.php (a loop of cards on the arc).
 			var wcN = 11;
@@ -325,6 +345,20 @@
 			cards = '';
 			for (i = 0; i < flN; i++) { cards += cardHtml(i % 12, 12); }
 			return '<div class="tdg tdg--' + (cover ? 'cover' : 'carousel') + '-flow" style="' + style + '" ' + afl + '><div class="tdg__stage"><div class="tdg__flow">' + cards + '</div></div></div>';
+		}
+
+		if (design === 'mosaic_marquee') {
+			// Airy bento marquee — mirror mosaic-marquee.php: one seed grid (initMosaic rebuilds the bento
+			// and clones copies), dark stage background so gaps + empty cells show through.
+			var rp = /^(\d+)-(\d+)$/.exec(o.card_ratio || '1-1'); var rw = rp ? rp[1] : 1, rh = rp ? rp[2] : 1;
+			var amm = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'right' ? -1 : 1,
+				'data-tdg-card': o.card_height, 'data-tdg-gap': o.gap, 'data-tdg-layout': o.layout,
+				'data-tdg-rw': rw, 'data-tdg-rh': rh, 'data-tdg-corner': o.corner_radius, 'data-tdg-pad': o.padding, 'data-tdg-count': 12
+			}));
+			var one = ''; for (i = 0; i < 12; i++) { one += cardHtml(i % 12, 12); }
+			var mmStyle = (o.background && String(o.background).trim()) ? ' style="background:' + o.background + '"' : '';
+			return '<div class="tdg tdg--mosaic-marquee" style="' + style + '" ' + amm + '><div class="tdg__stage"' + mmStyle + '><div class="tdg__mosaic-track"><div class="tdg__mosaic">' + one + '</div></div></div></div>';
 		}
 
 		if (design === 'card_stack') {

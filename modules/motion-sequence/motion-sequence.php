@@ -19,6 +19,7 @@
  */
 
 if ( ! function_exists( 'upw_motion_sequence_enabled' ) ) :
+	/** Returns whether the Motion Sequence module is enabled in Theme Settings (defaults to enabled). */
 	function upw_motion_sequence_enabled() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
 			return true;

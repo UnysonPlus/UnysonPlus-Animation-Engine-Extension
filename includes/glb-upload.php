@@ -19,6 +19,7 @@
  */
 
 if ( ! function_exists( 'fw_model_allowed_mimes' ) ) {
+	/** Returns the allowed glTF model MIME map (glb, gltf) for the model-upload bypass. */
 	function fw_model_allowed_mimes() {
 		return array(
 			'glb'  => 'model/gltf-binary',
@@ -56,6 +57,7 @@ if ( ! function_exists( 'upw_model_content_ok' ) ) {
 add_filter(
 	'upload_mimes',
 	function ( $mimes ) {
+		/** Filters whether 3D model (GLB/GLTF) MIME types are added to WordPress's allowed upload types; default true. */
 		if ( ! apply_filters( 'fw_model_allow_uploads', true ) ) {
 			return $mimes;
 		}

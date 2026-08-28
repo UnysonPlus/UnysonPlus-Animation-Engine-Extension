@@ -19,6 +19,7 @@
  */
 
 if ( ! function_exists( 'upw_sticky_stack_enabled' ) ) :
+	/** Returns whether the Sticky Card Stack module is enabled in Theme Settings (defaults to enabled). */
 	function upw_sticky_stack_enabled() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) {
 			return true;
