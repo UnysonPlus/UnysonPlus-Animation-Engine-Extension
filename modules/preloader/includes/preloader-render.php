@@ -36,6 +36,15 @@ add_action( 'wp_enqueue_scripts', function () {
 		'fadeOut'    => max( 0.1, $s['fade'] ),
 	);
 	wp_add_inline_script( 'upw-preloader', 'window.upwPreloaderCfg=' . wp_json_encode( $cfg ) . ';', 'before' );
+
+	// Custom (code) style — inject the admin-authored CSS + JS. CSS rides the overlay stylesheet; JS is
+	// appended AFTER preloader.js so window.upwPreloaderDone() (which it exposes) is already defined.
+	if ( 'custom' === $s['style'] ) {
+		$css = function_exists( 'upw_preloader_style_opt' ) ? (string) upw_preloader_style_opt( 'css', '' ) : '';
+		$js  = function_exists( 'upw_preloader_style_opt' ) ? (string) upw_preloader_style_opt( 'js', '' ) : '';
+		if ( '' !== trim( $css ) ) { wp_add_inline_style( 'upw-preloader', $css ); }
+		if ( '' !== trim( $js ) )  { wp_add_inline_script( 'upw-preloader', $js ); }
+	}
 }, 20 );
 
 /* 3) Print the overlay as early as possible so it covers content from the first paint. */
@@ -55,13 +64,20 @@ add_action( 'wp_body_open', function () {
 		$logo = '<img class="upw-pl-logo" src="' . esc_url( $s['logo'] ) . '" alt="" />';
 	}
 
-	// Per-style animator markup.
-	$inner = upw_preloader_inner( $style, $s['logo'] !== '' );
+	if ( $style === 'custom' ) {
+		// Custom (code) — the admin's own markup IS the overlay content (output verbatim, like the
+		// Customizer's Additional CSS / a code snippet). The container still carries --pl-bg/--pl-accent
+		// and auto-dismisses on load; the paired CSS/JS were injected in the enqueue pass above.
+		$content = function_exists( 'upw_preloader_style_opt' ) ? (string) upw_preloader_style_opt( 'html', '' ) : '';
+	} else {
+		// Per-style animator markup.
+		$inner = upw_preloader_inner( $style, $s['logo'] !== '' );
 
-	// For curtain, the panels ARE the cover and the logo sits centred above them.
-	$content = ( $style === 'curtain' )
-		? $inner . '<div class="upw-pl-center">' . $logo . '</div>'
-		: '<div class="upw-pl-center">' . $logo . $inner . '</div>';
+		// For curtain, the panels ARE the cover and the logo sits centred above them.
+		$content = ( $style === 'curtain' )
+			? $inner . '<div class="upw-pl-center">' . $logo . '</div>'
+			: '<div class="upw-pl-center">' . $logo . $inner . '</div>';
+	}
 
 	echo '<div class="upw-preloader upw-pl--' . esc_attr( $style ) . '" style="' . esc_attr( $vars ) . '" role="status" aria-label="' . esc_attr__( 'Loading', 'fw' ) . '">'
 		. $content // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — built from esc_url + whitelisted markup

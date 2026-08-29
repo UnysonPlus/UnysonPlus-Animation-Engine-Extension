@@ -67,7 +67,41 @@
 		cssLayer: cssLayer, canvasLayer: canvasLayer, loop: loop, num: num, areaCount: areaCount, rnd: rnd
 	};
 
+	// Expand a `[data-bg-layers]` host (multiple stacked background effects) into one absolutely-positioned
+	// child `[data-bg]` layer per effect, back-to-front. Each layer is then rendered by the normal loop below,
+	// so the engine needs no per-effect awareness of stacking. Idempotent.
+	function expandStacks() {
+		var stacks = document.querySelectorAll('[data-bg-layers]');
+		Array.prototype.forEach.call(stacks, function (host) {
+			if (host._upwBgStack) { return; }
+			host._upwBgStack = true;
+			var layers;
+			try { layers = JSON.parse(host.getAttribute('data-bg-layers')); } catch (e) { return; }
+			if (!Array.isArray(layers) || !layers.length) { return; }
+			if (getComputedStyle(host).position === 'static') { host.style.position = 'relative'; }
+			layers.forEach(function (L) {
+				if (!L || !L.effect) { return; }
+				var d = document.createElement('div');
+				d.className = 'sc-bg-layer';
+				d.setAttribute('data-bg', L.effect);
+				if (L.attrs && typeof L.attrs === 'object') {
+					for (var k in L.attrs) { if (Object.prototype.hasOwnProperty.call(L.attrs, k)) { d.setAttribute(k, L.attrs[k]); } }
+				}
+				d.style.position = 'absolute'; d.style.left = '0'; d.style.top = '0'; d.style.right = '0'; d.style.bottom = '0'; d.style.zIndex = '0';
+				if (L.style) { d.setAttribute('style', d.getAttribute('style') + ';' + L.style); }
+				host.insertBefore(d, host.firstChild);
+			});
+			// Lift the host's REAL content above the layer stack (the layer divs stay at z-index 0).
+			Array.prototype.forEach.call(host.children, function (ch) {
+				if (ch.classList && ch.classList.contains('sc-bg-layer')) { return; }
+				if (getComputedStyle(ch).position === 'static') { ch.style.position = 'relative'; }
+				ch.style.zIndex = ch.style.zIndex || '1';
+			});
+		});
+	}
+
 	function init() {
+		expandStacks();
 		var nodes = document.querySelectorAll('[data-bg]');
 		Array.prototype.forEach.call(nodes, function (host) {
 			if (host._upwBg) { return; }

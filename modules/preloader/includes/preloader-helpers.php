@@ -29,6 +29,7 @@ if ( ! function_exists( 'upw_preloader_styles' ) ) :
 			'counter'       => __( 'Counter (%)', 'fw' ),
 			'curtain'       => __( 'Curtain', 'fw' ),
 			'logo'          => __( 'Logo pulse', 'fw' ),
+			'custom'        => __( 'Custom (code)', 'fw' ),
 		);
 	}
 endif;

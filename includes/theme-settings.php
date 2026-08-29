@@ -133,7 +133,15 @@ if ( ! function_exists( 'upw_anim_engine_settings_section' ) ) :
 		);
 
 		// Modules append their own sub-tabs after the Engine tab.
-		$sub_tabs = array_merge( $engine_tab, is_array( $module_tabs ) ? $module_tabs : array() );
+		$module_tabs = is_array( $module_tabs ) ? $module_tabs : array();
+		// Preloader is the first thing a visitor sees, so surface it right after the Engine tab (ahead of the
+		// other module tabs) regardless of module load order.
+		if ( isset( $module_tabs['preloader'] ) ) {
+			$pre = array( 'preloader' => $module_tabs['preloader'] );
+			unset( $module_tabs['preloader'] );
+			$module_tabs = $pre + $module_tabs;
+		}
+		$sub_tabs = array_merge( $engine_tab, $module_tabs );
 
 		// Wrap the sub-tabs in a titled box so this section matches the theme's other
 		// functional settings tabs (General / Header / Blog / Social / Footer), which

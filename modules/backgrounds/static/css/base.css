@@ -4,3 +4,7 @@
 	pointer-events: none; overflow: hidden;
 }
 .upw-bg-canvas { display: block; width: 100%; height: 100%; }
+/* Multiple stacked effects: each effect gets its own absolute layer div (built by the core JS from
+   data-bg-layers). They sit behind the real content and never capture the pointer. */
+.sc-bg-layer { pointer-events: none; }
+.sc-bg--stack { position: relative; }

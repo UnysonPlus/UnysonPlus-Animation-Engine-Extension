@@ -31,6 +31,34 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 		$style_reveals[ $k ] = array();
 	}
 
+	// The "Custom (code)" style reveals three code editors — paste any loader's HTML / CSS / JS to
+	// replicate it verbatim (e.g. an art-directed splash the built-in styles can't reproduce). The
+	// overlay still auto-dismisses on load (honouring Minimum display / Fade out); custom JS may call
+	// window.upwPreloaderDone() to finish early. Admin-authored code, output verbatim on the front end.
+	$style_reveals['custom'] = array(
+		'html' => array(
+			'type'  => 'code-editor',
+			'mode'  => 'htmlmixed',
+			'label' => __( 'Custom HTML', 'fw' ),
+			'desc'  => __( 'Markup placed inside the preloader overlay (the <code>.upw-preloader</code> container). Output verbatim — admin only.', 'fw' ),
+			'value' => '',
+		),
+		'css'  => array(
+			'type'  => 'code-editor',
+			'mode'  => 'css',
+			'label' => __( 'Custom CSS', 'fw' ),
+			'desc'  => __( 'Injected in a &lt;style&gt; tag on the front end. The overlay exposes <code>--pl-bg</code> / <code>--pl-accent</code> you can use.', 'fw' ),
+			'value' => '',
+		),
+		'js'   => array(
+			'type'  => 'code-editor',
+			'mode'  => 'js',
+			'label' => __( 'Custom JS', 'fw' ),
+			'desc'  => __( 'Runs after the markup. Call <code>window.upwPreloaderDone()</code> to dismiss early; otherwise it fades on load.', 'fw' ),
+			'value' => '',
+		),
+	);
+
 	// Alphabetize picker tiles by label for easier scanning.
 	uksort( $style_choices, function ( $a, $b ) use ( $style_choices ) {
 		$la = isset( $style_choices[ $a ]['label'] ) ? $style_choices[ $a ]['label'] : $a;

@@ -20,7 +20,7 @@
  * This file is a thin loader — the module is split into includes/ for maintainability
  * (see modules/AGENTS.md, "Splitting a large module"):
  *   - includes/backgrounds-helpers.php   — setting/enable readers, effect + container registries, color helpers
- *   - includes/backgrounds-settings.php  — the container styling-tab picker + Theme Settings sub-tab
+ *   - includes/backgrounds-settings.php  — the Animations-tab multi-instance picker + Theme Settings sub-tab
  *   - includes/backgrounds-render.php    — the wrapper filter + on-demand asset registration
  *
  * UPW_BACKGROUNDS_DIR is the module root; the render part uses it (not __DIR__) to resolve the

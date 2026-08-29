@@ -5,7 +5,7 @@
 /**
  * Animation Engine — Animated Backgrounds module: runtime.
  *
- * Emits the chosen effect onto the container wrapper (via `sc_build_wrapper_attr`) and registers
+ * Emits the chosen effect(s) onto the element wrapper (via `sc_build_wrapper_attr`) and registers
  * the module's per-style partial layout with the shared on-demand asset loader. Depends on the
  * registries/helpers in backgrounds-helpers.php.
  *
@@ -17,32 +17,18 @@
 /* ------------------------------------------------------------------ *
  * 2) Emit the chosen effect onto the container wrapper.
  * ------------------------------------------------------------------ */
-add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
-	if ( ! upw_bg_enabled() ) {
-		return $attr;
-	}
-	$bg     = ( isset( $atts['bg_effect'] ) && is_array( $atts['bg_effect'] ) ) ? $atts['bg_effect'] : array();
-	$effect = isset( $bg['effect'] ) ? (string) $bg['effect'] : 'none';
-	if ( ! in_array( $effect, upw_bg_effects(), true ) ) {
-		return $attr;
-	}
-	$o = ( isset( $bg[ $effect ] ) && is_array( $bg[ $effect ] ) ) ? $bg[ $effect ] : array();
-
-	$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
-	$attr['class'] = esc_attr( trim( $cls . ' sc-bg sc-bg--' . sanitize_html_class( $effect ) ) );
-	$attr['data-bg'] = esc_attr( $effect );
-
-	// On-demand assets: record this style so ONLY its JS partial (+ CSS partial for the
-	// CSS-only styles) is enqueued, not the whole 35-style bundle.
-	if ( function_exists( 'upw_anim_use_asset' ) ) {
-		upw_anim_use_asset( 'backgrounds', $effect );
-	}
-
-	$add_style = function ( $css ) use ( &$attr ) {
-		$existing      = isset( $attr['style'] ) ? rtrim( (string) $attr['style'], '; ' ) . '; ' : '';
-		$attr['style'] = esc_attr( $existing . $css );
+/**
+ * Resolve ONE background effect + its options into a render config: the data-attrs the JS engine reads +
+ * any CSS-var `style` string. Shared by the wrapper filter (single effect on the wrapper) and the layer
+ * stack (multiple effects → one child layer each). Returns array( 'attrs' => [ 'data-bg-*' => v ], 'style' => '' ).
+ */
+if ( ! function_exists( 'upw_bg_effect_config' ) ) :
+function upw_bg_effect_config( $effect, $o ) {
+	$attr = array();
+	$style = '';
+	$add_style = function ( $css ) use ( &$style ) {
+		$style .= ( '' !== $style ? '; ' : '' ) . rtrim( (string) $css, '; ' );
 	};
-
 	switch ( $effect ) {
 		case 'aurora':
 			$add_style( '--bg-c1:' . upw_bg_css_color( $o['color_a'] ?? '', '#6a8dff' )
@@ -183,8 +169,105 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 			break;
 	}
 
+	return array( 'attrs' => $attr, 'style' => $style );
+}
+endif;
+
+/**
+ * Collect the ACTIVE background-effect slots on a container (bg_effect, bg_effect__2, bg_effect__3) → an
+ * ordered list of resolved layer configs. One effect stays on the wrapper (back-compat, lighter); two or
+ * more are emitted as a `data-bg-layers` JSON the JS engine expands into stacked child layers.
+ */
+add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
+	if ( ! upw_bg_enabled() ) {
+		return $attr;
+	}
+	// Collect EVERY background slot present on this element (bg_effect, bg_effect__2 … __N) — no fixed
+	// cap, so users can stack as many layers as they like. Ordered back-to-front by slot index.
+	$slot_keys = array();
+	foreach ( $atts as $k => $v ) {
+		if ( 'bg_effect' === $k ) {
+			$slot_keys[1] = $k;
+		} elseif ( preg_match( '/^bg_effect__(\d+)$/', $k, $m ) ) {
+			$slot_keys[ (int) $m[1] ] = $k;
+		}
+	}
+	ksort( $slot_keys );
+
+	$layers = array();
+	foreach ( $slot_keys as $slot ) {
+		$bg     = ( isset( $atts[ $slot ] ) && is_array( $atts[ $slot ] ) ) ? $atts[ $slot ] : array();
+		$effect = isset( $bg['effect'] ) ? (string) $bg['effect'] : 'none';
+		if ( 'none' === $effect || ! in_array( $effect, upw_bg_effects(), true ) ) {
+			continue;
+		}
+		$o   = ( isset( $bg[ $effect ] ) && is_array( $bg[ $effect ] ) ) ? $bg[ $effect ] : array();
+		$cfg = upw_bg_effect_config( $effect, $o );
+		$layers[] = array( 'effect' => $effect, 'attrs' => $cfg['attrs'], 'style' => $cfg['style'] );
+		// On-demand assets: record each used style so ONLY its partial ships (not the whole bundle).
+		if ( function_exists( 'upw_anim_use_asset' ) ) {
+			upw_anim_use_asset( 'backgrounds', $effect );
+		}
+	}
+	if ( ! $layers ) {
+		return $attr;
+	}
+	$cls = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
+	if ( count( $layers ) === 1 ) {
+		// SINGLE effect → keep it on the wrapper itself (the JS renders the host directly; lighter markup).
+		$L = $layers[0];
+		$attr['class'] = esc_attr( trim( $cls . ' sc-bg sc-bg--' . sanitize_html_class( $L['effect'] ) ) );
+		$attr['data-bg'] = esc_attr( $L['effect'] );
+		foreach ( $L['attrs'] as $k => $v ) { $attr[ $k ] = $v; }
+		if ( '' !== $L['style'] ) {
+			$ex = isset( $attr['style'] ) ? rtrim( (string) $attr['style'], '; ' ) . '; ' : '';
+			$attr['style'] = esc_attr( $ex . $L['style'] );
+		}
+	} else {
+		// MULTIPLE effects → the JS expands this into one stacked child layer per effect (back-to-front).
+		// NOTE: pass the JSON RAW — the wrapper printer (fw_attr_to_html → fw_htmlspecialchars) escapes
+		// every attr value once. esc_attr() here would DOUBLE-encode the quotes (&amp;quot;) and break
+		// JSON.parse in the browser (the effects would silently never render).
+		$attr['class'] = trim( $cls . ' sc-bg sc-bg--stack' );
+		$attr['data-bg-layers'] = wp_json_encode( $layers );
+	}
 	return $attr;
 }, 23, 2 );
+
+/**
+ * Build a PAGE-WIDE background host — a full-viewport element (fixed by default, so content scrolls over a
+ * still ambient scene; or absolute for a page-height parallax) carrying the same `data-bg` / `data-bg-layers`
+ * the JS engine reads. Used by the theme's Page Settings → Animations tab. $slots = an ordered list of
+ * multi-picker values (`[ 'effect'=>'snow', 'snow'=>[…] ]`). Records each used style so its partial ships.
+ * Returns '' when nothing renders (module off / no valid effect). Escaping is done here (manual attributes),
+ * so it is NOT passed through fw_attr_to_html — a single esc_attr on the JSON is correct.
+ */
+if ( ! function_exists( 'upw_bg_page_host' ) ) :
+function upw_bg_page_host( $slots, $fixed = true ) {
+	if ( ! upw_bg_enabled() || ! is_array( $slots ) ) { return ''; }
+	$layers = array();
+	foreach ( $slots as $bg ) {
+		if ( ! is_array( $bg ) ) { continue; }
+		$effect = isset( $bg['effect'] ) ? (string) $bg['effect'] : 'none';
+		if ( 'none' === $effect || ! in_array( $effect, upw_bg_effects(), true ) ) { continue; }
+		$o   = ( isset( $bg[ $effect ] ) && is_array( $bg[ $effect ] ) ) ? $bg[ $effect ] : array();
+		$cfg = upw_bg_effect_config( $effect, $o );
+		$layers[] = array( 'effect' => $effect, 'attrs' => $cfg['attrs'], 'style' => $cfg['style'] );
+		if ( function_exists( 'upw_anim_use_asset' ) ) { upw_anim_use_asset( 'backgrounds', $effect ); }
+	}
+	if ( ! $layers ) { return ''; }
+	$style = 'position:' . ( $fixed ? 'fixed' : 'absolute' ) . ';inset:0;z-index:-1;pointer-events:none;';
+	if ( count( $layers ) === 1 ) {
+		$L    = $layers[0];
+		$cls  = 'upw-page-bg sc-bg sc-bg--' . sanitize_html_class( $L['effect'] );
+		$attr = ' data-bg="' . esc_attr( $L['effect'] ) . '"';
+		foreach ( $L['attrs'] as $k => $v ) { $attr .= ' ' . $k . '="' . $v . '"'; } // values already esc_attr'd in config
+		if ( '' !== $L['style'] ) { $style .= $L['style']; }
+		return '<div class="' . esc_attr( $cls ) . '" style="' . esc_attr( $style ) . '"' . $attr . ' aria-hidden="true"></div>';
+	}
+	return '<div class="upw-page-bg sc-bg sc-bg--stack" style="' . esc_attr( $style ) . '" data-bg-layers="' . esc_attr( wp_json_encode( $layers ) ) . '" aria-hidden="true"></div>';
+}
+endif;
 
 /* ------------------------------------------------------------------ *
  * 3) On-demand assets. Register the module's per-style partial layout with the shared

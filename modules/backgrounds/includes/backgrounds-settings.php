@@ -5,23 +5,23 @@
 /**
  * Animation Engine — Animated Backgrounds module: option declarations.
  *
- * Declares the "Background Effect" picker injected into the Styling tab of CONTAINER shortcodes
- * (via `fw_shortcode_get_options`), plus the global on/off sub-tab in Theme Settings → Animations
- * → Backgrounds (via `upw_anim_engine_module_tabs`). Depends on the registries/helpers in
- * backgrounds-helpers.php.
+ * Declares the "Background" card added to the Animations tab (via `sc_animation_fields`) as a
+ * MULTI-INSTANCE module — up to 3 effects stack on one element (e.g. petals + rain + embers) — plus
+ * the global on/off sub-tab in Theme Settings → Animations → Backgrounds. The runtime reads slots
+ * bg_effect / bg_effect__2 / bg_effect__3 and layers them (see backgrounds-render.php + core JS).
+ * Depends on the registries/helpers in backgrounds-helpers.php.
  */
 
 /* ------------------------------------------------------------------ *
- * 1) The "Background Effect" picker, injected into container styling tabs.
+ * 1) The "Background" picker — a multi-instance card on the Animations tab.
  * ------------------------------------------------------------------ */
-add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
-	if ( ! is_array( $options ) || ! in_array( $tag, upw_bg_containers(), true ) ) {
-		return $options;
-	}
-	if ( ! isset( $options['tab_styling'] ) || ! isset( $options['tab_styling']['options'] ) || ! is_array( $options['tab_styling']['options'] ) ) {
-		return $options;
-	}
-
+if ( ! function_exists( 'upw_bg_field' ) ) :
+/**
+ * Build the shared "Background Effect" multi-picker (37 effect tiles + per-effect params). Reused by BOTH the
+ * Animations-tab card (below) AND the theme's PAGE-level page-wide background option, so the picker is defined
+ * once. Carries `anim_meta` (inert outside the animation-stack container).
+ */
+function upw_bg_field() {
 	$ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
 	$base = $ext ? $ext->get_declared_URI( '/modules/backgrounds/static/img/effects' ) : '';
 	$bg   = function ( $file, $label ) use ( $base ) {
@@ -44,6 +44,10 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 		'show_borders' => false,
 		'value'        => array( 'effect' => 'none' ),
 		'placeholder'  => __( 'None', 'fw' ),
+		// Ambient category; multi-instance so effects LAYER on one element (petals + rain + embers …).
+		// No hard limit — stack as many as you like. multi_max is the number of pre-declared slots; the
+		// builder modal gets heavier per slot, so it is high (not infinite) and filterable for power users.
+		'anim_meta'    => array( 'category' => __( 'Ambient', 'fw' ), 'icon' => '&#127749;', 'multi' => true, 'multi_max' => max( 1, (int) apply_filters( 'upw_bg_max_layers', 12 ) ) ), // 🌅
 		'picker'       => array(
 			'effect' => array(
 				'type'    => 'image-picker',
@@ -281,24 +285,57 @@ add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
 		),
 	);
 
-	// Place the Background Effect right after the Background control (same group), so the
-	// two sit together. Containers use different group ids (section: group_background,
-	// bleed/masonry: group_styling), so locate the group that actually holds `background`.
-	$placed = false;
-	foreach ( $options['tab_styling']['options'] as &$grp ) {
-		if ( is_array( $grp ) && isset( $grp['options'] ) && is_array( $grp['options'] ) && isset( $grp['options']['background'] ) ) {
-			$grp['options']['bg_effect'] = $bg_field;
-			$placed = true;
-			break;
-		}
-	}
-	unset( $grp );
-	if ( ! $placed ) {
-		$options['tab_styling']['options']['group_bg_effect'] = array(
-			'type'    => 'group',
-			'options' => array( 'bg_effect' => $bg_field ),
-		);
-	}
+	return $bg_field;
+}
+endif;
 
+/* ------------------------------------------------------------------ *
+ * 1) The "Background" picker — a multi-instance card on the Animations tab.
+ * ------------------------------------------------------------------ */
+add_filter( 'sc_animation_fields', function ( $fields ) {
+	if ( is_array( $fields ) ) { $fields['bg_effect'] = upw_bg_field(); }
+	return $fields;
+} );
+
+/* ------------------------------------------------------------------ *
+ * 2) Gate the Background card to CONTAINERS only.
+ *
+ * The Animations-tab field set is built ONCE, globally (memoized, no shortcode context), so a card
+ * added there would otherwise appear on EVERY shortcode's Animations tab. A background layer only
+ * makes sense behind a container that wraps content (section / row / …), so here — with the tag in
+ * hand — we prune the bg_effect* slots from the animation stack of any NON-container shortcode. The
+ * multi-instance machinery still runs on the global build; this only hides the card where it is
+ * meaningless. (Hover / Text Effects stay universal by design — they apply to any element.)
+ * ------------------------------------------------------------------ */
+if ( ! function_exists( 'upw_bg_prune_from_stack' ) ) :
+	function upw_bg_prune_from_stack( &$options ) {
+		if ( ! is_array( $options ) ) {
+			return;
+		}
+		foreach ( $options as $key => &$node ) {
+			if ( ! is_array( $node ) ) {
+				continue;
+			}
+			// An animation-stack container holds the module cards in its 'options'. Strip bg_effect slots.
+			if ( isset( $node['type'] ) && 'animation-stack' === $node['type'] && isset( $node['options'] ) && is_array( $node['options'] ) ) {
+				foreach ( array_keys( $node['options'] ) as $ok ) {
+					if ( 'bg_effect' === $ok || 0 === strpos( (string) $ok, 'bg_effect__' ) ) {
+						unset( $node['options'][ $ok ] );
+					}
+				}
+			}
+			// Recurse into any nested options (tab → box → …) so the stack is found wherever it sits.
+			if ( isset( $node['options'] ) && is_array( $node['options'] ) ) {
+				upw_bg_prune_from_stack( $node['options'] );
+			}
+		}
+		unset( $node );
+	}
+endif;
+
+add_filter( 'fw_shortcode_get_options', function ( $options, $tag ) {
+	if ( is_array( $options ) && ! in_array( $tag, upw_bg_containers(), true ) ) {
+		upw_bg_prune_from_stack( $options );
+	}
 	return $options;
-}, 20, 2 );
+}, 25, 2 );

@@ -49,6 +49,10 @@
 		}, wait);
 	}
 
+	// Public hook: a Custom (code) preloader can call window.upwPreloaderDone() to dismiss early once its
+	// own sequence completes (still honours Minimum display). Otherwise the overlay fades on load below.
+	window.upwPreloaderDone = finish;
+
 	if (document.readyState === 'complete') { finish(); }
 	else { window.addEventListener('load', finish); }
 	setTimeout(finish, 8000); // safety net
