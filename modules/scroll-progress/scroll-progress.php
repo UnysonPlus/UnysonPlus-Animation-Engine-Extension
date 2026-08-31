@@ -130,6 +130,7 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 									'edge'         => $tile( 'edge',         __( 'Side edge', 'fw' ) ),
 									'reading_time' => $tile( 'reading_time', __( 'Time left', 'fw' ) ),
 									'under_nav'    => $tile( 'under_nav',    __( 'Under-nav bar', 'fw' ) ),
+									'custom'       => $tile( 'custom',       __( 'Custom (code)', 'fw' ) ),
 								),
 							),
 						),
@@ -150,6 +151,35 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 							'counter'      => array( 'color' => upw_sp_color( '#2f74e6' ), 'position' => $pos_cnr4, 'hide_top' => $hide ),
 							'reading_time' => array( 'color' => upw_sp_color( '#0e1524' ), 'position' => $pos_cnr4, 'wpm' => $slider( __( 'Words per minute', 'fw' ), 220, 120, 400, 10 ), 'hide_top' => $hide ),
 							'dots'         => array( 'position' => $pos_lr, 'color' => upw_sp_color( '#2f74e6' ), 'hide_top' => $hide ),
+							// The "Custom (code)" style reveals three code editors — paste any scroll-progress
+							// indicator's HTML / CSS / JS to reproduce an art-directed rail the built-in styles can't
+							// (e.g. a vertical side rail with per-chapter markers/labels). The runtime exposes the
+							// current progress as `window.upwScrollProgress` (0..1), a `--sp-progress` CSS var on the
+							// `.upw-sp--custom` container (and :root), and a `upw:scroll` CustomEvent — so a CSS-only or
+							// JS rail can bind to scroll without re-implementing the math. Admin-authored, output verbatim.
+							'custom' => array(
+								'html' => array(
+									'type'  => 'code-editor',
+									'mode'  => 'htmlmixed',
+									'label' => __( 'Custom HTML', 'fw' ),
+									'desc'  => __( 'Markup placed inside the fixed <code>.upw-sp upw-sp--custom</code> container. Output verbatim — admin only. Use the <code>--sp-progress</code> CSS var (0–1) to drive fills/positions.', 'fw' ),
+									'value' => '',
+								),
+								'css'  => array(
+									'type'  => 'code-editor',
+									'mode'  => 'css',
+									'label' => __( 'Custom CSS', 'fw' ),
+									'desc'  => __( 'Injected in a &lt;style&gt; tag on the front end. Target <code>.upw-sp--custom</code>; drive motion from <code>var(--sp-progress)</code> — e.g. <code>transform:scaleY(var(--sp-progress))</code>.', 'fw' ),
+									'value' => '',
+								),
+								'js'   => array(
+									'type'  => 'code-editor',
+									'mode'  => 'js',
+									'label' => __( 'Custom JS', 'fw' ),
+									'desc'  => __( 'Runs after the markup. Read <code>window.upwScrollProgress</code> (0–1) or listen for <code>window.addEventListener("upw:scroll", e =&gt; e.detail)</code>.', 'fw' ),
+									'value' => '',
+								),
+							),
 						),
 					),
 				),
@@ -173,7 +203,7 @@ add_action( 'wp_enqueue_scripts', function () {
 	$base = $ext->get_declared_URI( '/modules/scroll-progress' );
 	$ver  = $ext->manifest->get_version();
 	$dir  = __DIR__;
-	$valid = array( 'bar', 'gradient', 'glow', 'segments', 'pill', 'labeled', 'under_nav', 'liquid', 'edge', 'ring', 'ring_number', 'gauge', 'battery', 'counter', 'reading_time', 'dots' );
+	$valid = array( 'bar', 'gradient', 'glow', 'segments', 'pill', 'labeled', 'under_nav', 'liquid', 'edge', 'ring', 'ring_number', 'gauge', 'battery', 'counter', 'reading_time', 'dots', 'custom' );
 	$s     = fw_get_db_settings_option( 'scrollprog', array() );
 	$kind  = ( is_array( $s ) && isset( $s['kind'] ) && in_array( $s['kind'], $valid, true ) ) ? $s['kind'] : 'bar';
 
@@ -184,6 +214,7 @@ add_action( 'wp_enqueue_scripts', function () {
 		'labeled' => 'bar', 'under_nav' => 'bar', 'liquid' => 'bar', 'edge' => 'bar',
 		'ring' => 'circle', 'ring_number' => 'circle', 'gauge' => 'circle',
 		'battery' => 'battery', 'counter' => 'chip', 'reading_time' => 'chip', 'dots' => 'dots',
+		'custom' => 'custom',
 	);
 	$fam  = isset( $fam_map[ $kind ] ) ? $fam_map[ $kind ] : 'bar';
 	$fver = function ( $rel ) use ( $dir, $ver ) { $abs = $dir . $rel; return file_exists( $abs ) ? $ver . '.' . filemtime( $abs ) : $ver; };
@@ -209,4 +240,35 @@ add_action( 'wp_enqueue_scripts', function () {
 		'hideTop'   => ! isset( $o['hide_top'] ) || $o['hide_top'] === 'yes',
 	);
 	wp_add_inline_script( 'upw-scroll-progress', 'window.upwScrollProgCfg=' . wp_json_encode( $cfg ) . ';', 'before' );
+
+	// CUSTOM (code) style — inject the admin-authored CSS + JS. CSS rides the family stylesheet
+	// (upw-sp-css-custom); JS is appended AFTER custom.js so the progress driver (window.upwScrollProgress /
+	// the --sp-progress CSS var / the 'upw:scroll' event) is already running. Markup is printed in wp_footer.
+	if ( 'custom' === $kind ) {
+		$c_css = isset( $o['css'] ) ? (string) $o['css'] : '';
+		$c_js  = isset( $o['js'] )  ? (string) $o['js']  : '';
+		if ( '' !== trim( $c_css ) ) { wp_add_inline_style( 'upw-sp-css-custom', $c_css ); }
+		if ( '' !== trim( $c_js ) )  { wp_add_inline_script( 'upw-scroll-progress', $c_js ); }
+	}
 }, 20 );
+
+/* ------------------------------------------------------------------ *
+ * 3) Print the Custom (code) rail markup near the end of <body>.
+ * ------------------------------------------------------------------ */
+add_action( 'wp_footer', function () {
+	if ( is_admin() || ! upw_scrollprog_enabled() ) {
+		return;
+	}
+	$s = fw_get_db_settings_option( 'scrollprog', array() );
+	if ( ! is_array( $s ) || ( isset( $s['kind'] ) ? $s['kind'] : 'bar' ) !== 'custom' ) {
+		return;
+	}
+	$o    = ( isset( $s['custom'] ) && is_array( $s['custom'] ) ) ? $s['custom'] : array();
+	$html = isset( $o['html'] ) ? (string) $o['html'] : '';
+	if ( '' === trim( $html ) ) {
+		return;
+	}
+	// Admin-authored markup, output verbatim (like the Customizer's Additional CSS / a code snippet). The
+	// fixed container carries --sp-progress (0..1) so a CSS-only rail can drive fills/positions from it.
+	echo '<div class="upw-sp upw-sp--custom">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput
+}, 5 );

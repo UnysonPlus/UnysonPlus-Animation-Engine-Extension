@@ -257,7 +257,7 @@ function sc_get_gsap_fields() {
                         'mode'  => 'javascript',
                         'label' => __( 'Motion Snippet (GSAP)', 'fw' ),
                         'desc'  => __( 'Write GSAP for this element. You get: el (this element), tl (a timeline already tied to a ScrollTrigger), and gsap. Example: tl.from(el, { y: 60, opacity: 0 }).from(el.querySelectorAll(".card"), { scale: 0.8, stagger: 0.1 }, "<")', 'fw' )
-                            . ' <a href="https://unysonplus.github.io/animation-engine/gsap-generator" target="_blank" rel="noopener noreferrer">' . esc_html__( 'New to GSAP? Open the visual snippet generator →', 'fw' ) . '</a>',
+                            . ' <a href="https://docs.unysonplus.com/animation-engine/gsap-generator" target="_blank" rel="noopener noreferrer">' . esc_html__( 'New to GSAP? Open the visual snippet generator →', 'fw' ) . '</a>',
                         'help'  => __( 'Under the hood: your code runs as new Function("el","tl","gsap", <your code>). The timeline `tl` already has scrollTrigger:{trigger:el, start:"top 80%"}. Add tweens to `tl` (they choreograph together) or use `gsap` directly for your own triggers. Only runs when the page author can unfiltered_html; honours reduce-motion (skipped). Tip: build the effect with the options first, hit Copy on "The GSAP your settings generate", paste it here, then tweak.', 'fw' ),
                         'value' => '',
                     ),

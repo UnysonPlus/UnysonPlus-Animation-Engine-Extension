@@ -1,0 +1,23 @@
+/**
+ * UnysonPlus — Scroll Progress "custom" family base.
+ *
+ * The admin's Custom CSS owns the look; this just gives the fixed container a sane default (a high
+ * stacking context + a starting --sp-progress) and a graceful fade for the shared "Hide at the top"
+ * toggle. Everything here is overridable by the admin's own rules.
+ */
+.upw-sp--custom {
+  --sp-progress: 0;
+  position: fixed;
+  z-index: 2147483000;
+  pointer-events: none;
+}
+.upw-sp--custom > * {
+  pointer-events: auto;
+}
+.upw-sp--custom.is-hidden {
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .upw-sp--custom.is-hidden { transition: none; }
+}

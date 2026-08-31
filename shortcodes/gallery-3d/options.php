@@ -163,7 +163,7 @@ foreach ( $design_groups as $gk => $g ) {
  * design, so the live preview and the front-end view both fall back to carousel_ring — so instead of
  * design controls we reveal this "coming soon" note (with the roadmap link). One shared note, mapped
  * to every soon_* key. */
-$roadmap_url = 'https://unysonplus.github.io/animation-engine/3d-motion-roadmap';
+$roadmap_url = 'https://docs.unysonplus.com/animation-engine/3d-motion-roadmap';
 $soon_reveal = array(
 	'group_soon' => array( 'type' => 'group', 'options' => array(
 		'soon_note' => array(

@@ -1,0 +1,134 @@
+/* =============================================================================
+ * Interactive Reveal — stacked image layers that animate apart (explode / peel /
+ * assemble) on scroll / hover / click, with labelled hotspots. Layer transforms
+ * are applied by interactive-reveal.js from a single progress value; this file is
+ * structure + placement + hotspot styling only.
+ * ========================================================================== */
+.sc-ireveal {
+	position: relative;
+	display: block;
+	width: 100%;
+	overflow: visible; /* parts travel outside the box on reveal */
+}
+.sc-ireveal__layer {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform-origin: center center;
+	will-change: transform, opacity;
+	backface-visibility: hidden;
+}
+.sc-ireveal__layer img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	pointer-events: none;
+	user-select: none;
+}
+
+/* --- Pinned scroll (full-screen pin & scrub) ------------------------------ */
+.sc-ireveal-pin { position: relative; width: 100%; }
+.sc-ireveal-pin__stick {
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	height: 100svh;
+	overflow: visible;
+}
+.sc-ireveal--pinned {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/* --- Placement ------------------------------------------------------------ */
+/* Inline: sized by aspect-ratio / height inline styles (default). */
+.sc-ireveal--background,
+.sc-ireveal--foreground {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+.sc-ireveal--background { z-index: 0; }
+.sc-ireveal--foreground { z-index: 5; }
+/* Decorative = clicks pass through to content behind; Interactive = captures. */
+.sc-ireveal--pointer-decorative { pointer-events: none; }
+.sc-ireveal--pointer-interactive { pointer-events: auto; }
+/* Hotspot labels stay interactive even on a decorative (pass-through) container. */
+.sc-ireveal--pointer-decorative .sc-ireveal__label { pointer-events: auto; }
+
+/* --- Hotspots ------------------------------------------------------------- */
+.sc-ireveal__spots {
+	position: absolute;
+	inset: 0;
+	z-index: 20;
+	pointer-events: none;
+}
+.sc-ireveal__spot {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	display: inline-flex;
+	align-items: center;
+	gap: .4rem;
+	opacity: 0;
+	transition: opacity .35s ease;
+	white-space: nowrap;
+}
+.sc-ireveal__spot.is-on { opacity: 1; }
+.sc-ireveal__dot {
+	flex: 0 0 auto;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--color-primary, #4a90d9);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary, #4a90d9) 28%, transparent);
+	position: relative;
+}
+.sc-ireveal__dot::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	box-shadow: 0 0 0 2px var(--color-primary, #4a90d9);
+	animation: sc-ireveal-pulse 2s ease-out infinite;
+}
+.sc-ireveal__line {
+	flex: 0 0 auto;
+	width: 20px;
+	height: 2px;
+	align-self: center;
+	background: var(--color-primary, #4a90d9);
+	opacity: .8;
+	border-radius: 2px;
+}
+.sc-ireveal__label {
+	font-size: .82rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: #fff;
+	background: rgba(17, 24, 39, .92);
+	padding: .3rem .55rem;
+	border-radius: .4rem;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+}
+@keyframes sc-ireveal-pulse {
+	0%   { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary, #4a90d9) 70%, transparent); opacity: 1; }
+	100% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-primary, #4a90d9) 0%, transparent); opacity: 0; }
+}
+
+/* Toggle affordance when the whole element is clickable. */
+.sc-ireveal--trigger-toggle.sc-ireveal--pointer-interactive { cursor: pointer; }
+
+/* Drag-to-scrub: grab cursor + suppress touch scrolling while scrubbing. */
+.sc-ireveal--trigger-drag { cursor: grab; touch-action: none; }
+.sc-ireveal--trigger-drag.is-dragging { cursor: grabbing; }
+.sc-ireveal--trigger-drag .sc-ireveal__layer img { -webkit-user-drag: none; }
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-ireveal__dot::after { animation: none; }
+}
