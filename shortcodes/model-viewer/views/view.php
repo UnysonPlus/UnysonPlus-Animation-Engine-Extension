@@ -196,6 +196,49 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 			}
 		}
 
+		// --- Scroll Choreography: pin the model in a fixed, z-indexed, transparent layer
+		// and drive its transform / camera-orbit / opacity from scroll via the keyframes.
+		// When on we hand rotation to the scroll runtime (no auto-rotate or drag fighting
+		// it) and let the camera track tightly (low interpolation-decay) so our own
+		// smoothing is the only glide — the pattern proven by GSAP "cinematic scroll" work. ---
+		$choreo_on   = sc_get( 'choreo_enable', $atts, 'no' ) === 'yes';
+		$choreo_json = '';
+		if ( $choreo_on ) {
+			unset( $mv['auto-rotate'], $mv['rotation-per-second'], $mv['auto-rotate-delay'], $mv['camera-controls'], $mv['touch-action'], $mv['interaction-prompt'] );
+			$mv['interpolation-decay'] = '80';
+
+			$keys_raw = sc_get( 'choreo_keys', $atts, array() );
+			$keys     = array();
+			if ( is_array( $keys_raw ) ) {
+				foreach ( $keys_raw as $k ) {
+					$ease = isset( $k['ease'] ) ? (string) $k['ease'] : 'inout';
+					$keys[] = array(
+						'at'  => max( 0, min( 100, (float) ( isset( $k['at'] ) ? $k['at'] : 0 ) ) ),
+						'x'   => (float) ( isset( $k['x'] ) ? $k['x'] : 0 ),
+						'y'   => (float) ( isset( $k['y'] ) ? $k['y'] : 0 ),
+						's'   => (float) ( isset( $k['scale'] ) ? $k['scale'] : 100 ),
+						'yaw' => (float) ( isset( $k['yaw'] ) ? $k['yaw'] : 0 ),
+						'pit' => (float) ( isset( $k['pitch'] ) ? $k['pitch'] : 0 ),
+						'o'   => max( 0, min( 100, (float) ( isset( $k['opacity'] ) ? $k['opacity'] : 100 ) ) ),
+						'e'   => in_array( $ease, array( 'linear', 'inout', 'out', 'in' ), true ) ? $ease : 'inout',
+					);
+				}
+			}
+			usort( $keys, function ( $a, $b ) { return ( $a['at'] < $b['at'] ) ? -1 : ( ( $a['at'] > $b['at'] ) ? 1 : 0 ); } );
+			if ( empty( $keys ) ) {
+				$keys[] = array( 'at' => 0, 'x' => 0, 'y' => 0, 's' => 100, 'yaw' => 0, 'pit' => 0, 'o' => 100, 'e' => 'inout' );
+			}
+			// Pre-set the first pose's orbit so there's no one-frame flash before the runtime binds.
+			$mv['camera-orbit'] = $keys[0]['yaw'] . 'deg ' . ( 90 - $keys[0]['pit'] ) . 'deg auto';
+
+			$choreo_json = wp_json_encode( array(
+				'travel' => max( 1, (int) sc_get( 'choreo_travel', $atts, 3 ) ),
+				'smooth' => max( 0, (int) sc_get( 'choreo_smooth', $atts, 18 ) ),
+				'guide'  => sc_get( 'choreo_guide', $atts, 'no' ) === 'yes',
+				'keys'   => $keys,
+			) );
+		}
+
 		// --- Wrapper: height + solid background via CSS vars. ---
 		$height = trim( (string) sc_get( 'height', $atts, '520' ) );
 		$style  = '';
@@ -209,10 +252,20 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 				: (string) sc_get( 'bg_color', $atts, '#f4f5f7' );
 			$style .= '--model-bg:' . esc_attr( $bg_color ) . ';';
 		}
+		// The shared wrapper builder paints `bg_color` as the wrapper background regardless of the
+		// Background select. model-viewer only wants that colour as the model's own backdrop when
+		// Background is "Solid" (applied just above via --model-bg), so for "Transparent" we drop it
+		// here — otherwise the wrapper shows the default grey behind a model that should be see-through.
+		if ( $background !== 'solid' ) {
+			unset( $atts['bg_color'] );
+		}
 
 		$classes = array( 'fw-model', 'fw-model--bg-' . sanitize_html_class( $background ) );
 		if ( $variants_show ) {
 			$classes[] = 'fw-model--has-variants';
+		}
+		if ( $choreo_on ) {
+			$classes[] = 'fw-model--choreo';
 		}
 
 		if ( function_exists( 'sc_build_wrapper_attr' ) ) {
@@ -226,6 +279,12 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 		$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style;
 		if ( $variants_show ) {
 			$attr['data-variants'] = '1';
+		}
+		if ( $choreo_on ) {
+			$z    = (int) sc_get( 'choreo_layer', $atts, 2 );
+			$size = max( 10, min( 100, (int) sc_get( 'choreo_size', $atts, 60 ) ) );
+			$attr['style']      .= '--choreo-z:' . $z . ';--choreo-size:' . $size . ';';
+			$attr['data-choreo'] = $choreo_json;
 		}
 
 		// --- Render the <model-viewer> tag (boolean attrs = bare presence); hotspots are
@@ -250,7 +309,15 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 			$fallback = '<img class="fw-model__fallback" src="' . esc_url( $poster_url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" />';
 		}
 
-		return '<div ' . fw_attr_to_html( $attr ) . '>' . $mv_html . $bar . $variants_ui . $fallback . '</div>';
+		$body = $mv_html . $bar . $variants_ui . $fallback;
+		if ( $choreo_on ) {
+			// The visible model lives in a fixed, z-indexed, pointer-events-none layer so
+			// page sections scroll over / under it; the wrapper itself is a zero-height
+			// anchor the runtime measures scroll travel from.
+			$body = '<div class="fw-model__fixed">' . $body . '</div>';
+		}
+
+		return '<div ' . fw_attr_to_html( $attr ) . '>' . $body . '</div>';
 	}
 }
 

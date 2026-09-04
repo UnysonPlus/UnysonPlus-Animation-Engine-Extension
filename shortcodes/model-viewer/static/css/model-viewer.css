@@ -136,6 +136,104 @@
 	color: #fff;
 }
 
+/* ---- Scroll Choreography -------------------------------------------------
+   The wrapper collapses to a zero-height anchor (the runtime measures scroll
+   travel from its document position). The visible model is a FIXED, transparent,
+   z-indexed layer with pointer-events off, so page sections scroll over / under
+   it and buttons beneath stay clickable. The runtime sets the model's transform
+   (translate in vw/vh + scale), opacity and camera-orbit from scroll. */
+.fw-model--choreo {
+	height: 0;
+	min-height: 0;
+	overflow: visible;
+}
+.fw-model--choreo .fw-model__fixed {
+	position: fixed;
+	inset: 0;
+	z-index: var(--choreo-z, 2);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;   /* clicks pass through to the page underneath */
+}
+.fw-model--choreo .fw-model__fixed model-viewer {
+	width: calc(var(--choreo-size, 60) * 1vmin);
+	height: calc(var(--choreo-size, 60) * 1vmin);
+	max-width: 96vw;
+	max-height: 96vh;
+	will-change: transform, opacity;
+	transform-origin: center center;
+	background: transparent;
+}
+/* The load bar / variant swatches don't belong on a transparent floating layer. */
+.fw-model--choreo .fw-model__bar { display: none; }
+
+/* ---- Choreography Guide (opt-in authoring overlay) -----------------------
+   Markers are absolutely positioned in the document (they scroll with the page,
+   sitting at each keyframe's scroll depth); the HUD is fixed. Both are inert
+   (pointer-events:none) and sit above everything. Only rendered when the option
+   is on — the author turns it off before publishing. */
+.fw-model__guide {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 0;
+	z-index: 2147483000;
+	pointer-events: none;
+}
+.fw-model__guide-mark {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	height: 0;
+	border-top: 1px dashed rgba(88, 120, 255, .75);
+}
+.fw-model__guide-badge {
+	position: absolute;
+	left: 12px;
+	top: -11px;
+	padding: 2px 9px;
+	border-radius: 999px;
+	background: #3858e9;
+	color: #fff;
+	font: 600 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	white-space: nowrap;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+}
+.fw-model__guide-mark.is-active { border-top-color: #f5a623; }
+.fw-model__guide-mark.is-active .fw-model__guide-badge { background: #f5a623; color: #1d1300; }
+
+.fw-model__guide-hud {
+	position: fixed;
+	right: 14px;
+	bottom: 14px;
+	z-index: 2147483000;
+	min-width: 184px;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: rgba(15, 17, 22, .92);
+	color: #e8ecf5;
+	font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	box-shadow: 0 12px 34px rgba(0, 0, 0, .45);
+	pointer-events: none;
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+}
+.fw-model__guide-row { margin-bottom: 3px; }
+.fw-model__guide-span { color: #aab3c7; }
+.fw-model__guide-pct b { color: #7b90ff; font-size: 14px; }
+.fw-model__guide-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 2px 14px;
+	margin-top: 6px;
+	padding-top: 6px;
+	border-top: 1px solid rgba(255, 255, 255, .12);
+}
+.fw-model__guide-cell { display: flex; justify-content: space-between; gap: 10px; }
+.fw-model__guide-cell i { color: #8b93a7; font-style: normal; }
+
 @media (prefers-reduced-motion: reduce) {
 	/* auto-rotate is stripped in JS; nothing else to animate here. */
 	.fw-model .fw-model__bar > i { transition: none; }

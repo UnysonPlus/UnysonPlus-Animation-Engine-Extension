@@ -380,6 +380,139 @@ $options = [
 		],
 	],
 
+	/* ======================= SCROLL CHOREOGRAPHY ======================= */
+	'tab_scroll' => [
+		'title'   => __( 'Scroll Choreography', 'fw' ),
+		'type'    => 'tab',
+		'options' => [
+			'group_choreo' => [
+				'type'    => 'group',
+				'options' => [
+					'choreo_enable' => [
+						'type'         => 'switch',
+						'label'        => __( 'Choreograph on scroll', 'fw' ),
+						'desc'         => __( 'Pins the model in a fixed, transparent layer and drives its <strong>position, rotation, scale and opacity from scroll</strong> using the keyframes below — so it can drop in, glide corner-to-corner, spin, and fade as the visitor scrolls. Other sections scroll over / under it (see “Layer” below). When on, drag-to-orbit and auto-rotate are turned off (scroll owns the motion).', 'fw' ),
+						'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+						'left-choice'  => [ 'value' => 'no', 'label' => __( 'No', 'fw' ) ],
+						'value'        => 'no',
+					],
+					'choreo_layer' => [
+						'type'       => 'slider',
+						'label'      => __( 'Layer (z-index)', 'fw' ),
+						'desc'       => __( 'Stacking order of the 3D layer. Give a section a <em>higher</em> z-index (in its own settings) to put its text/elements <strong>in front</strong> of the model; a lower one to sit <strong>behind</strong> it. Negative values push the model behind normal content.', 'fw' ),
+						'value'      => 2,
+						'properties' => [ 'min' => -5, 'max' => 50, 'step' => 1 ],
+					],
+					'choreo_size' => [
+						'type'       => 'slider',
+						'label'      => __( 'Model size (%)', 'fw' ),
+						'desc'       => __( 'Base size of the model box, as a percentage of the smaller screen side. Each keyframe’s Scale multiplies this.', 'fw' ),
+						'value'      => 60,
+						'properties' => [ 'min' => 15, 'max' => 100, 'step' => 1 ],
+					],
+					'choreo_travel' => [
+						'type'       => 'slider',
+						'label'      => __( 'Scroll length (screens)', 'fw' ),
+						'desc'       => __( 'How many screen-heights of scrolling the whole choreography spans, measured from where this element sits on the page. Roughly match it to how many sections the model should travel across.', 'fw' ),
+						'value'      => 3,
+						'properties' => [ 'min' => 1, 'max' => 10, 'step' => 1 ],
+					],
+					'choreo_smooth' => [
+						'type'       => 'slider',
+						'label'      => __( 'Scroll smoothing', 'fw' ),
+						'desc'       => __( '0 = locked to the scrollbar (frame-perfect); higher adds glide so the model eases toward its scroll target.', 'fw' ),
+						'value'      => 18,
+						'properties' => [ 'min' => 0, 'max' => 90, 'step' => 1 ],
+					],
+					'choreo_guide' => [
+						'type'         => 'switch',
+						'label'        => __( 'Show choreography guide', 'fw' ),
+						'desc'         => __( 'An on-page authoring aid (turn it OFF before publishing). While on, the front end shows a <strong>marker in the scroll for each keyframe</strong> (“① 0%”, “② 22%”…) so you can see which keyframe lines up with which of your real sections, plus a live <strong>readout</strong> of the current scroll % and the model’s interpolated position, scale, rotation and opacity. Scroll your page with this on to find the exact “At %” for each pose, then switch it off.', 'fw' ),
+						'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+						'left-choice'  => [ 'value' => 'no', 'label' => __( 'No', 'fw' ) ],
+						'value'        => 'no',
+					],
+					'choreo_keys' => [
+						'type'          => 'addable-popup',
+						'label'         => __( 'Keyframes', 'fw' ),
+						'popup-title'   => __( 'Add / Edit Keyframe', 'fw' ),
+						'size'          => 'medium',
+						'desc'          => __( 'Each keyframe is the model’s pose at a point in the scroll (0% = start, 100% = end of the Scroll length above). The model smoothly interpolates between them. Order doesn’t matter — they’re sorted by “At”. Example: a keyframe at 0% up high & transparent, one at 25% centered & solid (drops in), one at 60% moved left + rotated, one at 100% bottom-right & smaller.', 'fw' ),
+						'template'      => '{{=at}}%  ·  x {{=x}} y {{=y}}  ·  scale {{=scale}}%  ·  turn {{=yaw}}° tilt {{=pitch}}°  ·  fade {{=opacity}}%  ·  {{=ease}}',
+						'popup-options' => [
+							'at' => [
+								'type'       => 'slider',
+								'label'      => __( 'At (scroll %)', 'fw' ),
+								'desc'       => __( 'Where in the scroll this pose is reached. 0 = start, 100 = end.', 'fw' ),
+								'value'      => 0,
+								'properties' => [ 'min' => 0, 'max' => 100, 'step' => 1 ],
+							],
+							'x' => [
+								'type'       => 'slider',
+								'label'      => __( 'X position (%)', 'fw' ),
+								'desc'       => __( 'Horizontal offset from center, as % of viewport width. Negative = left, positive = right.', 'fw' ),
+								'value'      => 0,
+								'properties' => [ 'min' => -100, 'max' => 100, 'step' => 1 ],
+							],
+							'y' => [
+								'type'       => 'slider',
+								'label'      => __( 'Y position (%)', 'fw' ),
+								'desc'       => __( 'Vertical offset from center, as % of viewport height. Negative = up, positive = down.', 'fw' ),
+								'value'      => 0,
+								'properties' => [ 'min' => -100, 'max' => 100, 'step' => 1 ],
+							],
+							'scale' => [
+								'type'       => 'slider',
+								'label'      => __( 'Scale (%)', 'fw' ),
+								'desc'       => __( 'Size multiplier at this keyframe (100 = the base Model size).', 'fw' ),
+								'value'      => 100,
+								'properties' => [ 'min' => 10, 'max' => 300, 'step' => 1 ],
+							],
+							'yaw' => [
+								'type'       => 'slider',
+								'label'      => __( 'Rotate — turntable (°)', 'fw' ),
+								'desc'       => __( 'Spins the model left/right around its vertical axis (camera orbit). Go past ±360 across keyframes for multiple turns.', 'fw' ),
+								'value'      => 0,
+								'properties' => [ 'min' => -720, 'max' => 720, 'step' => 5 ],
+							],
+							'pitch' => [
+								'type'       => 'slider',
+								'label'      => __( 'Rotate — tilt (°)', 'fw' ),
+								'desc'       => __( 'Tips the view up/down. Positive looks down from above, negative looks up from below.', 'fw' ),
+								'value'      => 0,
+								'properties' => [ 'min' => -80, 'max' => 80, 'step' => 5 ],
+							],
+							'opacity' => [
+								'type'       => 'slider',
+								'label'      => __( 'Opacity (%)', 'fw' ),
+								'desc'       => __( 'Fade the model in or out at this keyframe.', 'fw' ),
+								'value'      => 100,
+								'properties' => [ 'min' => 0, 'max' => 100, 'step' => 1 ],
+							],
+							'ease' => [
+								'type'    => 'select',
+								'label'   => __( 'Easing (into this pose)', 'fw' ),
+								'value'   => 'inout',
+								'choices' => [
+									'linear' => __( 'Linear (constant)', 'fw' ),
+									'inout'  => __( 'Smooth (ease in-out)', 'fw' ),
+									'out'    => __( 'Ease out (fast → slow)', 'fw' ),
+									'in'     => __( 'Ease in (slow → fast)', 'fw' ),
+								],
+							],
+						],
+						'value'         => [
+							[ 'at' => 0,   'x' => 0,   'y' => -55, 'scale' => 80,  'yaw' => -40, 'pitch' => 12, 'opacity' => 0,   'ease' => 'out' ],
+							[ 'at' => 25,  'x' => 0,   'y' => 0,   'scale' => 100, 'yaw' => 0,   'pitch' => 0,  'opacity' => 100, 'ease' => 'out' ],
+							[ 'at' => 60,  'x' => -28, 'y' => 8,   'scale' => 92,  'yaw' => 130, 'pitch' => -4, 'opacity' => 100, 'ease' => 'inout' ],
+							[ 'at' => 100, 'x' => 34,  'y' => 30,  'scale' => 66,  'yaw' => 240, 'pitch' => 0,  'opacity' => 100, 'ease' => 'inout' ],
+						],
+					],
+				],
+			],
+		],
+	],
+
 	/* ============================= STYLING ============================= */
 	'tab_styling' => [
 		'title'   => __( 'Styling', 'fw' ),
