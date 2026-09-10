@@ -1,0 +1,35 @@
+/* Rive Animation element — a <canvas> the Rive runtime draws into, with a poster fallback that stays
+   visible until the runtime is ready (and as the still image when reduce-motion / no-WebGL). */
+
+.fw-rive {
+	position: relative;
+	width: 100%;
+	height: var(--rive-h, 360px);
+	background: var(--rive-bg, transparent);
+}
+.fw-rive__canvas { display: block; width: 100%; height: 100%; }
+
+/* "Trim empty space": once the runtime knows the artboard aspect ratio, the wrapper narrows to that
+   exact box (centered) so a contained artboard has no dead hover space to its sides. --rive-aspect is
+   set by the runtime after load; --rive-h is the author's height. */
+.fw-rive--snug { width: calc(var(--rive-h, 360px) * var(--rive-aspect, 1)); max-width: 100%; margin-inline: auto; }
+
+.fw-rive__poster {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	opacity: 1;
+	transition: opacity .5s ease;
+	pointer-events: none;
+}
+.fw-rive.is-ready .fw-rive__poster { opacity: 0; }
+
+/* Interactive triggers get a pointer affordance. */
+.fw-rive--hover, .fw-rive--click { cursor: pointer; }
+.fw-rive:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-rive__poster { transition: none; }
+}

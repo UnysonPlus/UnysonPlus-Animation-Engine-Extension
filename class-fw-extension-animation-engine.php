@@ -27,6 +27,9 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		// Allow .glb / .gltf model uploads in the Media Library (for [model_viewer]).
 		require_once dirname( __FILE__ ) . '/includes/glb-upload.php';
 
+		// Allow .riv (Rive animation) uploads in the Media Library — for the [rive] element.
+		require_once dirname( __FILE__ ) . '/includes/riv-upload.php';
+
 		// Shared on-demand, per-style asset loader (a style's CSS/JS ships only on
 		// pages that use it). Loaded before modules so they can register at load.
 		require_once dirname( __FILE__ ) . '/includes/asset-loader.php';
