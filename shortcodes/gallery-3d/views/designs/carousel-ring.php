@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Carousel Ring — a rotating ring / cylinder of cards.
+ * Motion Gallery design: Carousel Ring — a rotating ring / cylinder of cards.
  *
  * @var callable $dp          per-design option reader
  * @var callable $render_card renders one card's inner markup
@@ -20,7 +20,8 @@ $dir      = ( $motion_dir === 'right' ) ? -1 : 1;
 $hover    = $motion_hover;
 $momentum = $dp( 'drag_momentum', 'yes' ) === 'yes' ? 1 : 0;
 $tilt     = max( -60, min( 60, (float) $dp( 'tilt', -28 ) ) );
-$roll     = max( -45, min( 45, (float) $dp( 'roll', 0 ) ) );          // our extra "Diagonal Tilt"; off by default (animos has none)
+$sway     = max( 0, min( 45, (float) $dp( 'sway', 0 ) ) );
+$roll     = max( -45, min( 45, (float) $dp( 'roll', 0 ) ) );          // our extra "Diagonal Tilt"; off by default (the reference has none)
 $opening  = max( 0, min( 100, (float) $dp( 'ring_opening', 55 ) ) );
 $ring     = max( 40, min( 140, (float) $dp( 'ring_size', 80 ) ) );
 $spacing  = max( 60, min( 180, (float) $dp( 'spacing', 100 ) ) );      // our extra "Card Spacing"
@@ -40,6 +41,7 @@ $attr['data-tdg-hover']    = esc_attr( $hover );
 $attr['data-tdg-momentum'] = esc_attr( $momentum );
 $attr['data-tdg-allowdrag'] = esc_attr( $allowdrag );
 $attr['data-tdg-tilt']     = esc_attr( $tilt );
+$attr['data-tdg-sway']     = esc_attr( $sway );
 $attr['data-tdg-roll']     = esc_attr( $roll );
 $attr['data-tdg-opening']  = esc_attr( $opening );
 $attr['data-tdg-ring']     = esc_attr( $ring );

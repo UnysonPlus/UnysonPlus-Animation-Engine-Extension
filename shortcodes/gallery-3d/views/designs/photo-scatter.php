@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Photo Scatter — photos scattered flat on a tabletop (the "desk" look).
+ * Motion Gallery design: Photo Scatter — photos scattered flat on a tabletop (the "desk" look).
  *
  * Cards settle at seeded random positions/rotations/sizes, glide in from the edges with a stagger,
  * dwell, then sweep out while the next set slides in (when the pool exceeds Cards per Set). Cycle

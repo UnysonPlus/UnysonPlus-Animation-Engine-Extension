@@ -42,8 +42,33 @@
 			(typeof window.upwIsMobile === 'function' ? window.upwIsMobile() : (window.matchMedia && window.matchMedia('(max-width: 767px)').matches));
 	}
 
-	// 0..1 progress for the element: story-scene slice if inside a Scroll Story, else viewport travel.
+	// Pin · Hold · Exit: wrap the element in a sticky "runway" so it holds on screen while its keyframes
+	// scrub. The element stays position:sticky at the top for `pin` screen-heights, then its exit keyframe
+	// carries it off. Least-invasive — the element keeps its own box; only a wrapper is added.
+	function pinWrap(el) {
+		var screens = parseFloat(el.getAttribute('data-upw-skf-pin')) || 0;
+		if (!screens || el.__skfPinned || !el.parentNode) { return; }
+		el.__skfPinned = true;
+		var runway = document.createElement('div');
+		runway.className = 'sc-skf-runway';
+		runway.style.cssText = 'position:relative;height:' + (screens * 100) + 'vh;';
+		el.parentNode.insertBefore(runway, el);
+		runway.appendChild(el);
+		el.style.position = 'sticky';
+		el.style.top = '0';
+		el.__skfRunway = runway;
+	}
+	function pinProgress(el) {
+		var runway = el.__skfRunway, vh = window.innerHeight || 1;
+		var total = runway.offsetHeight - (el.offsetHeight || vh); // scroll distance while the element sticks
+		if (total <= 0) { return 0; }
+		return clamp((-runway.getBoundingClientRect().top) / total, 0, 1);
+	}
+
+	// 0..1 progress for the element: pin runway if pinned, else story-scene slice inside a Scroll Story,
+	// else viewport travel.
 	function progressOf(el, cache) {
+		if (el.__skfRunway) { return pinProgress(el); }
 		if (!cache.story && el.closest) { cache.story = el.closest('.upw-story--stage') || false; }
 		var story = cache.story;
 		if (story && typeof story.__storyProgress === 'number') {
@@ -103,6 +128,7 @@
 		// Fill any missing prop with its identity so every segment interpolates cleanly.
 		kf.forEach(function (k) { KEYS.forEach(function (key) { if (k.v[key] == null) { k.v[key] = IDENT[key]; } }); });
 
+		if (el.hasAttribute('data-upw-skf-pin')) { pinWrap(el); } // Pin · Hold · Exit → sticky runway
 		el.style.willChange = 'transform, opacity, filter';
 		var cache = { story: null, scene: undefined };
 		var lastP = -1;

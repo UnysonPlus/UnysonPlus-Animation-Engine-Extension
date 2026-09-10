@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Device Cycler — a device frame (laptop / tablet / phone / browser) whose SCREEN
+ * Motion Gallery design: Device Cycler — a device frame (laptop / tablet / phone / browser) whose SCREEN
  * cycles through your images, one at a time, like a product showing off its view modes. Each image is
  * one "screen" state; the driver cross-fades (or slides / cuts) between them, driven by scroll (best
  * inside a pinned Scroll Story scene, where it scrubs with the scene) or an automatic dwell timer.

@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Panorama Wall — a concave cylinder grid. The viewer sits inside a cylinder whose
+ * Motion Gallery design: Panorama Wall — a concave cylinder grid. The viewer sits inside a cylinder whose
  * inner wall is tiled with a grid of cards (Columns × Rows). Columns wrap toward the viewer at the
  * left/right edges and scroll horizontally; rows stack to fill the frame. gallery-3d.js (initWall)
  * positions everything from the data-* attrs — we just emit Columns cards per Row (cycling the images,

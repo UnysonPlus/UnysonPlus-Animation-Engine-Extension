@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Totem Wall — a flat row of INDEPENDENT vertical cylinders ("totems"). Unlike
+ * Motion Gallery design: Totem Wall — a flat row of INDEPENDENT vertical cylinders ("totems"). Unlike
  * Sphere Cascade (every column on ONE shared sphere), each column here is its own vertical barrel:
  * it sits at a fixed X and its cards wrap around that column's own horizontal axis into a rounded
  * pillar, cascading vertically (up / down / alternate) and recycling at the wrap. Signed Curvature

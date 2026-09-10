@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Card Tunnel — an infinite perspective corridor. Four walls (ceiling / floor /
+ * Motion Gallery design: Card Tunnel — an infinite perspective corridor. Four walls (ceiling / floor /
  * left / right), each a ribbon of cards tiled along the tunnel axis, recede to a central vanishing
  * point and fly Forward or Backward, recycling seamlessly. Tunnel Size sets the corridor width, Card
  * Length the per-card depth, Depth Fade dims the far end. gallery-3d.js (initTunnel) sizes + places
@@ -40,6 +40,8 @@ $attr['data-tdg-tsize']     = esc_attr( $tsize );
 $attr['data-tdg-clen']      = esc_attr( $clen );
 $attr['data-tdg-gap']       = esc_attr( $gap );
 $attr['data-tdg-dfade']     = esc_attr( $dfade );
+$attr['data-tdg-spiral']    = esc_attr( max( -360, min( 360, (float) $dp( 'spiral', 0 ) ) ) );
+$attr['data-tdg-square']    = esc_attr( ( $dp( 'square', 'no' ) === 'yes' ) ? 1 : 0 );
 $attr['data-tdg-count']     = esc_attr( count( $items ) );
 
 $ni    = max( 1, count( $items ) );

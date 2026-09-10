@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery options. A popover Design picker (like the engine's other pickers) selects the 3D
+ * Motion Gallery options. A popover Design picker (like the engine's other pickers) selects the 3D
  * layout; each design reveals ITS OWN controls, so designs stay self-contained and more slot in
  * trivially. Shared card controls (Box Style, shadow, captions, lightbox) live on the Style tab.
  *
@@ -75,6 +75,7 @@ $motion_picker = function ( $auto_key, $auto_label, $speed_def, $speed_min, $spe
 			'scroll' => array(
 				'pin'           => $switch( __( 'Pin while scrubbing', 'fw' ), 'yes', __( 'Hold the gallery on screen while the visitor scrolls — their scrolling drives the motion across the whole pinned stretch, then the page continues. Off = it scrolls past like normal content. No effect as a Section Background.', 'fw' ) ),
 				'scroll_length' => $slider( __( 'Scroll Length (viewports)', 'fw' ), 2.5, 1, 5, 0.5, __( 'How much scrolling the pin holds, in screen-heights. Longer = a slower, more cinematic scrub.', 'fw' ) ),
+				'rounds'        => $slider( __( 'Rounds per scroll', 'fw' ), 1, 0.25, 6, 0.25, __( 'How far the scrub travels across the pin. Rotating designs (Ring, Wheel, Orbit…) read it as full turns; flowing designs (walls, tunnels, reels, strips…) read it as passes — the deck travels its length that many times. Pair with Entrance (Style tab) for a scroll choreography — the images fade in one by one at the start and out one by one at the end.', 'fw' ) ),
 				'direction'     => $dir,
 			),
 		),
@@ -92,6 +93,17 @@ $height_field = array(
 $bg_field = function_exists( 'sc_color_field_compact' )
 	? sc_color_field_compact( array( 'label' => __( 'Stage Background', 'fw' ), 'kind' => 'bg', 'desc' => __( 'Behind the scene. Leave empty for transparent.', 'fw' ) ) )
 	: array( 'type' => 'color-picker', 'label' => __( 'Stage Background', 'fw' ) );
+$overflow_field = array(
+	'type'    => 'select',
+	'label'   => __( 'Stage Overflow', 'fw' ),
+	'value'   => 'clip',
+	'choices' => array(
+		'clip'  => __( 'Clip to stage (default)', 'fw' ),
+		'spill' => __( 'Spill (show cards in full)', 'fw' ),
+	),
+	'desc'    => __( 'Clip contains everything to the Stage Height box. Spill lets fanned / oversized cards show in full beyond it — use this for the fan / wheel designs where the frame would otherwise cut cards off, so you don\'t have to over-size the Stage Height.', 'fw' ),
+	'help'    => __( 'Spill only changes what\'s visible, not the reserved layout height — so spilled cards can overlap whatever sits directly above or below. Leave some vertical space around the gallery. Ignored while the gallery is a Section Background or pinned for scroll-scrub (those own their own clipping).', 'fw' ),
+);
 
 /* ---- Design tiles for the popover picker ---- */
 $ae       = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
@@ -100,7 +112,7 @@ $img_base = $ae ? $ae->get_declared_URI( '/shortcodes/gallery-3d/static/img/desi
 // builder instead of serving the browser-cached old image at the same URL (this bit the Photo
 // Scatter tile — the redrawn SVG kept showing the stale carousel-lookalike until a hard refresh).
 $img_ver  = ( $ae && $ae->manifest ) ? '?v=' . rawurlencode( $ae->manifest->get_version() ) : '';
-// Category => designs (mirrors the animos grouping; the picker shows these as tabs).
+// Category => designs (mirrors the reference grouping; the picker shows these as tabs).
 $design_groups = array(
 	'grp_3dp' => array(
 		'label'   => __( '3D & Perspective', 'fw' ),
@@ -135,7 +147,7 @@ $design_groups = array(
 	 * can never render an empty gallery — the preview and the view both fall back to carousel_ring.
 	 * Their reveal (below) is a "coming soon" note instead of controls. Tile art: static/img/designs/
 	 * soon-*.svg (a muted family glyph + a SOON ribbon). */
-	'grp_carousel'  => array( 'label' => __( 'Carousel & Flow', 'fw' ),   'designs' => array( 'card_reel' => __( 'Card Reel', 'fw' ), 'film_strip' => __( 'Film Strip', 'fw' ), 'wheel_carousel' => __( 'Wheel Carousel', 'fw' ), 'cover_flow' => __( 'Cover Flow', 'fw' ), 'carousel_flow' => __( 'Carousel Flow', 'fw' ), 'hero_reel' => __( 'Hero Reel', 'fw' ), 'mosaic_marquee' => __( 'Mosaic Marquee', 'fw' ) ) ),
+	'grp_carousel'  => array( 'label' => __( 'Carousel & Flow', 'fw' ),   'designs' => array( 'card_reel' => __( 'Card Reel', 'fw' ), 'film_strip' => __( 'Film Strip', 'fw' ), 'wheel_carousel' => __( 'Wheel Carousel', 'fw' ), 'cover_flow' => __( 'Cover Flow', 'fw' ), 'carousel_flow' => __( 'Carousel Flow', 'fw' ), 'hero_reel' => __( 'Hero Reel', 'fw' ), 'focus_slider' => __( 'Focus Slider', 'fw' ), 'mosaic_marquee' => __( 'Mosaic Marquee', 'fw' ) ) ),
 	'grp_grid'      => array( 'label' => __( 'Grid', 'fw' ),              'designs' => array( 'soon_grid' => __( 'Grid', 'fw' ) ),                     'soon' => true ),
 	'grp_iso'       => array( 'label' => __( 'Isometric', 'fw' ),         'designs' => array( 'soon_isometric' => __( 'Isometric', 'fw' ) ),           'soon' => true ),
 	'grp_orbit'     => array( 'label' => __( 'Orbit', 'fw' ),             'designs' => array( 'soon_orbit' => __( 'Orbit', 'fw' ) ),                   'soon' => true ),
@@ -173,7 +185,7 @@ $soon_reveal = array(
 			'html'  => '<div class="upw-soon-note"><span class="upw-soon-note__b">' . esc_html__( 'Coming soon.', 'fw' ) . '</span> '
 				. sprintf(
 					/* translators: %s = roadmap link */
-					esc_html__( 'This design isn\'t available yet — the 3D Gallery library is growing, with 50+ designs planned across these families. Pick an available design above, or %s.', 'fw' ),
+					esc_html__( 'This design isn\'t available yet — the Motion Gallery library is growing, with 50+ designs planned across these families. Pick an available design above, or %s.', 'fw' ),
 					'<a href="' . esc_url( $roadmap_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'see the roadmap →', 'fw' ) . '</a>'
 				) . '</div>',
 		),
@@ -195,6 +207,7 @@ $carousel_ring_opts = array(
 	) ),
 	'group_ss_ring' => array( 'type' => 'group', 'options' => array(
 		'tilt'        => $slider( __( 'Ring Tilt (°)', 'fw' ), -28, -60, 60, 1, __( 'Tips the ring toward or away from the viewer.', 'fw' ) ),
+		'sway'        => $slider( __( 'Vertical Sway (°)', 'fw' ), 0, 0, 45, 1, __( 'Rocks the ring up and down as it spins (twice per turn), so you orbit it from shifting heights — a “product orbit” look. 0 = a flat carousel.', 'fw' ) ),
 		'ring_opening' => $slider( __( 'Ring Opening (%)', 'fw' ), 55, 0, 100, 1, __( 'How far the ring opens; low flattens it toward edge-on, high opens the loop.', 'fw' ) ),
 		'roll'        => $slider( __( 'Diagonal Tilt (°)', 'fw' ), 0, -45, 45, 1, __( 'Rolls the whole ring to a diagonal — negative rolls the other way.', 'fw' ) ),
 		'ring_size'   => $slider( __( 'Ring Size (%)', 'fw' ), 80, 40, 140, 1, __( 'Radius of the ring.', 'fw' ) ),
@@ -208,7 +221,7 @@ $carousel_ring_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 30, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_ss_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_ss_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 $panorama_wall_opts = array(
@@ -232,7 +245,7 @@ $panorama_wall_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 2, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 30, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_sw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_sw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 $card_sphere_opts = array(
@@ -254,7 +267,7 @@ $card_sphere_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 2, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 30, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_cg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_cg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 $orbit_globe_opts = array(
@@ -274,7 +287,7 @@ $orbit_globe_opts = array(
 		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 2, 0, 60, 1 ),
 	) ),
-	'group_og_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_og_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Photo Scatter — photos scattered flat on a tabletop (the "desk" look): seeded random positions +
@@ -355,7 +368,7 @@ $photo_scatter_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 4, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 30, 0.5, __( 'Inner frame around each image — pair with a white Box Preset for the polaroid look.', 'fw' ) ),
 	) ),
-	'group_ps_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_ps_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* ---- Card Stack: a deck of image cards — the top one is featured; the rest peek behind it and the
@@ -386,7 +399,7 @@ $card_stack_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 14, 0, 40, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5 ),
 	) ),
-	'group_cs_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_cs_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Post types offered by the Post Type source: public + featured-image support, built dynamically so
@@ -422,7 +435,7 @@ $device_cycler_opts = array(
 		'card_size'     => $slider( __( 'Device Size (%)', 'fw' ), 62, 8, 100, 1, __( 'Device width as a % of the stage width. Small values make a compact device (e.g. a phone tucked in a corner).', 'fw' ) ),
 		'corner_radius' => $slider( __( 'Screen Corner (px)', 'fw' ), 4, 0, 40, 1 ),
 	) ),
-	'group_dc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_dc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Sphere Cascade — the vertical, spherical sibling of Panorama Wall. Columns of cards cascade
@@ -446,7 +459,7 @@ $sphere_cascade_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 4, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 13, 0, 30, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_sc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_sc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Totem Wall — a flat row of INDEPENDENT vertical cylinders. Each column wraps its own cards around a
@@ -470,7 +483,7 @@ $totem_wall_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_tw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_tw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Parallax Totem — the depth-scatter sibling of Totem Wall. The same vertical totems, but each card
@@ -497,7 +510,7 @@ $parallax_totem_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_pt_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_pt_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Card Tunnel — an infinite perspective corridor. Four walls of cards recede to a vanishing point and
@@ -514,11 +527,13 @@ $card_tunnel_opts = array(
 		'card_length' => $slider( __( 'Card Length (%)', 'fw' ), 30, 5, 120, 1, __( 'How long each card is along the tunnel — higher makes fewer, longer panels streaking past.', 'fw' ) ),
 		'gap'         => $slider( __( 'Gap (%)', 'fw' ), 2, 0, 20, 0.5, __( 'Space between cards along the tunnel, as a % of the card length.', 'fw' ) ),
 		'depth_fade'  => $slider( __( 'Depth Fade (%)', 'fw' ), 0, 0, 100, 1, __( 'Fades the cards toward the far end of the tunnel into the background — 100% dissolves the depths into the dark.', 'fw' ) ),
+		'spiral'      => $slider( __( 'Spiral (°)', 'fw' ), 0, -360, 360, 5, __( 'Rolls the whole corridor as it flies, so the walls spiral past. 0 = a straight tunnel; higher twists it into a helix. Great on Motion → Scroll-scrub.', 'fw' ) ),
+		'square'      => $switch( __( 'Square cross-section', 'fw' ), 'no', __( 'Force an equal-sided (square) corridor instead of matching the stage’s shape — a clean, symmetrical image tunnel.', 'fw' ) ),
 	) ),
 	'group_ct_card' => array( 'type' => 'group', 'options' => array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 	) ),
-	'group_ct_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_ct_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Spiral Stream — cards threaded along a 3D helix that streams past the camera, rotating around their
@@ -547,7 +562,7 @@ $spiral_stream_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_sp_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_sp_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Depth Stack — a deck of cards receding into depth, streaming toward the camera. Spread (Fan) or
@@ -573,7 +588,12 @@ $depth_stack_opts = array(
 			'type'    => 'select',
 			'label'   => __( 'Layout', 'fw' ),
 			'value'   => 'fan',
-			'choices' => array( 'fan' => __( 'Fan (spread along an angle)', 'fw' ), 'scatter' => __( 'Scatter (random)', 'fw' ) ),
+			'choices' => array(
+				'fan'     => __( 'Fan (spread along an angle)', 'fw' ),
+				'scatter' => __( 'Scatter (random)', 'fw' ),
+				'aisle'   => __( 'Aisle (cards to both sides — dolly down the middle)', 'fw' ),
+				'field'   => __( 'Field (a scattered cloud you fly through)', 'fw' ),
+			),
 			'desc'    => __( 'Fan trails the deck out along Spread Angle; Scatter throws the cards to seeded random offsets.', 'fw' ),
 		),
 	) ),
@@ -583,7 +603,7 @@ $depth_stack_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_dz_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_dz_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Card Reel — a vertical cover-flow carousel (Carousel & Flow). A single column of cards wraps around
@@ -606,7 +626,7 @@ $card_reel_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_cr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_cr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Film Strip — the horizontal sibling of Card Reel (Carousel & Flow). A single row of cards wraps
@@ -629,7 +649,7 @@ $film_strip_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_fs_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_fs_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Wheel Carousel — cards fanned on a big Ferris-style wheel (hub below the frame, only the top arc
@@ -653,14 +673,14 @@ $wheel_carousel_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_wc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_wc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 $orient_field = array( 'label' => __( 'Orientation', 'fw' ), 'type' => 'select', 'value' => 'horizontal', 'choices' => array( 'horizontal' => __( 'Horizontal', 'fw' ), 'vertical' => __( 'Vertical', 'fw' ) ), 'desc' => __( 'Which way the flow runs. Horizontal slides left/right; Vertical slides up/down.', 'fw' ) );
 
 /* Cover Flow — the classic album cover flow: centre card facing you, immediate neighbours tilted to
  * Side Tilt and receding, further cards stacked compressed behind. Horizontal OR Vertical (Orientation)
- * — this one design covers animos's Cover Flow and Cover Flow Vertical. */
+ * — this one design covers the reference's Cover Flow and Cover Flow Vertical. */
 $cover_flow_opts = array(
 	'group_cvf_motion' => array( 'type' => 'group', 'options' => array(
 		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 20, 5, 90, array( 'forward' => __( 'Forward', 'fw' ), 'backward' => __( 'Backward', 'fw' ) ) ),
@@ -679,7 +699,7 @@ $cover_flow_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_cvf_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_cvf_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Carousel Flow — a flat focus carousel: centre card full size, side cards scaled down (Side Card
@@ -702,7 +722,7 @@ $carousel_flow_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_caf_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_caf_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Hero Reel — a horizontal reel of thumbnail cards over a full-bleed HERO background. The card stepping
@@ -730,7 +750,36 @@ $hero_reel_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 8, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
 	) ),
-	'group_hr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_hr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Focus Slider — a horizontal (or vertical) auto-advancing slider where the card passing through the
+ * centre is "focused" (scales up via Center Scale). Slide Portion sets the card spacing (low = cinematic
+ * overlap, high = spread); Zigzag pushes off-centre cards alternately up/down. A flat 2D design. */
+$focus_slider_opts = array(
+	'group_fs_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 24, 5, 90, array( 'left' => __( 'Left / Up', 'fw' ), 'right' => __( 'Right / Down', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to slide', 'fw' ), 'yes', __( 'Let visitors grab and step the slider by hand — layers on top of any Motion (grabbing pauses it, releasing snaps to the nearest card). No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep flowing after releasing a drag (Drag to slide).', 'fw' ) ),
+	) ),
+	'group_fs_slider' => array( 'type' => 'group', 'options' => array(
+		'axis'          => array( 'label' => __( 'Direction', 'fw' ), 'type' => 'select', 'value' => 'horizontal', 'choices' => array( 'horizontal' => __( 'Horizontal', 'fw' ), 'vertical' => __( 'Vertical', 'fw' ) ) ),
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 78, 20, 100, 1, __( 'Size of the FOCUSED (centre) card as a % of the stage (its height for Horizontal, its width for Vertical). The other cards shrink from this by Center Scale.', 'fw' ) ),
+		'center_scale'  => $slider( __( 'Center Scale (%)', 'fw' ), 200, 100, 300, 1, __( 'How much bigger the centre (focused) card is than its neighbours. 200% = the neighbours are half its size.', 'fw' ) ),
+		'slide_portion' => $slider( __( 'Slide Portion (%)', 'fw' ), 60, 20, 100, 1, __( 'Centre-to-centre spacing along the slide. Low = cards overlap (cinematic); high = spread apart.', 'fw' ) ),
+		'card_spacing'  => $slider( __( 'Gap (%)', 'fw' ), 6, 0, 40, 0.5, __( 'Extra gap between cards, as a % of the card size.', 'fw' ) ),
+		'hold'          => $slider( __( 'Hold (%)', 'fw' ), 50, 0, 100, 1, __( 'How long the slider holds on each card before advancing to the next.', 'fw' ) ),
+	) ),
+	'group_fs_zigzag' => array( 'type' => 'group', 'options' => array(
+		'zigzag'      => $slider( __( 'Zigzag Offset (%)', 'fw' ), 0, 0, 100, 1, __( 'Shift off-centre cards perpendicular to the slide (up/down for Horizontal, left/right for Vertical). 0 = a straight line.', 'fw' ) ),
+		'zigzag_mode' => array( 'label' => __( 'Zigzag Mode', 'fw' ), 'type' => 'select', 'value' => 'alternate', 'choices' => array( 'alternate' => __( 'Alternate (flip each step)', 'fw' ), 'fixed' => __( 'Fixed (by card)', 'fw' ) ) ),
+	) ),
+	'group_fs_card' => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 8, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card size.', 'fw' ) ),
+	) ),
+	'group_fs_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 /* Mosaic Marquee — a horizontal marquee of cards packed masonry-style (varied sizes), scrolling
@@ -752,7 +801,7 @@ $mosaic_marquee_opts = array(
 		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 18, 0, 60, 1 ),
 		'padding'       => $slider( __( 'Padding (%)', 'fw' ), 6, 0, 20, 0.5, __( 'Inset around the whole mosaic — the background shows in this margin and in the empty cells.', 'fw' ) ),
 	) ),
-	'group_mm_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+	'group_mm_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
 $options = array(
@@ -872,6 +921,7 @@ $options = array(
 					'cover_flow'       => $cover_flow_opts,
 					'carousel_flow'    => $carousel_flow_opts,
 					'hero_reel'        => $hero_reel_opts,
+					'focus_slider'     => $focus_slider_opts,
 					'mosaic_marquee'   => $mosaic_marquee_opts,
 					'photo_scatter'    => $photo_scatter_opts,
 					'card_stack'       => $card_stack_opts,
@@ -900,6 +950,50 @@ $options = array(
 							'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
 							'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
 						),
+				),
+			),
+			'group_entrance' => array(
+				'type'    => 'group',
+				'options' => array(
+					/* Built-in reveal that works on EVERY design. Unlike a generic Scroll Reveal (which can't
+					 * touch 3D cards — the design rewrites each card's transform every frame), this rides on
+					 * the inner content layer the layout never touches, so it composes with the 3D motion.
+					 * One effect to start; the select is the seam for more. */
+					'entrance' => array(
+						'label'   => __( 'Entrance', 'fw' ),
+						'type'    => 'select',
+						'value'   => 'none',
+						'desc'    => __( 'Reveal the images one by one as the gallery scrolls into view — works on every design, on top of the 3D motion. Pick how each image arrives: rise, scale, blur, slide, or flip.', 'fw' ),
+						'choices' => array(
+							'none'  => __( 'None', 'fw' ),
+							'rise'  => __( 'Fade + Rise', 'fw' ),
+							'scale' => __( 'Fade + Scale', 'fw' ),
+							'blur'  => __( 'Fade + Blur', 'fw' ),
+							'slide' => __( 'Slide In', 'fw' ),
+							'flip'  => __( 'Flip In', 'fw' ),
+						),
+					),
+					'entrance_stagger' => array(
+						'type'       => 'slider',
+						'label'      => __( 'Sequence spread', 'fw' ),
+						'desc'       => __( 'How spread out the one-by-one cascade is. 0 = all together; higher = a longer, more staggered reveal.', 'fw' ),
+						'value'      => 60,
+						'properties' => array( 'min' => 0, 'max' => 90, 'step' => 5 ),
+					),
+					'entrance_distance' => array(
+						'type'       => 'slider',
+						'label'      => __( 'Rise / slide distance (px)', 'fw' ),
+						'value'      => 40,
+						'properties' => array( 'min' => 0, 'max' => 120, 'step' => 4 ),
+					),
+					'entrance_exit' => array(
+						'type'         => 'switch',
+						'label'        => __( 'Animate out on leave', 'fw' ),
+						'desc'         => __( 'Fade and sink the images back out as the gallery scrolls off the top.', 'fw' ),
+						'value'        => 'no',
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+					),
 				),
 			),
 			'group_card_style' => array(

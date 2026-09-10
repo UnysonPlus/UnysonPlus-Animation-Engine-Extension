@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Sphere Cascade — the vertical, spherical sibling of Panorama Wall. A grid of
+ * Motion Gallery design: Sphere Cascade — the vertical, spherical sibling of Panorama Wall. A grid of
  * Columns × K cards is mapped onto a sphere (column = longitude, card = latitude) and CASCADES
  * vertically: each column's cards scroll along latitude and recycle. The signed Curvature bends
  * BOTH axes — concave bowl (viewer inside) → flat grid → full convex sphere. gallery-3d.js

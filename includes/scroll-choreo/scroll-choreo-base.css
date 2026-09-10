@@ -1,0 +1,28 @@
+/* Scroll Choreography — SHARED base (Image + Text elements). The .fw-choreo anchor is zero-height (the
+   runtime measures scroll travel from it); the .fw-choreo__fixed layer is fixed and pointer-events:none so
+   page sections scroll under it and clicks pass through. Each .fw-choreo__layer is anchored to a corner and
+   posed (transform + opacity) by the engine. Per-element CSS adds the layer's SIZING (image width vs text
+   max-width) and content styling. */
+
+.fw-choreo { height: 0; min-height: 0; overflow: visible; }
+
+.fw-choreo__fixed {
+	position: fixed;
+	inset: 0;
+	z-index: var(--choreo-z, 3);
+	pointer-events: none;   /* clicks pass through to the page underneath */
+}
+
+.fw-choreo__layer {
+	position: absolute;
+	will-change: transform, opacity;
+	opacity: 0;             /* the engine reveals it; avoids a flash of the rest pose before JS binds */
+}
+
+/* Corner anchoring (inset is a % of the viewport edge gap). */
+.fw-choreo__layer.a-h-left   { left: calc(var(--inset, 4) * 1%); }
+.fw-choreo__layer.a-h-center { left: 50%; }
+.fw-choreo__layer.a-h-right  { right: calc(var(--inset, 4) * 1%); }
+.fw-choreo__layer.a-v-top    { top: calc(var(--inset, 4) * 1%); }
+.fw-choreo__layer.a-v-center { top: 50%; }
+.fw-choreo__layer.a-v-bottom { bottom: calc(var(--inset, 4) * 1%); }

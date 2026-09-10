@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 78" role="img" aria-label="Pin, Hold, Exit">
+  <rect x="14" y="12" width="104" height="54" rx="6" fill="#eef4fe"/>
+  <!-- enter: rising in from below-right (faded) -->
+  <rect x="30" y="46" width="16" height="12" rx="2" fill="#7c4dff" opacity="0.3"/>
+  <path d="M24,52 h8 M28,48 l-4,4 l4,4" fill="none" stroke="#3858e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+  <!-- hold: pinned card, centered, solid -->
+  <rect x="56" y="30" width="20" height="18" rx="2.5" fill="#3858e9"/>
+  <circle cx="66" cy="24" r="3.5" fill="#7c4dff"/>
+  <line x1="66" y1="27" x2="66" y2="30" stroke="#7c4dff" stroke-width="2" stroke-linecap="round"/>
+  <!-- exit: sliding off to the left (faded) -->
+  <rect x="88" y="34" width="16" height="12" rx="2" fill="#7c4dff" opacity="0.3"/>
+  <path d="M108,40 h-8 M104,36 l4,4 l-4,4" fill="none" stroke="#3858e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+</svg>

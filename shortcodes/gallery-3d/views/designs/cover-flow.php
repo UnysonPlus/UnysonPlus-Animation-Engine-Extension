@@ -3,10 +3,10 @@
 }
 
 /**
- * 3D Gallery design: Cover Flow — the classic album cover flow (Carousel & Flow family). The centre
+ * Motion Gallery design: Cover Flow — the classic album cover flow (Carousel & Flow family). The centre
  * card faces you; the immediate neighbours tilt to Side Tilt and recede, and further cards stack
  * compressed behind them. Flows either horizontally OR vertically (Orientation) — this one design
- * covers both of animos's "Cover Flow" and "Cover Flow Vertical". Continuous, or "Stop at centre"
+ * covers both of the reference's "Cover Flow" and "Cover Flow Vertical". Continuous, or "Stop at centre"
  * snaps each card to the middle. gallery-3d.js (initFlow, mode 'cover') places the cards.
  *
  * @var callable $dp, $render_card

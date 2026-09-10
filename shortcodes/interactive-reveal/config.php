@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Interactive Reveal', 'fw' ),
 	'description' => __( 'Stack image layers and animate them apart — an exploded / peel / assemble product reveal — driven by scroll, hover or click, with labelled hotspots pinned to the parts.', 'fw' ),
-	'tab'         => __( 'Media Elements', 'fw' ),
+	'tab'         => __( 'Animation Engine', 'fw' ),
 	'popup_size'  => 'large',
 
 	'title_template' => '

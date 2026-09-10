@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Parallax Totem — the depth-scatter sibling of Totem Wall. Same flat row of
+ * Motion Gallery design: Parallax Totem — the depth-scatter sibling of Totem Wall. Same flat row of
  * vertical totems (columns wrapping their cards around a horizontal axis, cascading vertically), but
  * every card also gets a SEEDED depth, size and position jitter and drifts at a depth-varied speed —
  * near cards scroll faster than far ones (the parallax). At Scatter / Size variance / Parallax depth

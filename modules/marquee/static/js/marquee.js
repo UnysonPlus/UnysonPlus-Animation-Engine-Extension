@@ -99,6 +99,11 @@
       do { addUnit(); g++; } while (size() < Math.max(1, span) && g < 80);
       var fill = size(), pass = track.children.length;
       for (var i = 0; i < pass; i++) { var _cl = track.children[i].cloneNode(true); _cl.setAttribute('aria-hidden', 'true'); track.appendChild(_cl); } // seamless-loop duplicate: hide from SR so text isn't announced twice
+      // Start any <video> we rebuilt/cloned into the track (a reel/clip card): the theme's bg-video play() JS
+      // doesn't re-run on our nodes, so they'd sit paused. They're muted, so autoplay is allowed.
+      Array.prototype.forEach.call(track.querySelectorAll('video'), function (v) {
+        try { v.muted = true; v.setAttribute('playsinline', ''); var pr = v.play(); if (pr && pr.catch) { pr.catch(function () {}); } } catch (e) { /* ignore */ }
+      });
       m.apply = function () {
         var pos = ((m.offset % fill) + fill) % fill, v = m.reverse ? (pos - fill) : -pos;
         track.style.transform = (vertical ? 'translateY(' : 'translateX(') + v.toFixed(1) + 'px)';

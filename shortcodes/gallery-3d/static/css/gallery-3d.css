@@ -1,5 +1,5 @@
 /**
- * 3D Gallery — base + Carousel Ring. Pure CSS 3D scene; gallery-3d.js sets the per-card
+ * Motion Gallery — base + Carousel Ring. Pure CSS 3D scene; gallery-3d.js sets the per-card
  * transforms, the ring rotation and (for Back Fade) per-card opacity at runtime.
  */
 
@@ -9,6 +9,19 @@
 	overflow: hidden;
 	background: var(--tdg-bg, transparent);
 }
+
+/* Stage Overflow = Spill (opt-in): stop clipping at the Stage Height frame so fanned / oversized
+ * cards show in full. The wrapper AND the absolutely-positioned stage both open up, so the 3D scene
+ * isn't cut at the box. The reserved layout height is unchanged (only Stage Height), so spilled cards
+ * can visually overlap neighbours — the control's help asks for vertical breathing room. Designs that
+ * clip at the stage on purpose (photo-scatter, hero-reel, mosaic-marquee, card-stack, …) are overridden
+ * only when the author explicitly turns Spill on for that instance. */
+/* Spill releases the VERTICAL clip so fanned / oversized cards show in full above and below the stage,
+   but keeps the HORIZONTAL clip so wide layouts (totem/wall rows, off-screen reel cards) can't push the
+   page into a horizontal scrollbar. overflow-x:clip on the non-3D wrapper is safe; the stage stays
+   overflow:visible so it never flattens its preserve-3d. (clip in the x keeps y computed as visible.) */
+.tdg--spill { overflow-x: clip; overflow-y: visible; }
+.tdg--spill .tdg__stage { overflow: visible; }
 
 .tdg__stage {
 	position: absolute;
@@ -105,6 +118,9 @@
 	border-radius: var(--tdg-radius, 14px);
 	padding: var(--tdg-pad, 0);
 	overflow: hidden;
+	/* NOTE: the layout JS never poses .tdg__inner — it drives .tdg__card. That free seam is what the
+	 * built-in sequential Entrance uses (see .tdg--entrance below), so a per-card reveal composes with
+	 * the 3D motion instead of fighting it. */
 	/* Card backing is TRANSPARENT so opaque photos sit flush and a thumbnail with a transparent
 	 * margin (documents / logos / alpha PNGs) shows the STAGE through it instead of a dark fill
 	 * reading as an unwanted black border. Set a Card Background / Box Preset (or Card Padding for the
@@ -123,8 +139,11 @@
 
 .tdg__img {
 	display: block;
-	width: 100%;
-	height: 100%;
+	/* !important defends against theme resets like `.content img { height: auto }` (higher specificity
+	 * than `.tdg__img`) — without a full 100% height, object-fit:cover can't fill the card and a card
+	 * whose ratio differs from the image (e.g. a portrait card + a square photo) shows empty space. */
+	width: 100% !important;
+	height: 100% !important;
 	object-fit: cover;
 	border-radius: inherit;
 }
@@ -296,6 +315,11 @@
 .tdg--hero-reel .tdg__reel { position: absolute; left: 50%; top: 50%; z-index: 2; transform: none; will-change: auto; }
 .tdg--hero-reel .tdg__card { position: absolute; left: 50%; top: 50%; will-change: transform; transform-origin: 50% 50%; }
 
+/* Focus Slider — a centred-focus reel (JS: initFocusSlider). No perspective; pure translate + scale. */
+.tdg--focus-slider .tdg__stage { display: block; overflow: hidden; }
+.tdg--focus-slider .tdg__reel { position: absolute; left: 50%; top: 50%; z-index: 2; transform: none; will-change: auto; }
+.tdg--focus-slider .tdg__card { position: absolute; left: 50%; top: 50%; will-change: transform; transform-origin: 50% 50%; }
+
 /* Wheel Carousel — cards fanned on a flat 2D wheel (hub below the frame); JS sets each card's
    translate + in-plane rotate + scale as the wheel steps around. */
 .tdg__wheel { position: absolute; left: 50%; top: 50%; }
@@ -343,4 +367,13 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.tdg--card-stack .tdg__card { will-change: auto; }
+}
+
+/* ---- Built-in sequential Entrance (opt-in; poses .tdg__inner, composes with the 3D layout) ---- */
+.tdg--entrance .tdg__inner {
+	opacity: 0;                       /* the JS reveals per card, staggered by index, driven by scroll */
+	will-change: transform, opacity, filter;
+}
+@media (prefers-reduced-motion: reduce) {
+	.tdg--entrance .tdg__inner { opacity: 1; }   /* no scrubbing under reduced motion — just show them */
 }

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="fs-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8f9a6b"/><stop offset="1" stop-color="#5c6a3a"/>
+    </linearGradient>
+    <clipPath id="fs-clip"><rect x="0" y="0" width="96" height="64" rx="4"/></clipPath>
+  </defs>
+  <!-- Focus Slider: a centred card scaled up (focused), flanked by smaller zigzag neighbours. -->
+  <g clip-path="url(#fs-clip)">
+    <rect x="0" y="0" width="96" height="64" fill="#101014"/>
+    <!-- side neighbours (smaller, zigzag: left up, right down) -->
+    <rect x="6"  y="20" width="18" height="18" rx="2.5" fill="url(#fs-f)" opacity="0.7"/>
+    <rect x="72" y="26" width="18" height="18" rx="2.5" fill="url(#fs-f)" opacity="0.7"/>
+    <!-- focused centre card (larger) -->
+    <rect x="30" y="10" width="36" height="44" rx="4" fill="url(#fs-f)">
+      <animate attributeName="width" values="36;38;36" dur="2.6s" repeatCount="indefinite"/>
+      <animate attributeName="x" values="30;29;30" dur="2.6s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="35" y="15" width="26" height="34" rx="2.5" fill="#e9ecd9" opacity="0.55"/>
+  </g>
+</svg>

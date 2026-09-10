@@ -93,47 +93,25 @@
 	}
 
 	// ---- Choreography guide (opt-in authoring overlay) ------------------------
-	// A marker pinned in the scroll for each keyframe (so the author sees which
-	// keyframe lines up with which real section) plus a live HUD of the current
-	// scroll % and the model's interpolated pose. Toggled off before publishing.
-	var GUIDE_CIRCLED = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
-	function guideNum(n) { return (n >= 1 && n <= 20) ? GUIDE_CIRCLED.charAt(n - 1) : ('#' + n); }
-	function buildGuide(keys) {
-		var wrap = document.createElement('div');
-		wrap.className = 'fw-model__guide';
-		var marks = [];
-		for (var i = 0; i < keys.length; i++) {
-			var m = document.createElement('div');
-			m.className = 'fw-model__guide-mark';
-			m.innerHTML = '<span class="fw-model__guide-badge">' + guideNum(i + 1) + ' ' + Math.round(keys[i].at) + '%</span>';
-			wrap.appendChild(m);
-			marks.push(m);
-		}
-		var hud = document.createElement('div');
-		hud.className = 'fw-model__guide-hud';
-		document.body.appendChild(wrap);
-		document.body.appendChild(hud);
-		return { wrap: wrap, marks: marks, hud: hud };
+	// Delegated to the shared window.upwAnimGuide builder so this guide matches the Scroll Choreography
+	// guide (numbered, tinted, stacking, collapsible, click-to-flash) and co-stacks with it.
+	function buildGuide(root, keys, cfg) {
+		if (!window.upwAnimGuide) { return null; }
+		return window.upwAnimGuide.create({
+			label: (cfg && cfg.label) || 'Model Viewer',
+			target: root,
+			marks: keys.map(function (k) { return Math.round(k.at); }),
+			sections: [{ name: 'Model', cells: ['X', 'Y', 'scale', 'turn', 'tilt', 'fade'] }],
+			meta: 'travel ' + Math.max(1, (cfg && cfg.travel) || 3) + ' screens · smooth ' + ((cfg && cfg.smooth) || 0) + '%'
+		});
 	}
-	function guideCell(label, val) { return '<span class="fw-model__guide-cell"><i>' + label + '</i>' + val + '</span>'; }
-	function updateGuide(guide, keys, pose, pct) {
-		var ai = -1, i;
-		for (i = 0; i < keys.length; i++) { if (pct >= keys[i].at) { ai = i; } }
-		var span;
-		if (ai < 0) { span = 'before ' + guideNum(1); }
-		else if (ai >= keys.length - 1) { span = 'at ' + guideNum(keys.length); }
-		else { span = guideNum(ai + 1) + ' ' + Math.round(keys[ai].at) + '%  →  ' + guideNum(ai + 2) + ' ' + Math.round(keys[ai + 1].at) + '%'; }
-		guide.hud.innerHTML =
-			'<div class="fw-model__guide-row fw-model__guide-pct">scroll <b>' + pct + '%</b></div>' +
-			'<div class="fw-model__guide-row fw-model__guide-span">' + span + '</div>' +
-			'<div class="fw-model__guide-grid">' +
-				guideCell('X', pose.x.toFixed(0) + 'vw') + guideCell('Y', pose.y.toFixed(0) + 'vh') +
-				guideCell('scale', pose.s.toFixed(0) + '%') + guideCell('turn', pose.yaw.toFixed(0) + '°') +
-				guideCell('tilt', pose.pit.toFixed(0) + '°') + guideCell('fade', pose.o.toFixed(0) + '%') +
-			'</div>';
-		for (i = 0; i < guide.marks.length; i++) {
-			guide.marks[i].classList.toggle('is-active', i === ai || i === ai + 1);
-		}
+	function updateGuide(guide, pose, pct) {
+		guide.update({
+			pct: pct,
+			rows: [{ on: pose.o > 5, fade: pose.o.toFixed(0) + '%',
+				values: [pose.x.toFixed(0) + 'vw', pose.y.toFixed(0) + 'vh', pose.s.toFixed(0) + '%',
+					pose.yaw.toFixed(0) + '°', pose.pit.toFixed(0) + '°', pose.o.toFixed(0) + '%'] }]
+		});
 	}
 
 	function initChoreo(root, mv) {
@@ -174,17 +152,13 @@
 		// Reduced motion: rest at the final pose, no scrubbing (and no guide).
 		if (REDUCE) { applyPose(last); fixed.style.visibility = 'visible'; return; }
 
-		var guide = cfg.guide ? buildGuide(keys) : null;
+		var guide = cfg.guide ? buildGuide(root, keys, cfg) : null;
 
 		var startY = 0, vh = 1;
 		function measure() {
 			vh = window.innerHeight || 1;
 			startY = root.getBoundingClientRect().top + (window.pageYOffset || window.scrollY || 0);
-			if (guide) {
-				for (var i = 0; i < keys.length; i++) {
-					guide.marks[i].style.top = (startY + (keys[i].at / 100) * travel * vh) + 'px';
-				}
-			}
+			if (guide) { guide.positionMarks(travel, vh, startY); }
 		}
 		function scrollY() { return window.pageYOffset || window.scrollY || 0; }
 		function raw() { return (scrollY() - startY) / (travel * vh); }
@@ -198,7 +172,7 @@
 			var r = raw();
 			var active = r > -0.3 && r < 1.3;      // a little lead-in / lead-out
 			fixed.style.visibility = active ? 'visible' : 'hidden';
-			if (guide) { updateGuide(guide, keys, poseAt(dispP), Math.round(tp * 100)); }
+			if (guide) { updateGuide(guide, poseAt(dispP), Math.round(tp * 100)); }
 			if (dispP === tp && !active) { running = false; return; }   // idle → stop the loop
 			requestAnimationFrame(tick);
 		}
@@ -207,7 +181,7 @@
 		measure();
 		dispP = Math.min(1, Math.max(0, raw()));
 		applyPose(poseAt(dispP));
-		if (guide) { updateGuide(guide, keys, poseAt(dispP), Math.round(dispP * 100)); }
+		if (guide) { updateGuide(guide, poseAt(dispP), Math.round(dispP * 100)); }
 		window.addEventListener('scroll', kick, { passive: true });
 		window.addEventListener('resize', function () { measure(); kick(); }, { passive: true });
 		kick();

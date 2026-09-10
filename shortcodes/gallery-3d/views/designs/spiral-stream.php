@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Spiral Stream — cards threaded along a 3D helix that streams past the camera.
+ * Motion Gallery design: Spiral Stream — cards threaded along a 3D helix that streams past the camera.
  * Each card sits on the spiral (angle = its position × Spiral Turns) at a tapering radius (Taper
  * narrows the coil into a vortex or flares it out) and rotates around its own vertical axis, so you
  * see fronts, edge-on slivers and mirrored backs, upright throughout. The whole helix tips by Ring

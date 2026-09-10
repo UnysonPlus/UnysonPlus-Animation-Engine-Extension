@@ -234,8 +234,9 @@ if ( ! function_exists( 'sc_model_viewer_render' ) ) {
 			$choreo_json = wp_json_encode( array(
 				'travel' => max( 1, (int) sc_get( 'choreo_travel', $atts, 3 ) ),
 				'smooth' => max( 0, (int) sc_get( 'choreo_smooth', $atts, 18 ) ),
-				'guide'  => sc_get( 'choreo_guide', $atts, 'no' ) === 'yes',
+				'guide'  => sc_get( 'choreo_guide', $atts, 'no' ) === 'yes' && is_user_logged_in(), // logged-in only
 				'keys'   => $keys,
+				'label'  => __( 'Model Viewer', 'fw' ), // shown as the guide HUD title
 			) );
 		}
 

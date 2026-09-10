@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Depth Stack — a deck of cards receding straight into depth, the front card the
+ * Motion Gallery design: Depth Stack — a deck of cards receding straight into depth, the front card the
  * hero. The stack streams toward the camera (front flies out + fades, next comes forward, a new one
  * fades in at the back). Spread (Fan, along Spread Angle) or Scatter fans the deck out; Wobble jitters
  * the tilt; Depth Fade dims and Depth Blur softens the cards toward the back (depth-of-field). Cards
@@ -30,7 +30,7 @@ $sangle  = max( -180, min( 180, (float) $dp( 'spread_angle', -180 ) ) );
 $wobble  = max( 0, min( 100, (float) $dp( 'wobble', 0 ) ) );
 $dfade   = max( 0, min( 100, (float) $dp( 'depth_fade', 0 ) ) );
 $dblur   = max( 0, min( 100, (float) $dp( 'depth_blur', 0 ) ) );
-$layout  = ( $dp( 'layout', 'fan' ) === 'scatter' ) ? 'scatter' : 'fan';
+$layout  = in_array( $dp( 'layout', 'fan' ), array( 'fan', 'scatter', 'aisle', 'field' ), true ) ? $dp( 'layout', 'fan' ) : 'fan';
 
 $attr['data-tdg-drive']     = esc_attr( $drive );
 $attr['data-tdg-allowdrag'] = esc_attr( $allowdrag );

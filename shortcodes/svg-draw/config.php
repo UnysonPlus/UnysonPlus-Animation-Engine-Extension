@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'SVG Draw', 'fw' ),
 	'description' => __( 'A self-drawing SVG — line art, a signature, an animated divider or icon that traces itself on scroll. Paste SVG code, upload a file, or pick a built-in preset.', 'fw' ),
-	'tab'         => __( 'Media Elements', 'fw' ),
+	'tab'         => __( 'Animation Engine', 'fw' ),
 	'popup_size'  => 'medium',
 
 	'title_template' => '

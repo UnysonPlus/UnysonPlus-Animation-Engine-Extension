@@ -71,40 +71,72 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			),
 		);
 	};
-	$heading = function ( $text ) {
-		return array( 'type' => 'html', 'label' => false, 'desc' => false, 'html' => '<h4 style="margin:22px 0 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#666;">' . esc_html( $text ) . '</h4>' );
-	};
-	// One state = eight animatable props (identity defaults, so an unset prop just doesn't move).
-	$state = function ( $p, $dy, $dop ) use ( $slider ) {
+	// One state = eight animatable props (identity defaults, so an unset prop just does not move).
+	// Inner ids are unprefixed — the `tabs` option namespaces them per state ({ start:{x,y,..}, mid, end }).
+	$state = function ( $dy, $dop ) use ( $slider ) {
 		return array(
-			$p . '_x'         => $slider( __( 'X (px)', 'fw' ), 0, -300, 300, 5 ),
-			$p . '_y'         => $slider( __( 'Y (px)', 'fw' ), $dy, -300, 300, 5 ),
-			$p . '_scale'     => $slider( __( 'Scale', 'fw' ), 1, 0, 3, 0.05 ),
-			$p . '_rotation'  => $slider( __( 'Rotate (deg)', 'fw' ), 0, -360, 360, 1 ),
-			$p . '_rotationX' => $slider( __( 'Rotate X (deg)', 'fw' ), 0, -180, 180, 1 ),
-			$p . '_rotationY' => $slider( __( 'Rotate Y (deg)', 'fw' ), 0, -180, 180, 1 ),
-			$p . '_opacity'   => $slider( __( 'Opacity', 'fw' ), $dop, 0, 1, 0.05 ),
-			$p . '_blur'      => $slider( __( 'Blur (px)', 'fw' ), 0, 0, 40, 1 ),
+			'x'         => $slider( __( 'X (px)', 'fw' ), 0, -300, 300, 5 ),
+			'y'         => $slider( __( 'Y (px)', 'fw' ), $dy, -300, 300, 5 ),
+			'scale'     => $slider( __( 'Scale', 'fw' ), 1, 0, 3, 0.05 ),
+			'rotation'  => $slider( __( 'Rotate (deg)', 'fw' ), 0, -360, 360, 1 ),
+			'rotationX' => $slider( __( 'Rotate X (deg)', 'fw' ), 0, -180, 180, 1 ),
+			'rotationY' => $slider( __( 'Rotate Y (deg)', 'fw' ), 0, -180, 180, 1 ),
+			'opacity'   => $slider( __( 'Opacity', 'fw' ), $dop, 0, 1, 0.05 ),
+			'blur'      => $slider( __( 'Blur (px)', 'fw' ), 0, 0, 40, 1 ),
 		);
 	};
 
-	// Default = a fade-up (Start: y 40, opacity 0 → End: natural), so enabling it does something useful.
-	$grp = array_merge(
-		array( '_h_start' => $heading( __( 'Start state', 'fw' ) ) ),
-		$state( 'start', 40, 0 ),
-		array(
-			'_h_mid'     => $heading( __( 'Middle state (optional)', 'fw' ) ),
-			'mid_enable' => $switch( __( 'Use a middle keyframe', 'fw' ), __( 'Add a third state the element passes through.', 'fw' ), false ),
-			'mid_at'     => $slider( __( 'Middle at (% of range)', 'fw' ), 50, 5, 95, 5 ),
-			'mid_ease'   => $ease( __( 'Ease into middle', 'fw' ) ),
+	// Start / Middle / End as tabs (the shared `tabs` option type). Default = a fade-up
+	// (Start: y 40, opacity 0; End: natural), so enabling it does something useful.
+	$states = array(
+		'type'  => 'tabs',
+		'label' => false,
+		'dots'  => true,
+		'value' => array(),
+		'tabs'  => array(
+			'start' => array( 'title' => __( 'Start', 'fw' ), 'options' => $state( 40, 0 ) ),
+			'mid'   => array(
+				'title'   => __( 'Middle', 'fw' ),
+				'options' => array_merge(
+					array(
+						'enable' => $switch( __( 'Use a middle keyframe', 'fw' ), __( 'Add a third state the element passes through.', 'fw' ), false ),
+						'at'     => $slider( __( 'Middle at (% of range)', 'fw' ), 50, 5, 95, 5 ),
+						'ease'   => $ease( __( 'Ease into middle', 'fw' ) ),
+					),
+					$state( 0, 1 )
+				),
+			),
+			'end' => array(
+				'title'   => __( 'End', 'fw' ),
+				'options' => array_merge( array( 'ease' => $ease( __( 'Ease into end', 'fw' ) ) ), $state( 0, 1 ) ),
+			),
 		),
-		$state( 'mid', 0, 1 ),
-		array(
-			'_h_end'   => $heading( __( 'End state', 'fw' ) ),
-			'end_ease' => $ease( __( 'Ease into end', 'fw' ) ),
-		),
-		$state( 'end', 0, 1 ),
-		array( 'run_on_mobile' => $switch( __( 'Run on mobile', 'fw' ), '', true ) )
+	);
+
+	$grp = array(
+		'states'        => $states,
+		'run_on_mobile' => $switch( __( 'Run on mobile', 'fw' ), '', true ),
+	);
+
+	// ---- Pin → Hold → Exit preset: one-click scroll choreography for ANY element ----
+	// The element PINS to the screen for a chosen number of screen-heights (the runtime wraps it in a
+	// sticky runway), appears, holds, then exits — no Scroll Story needed. Generates the keyframes below.
+	$dir_in  = array(
+		'fade' => __( 'Fade in', 'fw' ), 'up' => __( 'Rise up', 'fw' ), 'down' => __( 'Drop down', 'fw' ),
+		'left' => __( 'From left', 'fw' ), 'right' => __( 'From right', 'fw' ), 'scale' => __( 'Scale up', 'fw' ), 'none' => __( 'Already there', 'fw' ),
+	);
+	$dir_out = array(
+		'left' => __( 'Slide off left', 'fw' ), 'right' => __( 'Slide off right', 'fw' ), 'up' => __( 'Slide off top', 'fw' ),
+		'down' => __( 'Slide off bottom', 'fw' ), 'fade' => __( 'Fade out', 'fw' ), 'scale' => __( 'Scale away', 'fw' ), 'none' => __( 'Stay to the end', 'fw' ),
+	);
+	$pin_grp = array(
+		'pin_length'  => $slider( __( 'Pin length (screens)', 'fw' ), 2, 1, 8, 1 ),
+		'pin_from'    => array( 'type' => 'select', 'label' => __( 'Appear by', 'fw' ), 'value' => 'fade', 'choices' => $dir_in,
+			'desc' => __( 'How the element enters as it pins.', 'fw' ) ),
+		'pin_hold'    => $slider( __( 'Hold until (% of pin)', 'fw' ), 60, 5, 100, 5 ),
+		'pin_to'      => array( 'type' => 'select', 'label' => __( 'Exit by', 'fw' ), 'value' => 'left', 'choices' => $dir_out,
+			'desc' => __( 'How it leaves after the hold. “Stay to the end” keeps it pinned for the whole length.', 'fw' ) ),
+		'run_on_mobile' => $switch( __( 'Run on mobile', 'fw' ), '', true ),
 	);
 
 	$ext  = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
@@ -113,6 +145,11 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'small' => array( 'src' => $base . '/keyframes.svg', 'height' => 53 ),
 		'large' => array( 'src' => $base . '/keyframes.svg', 'height' => 132 ),
 		'label' => __( 'Scroll Keyframes', 'fw' ),
+	);
+	$pin_tile = array(
+		'small' => array( 'src' => $base . '/pin-choreo.svg', 'height' => 53 ),
+		'large' => array( 'src' => $base . '/pin-choreo.svg', 'height' => 132 ),
+		'label' => __( 'Pin · Hold · Exit', 'fw' ),
 	);
 
 	$fields['scroll_keyframes'] = array(
@@ -129,14 +166,15 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			'mode' => array(
 				'type'    => 'image-picker',
 				'label'   => false,
-				'desc'    => __( 'Enable a scroll-driven keyframe timeline on this element.', 'fw' ),
+				'desc'    => __( 'A scroll-driven timeline. <strong>Scroll Keyframes</strong> = a free Start → Middle → End (plays as the element passes). <strong>Pin · Hold · Exit</strong> = the element pins to the screen for a few scrolls, then leaves — one-click scroll choreography for any element.', 'fw' ),
 				'value'   => 'none',
-				'choices' => array( 'keyframes' => $tile ),
+				'choices' => array( 'keyframes' => $tile, 'pin_choreo' => $pin_tile ),
 			),
 		),
 		'choices' => array(
-			'none'      => array(),
-			'keyframes' => array( 'group_scroll_keyframes' => array( 'type' => 'group', 'options' => $grp ) ),
+			'none'       => array(),
+			'keyframes'  => array( 'group_scroll_keyframes' => array( 'type' => 'group', 'options' => $grp ) ),
+			'pin_choreo' => array( 'group_pin_choreo' => array( 'type' => 'group', 'options' => $pin_grp ) ),
 		),
 	);
 	return $fields;
@@ -150,25 +188,74 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		return $attr;
 	}
 	$c = ( isset( $atts['scroll_keyframes'] ) && is_array( $atts['scroll_keyframes'] ) ) ? $atts['scroll_keyframes'] : array();
-	if ( ( isset( $c['mode'] ) ? (string) $c['mode'] : 'none' ) !== 'keyframes' ) {
+	$mode = isset( $c['mode'] ) ? (string) $c['mode'] : 'none';
+
+	// --- Pin · Hold · Exit preset: build appear→hold→exit keyframes + a pin flag for the runtime. ---
+	if ( 'pin_choreo' === $mode ) {
+		$pg      = ( isset( $c['pin_choreo'] ) && is_array( $c['pin_choreo'] ) ) ? $c['pin_choreo'] : array();
+		$pin_len = max( 1, min( 8, (int) ( isset( $pg['pin_length'] ) ? $pg['pin_length'] : 2 ) ) );
+		$from    = (string) ( isset( $pg['pin_from'] ) ? $pg['pin_from'] : 'fade' );
+		$hold    = max( 5, min( 100, (int) ( isset( $pg['pin_hold'] ) ? $pg['pin_hold'] : 60 ) ) );
+		$to      = (string) ( isset( $pg['pin_to'] ) ? $pg['pin_to'] : 'left' );
+
+		// A direction → a partial state (only the props that move; the runtime fills the rest with identity).
+		$off = function ( $dir, $enter ) {
+			$d = $enter ? 80 : 700; // enter slides a little into place; exit flies far enough to clear the screen
+			switch ( $dir ) {
+				case 'up':    return array( 'y' => $enter ? $d : -$d, 'opacity' => 0 );
+				case 'down':  return array( 'y' => $enter ? -$d : $d, 'opacity' => 0 );
+				case 'left':  return array( 'x' => -$d, 'opacity' => 0 );
+				case 'right': return array( 'x' => $d, 'opacity' => 0 );
+				case 'scale': return array( 'scale' => 0.7, 'opacity' => 0 );
+				case 'fade':  return array( 'opacity' => 0 );
+				default:      return array(); // 'none' → no move
+			}
+		};
+		$appear  = 0.15;
+		$hold_at = min( 0.99, max( $appear + 0.01, $hold / 100 ) );
+
+		$kf   = array();
+		$kf[] = array( 'at' => 0,        'v' => ( 'none' === $from ? array() : $off( $from, true ) ), 'ease' => 'out' );
+		$kf[] = array( 'at' => $appear,  'v' => array(), 'ease' => 'out' );   // arrived (identity)
+		$kf[] = array( 'at' => $hold_at, 'v' => array(), 'ease' => 'inout' ); // end of hold
+		if ( 'none' !== $to ) {
+			$kf[] = array( 'at' => 1, 'v' => $off( $to, false ), 'ease' => 'in' );
+		}
+
+		$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
+		$attr['class'] = esc_attr( trim( $cls . ' sc-scroll-kf sc-scroll-kf--pin' ) );
+		$attr['data-upw-skf']     = esc_attr( base64_encode( wp_json_encode( array( 'kf' => $kf ) ) ) );
+		$attr['data-upw-skf-pin'] = esc_attr( (string) $pin_len );
+		if ( ( isset( $pg['run_on_mobile'] ) ? $pg['run_on_mobile'] : 'yes' ) !== 'yes' ) {
+			$attr['data-upw-skf-mobile'] = '0';
+		}
+		upw_skf_flag( true );
+		return $attr;
+	}
+
+	if ( 'keyframes' !== $mode ) {
 		return $attr;
 	}
 	$g = ( isset( $c['keyframes'] ) && is_array( $c['keyframes'] ) ) ? $c['keyframes'] : array();
-	$state = function ( $p ) use ( $g ) {
+	$st = ( isset( $g['states'] ) && is_array( $g['states'] ) ) ? $g['states'] : array();
+	$state = function ( $p ) use ( $st ) {
+		$s = ( isset( $st[ $p ] ) && is_array( $st[ $p ] ) ) ? $st[ $p ] : array();
 		return array(
-			'x'         => (float) ( isset( $g[ $p . '_x' ] ) ? $g[ $p . '_x' ] : 0 ),
-			'y'         => (float) ( isset( $g[ $p . '_y' ] ) ? $g[ $p . '_y' ] : 0 ),
-			'scale'     => (float) ( isset( $g[ $p . '_scale' ] ) ? $g[ $p . '_scale' ] : 1 ),
-			'rotation'  => (float) ( isset( $g[ $p . '_rotation' ] ) ? $g[ $p . '_rotation' ] : 0 ),
-			'rotationX' => (float) ( isset( $g[ $p . '_rotationX' ] ) ? $g[ $p . '_rotationX' ] : 0 ),
-			'rotationY' => (float) ( isset( $g[ $p . '_rotationY' ] ) ? $g[ $p . '_rotationY' ] : 0 ),
-			'opacity'   => (float) ( isset( $g[ $p . '_opacity' ] ) ? $g[ $p . '_opacity' ] : 1 ),
-			'blur'      => (float) ( isset( $g[ $p . '_blur' ] ) ? $g[ $p . '_blur' ] : 0 ),
+			'x'         => (float) ( isset( $s['x'] ) ? $s['x'] : 0 ),
+			'y'         => (float) ( isset( $s['y'] ) ? $s['y'] : 0 ),
+			'scale'     => (float) ( isset( $s['scale'] ) ? $s['scale'] : 1 ),
+			'rotation'  => (float) ( isset( $s['rotation'] ) ? $s['rotation'] : 0 ),
+			'rotationX' => (float) ( isset( $s['rotationX'] ) ? $s['rotationX'] : 0 ),
+			'rotationY' => (float) ( isset( $s['rotationY'] ) ? $s['rotationY'] : 0 ),
+			'opacity'   => (float) ( isset( $s['opacity'] ) ? $s['opacity'] : 1 ),
+			'blur'      => (float) ( isset( $s['blur'] ) ? $s['blur'] : 0 ),
 		);
 	};
+	$mid    = ( isset( $st['mid'] ) && is_array( $st['mid'] ) ) ? $st['mid'] : array();
+	$end_s  = ( isset( $st['end'] ) && is_array( $st['end'] ) ) ? $st['end'] : array();
 	$start  = $state( 'start' );
 	$end    = $state( 'end' );
-	$mid_on = ( ( isset( $g['mid_enable'] ) ? $g['mid_enable'] : 'no' ) === 'yes' );
+	$mid_on = ( ( isset( $mid['enable'] ) ? $mid['enable'] : 'no' ) === 'yes' );
 
 	// Nothing to animate (no middle and start == end) → don't stamp anything.
 	if ( ! $mid_on && $start === $end ) {
@@ -178,10 +265,10 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$kf   = array();
 	$kf[] = array( 'at' => 0, 'v' => $start, 'ease' => 'out' );
 	if ( $mid_on ) {
-		$at   = max( 5, min( 95, (int) ( isset( $g['mid_at'] ) ? $g['mid_at'] : 50 ) ) ) / 100;
-		$kf[] = array( 'at' => $at, 'v' => $state( 'mid' ), 'ease' => (string) ( isset( $g['mid_ease'] ) ? $g['mid_ease'] : 'out' ) );
+		$at   = max( 5, min( 95, (int) ( isset( $mid['at'] ) ? $mid['at'] : 50 ) ) ) / 100;
+		$kf[] = array( 'at' => $at, 'v' => $state( 'mid' ), 'ease' => (string) ( isset( $mid['ease'] ) ? $mid['ease'] : 'out' ) );
 	}
-	$kf[] = array( 'at' => 1, 'v' => $end, 'ease' => (string) ( isset( $g['end_ease'] ) ? $g['end_ease'] : 'out' ) );
+	$kf[] = array( 'at' => 1, 'v' => $end, 'ease' => (string) ( isset( $end_s['ease'] ) ? $end_s['ease'] : 'out' ) );
 
 	$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
 	$attr['class'] = esc_attr( trim( $cls . ' sc-scroll-kf' ) );
@@ -201,7 +288,8 @@ add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
 		return $needs;
 	}
 	$c = ( isset( $atts['scroll_keyframes'] ) && is_array( $atts['scroll_keyframes'] ) ) ? $atts['scroll_keyframes'] : array();
-	return ( isset( $c['mode'] ) && (string) $c['mode'] === 'keyframes' );
+	$m = isset( $c['mode'] ) ? (string) $c['mode'] : 'none';
+	return ( 'keyframes' === $m || 'pin_choreo' === $m );
 }, 10, 2 );
 
 /* ------------------------------------------------------------------ *

@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Wheel Carousel — cards fanned on a big Ferris-style wheel whose hub sits below
+ * Motion Gallery design: Wheel Carousel — cards fanned on a big Ferris-style wheel whose hub sits below
  * the frame, so only the top arc shows. Each card is rotated tangent to the wheel (upright at the top
  * = the focus, tilting away toward the sides) and the wheel steps around card by card. Overshoot lets
  * a step sail past and settle, Anticipation winds it back first, Hold pauses on each card. A flat (2D)

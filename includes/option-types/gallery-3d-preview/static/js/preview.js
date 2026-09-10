@@ -1,5 +1,5 @@
 /*
- * 3D Gallery — in-modal live preview (admin only).
+ * Motion Gallery — in-modal live preview (admin only).
  *
  * On fw:options:init it finds each preview host, reads its sibling `design_settings` values from the
  * DOM (same modal), builds the scene with PLACEHOLDER cards, and drives it with the element's REAL
@@ -49,6 +49,7 @@
 		carousel_flow: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'forward', hover_behavior: 'slow', snap: 'yes', orientation: 'horizontal', side_scale: 82, card_size: 50, gap: 5, card_ratio: '1-1', corner_radius: 0, padding: 0 },
 		mosaic_marquee: { drive: 'continuous', allow_drag: 'yes', speed: 24, direction: 'left', hover_behavior: 'slow', layout: '1', card_height: 55, gap: 3, card_ratio: '1-1', corner_radius: 18, padding: 6, background: '' },
 		hero_reel: { drive: 'continuous', allow_drag: 'yes', speed: 24, direction: 'left', hover_behavior: 'slow', card_size: 18, card_spacing: 4, active_scale: 112, active_lift: 8, hero_opacity: 55, ken_burns: 60, hold: 55, card_ratio: '4-3', corner_radius: 8, padding: 0, background: '' },
+		focus_slider: { drive: 'continuous', allow_drag: 'yes', speed: 24, direction: 'left', hover_behavior: 'slow', axis: 'horizontal', card_size: 78, center_scale: 200, slide_portion: 60, card_spacing: 6, hold: 50, zigzag: 0, zigzag_mode: 'alternate', card_ratio: '1-1', corner_radius: 8, padding: 0, background: '' },
 		// Flat tabletop scatter + device frame. The preview always runs these in AUTO cycle (there is no
 		// scroll in the modal), so the scatter's sets sweep in/out and the device cycles screens on a
 		// timer — a lively, representative preview of the design regardless of the saved cycle mode.
@@ -319,6 +320,21 @@
 			return '<div class="tdg tdg--hero-reel" style="' + style + '" ' + ahr + '><div class="tdg__stage" style="background:' + hrBg + '"><div class="tdg__hero"><span class="tdg__hero-layer"></span><span class="tdg__hero-layer"></span></div><div class="tdg__reel">' + cards + '</div></div></div>';
 		}
 
+		if (design === 'focus_slider') {
+			// Centred-focus slider — mirror focus-slider.php (initFocusSlider).
+			var afs2 = attrStr($.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'right' ? -1 : 1,
+				'data-tdg-axis': o.axis === 'vertical' ? 'vertical' : 'horizontal',
+				'data-tdg-card': o.card_size, 'data-tdg-cscale': o.center_scale, 'data-tdg-slide': o.slide_portion,
+				'data-tdg-gap': o.card_spacing, 'data-tdg-zig': o.zigzag, 'data-tdg-zigmode': o.zigzag_mode,
+				'data-tdg-hold': o.hold, 'data-tdg-count': 9
+			}));
+			cards = '';
+			for (i = 0; i < 9; i++) { cards += cardHtml(i % 12, 12); }
+			var fsBg = (o.background && String(o.background).trim()) ? o.background : '#101014';
+			return '<div class="tdg tdg--focus-slider" style="' + style + '" ' + afs2 + '><div class="tdg__stage" style="background:' + fsBg + '"><div class="tdg__reel">' + cards + '</div></div></div>';
+		}
+
 		if (design === 'wheel_carousel') {
 			// Cards fanned on a Ferris wheel — mirror wheel-carousel.php (a loop of cards on the arc).
 			var wcN = 11;
@@ -490,7 +506,7 @@
 			$stage.html(buildScene(read.design, read.o));
 			var el = $stage.children('.tdg')[0];
 			if (el && window.upwGallery3dInitEl) { window.upwGallery3dInitEl(el); }
-		} catch (e) { if (window.console) { console.warn('[3D Gallery preview]', e); } }
+		} catch (e) { if (window.console) { console.warn('[Motion Gallery preview]', e); } }
 	}
 
 	var debounced = {};

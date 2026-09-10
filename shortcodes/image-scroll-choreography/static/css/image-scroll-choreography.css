@@ -1,0 +1,16 @@
+/* Image Scroll Choreography — image-specific layer styling. The scene / fixed layer / anchoring / guide are
+   in the shared scroll-choreo-base.css; the pose engine is scroll-choreo-engine.js. Here: the layer is sized
+   by a viewport-width %, and holds one <img>. */
+
+.fw-choreo__layer { width: calc(var(--w, 26) * 1vw); }
+
+.fw-choreo__layer img {
+	display: block;
+	width: 100%;
+	height: auto;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-user-drag: none;
+}
+/* Horizontal flip mirrors the image in place (centre origin), independent of the layer's pose transform. */
+.fw-choreo__layer img.is-flip { transform: scaleX(-1); }

@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Image Sequence', 'fw' ),
 	'description' => __( 'Scrub through a sequence of frames as the visitor scrolls — the "product-reveal" effect. Upload frames or point at a numbered URL pattern; pin it full-screen or play it as it passes.', 'fw' ),
-	'tab'         => __( 'Media Elements', 'fw' ),
+	'tab'         => __( 'Animation Engine', 'fw' ),
 	'popup_size'  => 'medium',
 
 	'title_template' => '

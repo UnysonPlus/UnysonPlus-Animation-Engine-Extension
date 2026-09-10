@@ -1,0 +1,40 @@
+/* Text Scroll Choreography — text-specific layer styling. Scene / fixed layer / anchoring / guide are in the
+   shared scroll-choreo-base.css; the pose engine is scroll-choreo-engine.js. Here: the layer is sized by a
+   max-width, and holds a warp wrapper → text wrapper → heading. */
+
+/* The layer sizes to its text up to a viewport-width cap; centre anchors translate by -50% of that box. */
+.fw-choreo--text .fw-choreo__layer {
+	max-width: calc(var(--w, 40) * 1vw);
+	width: max-content;
+}
+.fw-choreo--text.fw-choreo .fw-choreo__layer.a-h-center { /* keep max-content boxes centring cleanly */
+	width: max-content;
+}
+
+/* WARP wrapper — its own transform (perspective / rotateX / skew), kept off the pose transform above and the
+   glyph transforms below, so the three never fight. */
+.fw-choreo__warp {
+	transform-origin: center center;
+	will-change: transform;
+}
+
+/* TEXT wrapper + the heading: reset margins, tidy line-height. Font-size / weight / colour / align are
+   inlined per line from the options; a Text Effect (data-text) animates the glyphs inside. */
+.fw-choreo__text { display: block; }
+/* Curve (Phase 2): the SVG arc replaces the visible line; the real heading is kept but visually hidden (JS). */
+.fw-choreo__svg { display: block; overflow: visible; }
+
+/* Scroll reveal (Phase 3): pieces start dim and light as the visitor scrolls the read-along window. */
+.fw-choreo__piece { opacity: 0.14; transition: opacity 0.45s ease; }
+.fw-choreo__piece.is-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .fw-choreo__piece { opacity: 1 !important; transition: none; } }
+.fw-choreo__t {
+	margin: 0;
+	padding: 0;
+	line-height: 1.05;
+	font-size: inherit;
+	font-weight: inherit;
+	color: inherit;
+	text-align: inherit;
+	letter-spacing: -0.01em;
+}

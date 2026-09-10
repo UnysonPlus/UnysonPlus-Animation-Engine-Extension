@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'WebGL Object', 'fw' ),
 	'description' => __( 'A real-time WebGL element — a refractive glass blob, liquid metal, distorted sphere or particle field — that reacts to the pointer and scroll. Built with Three.js.', 'fw' ),
-	'tab'         => __( 'Media Elements', 'fw' ),
+	'tab'         => __( 'Animation Engine', 'fw' ),
 	'popup_size'  => 'medium',
 
 	'title_template' => '

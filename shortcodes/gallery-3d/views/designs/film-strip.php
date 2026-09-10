@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Film Strip — a horizontal cover-flow carousel (Carousel & Flow family), the
+ * Motion Gallery design: Film Strip — a horizontal cover-flow carousel (Carousel & Flow family), the
  * horizontal sibling of Card Reel. A single row of cards wraps around a vertical cylinder: the centre
  * card sits flat and forward (the focus); the ones to the left and right tilt back along the curve.
  * The strip flows left/right continuously, or "Stop at centre" snaps each card to the middle. The 3D

@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Hero Reel — a horizontal reel of thumbnail cards over a full-bleed HERO background.
+ * Motion Gallery design: Hero Reel — a horizontal reel of thumbnail cards over a full-bleed HERO background.
  * The card stepping through the centre is the "active" one: it scales up + lifts, and its image fills
  * the whole stage as a dimmed, slowly-zooming (Ken Burns) hero behind the reel. As the reel advances the
  * hero cross-fades to the next card. A flat 2D design (Carousel & Flow family). gallery-3d.js

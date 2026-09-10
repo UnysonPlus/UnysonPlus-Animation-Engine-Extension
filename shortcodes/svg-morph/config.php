@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'SVG Morph', 'fw' ),
 	'description' => __( 'An SVG shape that morphs into another — a liquid blob loop, circle to square, heart to star, or your own paths. Fills or outlines; loops, on hover, on scroll-in, or on click.', 'fw' ),
-	'tab'         => __( 'Media Elements', 'fw' ),
+	'tab'         => __( 'Animation Engine', 'fw' ),
 	'popup_size'  => 'medium',
 
 	'title_template' => '

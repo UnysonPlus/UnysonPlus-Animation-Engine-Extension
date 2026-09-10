@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Card Reel — a vertical cover-flow carousel (Carousel & Flow family). A single
+ * Motion Gallery design: Card Reel — a vertical cover-flow carousel (Carousel & Flow family). A single
  * column of cards wraps around a horizontal cylinder: the centre card sits flat and forward (the
  * focus); the ones above and below tilt back along the curve. The reel flows up/down continuously, or
  * "Stop at centre" snaps each card to the middle. The 3D Curve bends the cylinder. gallery-3d.js

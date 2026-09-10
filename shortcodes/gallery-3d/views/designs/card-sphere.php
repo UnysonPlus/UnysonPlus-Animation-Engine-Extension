@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Card Sphere — cards wrapped onto a spinning sphere (a "disco ball" of images).
+ * Motion Gallery design: Card Sphere — cards wrapped onto a spinning sphere (a "disco ball" of images).
  * Each card sits on the sphere surface facing outward (rotateY(lon) rotateX(lat) translateZ(R)).
  *
  * The TILING IS DERIVED, not configured: Globe Size sets the sphere and the bands / per-band card
@@ -32,7 +32,7 @@ $card     = max( 8, min( 30, (float) $dp( 'card_size', 20 ) ) );
 $gap      = max( 0, min( 8, (float) $dp( 'gap', 2.5 ) ) );
 $backfade = max( 0, min( 90, (float) $dp( 'back_fade', 55 ) ) );
 $tilt     = max( -45, min( 45, (float) $dp( 'tilt', 0 ) ) );
-$persp    = max( 8, min( 100, (float) $dp( 'perspective', 55 ) ) ); // our extra (animos has none)
+$persp    = max( 8, min( 100, (float) $dp( 'perspective', 55 ) ) ); // our extra (the reference has none)
 
 $maxlat = 80; // top/bottom band latitude — kept off the exact poles so cards don't pile up
 

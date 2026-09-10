@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Carousel Flow — a flat focus carousel (Carousel & Flow family). The centre card
+ * Motion Gallery design: Carousel Flow — a flat focus carousel (Carousel & Flow family). The centre card
  * is full size; the side cards scale down (Side Card Scale) and fade, sliding past. No tilt. Flows
  * horizontally OR vertically (Orientation). Continuous, or "Stop at centre" snaps each card to the
  * middle. gallery-3d.js (initFlow, mode 'carousel') places the cards.

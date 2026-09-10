@@ -1,5 +1,5 @@
 /**
- * 3D Gallery — Carousel Ring driver.
+ * Motion Gallery — Carousel Ring driver.
  *
  * Lays a set of cards around a 3D ring (rotateY(iθ) translateZ(R)), spins the ring per the chosen
  * Motion (auto-rotate / drag / scroll-scrub / static), and fades cards as they turn to the back
@@ -48,6 +48,76 @@
 			return clamp( ( stick - r.top ) / Math.max( 1, r.height - sh ), 0, 1 );
 		}
 		return clamp( 1 - ( r.top + r.height / 2 ) / ( vh + r.height ), 0, 1 );
+	}
+
+	// ---- Built-in sequential Entrance / scroll choreography -------------------
+	// Reveal the cards one by one as the gallery scrolls in — on EVERY design. The design owns each
+	// .tdg__card transform; we pose the inner content layer (.tdg__inner), which the layout never
+	// touches, so the reveal composes with the 3D motion instead of fighting it. Staggered by index.
+	//
+	// Two progress sources:
+	//   • Pinned Scroll-scrub (data-tdg-drive=scroll + .tdg--pinned) → a full scroll CHOREOGRAPHY: the
+	//     images fade in one by one over the FIRST slice of the pin, hold while the design scrubs (e.g.
+	//     the ring spins its Rounds), then fade out one by one over the LAST slice. Driven by the pin.
+	//   • Otherwise → a one-shot cascade as the gallery travels into the viewport (optional exit).
+	function initReveal( el ) {
+		var effect = el.getAttribute( 'data-tdg-entrance' );
+		if ( ! effect || effect === 'none' || el.__tdgReveal ) { return; }
+		el.__tdgReveal = true;
+
+		var cards = el.querySelectorAll( '.tdg__card' ), layers = [], i;
+		for ( i = 0; i < cards.length; i++ ) { var inr = cards[ i ].querySelector( '.tdg__inner' ); if ( inr ) { layers.push( inr ); } }
+		var n = layers.length;
+		if ( ! n ) { return; }
+		if ( reduce ) { for ( i = 0; i < n; i++ ) { layers[ i ].style.opacity = ''; } return; }
+
+		// Pinned scroll-scrub → choreography mode (enter + exit tied to the pin, never tears down).
+		var scrub  = el.getAttribute( 'data-tdg-drive' ) === 'scroll' && el.classList.contains( 'tdg--pinned' );
+		var stage  = scrub ? el.querySelector( '.tdg__stage' ) : null;
+		var ENTER  = 0.16, EXIT = 0.84;   // first/last 16% of the pin = the in / out sequences
+
+		var stagger = num( el, 'data-tdg-entrance-stagger', 60 ) / 100;   // 0..0.9 spread of the cascade
+		var dist    = num( el, 'data-tdg-entrance-distance', 40 );        // px the card rises from
+		var doExit  = scrub || el.getAttribute( 'data-tdg-exit' ) === 'yes';
+		var span    = Math.max( 0.25, 1 - stagger );                      // each card's own reveal length
+		var step    = n > 1 ? stagger / ( n - 1 ) : 0;                    // per-index delay
+		function ease( t ) { return t <= 0 ? 0 : t >= 1 ? 1 : 1 - Math.pow( 1 - t, 3 ); }
+
+		var ticking = false, done = false;
+		function apply() {
+			var enterP, exitP;
+			if ( scrub ) {
+				var P = scrollProgress( el, stage );                          // 0..1 across the pinned scrub
+				enterP = clamp( P / ENTER, 0, 1 );
+				exitP  = clamp( ( P - EXIT ) / ( 1 - EXIT ), 0, 1 );
+			} else {
+				var r = el.getBoundingClientRect(), vh = window.innerHeight || 1;
+				enterP = clamp( ( vh - r.top ) / ( vh * 0.6 ), 0, 1 );        // rises in over ~60% vh
+				exitP  = doExit ? clamp( ( vh * 0.15 - r.bottom ) / ( vh * 0.5 ), 0, 1 ) : 0;
+			}
+			var allIn = true;
+			for ( var k = 0; k < n; k++ ) {
+				var inL  = ease( clamp( ( enterP - k * step ) / span, 0, 1 ) );
+				var outL = doExit ? ease( clamp( ( exitP - ( n - 1 - k ) * step ) / span, 0, 1 ) ) : 0;
+				var v = inL * ( 1 - outL ), e = 1 - v, L = layers[ k ]; // e: 0 shown → 1 hidden
+				L.style.opacity = v.toFixed( 3 );
+				// Each effect poses the inner layer differently; all compose with the design's 3D transform.
+				if ( effect === 'scale' )      { L.style.transform = 'scale(' + ( 0.82 + 0.18 * v ).toFixed( 3 ) + ')';          L.style.filter = ''; }
+				else if ( effect === 'blur' )  { L.style.transform = '';                                                          L.style.filter = e > 0.01 ? 'blur(' + ( e * 9 ).toFixed( 1 ) + 'px)' : ''; }
+				else if ( effect === 'slide' ) { L.style.transform = 'translateX(' + ( e * dist ).toFixed( 1 ) + 'px)';           L.style.filter = ''; }
+				else if ( effect === 'flip' )  { L.style.transform = 'perspective(720px) rotateY(' + ( e * 70 ).toFixed( 1 ) + 'deg)'; L.style.filter = ''; }
+				else                           { L.style.transform = 'translateY(' + ( e * dist ).toFixed( 1 ) + 'px)';           L.style.filter = ''; } // rise
+				if ( v < 0.999 ) { allIn = false; }
+			}
+			// One-shot cascade with nothing left to watch → stop listening. Scrub/exit keep running.
+			if ( allIn && ! doExit ) { teardown(); }
+		}
+		function onScroll() { if ( ticking || done ) { return; } ticking = true; requestAnimationFrame( function () { ticking = false; apply(); } ); }
+		function teardown() { done = true; window.removeEventListener( 'scroll', onScroll ); window.removeEventListener( 'resize', onScroll ); }
+
+		window.addEventListener( 'scroll', onScroll, { passive: true } );
+		window.addEventListener( 'resize', onScroll, { passive: true } );
+		apply();
 	}
 
 	// Hover behaviour for auto-rotating drives: 'none' keeps full speed, 'pause' stops on hover,
@@ -110,12 +180,13 @@
 		var momentum = num( el, 'data-tdg-momentum', 1 );
 		var tilt     = num( el, 'data-tdg-tilt', -28 );
 		var roll     = num( el, 'data-tdg-roll', 0 );
+		var sway     = num( el, 'data-tdg-sway', 0 );     // +/- degrees of vertical rock as the ring spins
 		var opening  = num( el, 'data-tdg-opening', 55 ); // how far you look INTO the ring (0 edge-on .. 100 open)
 		var ringMul  = num( el, 'data-tdg-ring', 80 ) / 100;
 		var spacing  = num( el, 'data-tdg-spacing', 100 ) / 100;
 		var perspVal = num( el, 'data-tdg-persp', 40 );
 		var backFade = clamp( num( el, 'data-tdg-backfade', 65 ) / 100, 0, 1 );
-		// Card Size is % of the stage width, but scaled ×0.5 so the numbers line up with the animos
+		// Card Size is % of the stage width, but scaled ×0.5 so the numbers line up with the reference
 		// control (their 21% default = our card that fits the frame). Keeps the value portable.
 		var cardPct  = num( el, 'data-tdg-card', 21 ) / 100 * 0.5;
 
@@ -133,11 +204,11 @@
 			if ( R < chordFit * 1.03 ) { R = chordFit * 1.03; }
 			// Perspective is WIDTH-RELATIVE so the depth reads the same at any stage size (a fixed px
 			// value looked strong on a wide screen and flat on a narrow one). HIGHER value = STRONGER
-			// perspective (closer camera, bigger px→smaller distance), matching the animos control.
+			// perspective (closer camera, bigger px→smaller distance), matching the reference control.
 			var pDist = W * Math.max( 0.35, Math.min( 1.25, 1.35 - perspVal * 0.013 ) );
 			stage.style.perspective = pDist + 'px';
 			// Eye sits below the ring centre so the near cards render lower with margin beneath them and
-			// the whole loop lifts slightly above centre — the animos framing.
+			// the whole loop lifts slightly above centre — the reference framing.
 			stage.style.perspectiveOrigin = '50% 60%';
 			cards.forEach( function ( c, i ) {
 				c.__rot = i * step;
@@ -159,7 +230,10 @@
 		function applyRing() {
 			// scaleY (Ring Opening) is outermost, then rotateZ (Diagonal Tilt) rolls the oval diagonally,
 			// rotateX tips it back, and rotateY spins the cards around the ring.
-			ring.style.transform = 'scaleY(' + openScale + ') rotateZ(' + roll + 'deg) rotateX(' + tilt + 'deg) rotateY(' + angle + 'deg)';
+			// Vertical Sway: rock the ring up/down as it spins (two rocks per revolution) — turns a flat
+			// carousel into an orbiting "product" showcase seen from shifting heights. 0 = off.
+			var rx = sway ? ( tilt + sway * Math.sin( angle * Math.PI / 90 ) ) : tilt;
+			ring.style.transform = 'scaleY(' + openScale + ') rotateZ(' + roll + 'deg) rotateX(' + rx.toFixed( 2 ) + 'deg) rotateY(' + angle + 'deg)';
 			if ( backFade > 0 ) {
 				for ( var i = 0; i < n; i++ ) {
 					var facing = Math.cos( ( cards[ i ].__rot + angle ) * Math.PI / 180 ); // 1 front, -1 back
@@ -205,7 +279,8 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360; };
+			var rounds = num( el, 'data-tdg-rounds', 1 );   // full turns across the pinned scrub
+			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360 * rounds; };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -221,7 +296,7 @@
 			if ( ! dragging ) {
 				if ( autoSpin ) { angle += dir * ( 360 / speed ) * dt * hoverF(); }             // auto-rotate
 				if ( momentum && Math.abs( vel ) > 0.02 ) { angle += vel; vel *= 0.95; }         // fling tail
-				else if ( drive === 'scroll' && scrollAngle !== null ) { angle = scrollAngle; }  // scroll drives when idle
+				else if ( drive === 'scroll' && scrollAngle !== null ) { angle += ( scrollAngle - angle ) * 0.14; }  // scroll drives when idle (eased glide)
 			}
 			applyRing();
 			requestAnimationFrame( loop );
@@ -335,7 +410,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollBase = dir * scrollProgress( el, stage ) * span * 2; };
+			var onScroll = function () { scrollBase = dir * scrollProgress( el, stage ) * span * 2 * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -349,7 +424,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.02 ) { base += vel; vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollBase !== null ) { base = scrollBase; }
+				else if ( drive === 'scroll' && scrollBase !== null ) { base += ( scrollBase - base ) * 0.14; }
 			}
 			applyWall();
 			requestAnimationFrame( loop );
@@ -458,7 +533,8 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360; };
+			var rounds = num( el, 'data-tdg-rounds', 1 );   // full turns across the pinned scrub
+			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360 * rounds; };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -472,7 +548,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.02 ) { bandData.forEach( function ( bd ) { bd.angle += vel; } ); vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollAngle !== null ) { bandData.forEach( function ( bd ) { bd.angle = scrollAngle; } ); }
+				else if ( drive === 'scroll' && scrollAngle !== null ) { bandData.forEach( function ( bd ) { bd.angle += ( scrollAngle - bd.angle ) * 0.14; } ); }
 			}
 			applyGlobe();
 			requestAnimationFrame( loop );
@@ -568,7 +644,8 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360; };
+			var rounds = num( el, 'data-tdg-rounds', 1 );   // full turns across the pinned scrub
+			var onScroll = function () { scrollAngle = dir * scrollProgress( el, stage ) * 360 * rounds; };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -582,7 +659,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.02 ) { angle += vel; vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollAngle !== null ) { angle = scrollAngle; }
+				else if ( drive === 'scroll' && scrollAngle !== null ) { angle += ( scrollAngle - angle ) * 0.14; }
 			}
 			applyOrbit();
 			requestAnimationFrame( loop );
@@ -1136,7 +1213,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * latSpan * 2; };
+			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * latSpan * 2 * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -1150,7 +1227,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.02 ) { Y += vel; vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollY !== null ) { Y = scrollY; }
+				else if ( drive === 'scroll' && scrollY !== null ) { Y += ( scrollY - Y ) * 0.14; }
 			}
 			applyCascade();
 			requestAnimationFrame( loop );
@@ -1194,7 +1271,7 @@
 		function layout() {
 			var W = stage.clientWidth || el.clientWidth || 1;
 			// Zoom → card width as a fraction of the stage: higher zoom = larger totems, fewer visible
-			// (the rim totems fall off the sides and fade). Matches the animos "Zoom" behaviour.
+			// (the rim totems fall off the sides and fade). Matches the reference "Zoom" behaviour.
 			var cardPct = 0.10 + ( zoom / 100 ) * 0.30;
 			cardW = Math.max( 30, W * cardPct );
 			cardH = ( colData[ 0 ].cards[ 0 ] && colData[ 0 ].cards[ 0 ].offsetHeight ) ? colData[ 0 ].cards[ 0 ].offsetHeight : cardW * 0.5625;
@@ -1262,7 +1339,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * latSpan * 2; };
+			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * latSpan * 2 * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -1276,7 +1353,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.02 ) { Y += vel; vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollY !== null ) { Y = scrollY; }
+				else if ( drive === 'scroll' && scrollY !== null ) { Y += ( scrollY - Y ) * 0.14; }
 			}
 			applyTotem();
 			requestAnimationFrame( loop );
@@ -1394,7 +1471,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * latSpan * 2; };
+			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * latSpan * 2 * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -1408,7 +1485,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.02 ) { Y += vel; vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollY !== null ) { Y = scrollY; }
+				else if ( drive === 'scroll' && scrollY !== null ) { Y += ( scrollY - Y ) * 0.14; }
 			}
 			applyParallax();
 			requestAnimationFrame( loop );
@@ -1442,12 +1519,15 @@
 		var clen  = clamp( num( el, 'data-tdg-clen', 30 ), 0, 120 ) / 100;
 		var gap   = clamp( num( el, 'data-tdg-gap', 2 ), 0, 40 ) / 100;
 		var dfade = clamp( num( el, 'data-tdg-dfade', 0 ) / 100, 0, 1 );
+		var spiral = num( el, 'data-tdg-spiral', 0 );            // degrees of corridor roll per full pass
+		var square = num( el, 'data-tdg-square', 0 );            // 1 = equal-sided (square) cross-section
 		var W = 0, H = 0, L = 0, step = 0, D = 0, Y = 0, vel = 0;
 
 		function layout() {
 			var SW = stage.clientWidth || el.clientWidth || 1;
 			var SH = stage.clientHeight || el.clientHeight || 1;
 			W = SW * 0.5 * tsize; H = SH * 0.5 * tsize;          // half tunnel width / height
+			if ( square ) { var sq = Math.min( SW, SH ) * 0.5 * tsize; W = sq; H = sq; }
 			L = SW * ( 0.15 + clen * 0.6 );                       // per-card depth (Z-length)
 			step = L + L * gap;                                    // card + gap along Z
 			D = step * N;                                          // full tunnel length → seamless wrap
@@ -1460,7 +1540,9 @@
 		}
 
 		function applyTunnel() {
-			tunnel.style.transform = '';
+			// Spiral: roll the whole corridor as it flies (rotateZ grows with travel), turning the straight
+			// tube into a helix. 0 = off.
+			tunnel.style.transform = spiral ? ( 'rotateZ(' + ( spiral * ( Y / ( D || 1 ) ) ).toFixed( 2 ) + 'deg)' ) : '';
 			for ( var wi = 0; wi < walls.length; wi++ ) {
 				var wl = walls[ wi ];
 				for ( var i = 0; i < N; i++ ) {
@@ -1502,7 +1584,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = scrollProgress( el, stage ) * D * 2; };
+			var onScroll = function () { scrollY = scrollProgress( el, stage ) * D * 2 * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -1516,7 +1598,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.02 ) { Y += vel; vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollY !== null ) { Y = scrollY; }
+				else if ( drive === 'scroll' && scrollY !== null ) { Y += ( scrollY - Y ) * 0.14; }
 			}
 			applyTunnel();
 			requestAnimationFrame( loop );
@@ -1606,7 +1688,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = scrollProgress( el, stage ) * 2; };
+			var onScroll = function () { scrollY = scrollProgress( el, stage ) * 2 * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -1620,7 +1702,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollY !== null ) { S = scrollY; }
+				else if ( drive === 'scroll' && scrollY !== null ) { S += ( scrollY - S ) * 0.14; }
 			}
 			applySpiral();
 			requestAnimationFrame( loop );
@@ -1653,7 +1735,7 @@
 		var wobble = clamp( num( el, 'data-tdg-wobble', 0 ) / 100, 0, 1 );
 		var dFade = clamp( num( el, 'data-tdg-dfade', 0 ) / 100, 0, 1 );
 		var dBlur = clamp( num( el, 'data-tdg-dblur', 0 ) / 100, 0, 1 );
-		var scatter = ( el.getAttribute( 'data-tdg-layout' ) === 'scatter' );
+		var layoutMode = el.getAttribute( 'data-tdg-layout' ) || 'fan'; // fan | scatter | aisle | field
 
 		function rnd( i, s ) { var x = Math.sin( ( i + 1 ) * 91.7 + s * 47.3 ) * 43758.5453; return x - Math.floor( x ); }
 		var meta = cards.map( function ( _, i ) { return { rot: rnd( i, 1 ) * 2 - 1, sx: rnd( i, 2 ) * 2 - 1, sy: rnd( i, 3 ) * 2 - 1 }; } );
@@ -1678,7 +1760,16 @@
 				var d = ( ( raw + 0.15 ) % 1 + 1 ) % 1 - 0.15;
 				var z = -d * totalDepth;
 				var ox, oy;
-				if ( scatter ) { ox = m.sx * spreadMag; oy = m.sy * spreadMag; }             // fixed random scatter
+				if ( layoutMode === 'scatter' ) { ox = m.sx * spreadMag; oy = m.sy * spreadMag; }        // fixed random scatter
+				else if ( layoutMode === 'field' ) {                                                     // a cloud you fly INTO: wide at the back, funnelling past you near the front
+					var ff = 0.28 + Math.max( 0, d ) * 1.25;
+					ox = m.sx * spreadMag * ff; oy = m.sy * spreadMag * ff;
+				}
+				else if ( layoutMode === 'aisle' ) {                                                     // an aisle: cards to both sides, camera dollies down the middle (Dolly Gallery)
+					var side = ( i % 2 ) ? 1 : -1;
+					ox = side * spreadMag * ( 0.62 + 0.38 * Math.abs( m.sx ) );
+					oy = m.sy * spreadMag * 0.22;
+				}
 				else { var f = Math.max( 0, d ); ox = spreadMag * f * Math.cos( ang ); oy = spreadMag * f * Math.sin( ang ); } // fan: more spread toward the back
 				var rot = m.rot * wobble * 22;
 				c.style.transform = 'translate3d(' + ox.toFixed( 1 ) + 'px,' + oy.toFixed( 1 ) + 'px,' + z.toFixed( 1 ) + 'px) rotateZ(' + rot.toFixed( 1 ) + 'deg)';
@@ -1711,7 +1802,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = scrollProgress( el, stage ) * ( N > 1 ? N - 1 : 1 ); };
+			var onScroll = function () { scrollY = scrollProgress( el, stage ) * ( N > 1 ? N - 1 : 1 ) * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -1725,7 +1816,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.95; }
-				else if ( drive === 'scroll' && scrollY !== null ) { S = scrollY; }
+				else if ( drive === 'scroll' && scrollY !== null ) { S += ( scrollY - S ) * 0.14; if ( Math.abs( scrollY - S ) < 0.0004 ) { S = scrollY; } } // ease toward the scroll target (glide, not frame-lock)
 			}
 			applyDepth();
 			requestAnimationFrame( loop );
@@ -1837,7 +1928,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * N; };
+			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * N * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -1943,7 +2034,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * N; };
+			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * N * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -2059,7 +2150,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * N; };
+			var onScroll = function () { scrollY = dir * scrollProgress( el, stage ) * N * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -2073,7 +2164,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.0005 && ! snap ) { pos += vel; vel *= 0.9; }
-				else if ( drive === 'scroll' && scrollY !== null ) { pos = scrollY; }
+				else if ( drive === 'scroll' && scrollY !== null ) { pos += ( scrollY - pos ) * 0.14; }
 			}
 			applyFlow();
 			requestAnimationFrame( loop );
@@ -2232,7 +2323,7 @@
 		}
 
 		if ( drive === 'scroll' ) {
-			var onScroll = function () { scrollX = dir * scrollProgress( el, stage ) * setW * 2; };
+			var onScroll = function () { scrollX = dir * scrollProgress( el, stage ) * setW * 2 * num( el, 'data-tdg-rounds', 1 ); };
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 			onScroll();
 		}
@@ -2246,7 +2337,7 @@
 			if ( ! dragging ) {
 				if ( autoRun ) { advance( dt ); }
 				if ( momentum && Math.abs( vel ) > 0.3 ) { pos += vel; vel *= 0.94; wrap(); }
-				else if ( drive === 'scroll' && scrollX !== null ) { pos = scrollX; wrap(); }
+				else if ( drive === 'scroll' && scrollX !== null ) { pos += ( scrollX - pos ) * 0.14; wrap(); }
 			}
 			apply();
 			requestAnimationFrame( loop );
@@ -2440,6 +2531,125 @@
 		requestAnimationFrame( loop );
 	}
 
+	// Focus Slider — a horizontal (or vertical) auto-advancing slider where the card passing through
+	// the CENTRE is "focused": it scales up (Center Scale, up to ~3×) and sits clean, while its
+	// neighbours stay small. Optional Zigzag pushes off-centre cards alternately up/down (or left/right
+	// in vertical mode); Slide Portion sets how far apart the cards sit (low = overlapping/cinematic,
+	// high = spread). Padding / Corner Radius / Background frame each card. Flat 2D (Carousel & Flow).
+	function initFocusSlider( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var reel  = el.querySelector( '.tdg__reel' );
+		if ( ! stage || ! reel ) { return; }
+		var cards = Array.prototype.slice.call( reel.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive    = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed    = num( el, 'data-tdg-speed', 24 );
+		var dir      = num( el, 'data-tdg-dir', 1 );
+		var vertical = ( el.getAttribute( 'data-tdg-axis' ) === 'vertical' );
+		var cardPct  = clamp( num( el, 'data-tdg-card', 78 ), 20, 100 ) / 100;
+		var gap      = clamp( num( el, 'data-tdg-gap', 6 ), 0, 40 ) / 100;
+		var cscale   = clamp( num( el, 'data-tdg-cscale', 200 ), 100, 300 ) / 100;
+		var zig      = clamp( num( el, 'data-tdg-zig', 0 ), 0, 100 ) / 100;
+		var zigFixed = ( el.getAttribute( 'data-tdg-zigmode' ) === 'fixed' );
+		var slide    = clamp( num( el, 'data-tdg-slide', 60 ), 20, 100 ) / 100;
+		var hold     = clamp( num( el, 'data-tdg-hold', 50 ), 0, 100 ) / 100;
+
+		var cardW = 0, cardH = 0, step = 0, cross = 0, leadV = 0, gapPx = 0, pos = 0, vel = 0, target = 0, dwellT = 0;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1;
+			var H = stage.clientHeight || el.clientHeight || 1;
+			// Size the card on the CROSS axis (height for horizontal, width for vertical) and let the
+			// other side follow from the card's aspect-ratio — so a portrait card stays tall & narrow
+			// and its neighbours peek past the enlarged centre card, instead of it filling the stage.
+			if ( vertical ) {
+				var cw = Math.max( 40, W * cardPct );
+				cards.forEach( function ( c ) { c.style.width = cw + 'px'; c.style.height = ''; } );
+			} else {
+				var ch = Math.max( 40, H * cardPct );
+				cards.forEach( function ( c ) { c.style.height = ch + 'px'; c.style.width = ''; } );
+			}
+			cardW = ( cards[ 0 ] && cards[ 0 ].offsetWidth ) || 100;
+			cardH = ( cards[ 0 ] && cards[ 0 ].offsetHeight ) || 100;
+			cards.forEach( function ( c ) { c.style.marginLeft = ( -cardW / 2 ) + 'px'; c.style.marginTop = ( -cardH / 2 ) + 'px'; } );
+			// Each card occupies its own (scaled) extent plus a UNIFORM gap, so the gaps between cards
+			// stay equal even though the centre card is much wider than its shrunk neighbours (apply()
+			// positions them cumulatively via that gap). Slide Portion opens the gap up; low values pull
+			// the cards into a deliberate overlap.
+			leadV = vertical ? cardH : cardW;                // focused extent along the slide axis
+			gapPx = leadV * ( slide * 0.4 - 0.12 ) + leadV * gap;   // the uniform gap between neighbours (may go negative = overlap)
+			step  = leadV / cscale + gapPx;                  // one shrunk-card step — used for drag/snapping
+			cross = vertical ? cardW : cardH;                // focused perpendicular extent (for zigzag)
+		}
+		function apply() {
+			var inv = 1 / cscale;                            // a neighbour's scale relative to the focus
+			// Cumulative, width-aware position: sum each card's own scaled extent + the uniform gap, so
+			// the gaps stay equal across the much wider centre card. `area` is ∫ scale from centre to p.
+			function xpos( q ) {
+				var s = q < 0 ? -1 : 1, a = ( q < 0 ? -q : q ), area;
+				if ( a <= 1 ) { area = a - ( 1 - inv ) * a * a / 2; }
+				else { area = ( 1 + inv ) / 2 + inv * ( a - 1 ); }
+				return s * ( leadV * area + gapPx * a );
+			}
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var p = ( ( i - pos ) % N + N ) % N;
+				if ( p > N / 2 ) { p -= N; }                 // wrap into [-N/2, N/2)
+				var main = xpos( p );
+				var d = Math.abs( p );
+				var act = Math.max( 0, 1 - d );              // 1 at centre → 0 one step away
+				var sc = inv + ( 1 - inv ) * act;            // focused (centre) = full size; neighbours shrink to 1/cscale
+				// Zigzag: off-centre cards shift perpendicular; the focused card stays clean (fade by 1-act).
+				// Fixed ties the up/down to each card; Alternate is a slash (one side up, the other down)
+				// that flips each step — so the neighbours sit on opposite sides, as in the reference.
+				var sgn = zigFixed ? ( i % 2 ? -1 : 1 )
+					: ( p < 0 ? -1 : 1 ) * ( ( ( Math.round( pos ) % 2 ) + 2 ) % 2 ? -1 : 1 );
+				var off = sgn * zig * cross * 0.5 * ( 1 - act );
+				var tx = vertical ? off : main;
+				var ty = vertical ? main : off;
+				c.style.transform = 'translate3d(' + tx.toFixed( 1 ) + 'px,' + ty.toFixed( 1 ) + 'px,0) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.zIndex = String( 1000 - Math.round( d * 10 ) );
+				c.style.opacity = ( d > N / 2 - 0.6 ? Math.max( 0, ( N / 2 - d ) / 0.6 ) : 1 ).toFixed( 3 );
+			}
+		}
+		layout();
+		apply();
+		window.addEventListener( 'resize', function () { layout(); apply(); }, { passive: true } );
+
+		var hoverF    = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum  = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, px = 0;
+		var perCard = Math.max( 0.7, speed / Math.max( 1, N ) ) * ( 0.6 + hold * 0.9 );
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x, y ) { dragging = true; px = vertical ? y : x; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var cur = vertical ? y : x; var dx = cur - px; px = cur; pos -= dx / Math.max( 1, step ); vel = -dx / Math.max( 1, step ); };
+			var up   = function () { dragging = false; el.style.cursor = 'grab'; target = Math.round( pos ); };
+			attachDrag( el, down, move, up );
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag ) ) { return; }
+		var last = 0;
+		var loop = function ( t ) {
+			if ( ! last ) { last = t; }
+			var dt = Math.min( 0.05, ( t - last ) / 1000 ); last = t;
+			if ( ! dragging ) {
+				if ( autoRun ) { dwellT += dt * hoverF(); if ( dwellT >= perCard ) { dwellT = 0; target += dir; } }
+				if ( momentum && Math.abs( vel ) > 0.002 ) { pos += vel; vel *= 0.9; }
+				else { pos += ( target - pos ) * Math.min( 1, dt * 5 ); }
+			}
+			apply();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
 	function scan() {
 		var i, els;
 		els = document.querySelectorAll( '.tdg--carousel-ring' );
@@ -2474,12 +2684,17 @@
 		for ( i = 0; i < els.length; i++ ) { initMosaic( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--hero-reel' );
 		for ( i = 0; i < els.length; i++ ) { initHeroReel( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--focus-slider' );
+		for ( i = 0; i < els.length; i++ ) { initFocusSlider( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--photo-scatter' );
 		for ( i = 0; i < els.length; i++ ) { initScatter( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--device-cycler' );
 		for ( i = 0; i < els.length; i++ ) { initDeviceCycler( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--card-stack' );
 		for ( i = 0; i < els.length; i++ ) { initCardStack( els[ i ] ); }
+		// Built-in sequential Entrance — independent of the design, so one pass covers them all.
+		els = document.querySelectorAll( '.tdg--entrance' );
+		for ( i = 0; i < els.length; i++ ) { initReveal( els[ i ] ); }
 	}
 	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', scan ); } else { scan(); }
 	window.upwGallery3dRescan = scan;
@@ -2504,8 +2719,10 @@
 		else if ( el.classList.contains( 'tdg--carousel-flow' ) || el.classList.contains( 'tdg--cover-flow' ) ) { initFlow( el ); }
 		else if ( el.classList.contains( 'tdg--mosaic-marquee' ) ) { initMosaic( el ); }
 		else if ( el.classList.contains( 'tdg--hero-reel' ) ) { initHeroReel( el ); }
+		else if ( el.classList.contains( 'tdg--focus-slider' ) ) { initFocusSlider( el ); }
 		else if ( el.classList.contains( 'tdg--photo-scatter' ) ) { initScatter( el ); }
 		else if ( el.classList.contains( 'tdg--device-cycler' ) ) { initDeviceCycler( el ); }
 		else if ( el.classList.contains( 'tdg--card-stack' ) ) { initCardStack( el ); }
+		initReveal( el ); // built-in sequential Entrance (no-op unless data-tdg-entrance is set)
 	};
 })();

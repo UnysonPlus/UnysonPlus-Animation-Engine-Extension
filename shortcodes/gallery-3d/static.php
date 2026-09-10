@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery — assets. The base CSS + the one 3D driver load only on pages that use the element
+ * Motion Gallery — assets. The base CSS + the one 3D driver load only on pages that use the element
  * (the shortcodes enqueue mechanism includes this file only for present shortcodes). The shared
  * Gallery lightbox is reused (same handle → deduped) and enqueued PER INSTANCE only when a card's
  * click action is Lightbox (opt-in, off by default) — so by default a 3D gallery ships no lightbox code.

@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Mosaic Marquee — a horizontal marquee of cards packed masonry-style (varied
+ * Motion Gallery design: Mosaic Marquee — a horizontal marquee of cards packed masonry-style (varied
  * row/column spans) that scrolls sideways forever (Carousel & Flow family). The tiles fill a fixed
  * number of rows (from Card Height) via CSS grid dense packing; two identical copies of the grid ride
  * a track that wraps by exactly one copy's width for a seamless loop. Layout 1/2/3 are three patterns.

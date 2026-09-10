@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery — common render + design dispatch.
+ * Motion Gallery — common render + design dispatch.
  *
  * Normalizes the image slots (self-contained — the Gallery's helpers only exist when a Gallery is
  * also on the page), builds the shared card renderer + wrapper, then includes the chosen design
@@ -97,7 +97,7 @@ if ( $src_kind === 'posts' ) {
 }
 
 /* ---- chosen design + per-design option reader ---- */
-$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'hero_reel', 'mosaic_marquee', 'photo_scatter', 'card_stack', 'device_cycler' );
+$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'hero_reel', 'focus_slider', 'mosaic_marquee', 'photo_scatter', 'card_stack', 'device_cycler' );
 $design  = (string) $sc_get( 'design_settings/design', 'carousel_ring' );
 if ( ! in_array( $design, $designs, true ) ) { $design = 'carousel_ring'; }
 $dp = function ( $sub, $default = '' ) use ( $sc_get, $design ) { return $sc_get( 'design_settings/' . $design . '/' . $sub, $default ); };
@@ -130,6 +130,7 @@ $motion_dir   = isset( $mo['direction'] ) ? (string) $mo['direction'] : 'left';
 $motion_hover = ( isset( $mo['hover_behavior'] ) && in_array( $mo['hover_behavior'], array( 'none', 'pause', 'slow' ), true ) ) ? $mo['hover_behavior'] : 'slow';
 $motion_pin   = ( ! isset( $mo['pin'] ) || $mo['pin'] === 'yes' ); // pin defaults ON for scroll-scrub
 $motion_len   = isset( $mo['scroll_length'] ) ? max( 1, min( 5, (float) $mo['scroll_length'] ) ) : 2.5;
+$motion_rounds = isset( $mo['rounds'] ) ? max( 0.25, min( 6, (float) $mo['rounds'] ) ) : 1; // scroll-scrub: full turns across the pin
 
 /* ---- shared style / caption / lightbox ---- */
 $boxp   = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : '';
@@ -179,7 +180,7 @@ if ( is_array( $bg_val ) ) {
 
 $corner = max( 0, min( 60, (int) $dp( 'corner_radius', 6 ) ) );
 /* Card Padding is a % of the card width (CSS padding % always resolves against the inline size, so it
- * stays uniform on all four sides) — matches the animos control and scales with Card Size. */
+ * stays uniform on all four sides) — matches the reference control and scales with Card Size. */
 $pad    = max( 0, min( 40, (float) $dp( 'padding', 0 ) ) );
 $ratio_key = (string) $dp( 'card_ratio', '1-1' );
 $ratio_css = str_replace( '-', ' / ', preg_match( '/^\d+-\d+$/', $ratio_key ) ? $ratio_key : '1-1' );
@@ -267,6 +268,31 @@ if ( $as_bg ) {
 $is_pinned = ( $motion_mode === 'scroll' && $motion_pin && ! $as_bg );
 if ( $is_pinned ) { $attr['class'] = trim( $attr['class'] . ' tdg--pinned' ); }
 
+/* Rounds per scroll (scroll-scrub only): rotating designs read it as full turns across the pin;
+ * non-rotating scroll-scrub designs (walls, tunnels, reels, strips…) read it as PASSES — the scrub
+ * range they travel is multiplied by it, so a viewer scrolls the deck by twice, thrice, … over the
+ * pin. Emitted centrally for every design so each layout's onScroll can pick it up. Default 1. */
+if ( $motion_mode === 'scroll' ) { $attr['data-tdg-rounds'] = esc_attr( (string) $motion_rounds ); }
+
+/* Stage Overflow = Spill: let fanned / oversized cards show in full beyond the Stage Height box
+ * instead of being clipped by it (opt-in per design; default clips). Only in the normal flow — the
+ * pinned sticky stage and the Section-Background fill own their own clipping. */
+if ( ! $as_bg && ! $is_pinned && 'spill' === (string) $dp( 'overflow', 'clip' ) ) {
+	$attr['class'] = trim( $attr['class'] . ' tdg--spill' );
+}
+
+/* Built-in sequential Entrance — reveal cards one by one as the gallery scrolls in (all designs). It
+ * poses .tdg__inner (never touched by the layout), so it composes with the 3D motion instead of fighting
+ * it. Skipped in Section-Background mode (that scene auto-animates and is decorative). */
+$entrance = (string) $sc_get( 'entrance', 'none' );
+if ( 'none' !== $entrance && ! $as_bg ) {
+	$attr['class'] = trim( $attr['class'] . ' tdg--entrance' );
+	$attr['data-tdg-entrance']          = esc_attr( $entrance );
+	$attr['data-tdg-entrance-stagger']  = esc_attr( (string) max( 0, min( 90, (int) $sc_get( 'entrance_stagger', 60 ) ) ) );
+	$attr['data-tdg-entrance-distance'] = esc_attr( (string) max( 0, min( 120, (int) $sc_get( 'entrance_distance', 40 ) ) ) );
+	if ( 'yes' === $sc_get( 'entrance_exit', 'no' ) ) { $attr['data-tdg-exit'] = 'yes'; }
+}
+
 $attr['style'] = ( isset( $attr['style'] ) ? rtrim( $attr['style'], '; ' ) . ';' : '' )
 	. ( $as_bg ? '' : ( $is_pinned
 		? '--tdg-stage-h:' . esc_attr( $height ) . ';height:calc(' . esc_attr( $height ) . ' + ' . esc_attr( $motion_len * 100 ) . 'vh);'
@@ -278,7 +304,7 @@ $attr['style'] = ( isset( $attr['style'] ) ? rtrim( $attr['style'], '; ' ) . ';'
 	. ( $bg !== '' ? '--tdg-bg:' . esc_attr( $bg ) . ';' : '' );
 
 if ( empty( $items ) ) {
-	echo '<div class="tdg tdg--empty"><p class="tdg__empty">' . esc_html__( 'Add images to the 3D Gallery.', 'fw' ) . '</p></div>';
+	echo '<div class="tdg tdg--empty"><p class="tdg__empty">' . esc_html__( 'Add images to the Motion Gallery.', 'fw' ) . '</p></div>';
 	return;
 }
 

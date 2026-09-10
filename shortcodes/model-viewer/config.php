@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Model Viewer', 'fw' ),
 	'description' => __( 'An interactive 3D model (glTF / GLB) the visitor can orbit, zoom and inspect — with auto-rotate, image-based lighting, ground shadow, a poster placeholder and optional AR. Powered by <model-viewer>.', 'fw' ),
-	'tab'         => __( 'Media Elements', 'fw' ),
+	'tab'         => __( 'Animation Engine', 'fw' ),
 	'popup_size'  => 'large',
 
 	'title_template' => '

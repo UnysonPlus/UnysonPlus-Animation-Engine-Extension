@@ -3,7 +3,7 @@
 }
 
 /**
- * `gallery-3d-preview` option type — a LIVE preview of the 3D Gallery designs, shown inside the
+ * `gallery-3d-preview` option type — a LIVE preview of the Motion Gallery designs, shown inside the
  * element's Design tab so a geometry value can be judged without saving + viewing the page.
  *
  * SAFETY BY DESIGN — this is why it cannot cause the "blank error: modal" failure class:

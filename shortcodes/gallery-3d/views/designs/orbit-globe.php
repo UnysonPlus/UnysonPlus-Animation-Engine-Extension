@@ -3,7 +3,7 @@
 }
 
 /**
- * 3D Gallery design: Orbit Globe — cards distributed through a sphere VOLUME (Fibonacci points),
+ * Motion Gallery design: Orbit Globe — cards distributed through a sphere VOLUME (Fibonacci points),
  * each BILLBOARDED (always facing the camera) rather than tangent to the surface like Card Sphere.
  * The whole cloud orbits; the stage perspective makes near cards big + far cards small, and Back
  * Fade dims the far side — a depth-of-field orbit. gallery-3d.js (initOrbit) does the point

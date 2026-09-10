@@ -1,4 +1,4 @@
-/* 3D Gallery — in-modal live preview. Scoped under .fw-gallery-3d-preview so the shortcode's .tdg
+/* Motion Gallery — in-modal live preview. Scoped under .fw-gallery-3d-preview so the shortcode's .tdg
  * card CSS (enqueued alongside) only ever styles the preview host, never leaks into wp-admin. */
 
 /* Pin the whole preview OPTION while the controls below it scroll (a "fixed header" for the Design

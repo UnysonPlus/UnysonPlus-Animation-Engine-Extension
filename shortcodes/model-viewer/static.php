@@ -35,10 +35,15 @@ wp_enqueue_style(
 
 wp_enqueue_script( 'google-model-viewer', $mv_src, array(), '3.5.0', true );
 
+// Shared authoring-guide HUD (window.upwAnimGuide) — the choreography guide calls it when it is on,
+// so the Model Viewer guide matches the Scroll Choreography guide and co-stacks with it.
+require_once $ext->get_path( '/includes/anim-guide/anim-guide-assets.php' );
+$guide_dep = function_exists( 'upw_anim_guide_enqueue' ) ? upw_anim_guide_enqueue() : '';
+
 wp_enqueue_script(
 	'fw-shortcode-model-viewer',
 	$base . '/static/js/model-viewer.js',
-	array(),
+	$guide_dep ? array( $guide_dep ) : array(),
 	$js_ver,
 	true
 );
