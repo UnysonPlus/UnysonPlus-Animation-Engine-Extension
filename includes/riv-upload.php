@@ -36,6 +36,15 @@ add_filter( 'upload_mimes', function ( $mimes ) {
 	return $mimes;
 } );
 
+// `upload_mimes` only allows the UPLOAD; the media-library type filter and fw_get_mime_type_by_ext()
+// read the GLOBAL map from wp_get_mime_types() (the `mime_types` filter). Register .riv there too so the
+// Rive element's "pick from Media" frame can filter to .riv, and so the upload field treats it as a real
+// file (a filename), not an image — otherwise it renders a broken-image thumbnail for the .riv.
+add_filter( 'mime_types', function ( $mimes ) {
+	$mimes['riv'] = 'application/octet-stream';
+	return $mimes;
+} );
+
 add_filter( 'wp_check_filetype_and_ext', function ( $data, $file, $filename ) {
 	if ( ! empty( $data['ext'] ) && ! empty( $data['type'] ) ) { return $data; }
 	if ( ! preg_match( '/\.riv$/i', (string) $filename ) ) { return $data; }

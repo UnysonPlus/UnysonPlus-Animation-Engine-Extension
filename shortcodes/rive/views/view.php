@@ -36,7 +36,8 @@ if ( $src_url === '' ) {
 $trigger = (string) sc_get( 'trigger', $atts, 'autoplay' );
 if ( ! in_array( $trigger, array( 'autoplay', 'view', 'hover', 'click', 'scroll' ), true ) ) { $trigger = 'autoplay'; }
 $fit = (string) sc_get( 'fit', $atts, 'contain' );
-if ( ! in_array( $fit, array( 'contain', 'cover', 'fill', 'fit-width', 'fit-height', 'none' ), true ) ) { $fit = 'contain'; }
+if ( ! in_array( $fit, array( 'contain', 'cover', 'fill', 'fit-width', 'fit-height', 'none', 'layout' ), true ) ) { $fit = 'contain'; }
+$layout_scale = max( 0.5, min( 3.0, (float) sc_get( 'layout_scale', $atts, 1 ) ) );
 $align = (string) sc_get( 'alignment', $atts, 'center' );
 if ( ! in_array( $align, array( 'center', 'top', 'bottom', 'left', 'right' ), true ) ) { $align = 'center'; }
 $height = max( 80, min( 900, (int) sc_get( 'height', $atts, 360 ) ) );
@@ -54,6 +55,7 @@ $config = array(
 	'scrollLen'    => max( 1.0, min( 6.0, (float) sc_get( 'scroll_length', $atts, 2 ) ) ),
 	'fit'          => $fit,
 	'align'        => $align,
+	'layoutScale'  => $layout_scale,
 	'snug'         => sc_get( 'snug', $atts, 'yes' ) !== 'no',
 );
 
@@ -75,7 +77,7 @@ if ( is_array( $rows ) ) {
 		$prop = trim( (string) ( isset( $row['prop'] ) ? $row['prop'] : '' ) );
 		if ( $prop === '' ) { continue; }
 		$btype = isset( $row['type'] ) ? (string) $row['type'] : 'text';
-		if ( ! in_array( $btype, array( 'text', 'number', 'boolean', 'color', 'trigger' ), true ) ) { $btype = 'text'; }
+		if ( ! in_array( $btype, array( 'text', 'number', 'boolean', 'color', 'enum', 'trigger' ), true ) ) { $btype = 'text'; }
 		$binds[] = array(
 			'prop'  => $prop,
 			'type'  => $btype,
@@ -84,6 +86,46 @@ if ( is_array( $rows ) ) {
 	}
 }
 if ( $binds ) { $config['bindings'] = $binds; }
+
+/* ---- Live input feeds (pointer / scroll → a Number input or VM number property) ---- */
+$feed_rows = sc_get( 'input_feeds', $atts, array() );
+$feeds     = array();
+if ( is_array( $feed_rows ) ) {
+	foreach ( $feed_rows as $row ) {
+		if ( ! is_array( $row ) ) { continue; }
+		$in = trim( (string) ( isset( $row['input'] ) ? $row['input'] : '' ) );
+		if ( $in === '' ) { continue; }
+		$srcv = isset( $row['source'] ) ? (string) $row['source'] : 'pointer_x';
+		if ( ! in_array( $srcv, array( 'pointer_x', 'pointer_y', 'pointer_dist', 'scroll' ), true ) ) { $srcv = 'pointer_x'; }
+		$feeds[] = array(
+			'input'  => $in,
+			'source' => $srcv,
+			'from'   => is_numeric( $row['from'] ?? '' ) ? (float) $row['from'] : 0.0,
+			'to'     => is_numeric( $row['to'] ?? '' ) ? (float) $row['to'] : 100.0,
+			'smooth' => isset( $row['smooth'] ) ? max( 0.0, min( 0.95, (float) $row['smooth'] ) ) : 0.15,
+		);
+	}
+}
+if ( $feeds ) { $config['feeds'] = $feeds; }
+
+/* ---- Asset swaps (replace a referenced image/font in the .riv) ---- */
+$asset_rows = sc_get( 'asset_swaps', $atts, array() );
+$assets     = array();
+if ( is_array( $asset_rows ) ) {
+	foreach ( $asset_rows as $row ) {
+		if ( ! is_array( $row ) ) { continue; }
+		$name = trim( (string) ( isset( $row['name'] ) ? $row['name'] : '' ) );
+		if ( $name === '' ) { continue; }
+		$aurl = trim( (string) ( isset( $row['src_url'] ) ? $row['src_url'] : '' ) );
+		if ( $aurl === '' && isset( $row['image'] ) && is_array( $row['image'] ) && ! empty( $row['image']['url'] ) ) {
+			$aurl = (string) $row['image']['url'];
+		}
+		$aurl = $aurl !== '' ? esc_url_raw( $aurl ) : '';
+		if ( $aurl === '' ) { continue; }
+		$assets[] = array( 'name' => $name, 'url' => $aurl );
+	}
+}
+if ( $assets ) { $config['assets'] = $assets; }
 
 $poster     = sc_get( 'poster', $atts, array() );
 $poster_url = ( is_array( $poster ) && ! empty( $poster['url'] ) ) ? $poster['url'] : '';

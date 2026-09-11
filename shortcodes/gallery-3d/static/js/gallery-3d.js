@@ -18,7 +18,19 @@
 	var GEN = 0;
 	window.upwGallery3dBumpGen = function () { GEN++; };
 	var _raf = window.requestAnimationFrame.bind( window );
-	function requestAnimationFrame( fn ) { var g = GEN; return _raf( function ( t ) { if ( g === GEN ) { fn( t ); } } ); }
+
+	// Live Editor: the page-builder renders the front end inside an editing iframe (?fw-live-editor-frame=1)
+	// and tracks the DOM to place its element-selection overlay. A gallery's per-frame style mutations flood
+	// that tracking so NO element can be selected. So in the editor we let the scene settle for a moment, then
+	// FREEZE the rAF loops — one static snapshot, no more churn. (Front end + admin preview are unaffected.)
+	var IN_EDITOR = false;
+	try { IN_EDITOR = /[?&]fw-live-editor(-frame)?=/.test( window.location.search || '' ); } catch ( e ) {}
+	var EDITOR_FRAMES = 0, EDITOR_MAX = 80; // ~1.3s of frames to settle, then freeze
+	function requestAnimationFrame( fn ) {
+		if ( IN_EDITOR && EDITOR_FRAMES > EDITOR_MAX ) { return 0; } // frozen — stop re-scheduling the loop
+		var g = GEN;
+		return _raf( function ( t ) { if ( g === GEN ) { if ( IN_EDITOR ) { EDITOR_FRAMES++; } fn( t ); } } );
+	}
 
 	function num( el, attr, dflt ) { var v = parseFloat( el.getAttribute( attr ) ); return isNaN( v ) ? dflt : v; }
 	function clamp( v, a, b ) { return v < a ? a : ( v > b ? b : v ); }
@@ -27,6 +39,7 @@
 	// Passes BOTH (clientX, clientY) to the design's down/move callbacks; each uses the coordinate it
 	// needs (X for the horizontal designs, Y for the vertical cascade, both for the ring's hit-test).
 	function attachDrag( el, down, move, up ) {
+		if ( IN_EDITOR ) { return; } // no drag in the Live Editor — its mousedown/preventDefault would block element selection
 		el.addEventListener( 'mousedown', function ( e ) { down( e.clientX, e.clientY ); e.preventDefault(); } );
 		window.addEventListener( 'mousemove', function ( e ) { move( e.clientX, e.clientY ); } );
 		window.addEventListener( 'mouseup', up );
@@ -40,6 +53,9 @@
 	// pinned stretch — the stage sticks while the stretched wrapper passes, so the span is
 	// wrapperH − stageH and the stick offset mirrors the CSS `top:` rule (viewport-centred stage).
 	function scrollProgress( el, stage ) {
+		// Live Editor: scroll-driven galleries would sit at progress 0 (cards hidden by the entrance) and
+		// look empty. Pin a representative mid-frame so the cards are revealed and visible while editing.
+		if ( IN_EDITOR ) { return 0.4; }
 		var r = el.getBoundingClientRect();
 		var vh = window.innerHeight || 1;
 		if ( el.classList.contains( 'tdg--pinned' ) ) {
@@ -2652,6 +2668,12 @@
 
 	function scan() {
 		var i, els;
+		// Live Editor: un-pin every gallery so a "Pin while scrubbing" stage doesn't stick over the viewport
+		// (which would keep other elements out of reach). It renders as a normal inline block, then freezes.
+		if ( IN_EDITOR ) {
+			var pinned = document.querySelectorAll( '.tdg--pinned' );
+			for ( i = 0; i < pinned.length; i++ ) { pinned[ i ].classList.remove( 'tdg--pinned' ); }
+		}
 		els = document.querySelectorAll( '.tdg--carousel-ring' );
 		for ( i = 0; i < els.length; i++ ) { initRing( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--panorama-wall' );
