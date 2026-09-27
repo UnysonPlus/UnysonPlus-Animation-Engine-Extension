@@ -19,6 +19,9 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 	 * @internal
 	 */
 	public function _init() {
+		// AI Assistant abilities (only registered while that extension is active).
+		require_once dirname( __FILE__ ) . '/includes/ai-abilities.php';
+
 		// The WebGL shortcode is auto-discovered; here we register the engine's Theme
 		// Settings "Animations" section. Loaded always — the fw_settings_options filter
 		// is consumed on the front end too, not just in admin.
