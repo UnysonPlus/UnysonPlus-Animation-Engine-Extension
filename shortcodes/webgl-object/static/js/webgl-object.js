@@ -619,4 +619,11 @@
 		Array.prototype.forEach.call(document.querySelectorAll('[data-webgl]'), initOne);
 	}
 	if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); } else { init(); }
+
+	/* Re-init hook for surfaces that insert this element's markup after page load (the
+	   block editor's preview, the Elementor editor's re-renders): they call every
+	   window.fwShortcodeInit entry. The scan skips elements it has already set up, so
+	   repeated calls are safe. */
+	window.fwShortcodeInit = window.fwShortcodeInit || [];
+	window.fwShortcodeInit.push( function () { init(); } );
 })();

@@ -18,7 +18,7 @@
   function ready(fn) { document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 
-  ready(function () {
+  function run() {
     var REDUCE = cfg.reducedMotion !== false && (typeof window.upwReduceMotion === 'function'
       ? window.upwReduceMotion()
       : (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
@@ -106,5 +106,13 @@
         window.addEventListener('scroll', onScroll, { passive: true });
       }
     }
-  });
+  }
+  ready(run);
+
+  /* Re-init hook for surfaces that insert this element's markup after page load (the
+     block editor's preview, the Elementor editor's re-renders): they call every
+     window.fwShortcodeInit entry. The scan skips elements it has already set up, so
+     repeated calls are safe. */
+  window.fwShortcodeInit = window.fwShortcodeInit || [];
+  window.fwShortcodeInit.push( function () { run(); } );
 })();
