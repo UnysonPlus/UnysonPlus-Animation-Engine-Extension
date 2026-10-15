@@ -1,4 +1,4 @@
-/*! Unyson+ scene player 0.0.11, 3D runtime | three.js (MIT, \u00a9 three.js authors) | 3D text font: Inter (SIL OFL 1.1, \u00a9 The Inter Project Authors) */
+/*! Unyson+ scene player 0.0.16, 3D runtime | three.js (MIT, \u00a9 three.js authors) | 3D text font: Inter (SIL OFL 1.1, \u00a9 The Inter Project Authors) */
 (function(){"use strict";/**
  * @license
  * Copyright 2010-2026 Three.js Authors

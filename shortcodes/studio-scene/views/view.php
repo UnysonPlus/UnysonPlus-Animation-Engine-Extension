@@ -41,6 +41,17 @@ if ( $scroll_length >= 0.2 && isset( $scene['playback']['trigger'] ) && 'scroll'
 	$scroll['length']           = min( 10, $scroll_length );
 	$scene['playback']['scroll'] = $scroll;
 }
+$transcript_mode = isset( $atts['transcript_mode'] ) ? (string) $atts['transcript_mode'] : 'scene';
+if ( 'on' === $transcript_mode || 'decorative' === $transcript_mode ) {
+	$scene['transcript']               = isset( $scene['transcript'] ) && is_array( $scene['transcript'] ) ? $scene['transcript'] : array();
+	$scene['transcript']['decorative'] = ( 'decorative' === $transcript_mode );
+}
+$transcript_headline = isset( $atts['transcript_headline'] ) ? (string) $atts['transcript_headline'] : 'scene';
+if ( in_array( $transcript_headline, array( 'h1', 'h2', 'h3', 'p' ), true ) ) {
+	$scene['transcript']             = isset( $scene['transcript'] ) && is_array( $scene['transcript'] ) ? $scene['transcript'] : array();
+	$scene['transcript']['headline'] = $transcript_headline;
+}
+
 $loop = isset( $atts['loop'] ) ? (string) $atts['loop'] : 'scene';
 if ( $loop === 'yes' || $loop === 'no' ) {
 	$scene['playback']['loop'] = ( $loop === 'yes' );
@@ -72,4 +83,6 @@ if ( ! $json ) {
 
 echo '<div ' . fw_attr_to_html( $attr ) . '>';
 echo '<script type="application/json">' . $json . '</script>'; // phpcs:ignore WordPress.Security.EscapeOutput -- JSON, tag-escaped above.
+// The scene's words as plain HTML, for search engines and screen readers (the player keeps this block).
+echo function_exists( 'upw_studio_scene_transcript_html' ) ? upw_studio_scene_transcript_html( $scene ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped inside.
 echo '</div>';

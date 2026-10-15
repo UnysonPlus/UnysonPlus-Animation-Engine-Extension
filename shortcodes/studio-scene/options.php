@@ -9,6 +9,8 @@
  *   live summary of what is pasted (see class-fw-shortcode-studio-scene.php + static/js/studio-scene-admin.js).
  * LAYOUT tab — page-level overrides of the scene's own stage settings: how tall it sits, the header offset,
  *   when it starts and whether it loops. "Scene default" leaves the scene's choice alone.
+ * SEARCH tab — how the scene's words reach search engines and screen readers (the transcript written into
+ *   the page: the headline's heading level, or decorative for no text at all).
  * ANIMATIONS / ADVANCED — the shared tabs every element gets.
  */
 
@@ -71,6 +73,25 @@ $options = array(
 				'scene' => __( 'Scene default', 'fw' ),
 				'yes'   => __( 'Loop', 'fw' ),
 				'no'    => __( 'Play once', 'fw' ),
+			) ),
+		),
+	),
+
+	'tab_search' => array(
+		'type'    => 'tab',
+		'title'   => __( 'Search', 'fw' ),
+		'options' => array(
+			'transcript_headline' => $sel( __( 'Headline as', 'fw' ), 'scene', array(
+				'scene' => __( 'Scene default', 'fw' ),
+				'h1'    => __( 'Heading 1 (the page’s main title)', 'fw' ),
+				'h2'    => __( 'Heading 2 (a section)', 'fw' ),
+				'h3'    => __( 'Heading 3', 'fw' ),
+				'p'     => __( 'Paragraph (no heading)', 'fw' ),
+			), __( 'An animation shows its words a few at a time, so the page also carries them once as plain text, in reading order: search engines index it and screen readers read it, while visitors see the animation. Use Heading 1 only when this scene is the page’s main title (a page has one).', 'fw' ) ),
+			'transcript_mode' => $sel( __( 'Text for search engines', 'fw' ), 'scene', array(
+				'scene'      => __( 'Scene default', 'fw' ),
+				'on'         => __( 'Include the scene’s words', 'fw' ),
+				'decorative' => __( 'Decorative: no text, hidden from screen readers', 'fw' ),
 			) ),
 		),
 	),

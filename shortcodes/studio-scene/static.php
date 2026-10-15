@@ -14,7 +14,7 @@ $base = $ext->get_declared_URI( '/shortcodes/studio-scene' );
 // `gsap` when no other copy is on the page, so it sits safely next to Scroll Motion.
 /** Filters the URL of the bundled scene player script. */
 $player_src = apply_filters( 'fw_studio_scene_player_src', $base . '/static/js/vendor/scene-player.js' );
-wp_enqueue_script( 'upw-scene-player', $player_src, array(), '0.0.11', true );
+wp_enqueue_script( 'upw-scene-player', $player_src, array(), '0.0.16', true );
 
 // The 3D runtime (three.js), loaded by the player only for scenes with a 3D layer. Said explicitly so it
 // is still found when an optimiser combines or moves the player script.

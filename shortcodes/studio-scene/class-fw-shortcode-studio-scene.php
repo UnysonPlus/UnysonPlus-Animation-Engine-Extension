@@ -47,6 +47,184 @@ function upw_studio_scene_parse( $raw ) {
 	return $scene;
 }
 
+/**
+ * The scene's words as plain text for search engines and screen readers, in reading order: the headline
+ * as a heading, each act's headline one level below, the rest as paragraphs. A port of the player's
+ * sceneTranscript() (packages/player/src/transcript.ts in the Studio); keep the two in step.
+ *
+ * @param array  $scene    A parsed scene.
+ * @param string $headline 'h1' | 'h2' | 'h3' | 'p' (the scene's own setting when empty).
+ * @return array List of array( 'level' => 0-6, 'text' => string ); empty for a decorative scene.
+ */
+function upw_studio_scene_transcript_items( array $scene, $headline = '' ) {
+	$t = isset( $scene['transcript'] ) && is_array( $scene['transcript'] ) ? $scene['transcript'] : array();
+	if ( ! empty( $t['decorative'] ) ) {
+		return array();
+	}
+	$levels = array( 'h1', 'h2', 'h3', 'p' );
+	if ( ! in_array( $headline, $levels, true ) ) {
+		$headline = isset( $t['headline'] ) && in_array( $t['headline'], $levels, true ) ? $t['headline'] : 'h2';
+	}
+	$top   = 'p' === $headline ? 0 : (int) substr( $headline, 1 );
+	$clean = function ( $s ) {
+		return trim( preg_replace( '/\s+/u', ' ', (string) $s ) );
+	};
+	$num   = function ( $v ) {
+		return is_numeric( $v ) ? (float) $v : 0.0;
+	};
+
+	// Every text layer (and 3D text), with when it appears and which top-level container (act) it is in.
+	$entries = array();
+	$walk    = function ( array $list, $offset, $container ) use ( &$walk, &$entries, $clean, $num ) {
+		foreach ( array_values( $list ) as $i => $l ) {
+			if ( ! is_array( $l ) ) {
+				continue;
+			}
+			$type = isset( $l['type'] ) ? $l['type'] : '';
+			$c    = $container < 0 ? ( 'group' === $type ? $i : -1 ) : $container;
+			$own  = $num( isset( $l['start'] ) ? $l['start'] : 0 );
+			$ins  = array();
+			foreach ( ( isset( $l['clips'] ) && is_array( $l['clips'] ) ? $l['clips'] : array() ) as $clip ) {
+				if ( isset( $clip['params']['direction'] ) && 'out' === $clip['params']['direction'] ) {
+					continue;
+				}
+				$ins[] = $num( isset( $clip['start'] ) ? $clip['start'] : 0 );
+			}
+			$at  = $offset + max( $own, $ins ? min( $ins ) : $own );
+			$box = isset( $l['box'] ) && is_array( $l['box'] ) ? $l['box'] : array();
+			$y   = $num( isset( $box['y'] ) ? $box['y'] : 0 );
+			$x   = $num( isset( $box['x'] ) ? $box['x'] : 0 );
+			if ( 'text' === $type && '' !== $clean( isset( $l['text'] ) ? $l['text'] : '' ) ) {
+				$entries[] = array( 'text' => $clean( $l['text'] ), 'size' => $num( isset( $l['style']['fontSize'] ) ? $l['style']['fontSize'] : 0 ), 'at' => $at, 'y' => $y, 'x' => $x, 'container' => $c, 'model' => false );
+			}
+			if ( 'model' === $type && isset( $l['model']['kind'] ) && 'text' === $l['model']['kind'] && '' !== $clean( isset( $l['model']['text'] ) ? $l['model']['text'] : '' ) ) {
+				$entries[] = array( 'text' => $clean( $l['model']['text'] ), 'size' => 0.0, 'at' => $at, 'y' => $y, 'x' => $x, 'container' => $c, 'model' => true );
+			}
+			if ( 'group' === $type && isset( $l['layers'] ) && is_array( $l['layers'] ) ) {
+				$walk( $l['layers'], $offset + $own, $c );
+			}
+		}
+	};
+	$walk( isset( $scene['layers'] ) && is_array( $scene['layers'] ) ? $scene['layers'] : array(), 0.0, -1 );
+	if ( ! $entries ) {
+		return array();
+	}
+
+	// Sizes: the median text size, and the biggest per container; 3D text counts as its container's headline.
+	$flat = array();
+	foreach ( $entries as $e ) {
+		if ( ! $e['model'] ) {
+			$flat[] = $e['size'];
+		}
+	}
+	sort( $flat );
+	$median = $flat ? $flat[ (int) floor( count( $flat ) / 2 ) ] : 1.0;
+	$max_in = array();
+	foreach ( $entries as $e ) {
+		if ( ! $e['model'] ) {
+			$max_in[ $e['container'] ] = max( isset( $max_in[ $e['container'] ] ) ? $max_in[ $e['container'] ] : 0.0, $e['size'] );
+		}
+	}
+	foreach ( $entries as $k => $e ) {
+		if ( $e['model'] ) {
+			$entries[ $k ]['size']     = max( isset( $max_in[ $e['container'] ] ) ? $max_in[ $e['container'] ] : 0.0, $median * 1.5 );
+			$max_in[ $e['container'] ] = $entries[ $k ]['size'];
+		}
+	}
+
+	// By time, then top to bottom, then left to right; ties keep their order (as the player's stable sort).
+	$keys = array_keys( $entries );
+	usort( $keys, function ( $a, $b ) use ( $entries ) {
+		foreach ( array( 'at', 'y', 'x' ) as $f ) {
+			if ( $entries[ $a ][ $f ] < $entries[ $b ][ $f ] ) {
+				return -1;
+			}
+			if ( $entries[ $a ][ $f ] > $entries[ $b ][ $f ] ) {
+				return 1;
+			}
+		}
+		return $a - $b;
+	} );
+	$sorted = array();
+	foreach ( $keys as $k ) {
+		$sorted[] = $entries[ $k ];
+	}
+	$entries = $sorted;
+
+	$scene_max  = max( $max_in );
+	$scene_head = null;
+	foreach ( $entries as $e ) {
+		if ( $max_in[ $e['container'] ] >= $scene_max ) {
+			$scene_head = $e['container'];
+			break;
+		}
+	}
+	$is_big     = function ( $e ) use ( $max_in, $median, $scene_head ) {
+		return $e['size'] >= $max_in[ $e['container'] ] * 0.75 && ( $e['container'] === $scene_head || $e['size'] >= $median * 1.4 );
+	};
+	$is_display = function ( $e ) use ( $max_in, $median ) {
+		return $e['size'] >= $max_in[ $e['container'] ] * 0.3 && $e['size'] >= $median * 1.4;
+	};
+
+	$items = array();
+	$seen  = array();
+	$n     = count( $entries );
+	for ( $i = 0; $i < $n; $i++ ) {
+		$e = $entries[ $i ];
+		if ( $is_display( $e ) || $is_big( $e ) ) {
+			// A run of display lines in one container reads as one heading when it holds the headline.
+			$j = $i;
+			while ( $j + 1 < $n && $entries[ $j + 1 ]['container'] === $e['container'] && ( $is_display( $entries[ $j + 1 ] ) || $is_big( $entries[ $j + 1 ] ) ) ) {
+				$j++;
+			}
+			$run     = array_slice( $entries, $i, $j - $i + 1 );
+			$has_big = false;
+			foreach ( $run as $r ) {
+				$has_big = $has_big || $is_big( $r );
+			}
+			if ( $top && $has_big ) {
+				$text = implode( ' ', array_map( function ( $r ) {
+					return $r['text'];
+				}, $run ) );
+				if ( ! isset( $seen[ $text ] ) ) {
+					$seen[ $text ] = true;
+					$items[]       = array( 'level' => $e['container'] === $scene_head ? $top : min( 6, $top + 1 ), 'text' => $text );
+				}
+				$i = $j;
+				continue;
+			}
+		}
+		if ( isset( $seen[ $e['text'] ] ) ) {
+			continue;
+		}
+		$seen[ $e['text'] ] = true;
+		$items[]            = array( 'level' => 0, 'text' => $e['text'] );
+	}
+	return $items;
+}
+
+/**
+ * The transcript as a visually hidden block (the player keeps it and hides the animated copy from
+ * screen readers). Empty for a decorative scene or one without text.
+ *
+ * @param array  $scene
+ * @param string $headline See upw_studio_scene_transcript_items().
+ * @return string HTML.
+ */
+function upw_studio_scene_transcript_html( array $scene, $headline = '' ) {
+	$items = upw_studio_scene_transcript_items( $scene, $headline );
+	if ( ! $items ) {
+		return '';
+	}
+	$html = '';
+	foreach ( $items as $item ) {
+		$tag   = $item['level'] ? 'h' . (int) $item['level'] : 'p';
+		$html .= '<' . $tag . '>' . esc_html( $item['text'] ) . '</' . $tag . '>';
+	}
+	$hidden = 'position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap';
+	return '<div class="upw-scene-text" style="' . esc_attr( $hidden ) . '">' . $html . '</div>';
+}
+
 /** The builder buttons + live summary under the Scene field (rendered by an `html` option). */
 function upw_studio_scene_tools_html() {
 	return '<div class="upw-studio-tools" data-studio="' . esc_attr( upw_studio_scene_studio_url() ) . '">'
