@@ -1,0 +1,59 @@
+/* Parallax Scene — layered diorama. Four nested transform sources per layer so anchor / parallax / sway /
+   entrance never collide. Base is static CSS; scripts.js drives parallax + entrance; reduce-motion freezes. */
+
+.fw-parallax-scene { position: relative; width: 100%; overflow: hidden; }
+.fw-parallax-scene.ps--fixed_bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 0; }
+
+/* Pinned (Kage-style): the scene box is a TALL runway; its overflow must NOT be hidden or the sticky
+   child can't pin. The inner .fw-ps-viewport sticks to the top of the viewport and clips the layers, so
+   the scene HOLDS full-screen while you scroll the runway, then releases and the layers scroll up + fade. */
+.fw-parallax-scene.ps--sticky { overflow: visible; }
+.fw-parallax-scene.ps--sticky > .fw-ps-viewport { position: sticky; top: 0; width: 100%; overflow: hidden; }
+
+.fw-ps-layer { position: absolute; }
+.fw-ps-move,
+.fw-ps-sway { will-change: transform; }
+.fw-ps-layer img { display: block; width: 100%; height: auto; }
+.fw-ps-layer img.ps-flip { transform: scaleX(-1); }
+
+/* Entrance — hidden base state per direction, revealed by .is-in (added on scroll into view). */
+.fw-ps-enter { transition: transform .9s cubic-bezier(.2,.7,.2,1), opacity .9s ease; }
+.ps-enter--up    { transform: translateY(60px);  opacity: 0; }
+.ps-enter--down  { transform: translateY(-60px); opacity: 0; }
+.ps-enter--left  { transform: translateX(-70px); opacity: 0; }
+.ps-enter--right { transform: translateX(70px);  opacity: 0; }
+.ps-enter--fade  { opacity: 0; }
+.ps-enter--scale { transform: scale(.86); opacity: 0; }
+.ps-enter--none  { opacity: 1; }
+.fw-ps-enter.is-in { transform: none; opacity: 1; }
+
+/* Exit — where the layer travels as the scene scrolls back OUT of view (added by scripts.js as .is-out).
+ * `auto` resolves to the entrance direction in view.php (the layer leaves the way it came). */
+.ps-exit--up.is-out    { transform: translateY(-70px); opacity: 0; }
+.ps-exit--down.is-out  { transform: translateY(70px);  opacity: 0; }
+.ps-exit--left.is-out  { transform: translateX(-80px); opacity: 0; }
+.ps-exit--right.is-out { transform: translateX(80px);  opacity: 0; }
+.ps-exit--fade.is-out  { opacity: 0; }
+.ps-exit--scale.is-out { transform: scale(.9); opacity: 0; }
+
+/* Pinned dissolve — the held scene doesn't just slide off, it blurs away (Kage's cross-dissolve feel). */
+.fw-parallax-scene.ps--sticky .fw-ps-enter { transition: transform 1s cubic-bezier(.2,.7,.2,1), opacity 1s ease, filter 1s ease; }
+.fw-parallax-scene.ps--sticky .fw-ps-enter.is-out { filter: blur(10px); }
+
+/* Idle sway — gentle, always-on. --ps-sway is the amount (deg for sway, px for bob/drift). */
+.ps-sway--sway  { animation: ps-sway 6s ease-in-out infinite; transform-origin: bottom center; }
+.ps-sway--bob   { animation: ps-bob  5s ease-in-out infinite; }
+.ps-sway--drift { animation: ps-drift 8s ease-in-out infinite; }
+@keyframes ps-sway  { 0%,100% { transform: rotate(calc(var(--ps-sway,3) * -1deg)); } 50% { transform: rotate(calc(var(--ps-sway,3) * 1deg)); } }
+@keyframes ps-bob   { 0%,100% { transform: translateY(calc(var(--ps-sway,3) * -1px)); } 50% { transform: translateY(calc(var(--ps-sway,3) * 1px)); } }
+@keyframes ps-drift { 0%,100% { transform: translateX(calc(var(--ps-sway,3) * -1px)); } 50% { transform: translateX(calc(var(--ps-sway,3) * 1px)); } }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-ps-enter { transition: none; transform: none !important; opacity: 1 !important; }
+	.ps-sway--sway, .ps-sway--bob, .ps-sway--drift { animation: none !important; }
+	.fw-ps-move { transform: none !important; }
+	/* No motion to pin/scrub — collapse the runway so a pinned scene shows as a single static frame. */
+	.fw-parallax-scene.ps--sticky { height: auto !important; }
+	.fw-parallax-scene.ps--sticky > .fw-ps-viewport { position: static; }
+	.fw-parallax-scene.ps--sticky .fw-ps-enter { filter: none !important; }
+}

@@ -55,7 +55,11 @@
             if (window.SplitText) gsap.registerPlugin(window.SplitText);
         }
 
-        var isMobile = window.innerWidth < 768;
+        // matchMedia rather than innerWidth: reading innerWidth forces the browser to
+        // settle layout, and this runs during init alongside everything else that does.
+        var isMobile = window.matchMedia
+            ? window.matchMedia('(max-width: 767px)').matches
+            : window.innerWidth < 768;
 
         // Reveal/Stagger "Style" presets — the compound character (scale + blur
         // + ease + duration) behind a single dropdown.
@@ -553,21 +557,71 @@
         // Color Scrub — tween the element's text or background colour A→B as it scrolls through.
         // Raw values may be a hex or a var(--color-x) preset; resolve each to a concrete rgb() by
         // reading it back off the element so GSAP's colour interpolation always has real values.
+        // Colour Scrub resolves each element's A and B colours by writing the raw value
+        // (a hex, or a var(--colour-x) preset) onto the element and reading back the
+        // concrete rgb(), so GSAP always interpolates real values.
+        //
+        // That write-then-read is a forced style recalculation, and it used to run
+        // TWICE PER ELEMENT, interleaved: write, read, restore, write, read, restore.
+        // Each read after a write makes the browser recalculate styles synchronously,
+        // so N elements cost 2N serialised recalcs - exactly the "forced reflow" a
+        // page-speed audit flags, growing linearly with the number of elements.
+        //
+        // Batched instead: every element queued in one build pass is resolved together,
+        // in phases - write all, read all, write all, read all, restore all - so the
+        // whole batch costs TWO recalculations no matter how many elements there are.
+        // Reading each element in place (rather than caching by raw value) keeps it
+        // correct when a section scopes var(--colour-x) to something different.
+        var colorScrubQueue = [], colorScrubQueued = false;
+
         function colorScrub(el) {
-            var bg = attr(el, 'data-upw-g-ctarget') === 'bg';
-            var target = bg ? 'backgroundColor' : 'color';
-            var cssProp = bg ? 'background-color' : 'color';
-            function resolve(raw, fb) {
-                var prev = el.style.getPropertyValue(cssProp);
-                el.style.setProperty(cssProp, raw || fb);
-                var c = getComputedStyle(el)[target];
-                el.style.setProperty(cssProp, prev);
-                return c;
-            }
-            var from = {}, to = { ease: 'none', scrollTrigger: { trigger: el, start: 'top 80%', end: 'bottom 40%', scrub: true } };
-            from[target] = resolve(attr(el, 'data-upw-g-c1'), '#888888');
-            to[target]   = resolve(attr(el, 'data-upw-g-c2'), '#2f74e6');
-            gsap.fromTo(el, from, to);
+            colorScrubQueue.push(el);
+            if (colorScrubQueued) { return; }
+            colorScrubQueued = true;
+            // Microtask: everything built in this synchronous pass lands in one batch,
+            // without the dispatch in build()/scan() needing to know about any of it.
+            Promise.resolve().then(flushColorScrub);
+        }
+
+        function flushColorScrub() {
+            colorScrubQueued = false;
+            var items = colorScrubQueue.splice(0, colorScrubQueue.length);
+            if (!items.length) { return; }
+
+            var rows = [];
+            // Phase 1 - write every FROM colour (no reads in between).
+            items.forEach(function (el) {
+                if (!el || (el.isConnected === false)) { return; }
+                var bg  = attr(el, 'data-upw-g-ctarget') === 'bg';
+                var row = {
+                    el: el,
+                    target:  bg ? 'backgroundColor' : 'color',
+                    cssProp: bg ? 'background-color' : 'color'
+                };
+                row.prev = el.style.getPropertyValue(row.cssProp);
+                el.style.setProperty(row.cssProp, attr(el, 'data-upw-g-c1') || '#888888');
+                rows.push(row);
+            });
+            if (!rows.length) { return; }
+
+            // Phase 2 - read them all. The first read pays for one recalculation; the
+            // rest are free because nothing writes in between.
+            rows.forEach(function (r) { r.from = getComputedStyle(r.el)[r.target]; });
+
+            // Phase 3/4 - the same two steps for the TO colour.
+            rows.forEach(function (r) { r.el.style.setProperty(r.cssProp, attr(r.el, 'data-upw-g-c2') || '#2f74e6'); });
+            rows.forEach(function (r) { r.to = getComputedStyle(r.el)[r.target]; });
+
+            // Phase 5 - restore every inline value before building any tween, so no
+            // gsap call can sit between a write and a read and reintroduce the thrash.
+            rows.forEach(function (r) { r.el.style.setProperty(r.cssProp, r.prev); });
+
+            rows.forEach(function (r) {
+                var from = {}, to = { ease: 'none', scrollTrigger: { trigger: r.el, start: 'top 80%', end: 'bottom 40%', scrub: true } };
+                from[r.target] = r.from;
+                to[r.target]   = r.to;
+                gsap.fromTo(r.el, from, to);
+            });
         }
 
         var BUILDERS = {
@@ -683,6 +737,35 @@
         initSequences();
         scan();
         runSnippets();
+
+        /**
+         * Apply persisted per-element timing overrides from the Scroll Timeline editor. Each is keyed
+         * by the element's `data-upw-g-key`; we set the live trigger's `vars.start` / `vars.end` so a
+         * `ScrollTrigger.refresh()` recomputes the pixel range from them. Runs for EVERY visitor (the
+         * override is printed publicly), so a retimed animation ships for real, not just in the editor.
+         */
+        function applyTimingOverrides() {
+            var O = window.upwTimingOverrides;
+            if (!O || !window.ScrollTrigger) { return; }
+            window.ScrollTrigger.getAll().forEach(function (st) {
+                var el = st.trigger;
+                if (!el || !el.getAttribute) { return; }
+                // The key lives on the Scroll Motion wrapper; some effects (SplitText text reveals)
+                // trigger off an inner node, so fall back to the nearest keyed ancestor.
+                var key = el.getAttribute('data-upw-g-key');
+                if (!key && el.closest) { var anc = el.closest('[data-upw-g-key]'); if (anc) { key = anc.getAttribute('data-upw-g-key'); } }
+                if (!key || !O[key]) { return; }
+                // Stash the pre-override defaults once, so the editor's Reset can revert live.
+                if (O[key].start || O[key].end) {
+                    st._upwOrig = st._upwOrig || { start: st.vars.start, end: st.vars.end };
+                }
+                if (O[key].start) { st.vars.start = O[key].start; }
+                if (O[key].end) { st.vars.end = O[key].end; }
+            });
+            window.ScrollTrigger.refresh();
+        }
+        window.upwApplyTimingOverrides = applyTimingOverrides;
+        applyTimingOverrides();
 
         // Pick up content injected late (AJAX, infinite scroll, etc.).
         if ('MutationObserver' in window) {

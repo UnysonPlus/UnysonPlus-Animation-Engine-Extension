@@ -226,6 +226,10 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		$attr['class'] = esc_attr( trim( $cls . ' sc-scroll-kf sc-scroll-kf--pin' ) );
 		$attr['data-upw-skf']     = esc_attr( base64_encode( wp_json_encode( array( 'kf' => $kf ) ) ) );
 		$attr['data-upw-skf-pin'] = esc_attr( (string) $pin_len );
+		// Stable per-element key (same `u{hash}` Scroll Motion uses), so the Scroll Timeline editor can
+		// surface this as a keyframe-lane track and persist a per-page retime of its beats.
+		$skf_key = function_exists( 'sc_element_scope_class' ) ? sc_element_scope_class( $atts ) : '';
+		if ( $skf_key !== '' && empty( $attr['data-upw-g-key'] ) ) { $attr['data-upw-g-key'] = esc_attr( $skf_key ); }
 		if ( ( isset( $pg['run_on_mobile'] ) ? $pg['run_on_mobile'] : 'yes' ) !== 'yes' ) {
 			$attr['data-upw-skf-mobile'] = '0';
 		}
@@ -273,6 +277,10 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
 	$attr['class'] = esc_attr( trim( $cls . ' sc-scroll-kf' ) );
 	$attr['data-upw-skf'] = esc_attr( base64_encode( wp_json_encode( array( 'kf' => $kf ) ) ) );
+	// Stable per-element key (same `u{hash}` Scroll Motion uses), so the Scroll Timeline editor can
+	// surface this as a keyframe-lane track and persist a per-page retime of its beats.
+	$skf_key = function_exists( 'sc_element_scope_class' ) ? sc_element_scope_class( $atts ) : '';
+	if ( $skf_key !== '' && empty( $attr['data-upw-g-key'] ) ) { $attr['data-upw-g-key'] = esc_attr( $skf_key ); }
 	if ( ( isset( $g['run_on_mobile'] ) ? $g['run_on_mobile'] : 'yes' ) !== 'yes' ) {
 		$attr['data-upw-skf-mobile'] = '0';
 	}

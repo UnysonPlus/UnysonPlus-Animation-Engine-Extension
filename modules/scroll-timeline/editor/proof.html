@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scroll Timeline — proof</title>
+<style>
+  body { margin: 0; font: 14px system-ui, sans-serif; background: #f4f5f6; color: #1c1e22; }
+  .lead, .tail { padding: 2rem; text-align: center; color: #5b6b7b; }
+  .lead { height: 30vh; display: grid; place-items: center; }
+  .tail { height: 60vh; }
+  #scene { width: 100%; max-width: 960px; margin: 0 auto; }
+</style></head>
+<body>
+  <div class="lead"><div><strong>Scroll down.</strong><br>The scene below is compiled from native keyframes and scrubbed by scroll through the reused player.</div></div>
+  <div id="scene" data-proof></div>
+  <div class="tail">End of the pinned range.</div>
+  <script src="../static/vendor/scene-player.js"></script>
+  <script>
+    window.__SCENE__ = {"format":"unysonplus-scene","version":1,"title":"Scroll Timeline — proof","duration":4,"stage":{"breakpoints":[{"id":"base","label":"Base","minWidth":0,"aspect":[16,9]}],"heightMode":"fill","background":"#0f1420"},"playback":{"trigger":"scroll","loop":false,"scroll":{"pin":true,"length":2,"smooth":0.2}},"layers":[{"id":"a","name":"Rise","type":"shape","shape":"rect","fill":"#2ad38b","box":{"x":30,"y":50,"w":26,"ratio":1},"clips":[{"id":"a-kf","preset":"keyframes","start":0,"duration":4,"params":{"frames":[{"t":0,"x":0,"y":27.78,"scale":0.8,"rotate":0,"opacity":0,"blur":0,"ease":"power2.out"},{"t":2,"x":0,"y":0,"scale":1,"rotate":0,"opacity":1,"blur":0,"ease":"back.out(1.7)"},{"t":4,"x":0,"y":-27.78,"scale":1,"rotate":0,"opacity":0,"blur":0,"ease":"power2.in"}]}}]},{"id":"b","name":"Slide","type":"shape","shape":"rect","fill":"#2f74e6","box":{"x":70,"y":50,"w":26,"ratio":1},"clips":[{"id":"b-kf","preset":"keyframes","start":0,"duration":4,"params":{"frames":[{"t":0,"x":16.67,"y":0,"scale":1,"rotate":0,"opacity":0,"blur":0,"ease":"power2.out"},{"t":4,"x":0,"y":0,"scale":1,"rotate":0,"opacity":1,"blur":0,"ease":"power2.out"}]}}]}]};
+    window.__MOUNTED__ = false;
+    var host = document.getElementById('scene');
+    try { window.UnysonPlusScene.mount(host, window.__SCENE__, {}); window.__MOUNTED__ = true; }
+    catch (e) { document.title = 'MOUNT ERROR: ' + (e && e.message); console.error(e); }
+  </script>
+</body></html>

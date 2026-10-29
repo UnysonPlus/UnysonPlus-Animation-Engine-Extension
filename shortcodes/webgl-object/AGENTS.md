@@ -13,7 +13,8 @@ A real-time WebGL element rendered with Three.js. Two families of presets:
   **Particle Field**.
 - **Full-screen Shaders** (fragment shader on a quad): **Gradient Mesh**, **Plasma**,
   **Aurora**, **Fluid** (pointer-reactive), **Dot Matrix / Halftone**, **Image
-  Distortion**.
+  Distortion**, **Image Transitions** (a multi-image slideshow that cross-fades with a
+  fade / ripple / liquid-dissolve / displace / wave shader).
 
 It reacts to the pointer and (optionally) scroll. This is a **leaf** shortcode (like
 `lottie`) — it does NOT hold inner rows and needs none of the section-like hooks.
@@ -50,12 +51,14 @@ instantiates the base `FW_Shortcode`. No `class-fw-shortcode-*.php` is needed.
 | `style_preset.sphere.roughness` | slider | 0.6 | 0–1 |
 | `style_preset.particles.particle_count` | slider | 4000 | 500–12000 |
 | `style_preset.particles.particle_size` | slider | 0.02 | 0.005–0.08 |
+| `style_preset.particles.shape` | select | `sphere` | formation: sphere/galaxy/ring/wave/cube/helix (position generator in `buildObject`) |
 | `style_preset.gradient_mesh.{blend_speed,grain}` | slider | 0.4, 0.15 | shader → uP1, uP2 |
 | `style_preset.plasma.{scale,flow_speed,contrast}` | slider | 3, 0.5, 0.6 | shader → uP1, uP2, uP3 |
 | `style_preset.aurora.{band_count,drift_speed,softness}` | slider | 3, 0.4, 0.5 | shader → uP1, uP2, uP3 |
 | `style_preset.fluid.{viscosity,splat_strength}` | slider | 0.5, 0.6 | shader → uP1, uP2 |
 | `style_preset.dots.{dot_style,grid_density,dot_size}` | select/slider | dot, 40, 0.5 | dot_style halftone→uP3=1 |
 | `style_preset.image_distort.{image,strength,hover_only}` | upload/slider/switch | —, 0.3, yes | empty image → falls back to color gradient |
+| `style_preset.image_transition.{images,transition,interval,duration,strength}` | multi-upload/select/slider×3 | —, fade, 3.5, 1.2, 0.6 | cross-fades the image list on a loop; `transition` ∈ fade/ripple/liquid/displace/wave → uP2 index; view resolves `images[]` → `imageUrls[]`; JS loads them to `uTexture`+`uTexB`, animates `uProgress` |
 | `scale` | slider | 1 | object size 0.5–1.6 |
 | `placement` | multi-picker | `{mode:'inline'}` | `mode` ∈ inline/background; **inline** reveals `height`; **background** fills the parent Section (its Min Height sizes it — no height here) |
 | `placement.inline.height` | text | `520` | canvas height px (inline only) |

@@ -87,6 +87,14 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     // Local helpers ---------------------------------------------------------
     $data = [ 'data-upw-g' => $effect ];
 
+    // Stable, prefix-independent per-element key (`u{hash}` derived from unique_id alone). The Scroll
+    // Timeline editor keys its per-page timing overrides to this, and the runtime (upw-gsap.js) matches
+    // the element by it — so a retimed start/end persists without ever touching the builder JSON.
+    $upw_g_key = function_exists( 'sc_element_scope_class' ) ? sc_element_scope_class( $atts ) : '';
+    if ( $upw_g_key !== '' ) {
+        $data['data-upw-g-key'] = $upw_g_key;
+    }
+
     $num = function ( $key, $default ) use ( $s ) {
         return isset( $s[ $key ] ) && is_numeric( $s[ $key ] )
             ? rtrim( rtrim( number_format( (float) $s[ $key ], 2, '.', '' ), '0' ), '.' )
@@ -435,9 +443,13 @@ add_action( 'wp_footer', function () {
         $init_deps[] = 'upw-gsap-splittext';
     }
 
+    // Serve the built .min sibling in production. fw_min_uri() only swaps when the
+    // file is in build-manifest.php - i.e. one THIS plugin's build produced - so a
+    // stale or hand-made .min can never be served in place of the source. The two
+    // vendor files above are excluded on purpose (they are already minified).
     wp_enqueue_script(
         'upw-gsap-init',
-        $ext->get_declared_URI( '/modules/scroll-motion/static/js/upw-gsap.js' ),
+        fw_min_uri( $ext->get_declared_URI( '/modules/scroll-motion/static/js/upw-gsap.js' ) ),
         $init_deps,
         $ver,
         true
@@ -445,7 +457,7 @@ add_action( 'wp_footer', function () {
 
     wp_enqueue_style(
         'upw-gsap',
-        $ext->get_declared_URI( '/modules/scroll-motion/static/css/upw-gsap.css' ),
+        fw_min_uri( $ext->get_declared_URI( '/modules/scroll-motion/static/css/upw-gsap.css' ) ),
         [],
         $ver
     );

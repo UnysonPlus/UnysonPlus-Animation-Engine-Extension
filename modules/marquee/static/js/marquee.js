@@ -22,6 +22,11 @@
   function num(el, a, d) { var v = parseFloat(el.getAttribute(a)); return isNaN(v) ? d : v; }
   function now() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
 
+  // Pause / Play icons for the accessible control (defined at module top so build()/addControl —
+  // which can run synchronously via ready() for a footer-loaded script — never see them undefined).
+  var MQ_PAUSE_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>';
+  var MQ_PLAY_SVG  = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>';
+
   ready(function () {
     var REDUCE = cfg.reducedMotion && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var disableMobile = cfg.disableMobile && window.innerWidth < 768;
@@ -52,7 +57,7 @@
       for (var i = 0; i < items.length; i++) {
         var m = items[i];
         if (m.dragging) { m.apply(); continue; }
-        if (m.paused && !m.momentum) continue;
+        if ((m.paused || m.userPaused) && !m.momentum) continue;
         if (m.momentum) {
           m.offset += m.momentum * dt; m.momentum *= 0.94;
           if (Math.abs(m.momentum) < 3) m.momentum = 0;
@@ -73,7 +78,7 @@
       var pause = el.getAttribute('data-mq-pause') !== '0', fade = el.getAttribute('data-mq-fade') === '1';
       var cspeed = num(el, 'data-mq-cspeed', 0), pxs = cspeed > 0 ? cspeed : (SPEED[el.getAttribute('data-mq-speed')] || SPEED.normal);
       var curve = num(el, 'data-mq-curve', 0);
-      var m = { el: el, offset: 0, pxs: pxs, reverse: reverse, vertical: vertical, paused: false, dragging: false, momentum: 0,
+      var m = { el: el, offset: 0, pxs: pxs, reverse: reverse, vertical: vertical, paused: false, userPaused: false, dragging: false, momentum: 0,
                 scrollReactive: el.getAttribute('data-mq-scrollreact') === '1', apply: function () {} };
       el.classList.add('sc-mq-live');
 
@@ -83,7 +88,28 @@
 
       if (pause) { el.addEventListener('mouseenter', function () { m.paused = true; }); el.addEventListener('mouseleave', function () { m.paused = false; }); }
       if (el.getAttribute('data-mq-drag') === '1') setupDrag(m, el, vertical);
+      if (el.getAttribute('data-mq-controls') === '1') addControl(m, el);
       return m;
+    }
+
+    // Accessible Pause / Play control (WCAG 2.2.2 "Pause, Stop, Hide" for auto-motion). A real
+    // button so it's keyboard-focusable; its own userPaused flag is independent of hover-pause.
+    // (MQ_PAUSE_SVG / MQ_PLAY_SVG are defined at module top — see the note there.)
+    function addControl(m, el) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sc-mq-ctrl';
+      btn.setAttribute('aria-label', 'Pause');
+      btn.setAttribute('aria-pressed', 'false');
+      btn.innerHTML = MQ_PAUSE_SVG;
+      btn.addEventListener('click', function () {
+        m.userPaused = !m.userPaused;
+        btn.setAttribute('aria-pressed', m.userPaused ? 'true' : 'false');
+        btn.setAttribute('aria-label', m.userPaused ? 'Play' : 'Pause');
+        btn.classList.toggle('is-paused', m.userPaused);
+        btn.innerHTML = m.userPaused ? MQ_PLAY_SVG : MQ_PAUSE_SVG;
+      });
+      el.appendChild(btn);
     }
 
     function buildStraight(m, el, unitHTML, vertical, gap, sep, fade) {

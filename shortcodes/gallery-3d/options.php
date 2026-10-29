@@ -114,6 +114,12 @@ $img_base = $ae ? $ae->get_declared_URI( '/shortcodes/gallery-3d/static/img/desi
 $img_ver  = ( $ae && $ae->manifest ) ? '?v=' . rawurlencode( $ae->manifest->get_version() ) : '';
 // Category => designs (mirrors the reference grouping; the picker shows these as tabs).
 $design_groups = array(
+	'grp_choreo' => array(
+		'label'   => __( 'Scroll Choreography', 'fw' ),
+		'designs' => array(
+			'scroll_choreography' => __( 'Scroll Choreography', 'fw' ),
+		),
+	),
 	'grp_3dp' => array(
 		'label'   => __( '3D & Perspective', 'fw' ),
 		'designs' => array(
@@ -154,7 +160,29 @@ $design_groups = array(
 	'grp_reveal'    => array( 'label' => __( 'Reveal & Wipe', 'fw' ),     'designs' => array( 'soon_reveal_wipe' => __( 'Reveal & Wipe', 'fw' ) ),     'soon' => true ),
 	'grp_spotlight' => array( 'label' => __( 'Spotlight & Focus', 'fw' ), 'designs' => array( 'soon_spotlight' => __( 'Spotlight & Focus', 'fw' ) ), 'soon' => true ),
 );
+
+/**
+ * Register a custom Motion Gallery design in the picker from a child theme (the JS half is
+ * window.upwGallery3d.registerDesign). Add a group, or a design to an existing group's 'designs':
+ * a design value is a label string (tile art derived from the key), OR an array
+ * array( 'label' => '...', 'tile' => '<image url>' ) to supply the picker tile. A key added here
+ * must also be allowed to render — see the 'upw_gallery_3d_render_designs' filter in view.php — and
+ * have its JS driver registered. Part of the gap → fallback loop (a child-theme design for a motion
+ * the built-in library doesn't cover yet).
+ */
+$design_groups = apply_filters( 'upw_gallery_3d_design_groups', $design_groups );
+
 $mk_tile = function ( $dk, $dl ) use ( $img_base, $img_ver ) {
+	// A design value may be array( 'label' => ..., 'tile' => <url> ) (custom) or a plain label string.
+	if ( is_array( $dl ) ) {
+		$label = isset( $dl['label'] ) ? $dl['label'] : $dk;
+		$tile  = isset( $dl['tile'] ) && $dl['tile'] ? $dl['tile'] : ( $img_base . '/' . str_replace( '_', '-', $dk ) . '.svg' . $img_ver );
+		return array(
+			'small' => array( 'src' => $tile, 'height' => 62, 'title' => $label ),
+			'large' => array( 'src' => $tile, 'height' => 130 ),
+			'label' => $label,
+		);
+	}
 	$file = str_replace( '_', '-', $dk );
 	return array(
 		'small' => array( 'src' => $img_base . '/' . $file . '.svg' . $img_ver, 'height' => 62, 'title' => $dl ),
@@ -804,6 +832,85 @@ $mosaic_marquee_opts = array(
 	'group_mm_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
+/* Scroll Choreography — a single gallery that morphs through an ordered list of formations as the
+ * visitor scrolls a pinned stage (stack in → form → reform → exit). It is intrinsically scroll-pinned
+ * (view.php forces Scroll-scrub + Pin for this design), so it needs no Motion picker of its own. */
+$choreo_formations = array(
+	'stack'   => __( 'Stack', 'fw' ),
+	'grid'    => __( 'Grid', 'fw' ),
+	'ring'    => __( 'Ring (3D carousel)', 'fw' ),
+	'fan'     => __( 'Fan', 'fw' ),
+	'wall'    => __( 'Wall (tilted)', 'fw' ),
+	'spiral'   => __( 'Spiral (helix)', 'fw' ),
+	'wave'     => __( 'Wave', 'fw' ),
+	'tunnel'   => __( 'Tunnel (depth)', 'fw' ),
+	'carousel' => __( 'Carousel (focus row)', 'fw' ),
+	'column'   => __( 'Column (vertical)', 'fw' ),
+	'sphere'   => __( 'Sphere (ball)', 'fw' ),
+	'coverflow' => __( 'Cover Flow', 'fw' ),
+	'filmstrip' => __( 'Film Strip', 'fw' ),
+	'orbit'    => __( 'Orbit', 'fw' ),
+	'hero'     => __( 'Hero Reel', 'fw' ),
+	'focus'    => __( 'Focus Slider', 'fw' ),
+	'depthstack' => __( 'Depth Stack', 'fw' ),
+	'mosaic'   => __( 'Mosaic', 'fw' ),
+	'scatter'  => __( 'Scatter / Exit', 'fw' ),
+);
+/* Formations a design or child theme contributes (paired with window.upwGallery3d.registerChoreoForm in
+ * JS) appear in the Steps picker through this filter — keep "scatter" last as the exit. */
+$choreo_formations = apply_filters( 'fw_gallery_3d_choreo_formations', $choreo_formations );
+$scroll_choreography_opts = array(
+	'group_choreo' => array( 'type' => 'group', 'options' => array(
+		'steps' => array(
+			'type'          => 'addable-popup',
+			'label'         => __( 'Steps', 'fw' ),
+			'desc'          => __( 'The ordered looks the cards morph through — add a step per formation, drag to reorder. Each step HOLDS before morphing to the next, so the scene settles on every look. The first step is where the cards begin; add Scatter as the last step to fly them out.', 'fw' ),
+			'template'      => '{{ print(formation) }}{{ if (hold && hold > 0) { print(" · hold " + hold + "%") } }}',
+			'popup-title'   => __( 'Choreography step', 'fw' ),
+			'popup-options' => array(
+				'formation' => array(
+					'type'    => 'select',
+					'label'   => __( 'Formation', 'fw' ),
+					'value'   => 'grid',
+					'choices' => $choreo_formations,
+					'desc'    => __( 'The arrangement the cards settle into for this step.', 'fw' ),
+				),
+				'hold'      => $slider( __( 'Hold (%)', 'fw' ), 15, 0, 80, 5, __( 'How long this look holds before morphing to the next step.', 'fw' ) ),
+			),
+			'value'         => array(
+				array( 'formation' => 'stack',   'hold' => 8 ),
+				array( 'formation' => 'grid',    'hold' => 22 ),
+				array( 'formation' => 'ring',    'hold' => 22 ),
+				array( 'formation' => 'sphere',  'hold' => 15 ),
+				array( 'formation' => 'scatter', 'hold' => 0 ),
+			),
+		),
+		'stagger'       => $slider( __( 'Cascade (%)', 'fw' ), 25, 0, 60, 5, __( 'Spread the morph across the cards so they move one after another instead of in lockstep. 0 = all together.', 'fw' ) ),
+		'easing'        => array(
+			'label'   => __( 'Easing', 'fw' ),
+			'type'    => 'select',
+			'value'   => 'smooth',
+			'choices' => array(
+				'smooth' => __( 'Smooth', 'fw' ),
+				'back'   => __( 'Overshoot', 'fw' ),
+				'out'    => __( 'Ease out', 'fw' ),
+				'in'     => __( 'Ease in', 'fw' ),
+				'linear' => __( 'Linear', 'fw' ),
+			),
+			'desc'    => __( 'The curve each formation morphs with. Overshoot gives a springy settle.', 'fw' ),
+		),
+		'scroll_length' => $slider( __( 'Scroll Length (screens)', 'fw' ), 3, 1, 6, 1, __( 'How many screen-heights the whole choreography spans. More formations want more length.', 'fw' ) ),
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 16, 8, 40, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'chain'         => array(
+			'type'  => 'switch',
+			'label' => __( 'Chain with adjacent galleries', 'fw' ),
+			'value' => false,
+			'desc'  => __( 'Connect this gallery to the Scroll-Choreography galleries next to it — stacked in the same column OR each in its own section, one after another — into ONE scroll sequence: each flies out as the next assembles in. Turn it on for every gallery you want in the chain.', 'fw' ),
+		),
+	) ),
+	'group_choreo_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
 $options = array(
 
 	/* ---------------------------------------------------------------- CONTENT */
@@ -905,6 +1012,7 @@ $options = array(
 					),
 				),
 				'choices' => array_merge( array(
+					'scroll_choreography' => $scroll_choreography_opts,
 					'carousel_ring' => $carousel_ring_opts,
 					'panorama_wall'     => $panorama_wall_opts,
 					'card_sphere'      => $card_sphere_opts,

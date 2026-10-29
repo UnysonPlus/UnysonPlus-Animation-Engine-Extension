@@ -1,0 +1,131 @@
+/* Animation Engine — Scroll Timeline Editor (admin-only, front end). A bottom-docked, video-editor-
+   style timeline. All fixed + very high z-index + dark UI, so it floats above any site chrome. */
+
+/* The launcher — bottom-right, so it never collides with the Scroll Ruler's button (bottom-left). */
+.upw-stl-btn {
+	position: fixed; right: 16px; bottom: 16px; z-index: 2147483000;
+	height: 40px; padding: 0 14px 0 12px; border: 0; border-radius: 20px; cursor: pointer;
+	background: #111418; color: #fff; font: 600 12px/1 ui-sans-serif, system-ui, -apple-system, sans-serif;
+	display: flex; align-items: center; gap: 8px;
+	box-shadow: 0 4px 14px rgba( 0, 0, 0, 0.35 );
+	opacity: 0.6; transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.upw-stl-btn:hover { opacity: 1; transform: translateY( -1px ); }
+.upw-stl-btn-glyph { display: inline-flex; gap: 2px; align-items: flex-end; height: 14px; }
+.upw-stl-btn-glyph i { width: 3px; background: currentColor; border-radius: 1px; display: block; }
+.upw-stl-btn-glyph i:nth-child(1) { height: 14px; } .upw-stl-btn-glyph i:nth-child(2) { height: 8px; } .upw-stl-btn-glyph i:nth-child(3) { height: 11px; }
+.upw-stl-on .upw-stl-btn { opacity: 1; background: #0ea5a0; }
+
+/* The docked panel. */
+.upw-stl {
+	position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147483001;
+	height: 266px; display: none; flex-direction: column;
+	background: #12151b; color: #e7eaee;
+	box-shadow: 0 -10px 34px rgba( 0, 0, 0, 0.5 ); border-top: 1px solid rgba( 255, 255, 255, 0.08 );
+	font: 12px/1.4 ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+.upw-stl-on .upw-stl { display: flex; }
+
+/* Header bar. */
+.upw-stl-bar { display: flex; align-items: center; gap: 14px; padding: 9px 14px; border-bottom: 1px solid rgba( 255, 255, 255, 0.07 ); flex: 0 0 auto; }
+.upw-stl-bar strong { font-size: 12px; letter-spacing: 0.02em; }
+.upw-stl-bar .upw-stl-count { color: #8b94a0; }
+.upw-stl-readout { margin-left: auto; display: flex; align-items: center; gap: 14px; color: #aeb6c0; font-variant-numeric: tabular-nums; }
+.upw-stl-readout b { color: #e7eaee; font-weight: 600; }
+.upw-stl-x { background: 0; border: 0; color: #9aa3ad; font-size: 20px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.upw-stl-x:hover { color: #fff; }
+
+/* Body: scrolls vertically; axis row sticks to the top. */
+.upw-stl-scroll { flex: 1 1 auto; overflow: auto; position: relative; }
+.upw-stl-axisrow { display: flex; position: sticky; top: 0; z-index: 3; background: #12151b; border-bottom: 1px solid rgba( 255, 255, 255, 0.07 ); }
+.upw-stl-corner { flex: 0 0 186px; }
+.upw-stl-axis { position: relative; flex: 1 1 auto; height: 30px; cursor: ew-resize; }
+.upw-stl-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid rgba( 255, 255, 255, 0.08 ); }
+.upw-stl-tick span { position: absolute; top: 7px; left: 5px; color: #7a828d; font-size: 10px; font-variant-numeric: tabular-nums; }
+
+/* Rows. */
+.upw-stl-row { display: flex; align-items: stretch; min-height: 30px; border-bottom: 1px solid rgba( 255, 255, 255, 0.04 ); }
+.upw-stl-row:hover { background: rgba( 255, 255, 255, 0.03 ); }
+.upw-stl-label { flex: 0 0 186px; display: flex; align-items: center; gap: 7px; padding: 0 10px; min-width: 0; cursor: pointer; border-right: 1px solid rgba( 255, 255, 255, 0.07 ); }
+.upw-stl-dot { width: 9px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
+.upw-stl-name { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #d6dbe1; }
+.upw-stl-badge { flex: 0 0 auto; font-size: 10px; color: #8b94a0; }
+
+.upw-stl-lane { position: relative; flex: 1 1 auto; }
+.upw-stl-block {
+	position: absolute; top: 5px; bottom: 5px; min-width: 3px; border-radius: 4px; cursor: pointer;
+	background: rgba( 255, 255, 255, 0.14 ); box-shadow: inset 0 0 0 1px rgba( 255, 255, 255, 0.12 );
+	overflow: hidden;
+}
+.upw-stl-block::before { content: ''; position: absolute; inset: 0; background: currentColor; opacity: 0.55; }
+.upw-stl-block:hover::before { opacity: 0.8; }
+.upw-stl-block.is-scrub { border-radius: 4px; }
+.upw-stl-block.is-pin::after { content: '📌'; position: absolute; right: 2px; top: 50%; transform: translateY( -50% ); font-size: 10px; filter: grayscale( 0.2 ); }
+
+/* Editable tracks (Scroll Motion effects) — drag the block to retime. */
+.upw-stl-block.is-editable { cursor: grab; }
+.upw-stl-block.is-editable:active { cursor: grabbing; }
+.upw-stl-block.is-editable::before { opacity: 0.6; }
+.upw-stl-block.is-edited { box-shadow: inset 0 0 0 1.5px #ffffff, 0 0 0 1px rgba( 45, 212, 191, 0.5 ); }
+.upw-stl-handle { position: absolute; top: 0; bottom: 0; right: 0; width: 9px; cursor: ew-resize; z-index: 2; }
+.upw-stl-handle::after { content: ''; position: absolute; top: 50%; right: 3px; width: 2px; height: 10px; transform: translateY( -50% ); background: rgba( 255, 255, 255, 0.85 ); border-radius: 1px; }
+
+/* Keyframe lanes (Scroll Keyframes elements) — a faint range backdrop + a diamond per beat. */
+.upw-stl-block.is-kf { background: rgba( 255, 255, 255, 0.07 ); }
+.upw-stl-block.is-kf::before { opacity: 0.16; }
+.upw-stl-block.is-kf:hover::before { opacity: 0.26; }
+.upw-stl-block.is-kf.is-edited { box-shadow: inset 0 0 0 1.5px #ffffff, 0 0 0 1px rgba( 45, 212, 191, 0.5 ); }
+.upw-stl-kfdot {
+	position: absolute; top: 50%; width: 11px; height: 11px; margin-left: -5.5px;
+	transform: translateY( -50% ) rotate( 45deg ); z-index: 3; border-radius: 2px;
+	background: currentColor; box-shadow: 0 0 0 1.5px rgba( 17, 20, 24, 0.9 );
+}
+.upw-stl-kfdot.is-edge { opacity: 0.5; width: 8px; height: 8px; margin-left: -4px; }
+.upw-stl-kfdot.is-state { cursor: pointer; }
+.upw-stl-kfdot.is-move { cursor: grab; }
+.upw-stl-kfdot.is-move:hover, .upw-stl-kfdot.is-state:hover { box-shadow: 0 0 0 1.5px #fff; }
+.upw-stl-kfdot.is-move:active { cursor: grabbing; }
+.upw-stl-kfdot.is-edited { box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px rgba( 45, 212, 191, 0.55 ); opacity: 1; }
+
+/* Beat-state editor popover (Phase 3b) — click a beat to edit its transform / opacity / blur + ease. */
+.upw-stl-beat {
+	position: fixed; z-index: 2147483001; width: 268px; padding: 10px 12px 12px;
+	background: #14181d; border: 1px solid rgba( 255, 255, 255, 0.14 ); border-radius: 10px;
+	box-shadow: 0 10px 30px rgba( 0, 0, 0, 0.5 ); color: #e7eaee;
+	font: 12px/1.3 ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+.upw-stl-beat-h { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.upw-stl-beat-h strong { font-size: 13px; }
+.upw-stl-beat-h span { color: #8b9199; font-size: 11px; }
+.upw-stl-beat-x { margin-left: auto; background: 0; border: 0; color: #8b9199; font-size: 16px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.upw-stl-beat-x:hover { color: #fff; }
+.upw-stl-beat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+.upw-stl-beat label { display: flex; align-items: center; gap: 6px; }
+.upw-stl-beat label > span { flex: 0 0 46px; color: #aeb4bb; }
+.upw-stl-beat input, .upw-stl-beat select {
+	flex: 1 1 auto; min-width: 0; width: 100%; box-sizing: border-box;
+	background: #0c0f12; border: 1px solid rgba( 255, 255, 255, 0.14 ); border-radius: 5px;
+	color: #e7eaee; font: inherit; padding: 3px 6px;
+}
+.upw-stl-beat input:focus, .upw-stl-beat select:focus { outline: 0; border-color: #2dd4bf; }
+.upw-stl-beat-ease { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.upw-stl-beat-ease > span { flex: 0 0 46px; color: #aeb4bb; }
+.upw-stl-beat-f { margin-top: 10px; display: flex; }
+.upw-stl-beat-reset { background: 0; border: 1px solid rgba( 255, 255, 255, 0.16 ); border-radius: 6px; color: #2dd4bf; font: inherit; cursor: pointer; padding: 4px 10px; }
+.upw-stl-beat-reset:hover { color: #fff; border-color: #2dd4bf; }
+
+.upw-stl-reset { flex: 0 0 auto; background: 0; border: 0; color: #2dd4bf; font-size: 14px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.upw-stl-reset:hover { color: #fff; }
+
+/* Playhead — spans the lane region, sits above rows. */
+.upw-stl-playhead { position: absolute; width: 0; z-index: 4; pointer-events: none; }
+.upw-stl-playhead i { position: absolute; top: 0; bottom: 0; left: -1px; width: 2px; background: #fff; box-shadow: 0 0 6px rgba( 255, 255, 255, 0.8 ); }
+.upw-stl-playhead b { position: absolute; top: -1px; left: -6px; width: 12px; height: 12px; border-radius: 50%; background: #fff; cursor: ew-resize; pointer-events: auto; box-shadow: 0 1px 4px rgba( 0, 0, 0, 0.5 ); }
+
+/* Empty state. */
+.upw-stl-empty { padding: 28px 16px; text-align: center; color: #8b94a0; }
+
+/* The on-page element highlight while hovering a track. */
+.upw-stl-hl { outline: 2px solid #2dd4bf !important; outline-offset: 2px; transition: outline-color 0.1s ease; }
+
+@media ( prefers-reduced-motion: reduce ) { .upw-stl-btn { transition: none; } }

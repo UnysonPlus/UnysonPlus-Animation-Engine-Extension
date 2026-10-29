@@ -3,9 +3,9 @@
 }
 
 /**
- * Studio Scene — edit-modal options.
+ * Kinetic Scene — edit-modal options.
  *
- * SCENE tab — the scene file (or the Studio's embed code), the "Open in Animation Studio" round trip and a
+ * SCENE tab — the scene file (or the Studio's embed code), the "Open in Kinetic Scenes" round trip and a
  *   live summary of what is pasted (see class-fw-shortcode-studio-scene.php + static/js/studio-scene-admin.js).
  * LAYOUT tab — page-level overrides of the scene's own stage settings: how tall it sits, the header offset,
  *   when it starts and whether it loops. "Scene default" leaves the scene's choice alone.
@@ -27,7 +27,7 @@ $options = array(
 				'type'  => 'textarea',
 				'label' => __( 'Scene', 'fw' ),
 				'value' => '',
-				'desc'  => __( 'Paste a scene file (<code>.scene.json</code>) or the <strong>Embed code</strong> from the Animation Studio’s Export window. Either works. Or use <strong>Open in Animation Studio</strong> below to design it there and save it straight back here.', 'fw' ),
+				'desc'  => __( 'Paste a scene file (<code>.scene.json</code>) or the <strong>Embed code</strong> from the Export window in Kinetic Scenes. Either works. Or use <strong>Open in Kinetic Scenes</strong> below to design it there and save it straight back here.', 'fw' ),
 				'attr'  => array( 'rows' => 6, 'spellcheck' => 'false', 'class' => 'upw-studio-scene-field' ),
 			),
 			'studio_tools' => array(

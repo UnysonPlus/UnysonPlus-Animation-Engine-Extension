@@ -97,7 +97,10 @@ if ( $src_kind === 'posts' ) {
 }
 
 /* ---- chosen design + per-design option reader ---- */
-$designs = array( 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'hero_reel', 'focus_slider', 'mosaic_marquee', 'photo_scatter', 'card_stack', 'device_cycler' );
+$designs = array( 'scroll_choreography', 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'hero_reel', 'focus_slider', 'mosaic_marquee', 'photo_scatter', 'card_stack', 'device_cycler' );
+/** Allow a child-theme-registered design key to render instead of falling back to carousel_ring.
+ *  Pair with 'upw_gallery_3d_design_groups' (picker) + window.upwGallery3d.registerDesign (driver). */
+$designs = apply_filters( 'upw_gallery_3d_render_designs', $designs );
 $design  = (string) $sc_get( 'design_settings/design', 'carousel_ring' );
 if ( ! in_array( $design, $designs, true ) ) { $design = 'carousel_ring'; }
 $dp = function ( $sub, $default = '' ) use ( $sc_get, $design ) { return $sc_get( 'design_settings/' . $design . '/' . $sub, $default ); };
@@ -265,6 +268,14 @@ if ( $as_bg ) {
 /* Pin while scrubbing (Motion: Scroll-scrub): stretch the wrapper by Scroll Length and let the CSS
  * stick the stage inside it — the visitor's scroll drives the scrub across the whole pinned stretch.
  * Never as a Section Background (the Section owns layout there). */
+/* Scroll Choreography is intrinsically a scroll-pinned, multi-formation scene — force Scroll-scrub +
+ * Pin and take its Scroll Length from the design's own option (it has no Motion picker of its own). */
+if ( 'scroll_choreography' === $design && ! $as_bg ) {
+	$motion_mode   = 'scroll';
+	$motion_pin    = true;
+	$motion_len    = max( 1, min( 6, (float) $dp( 'scroll_length', 3 ) ) );
+	$motion_rounds = 1;
+}
 $is_pinned = ( $motion_mode === 'scroll' && $motion_pin && ! $as_bg );
 if ( $is_pinned ) { $attr['class'] = trim( $attr['class'] . ' tdg--pinned' ); }
 

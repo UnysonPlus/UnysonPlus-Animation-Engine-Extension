@@ -3,7 +3,7 @@
 }
 
 /**
- * Studio Scene — frontend render. Emits the scene file inside a `[data-upw-scene]` block; the bundled
+ * Kinetic Scene — frontend render. Emits the scene file inside a `[data-upw-scene]` block; the bundled
  * scene player (enqueued by static.php) mounts it. Layout-tab choices override the scene's own stage
  * and playback settings for this placement only.
  *
@@ -16,8 +16,8 @@ if ( ! $scene ) {
 	if ( function_exists( 'fw_is_editor_context' ) && fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
 		$has_text = trim( (string) ( isset( $atts['scene'] ) ? $atts['scene'] : '' ) ) !== '';
 		echo sc_editor_notice( $has_text
-			? __( 'The Studio Scene text isn’t a scene the player understands. Paste a scene file or the Studio’s embed code.', 'fw' )
-			: __( 'Add a scene to the Studio Scene: paste one, or open the Animation Studio from its settings.', 'fw' ) );
+			? __( 'The Kinetic Scene text isn’t a scene the player understands. Paste a scene file or the Studio’s embed code.', 'fw' )
+			: __( 'Add a scene to the Kinetic Scene: paste one, or open Kinetic Scenes from its settings.', 'fw' ) );
 	}
 	return;
 }

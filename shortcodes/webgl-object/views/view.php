@@ -31,6 +31,15 @@ if ( ! function_exists( 'sc_webgl_object_render' ) ) {
 			$preset_opts['imageUrl'] = ! empty( $preset_opts['image']['url'] ) ? esc_url_raw( $preset_opts['image']['url'] ) : '';
 		}
 
+		// Image Transition shader: resolve the multi-upload list to a plain array of URLs the JS cross-fades.
+		if ( 'image_transition' === $preset && isset( $preset_opts['images'] ) && is_array( $preset_opts['images'] ) ) {
+			$urls = array();
+			foreach ( $preset_opts['images'] as $img ) {
+				if ( is_array( $img ) && ! empty( $img['url'] ) ) { $urls[] = esc_url_raw( $img['url'] ); }
+			}
+			$preset_opts['imageUrls'] = $urls;
+		}
+
 		// Colors use the preset selector (predefined-colors-color-picker-compact).
 		// Resolve to a HEX — Three.js / the data-config can't read a CSS var — falling
 		// back to the defaults. Legacy plain-string saves pass straight through.

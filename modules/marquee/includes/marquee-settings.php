@@ -40,6 +40,14 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
 			'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
 		),
+		'controls' => array(
+			'type'         => 'switch',
+			'label'        => __( 'Pause / Play control', 'fw' ),
+			'desc'         => __( 'Show a small Pause / Play button on the marquee. Recommended for auto-scrolling screenshots and any looping motion (an accessible way to stop the movement — WCAG 2.2.2).', 'fw' ),
+			'value'        => 'no',
+			'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+			'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+		),
 		'edge_fade' => array(
 			'type'         => 'switch',
 			'label'        => __( 'Fade edges', 'fw' ),

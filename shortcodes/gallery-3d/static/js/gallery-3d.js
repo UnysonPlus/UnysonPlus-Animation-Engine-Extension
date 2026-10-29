@@ -17,6 +17,14 @@
 	// current generation, so upwGallery3dBumpGen() lets every previous loop die instead of piling up.
 	var GEN = 0;
 	window.upwGallery3dBumpGen = function () { GEN++; };
+
+	// Registry for child-theme-registered Motion Gallery designs. A theme calls
+	// window.upwGallery3d.registerDesign('my_design', build) where build(ctx) drives one instance.
+	// This is the JS half of the PHP upw_gallery_3d_design_* filters — the pluggability the built-in
+	// designs don't need (they're compiled in), so a new gallery design can ship from a child theme
+	// (the gap → fallback → report loop: a motion the engine can't do gets a scoped child-theme design).
+	var CUSTOM = {};
+	function dashed( key ) { return String( key ).replace( /_/g, '-' ); }
 	var _raf = window.requestAnimationFrame.bind( window );
 
 	// Live Editor: the page-builder renders the front end inside an editing iframe (?fw-live-editor-frame=1)
@@ -2666,6 +2674,362 @@
 		requestAnimationFrame( loop );
 	}
 
+	// ---- Scroll Choreography -----------------------------------------------------------------------
+	// One gallery that morphs through an ordered list of FORMATIONS as you scroll a pinned stage: the
+	// cards start as a stack, form into one arrangement, reform into another, then exit. Each formation
+	// is a per-card pose { x%, y%, z(px depth), ry, rx, rot, s(scale), op }; the runtime lerps every
+	// card between the two bounding formations at the current scroll progress. Generalizes
+	// photo_scatter's scatter→tidy morph to N formations. Honours reduced motion (static first look).
+	var CHOREO_PRESETS = {
+		showcase:    [ 'stack', 'grid', 'ring', 'scatter' ],
+		fan_wall:    [ 'stack', 'fan', 'wall', 'scatter' ],
+		form_reform: [ 'stack', 'ring', 'grid', 'scatter' ]
+	};
+	var CHOREO_EASE = {
+		linear: function ( t ) { return t; },
+		smooth: function ( t ) { return t * t * ( 3 - 2 * t ); },
+		in:     function ( t ) { return t * t; },
+		out:    function ( t ) { return 1 - ( 1 - t ) * ( 1 - t ); },
+		back:   function ( t ) { var s = 1.70158; return 1 + ( s + 1 ) * Math.pow( t - 1, 3 ) + s * Math.pow( t - 1, 2 ); }
+	};
+
+	// Registry of extra resting poses a design or child theme contributes. Two ways to add one, both
+	// landing in the SAME shared object so a form registered either way is honoured:
+	//   • before this script loads (e.g. a wp_head inline): window.upwGallery3dForms.myform = fn;
+	//   • at runtime: window.upwGallery3d.registerChoreoForm('myform', fn).
+	// fn(N) returns a pose array (same shape as the built-ins below). Seeding the global in the head makes
+	// the form available the moment galleries first init — the robust path for child themes.
+	var CHOREO_FORMS = ( window.upwGallery3dForms && typeof window.upwGallery3dForms === 'object' )
+		? window.upwGallery3dForms : ( window.upwGallery3dForms = {} );
+
+	// Build one formation's pose array for N cards. Deterministic (computed once per gallery). A
+	// registered form wins, so a design can override or extend the built-in looks.
+	function choreoForm( name, N ) {
+		if ( CHOREO_FORMS[ name ] ) {
+			try { var reg = CHOREO_FORMS[ name ]( N ); if ( reg && reg.length ) { return reg; } } catch ( e ) {}
+		}
+		var out = [], i, R = Math.min( 260, 70 + N * 15 );
+		if ( name === 'stack' ) {
+			// A tidy photo pile: the higher the index, the nearer the top — upright, a touch larger.
+			for ( i = 0; i < N; i++ ) { var up = i / Math.max( 1, N - 1 ), sgn = ( i % 2 ? 1 : -1 );
+				out.push( { x: 50 + sgn * ( 2 + up * 2 ), y: 50 - up * 4 + sgn * 1.5, z: i * 4, ry: 0, rx: 0, rot: sgn * ( 5 - up * 3 ), s: 0.86 + up * 0.06, op: 1 } ); }
+		} else if ( name === 'grid' ) {
+			var cols = Math.max( 2, Math.round( Math.sqrt( N ) * 1.35 ) ), rows = Math.ceil( N / cols );
+			for ( i = 0; i < N; i++ ) { var c = i % cols, r = ( i / cols ) | 0, inRow = Math.min( cols, N - r * cols ), pad = ( cols - inRow ) / 2;
+				out.push( { x: ( 0.08 + ( ( c + pad + 0.5 ) / cols ) * 0.84 ) * 100, y: ( 0.12 + ( ( r + 0.5 ) / rows ) * 0.76 ) * 100, z: 0, ry: 0, rx: 0, rot: 0, s: 1, op: 1 } ); }
+		} else if ( name === 'ring' ) {
+			for ( i = 0; i < N; i++ ) { var a = ( i / N ) * 360, cf = Math.cos( a * Math.PI / 180 );
+				out.push( { x: 50, y: 50, z: R, ry: a, rx: -6, rot: 0, s: 1, op: 0.35 + 0.65 * ( ( cf + 1 ) / 2 ) } ); }
+		} else if ( name === 'fan' ) {
+			for ( i = 0; i < N; i++ ) { var d = i - ( N - 1 ) / 2, ang = d * ( 48 / Math.max( 1, N - 1 ) );
+				out.push( { x: 50, y: 52, z: -Math.abs( d ) * 86, ry: ang, rx: 0, rot: 0, s: Math.max( 0.6, 1 - Math.abs( d ) * 0.08 ), op: Math.max( 0.45, 1 - Math.abs( d ) * 0.12 ) } ); }
+		} else if ( name === 'wall' ) {
+			// A gently concave wall — edge columns angle inward and recede, wrapping toward the viewer.
+			var cw = Math.max( 3, Math.round( Math.sqrt( N ) * 1.5 ) ), wr = Math.ceil( N / cw );
+			for ( i = 0; i < N; i++ ) { var wc = i % cw, wrr = ( i / cw ) | 0, cfrac = ( wc / ( cw - 1 || 1 ) ) - 0.5;
+				out.push( { x: ( 0.06 + ( ( wc + 0.5 ) / cw ) * 0.88 ) * 100, y: ( 0.14 + ( ( wrr + 0.5 ) / wr ) * 0.72 ) * 100, z: -40 - Math.abs( cfrac ) * 70, ry: -cfrac * 32, rx: -8, rot: 0, s: 1, op: 1 } ); }
+		} else if ( name === 'spiral' ) { // cards threaded along a vertical helix (two turns)
+			for ( i = 0; i < N; i++ ) { var sa = ( i / Math.max( 1, N - 1 ) ) * 720, sr = 60 + ( i / Math.max( 1, N - 1 ) ) * 150;
+				out.push( { x: 50, y: 26 + ( i / Math.max( 1, N - 1 ) ) * 48, z: sr, ry: sa, rx: 0, rot: 0, s: Math.max( 0.62, 1 - ( i / N ) * 0.3 ), op: 1 } ); }
+		} else if ( name === 'wave' ) { // a tilted grid with a per-column sine ripple
+			var ac = Math.max( 3, Math.round( Math.sqrt( N ) * 1.5 ) ), ar = Math.ceil( N / ac );
+			for ( i = 0; i < N; i++ ) { var vc = i % ac, vr = ( i / ac ) | 0, wob = Math.sin( ( vc / ac ) * Math.PI * 2 ) * 8;
+				out.push( { x: ( 0.06 + ( ( vc + 0.5 ) / ac ) * 0.88 ) * 100, y: ( 0.16 + ( ( vr + 0.5 ) / ar ) * 0.68 ) * 100 + wob, z: -20, ry: 0, rx: -10, rot: 0, s: 1, op: 1 } ); }
+		} else if ( name === 'carousel' ) { // a flat focus row — centre card big, sides scaled + turned away
+			for ( i = 0; i < N; i++ ) { var cd = N > 1 ? ( i / ( N - 1 ) - 0.5 ) : 0, dist = Math.abs( cd ) * 2, span = Math.min( 78, ( N - 1 ) * 13 );
+				out.push( { x: 50 + cd * span, y: 50, z: -dist * 60, ry: -cd * 20, rx: 0, rot: 0, s: Math.max( 0.55, 1 - dist * 0.4 ), op: Math.max( 0.4, 1 - dist * 0.4 ) } ); }
+		} else if ( name === 'column' ) { // a vertical column (a feed/list read top → bottom)
+			for ( i = 0; i < N; i++ ) { var cy = N > 1 ? i / ( N - 1 ) : 0.5;
+				out.push( { x: 50, y: 11 + cy * 78, z: 0, ry: 0, rx: 0, rot: 0, s: 0.62, op: 1 } ); }
+		} else if ( name === 'sphere' ) { // cards wrapped over a 3D ball (fibonacci distribution)
+			var gr = Math.PI * ( 3 - Math.sqrt( 5 ) ), Rs = Math.min( 240, 80 + N * 12 );
+			for ( i = 0; i < N; i++ ) { var ph = Math.acos( 1 - 2 * ( i + 0.5 ) / N ), th = gr * i;
+				out.push( { x: 50, y: 50, z: Rs, ry: th * 180 / Math.PI, rx: ph * 180 / Math.PI - 90, rot: 0, s: 0.9, op: 1 } ); }
+		} else if ( name === 'tunnel' ) { // cards receding into a depth corridor (near → far)
+			for ( i = 0; i < N; i++ ) { var tf = i / Math.max( 1, N - 1 ), ta = ( i * 137.5 ) * Math.PI / 180, trad = 18 + tf * 8;
+				out.push( { x: 50 + Math.cos( ta ) * trad, y: 50 + Math.sin( ta ) * trad * 0.7, z: 200 - tf * 620, ry: 0, rx: 0, rot: 0, s: 1, op: ( tf > 0.85 ? 0.2 : 1 ) } ); }
+		} else if ( name === 'coverflow' ) { // the Cover Flow design: one flat, large front card; neighbours steeply angled and receding
+			var fc = Math.round( ( N - 1 ) / 2 ); // a real centre card (no mid gap on even counts)
+			for ( i = 0; i < N; i++ ) { var fd = i - fc, fsgn = fd < 0 ? -1 : ( fd > 0 ? 1 : 0 ), fab = Math.abs( fd );
+				out.push( {
+					x: 50 + fsgn * Math.min( 46, 8 + ( fab - 1 ) * 7 ) * ( fab > 0 ? 1 : 0 ),
+					y: 50, z: fab === 0 ? 60 : -fab * 48,
+					ry: -fsgn * ( fab === 0 ? 0 : 62 ), rx: 0, rot: 0,
+					s: fab === 0 ? 1.08 : Math.max( 0.74, 0.92 - ( fab - 1 ) * 0.05 ),
+					op: fab > 4 ? 0.35 : 1
+				} ); }
+		} else if ( name === 'filmstrip' ) { // the Film Strip / reel design: one even horizontal row, read left → right
+			for ( i = 0; i < N; i++ ) { var mt = N > 1 ? i / ( N - 1 ) : 0.5;
+				out.push( { x: 8 + mt * 84, y: 50, z: 0, ry: 0, rx: 0, rot: 0, s: Math.max( 0.42, Math.min( 0.6, 7 / N ) ), op: 1 } ); }
+		} else if ( name === 'orbit' ) { // the Orbit Globe design: a tilted elliptical ring (halo) of evenly-placed cards, front ones nearer
+			for ( i = 0; i < N; i++ ) { var oa = ( i / N ) * Math.PI * 2, odepth = ( Math.sin( oa ) + 1 ) / 2; // 0 (far) .. 1 (near)
+				out.push( { x: 50 + Math.cos( oa ) * 38, y: 50 + Math.sin( oa ) * 19, z: Math.sin( oa ) * 120, ry: 0, rx: 0, rot: 0, s: 0.58 + odepth * 0.22, op: 0.72 + odepth * 0.28 } ); }
+		} else if ( name === 'hero' ) { // the Hero Reel design: one large hero card above a row of small thumbnails
+			for ( i = 0; i < N; i++ ) {
+				if ( i === 0 ) { out.push( { x: 50, y: 38, z: 40, ry: 0, rx: 0, rot: 0, s: 1.5, op: 1 } ); }
+				else { var ht = N > 2 ? ( i - 1 ) / ( N - 2 ) : 0.5;
+					out.push( { x: 10 + ht * 80, y: 80, z: 0, ry: 0, rx: 0, rot: 0, s: Math.max( 0.34, Math.min( 0.46, 6 / N ) ), op: 1 } ); }
+			}
+		} else if ( name === 'focus' ) { // the Focus Slider design: one large centre card, its two neighbours peeking at the edges
+			var qc = Math.round( ( N - 1 ) / 2 );
+			for ( i = 0; i < N; i++ ) { var qd = i - qc, qsg = qd < 0 ? -1 : ( qd > 0 ? 1 : 0 ), qab = Math.abs( qd );
+				if ( qab === 0 ) { out.push( { x: 50, y: 50, z: 40, ry: 0, rx: 0, rot: 0, s: 1.25, op: 1 } ); }
+				else if ( qab === 1 ) { out.push( { x: 50 + qsg * 46, y: 50, z: -40, ry: -qsg * 18, rx: 0, rot: 0, s: 0.86, op: 0.8 } ); }
+				else { out.push( { x: 50 + qsg * 52, y: 50, z: -140, ry: 0, rx: 0, rot: 0, s: 0.7, op: 0 } ); } // the rest hide behind, ready to slide in
+			}
+		} else if ( name === 'depthstack' ) { // the Depth Stack design: cards receding straight back into depth, front → back
+			for ( i = 0; i < N; i++ ) { var pt = N > 1 ? i / ( N - 1 ) : 0, psg = i % 2 ? 1 : -1;
+				out.push( { x: 50 + psg * 1.5, y: 50 - pt * 3, z: 50 - pt * 520, ry: 0, rx: 0, rot: psg * ( 2.5 - pt * 1.5 ), s: 1, op: pt > 0.82 ? 0.45 : 1 } ); }
+		} else if ( name === 'mosaic' ) { // the Mosaic Marquee design: a packed collage — a grid with alternating tile sizes
+			var mc = Math.max( 3, Math.round( Math.sqrt( N ) * 1.4 ) ), mr = Math.ceil( N / mc );
+			for ( i = 0; i < N; i++ ) { var mcc = i % mc, mrr = ( i / mc ) | 0, inr = Math.min( mc, N - mrr * mc ), mpad = ( mc - inr ) / 2, msz = ( i % 4 === 0 ) ? 1.18 : ( i % 4 === 2 ? 0.82 : 1 );
+				out.push( { x: ( 0.07 + ( ( mcc + mpad + 0.5 ) / mc ) * 0.86 ) * 100, y: ( 0.1 + ( ( mrr + 0.5 ) / mr ) * 0.8 ) * 100, z: ( i % 4 === 0 ) ? 30 : 0, ry: 0, rx: 0, rot: 0, s: msz, op: 1 } ); }
+		} else { // scatter (exit) — fling the cards out radially and fade them
+			for ( i = 0; i < N; i++ ) { var aa = ( i / N ) * Math.PI * 2 + ( i % 2 ? 0.7 : 0 );
+				out.push( { x: 50 + Math.cos( aa ) * 118, y: 50 + Math.sin( aa ) * 118, z: 120, ry: 0, rx: 0, rot: ( ( i * 71 ) % 42 ) - 21, s: 0.6, op: 0 } ); }
+		}
+		return out;
+	}
+
+	// Builds the pose engine for one choreography gallery: sizes its cards, reads its Steps / holds /
+	// easing / cascade, and returns poseAt(progress) which lerps every card between formations. Shared
+	// by the single-gallery driver (initChoreo) and the chain controller (initChoreoChain).
+	function choreoPoser( el ) {
+		var cards = el.querySelectorAll( '.tdg__card' );
+		var N = cards.length;
+		if ( ! N ) { return null; }
+		// data-tdg-choreo is a comma-separated formation list (PHP resolves presets + Custom), with a
+		// bare preset name as a back-compat fallback.
+		var VALID_FORMS = { stack: 1, grid: 1, ring: 1, fan: 1, wall: 1, spiral: 1, wave: 1, tunnel: 1, carousel: 1, column: 1, sphere: 1, coverflow: 1, filmstrip: 1, orbit: 1, hero: 1, focus: 1, depthstack: 1, mosaic: 1, scatter: 1 };
+		var raw = el.getAttribute( 'data-tdg-choreo' ) || 'showcase';
+		var seq;
+		if ( raw.indexOf( ',' ) >= 0 ) {
+			seq = raw.split( ',' ).map( function ( s ) { return s.trim(); } ).filter( function ( s ) { return VALID_FORMS[ s ] || CHOREO_FORMS[ s ]; } );
+		} else {
+			seq = CHOREO_PRESETS[ raw ] || CHOREO_PRESETS.showcase;
+		}
+		if ( seq.length < 2 ) { seq = CHOREO_PRESETS.showcase; }
+		// Per-step holds (how long each formation holds before morphing to the next), 0..1.
+		var holds = ( el.getAttribute( 'data-tdg-holds' ) || '' ).split( ',' ).map( function ( s ) { return clamp( parseFloat( s ) || 0, 0, 80 ) / 100; } );
+		var stagger = clamp( num( el, 'data-tdg-stagger', 25 ), 0, 60 ) / 100;
+		var ease    = CHOREO_EASE[ el.getAttribute( 'data-tdg-easing' ) ] || CHOREO_EASE.smooth;
+		var cardPct = clamp( num( el, 'data-tdg-card', 16 ), 8, 40 );
+		var i;
+		for ( i = 0; i < N; i++ ) {
+			var cd = cards[ i ];
+			cd.style.position = 'absolute'; cd.style.left = '50%'; cd.style.top = '50%'; cd.style.margin = '0';
+			cd.style.width = cardPct + '%'; cd.style.transition = 'none'; cd.style.willChange = 'transform, opacity';
+		}
+		var forms = [], k;
+		for ( i = 0; i < seq.length; i++ ) { forms.push( choreoForm( seq[ i ], N ) ); }
+		k = forms.length;
+
+		function applyPose( card, p ) {
+			card.style.left = p.x + '%'; card.style.top = p.y + '%';
+			card.style.opacity = p.op; card.style.zIndex = String( 1000 + Math.round( p.z ) );
+			// Depth cue: cards pushed BEHIND the stage dim a little, so depth reads even where opacity is full.
+			var bright = clamp( 1 + Math.min( 0, p.z ) / 900, 0.62, 1 );
+			card.style.filter = bright < 0.999 ? 'brightness(' + bright.toFixed( 3 ) + ')' : '';
+			// Rotate on both axes BEFORE translating out, so a card ends up oriented on the surface it's
+			// placed on (correct for the sphere; a ring/fan/spiral still face outward as before).
+			card.style.transform = 'translate(-50%,-50%) rotateY(' + p.ry.toFixed( 2 ) + 'deg) rotateX(' + p.rx.toFixed( 2 ) + 'deg) translateZ(' + p.z.toFixed( 1 ) + 'px) rotate(' + p.rot.toFixed( 2 ) + 'deg) scale(' + p.s.toFixed( 3 ) + ')';
+		}
+		function poseAt( gp ) {
+			var seg = clamp( gp, 0, 1 ) * ( k - 1 ), a = Math.min( k - 2, Math.floor( seg ) ), tr = seg - a;
+			// Hold the formation we're leaving (step a's own hold), then morph over the rest of the segment.
+			var dw = ( a < holds.length ) ? holds[ a ] : 0.15;
+			var local = dw > 0 ? clamp( ( tr - dw ) / ( 1 - dw ), 0, 1 ) : tr;
+			var span = 1 - stagger, A = forms[ a ], B = forms[ a + 1 ], j;
+			for ( j = 0; j < N; j++ ) {
+				// Cascade: each card starts its morph a little later, so they move one after another.
+				var start = ( N > 1 ? j / ( N - 1 ) : 0 ) * stagger;
+				var tj = ease( clamp( ( local - start ) / span, 0, 1 ) );
+				var pop = 1 + 0.10 * Math.sin( tj * Math.PI ); // a subtle lift at the midpoint of the morph
+				var pa = A[ j ], pb = B[ j ];
+				applyPose( cards[ j ], {
+					x: pa.x + ( pb.x - pa.x ) * tj, y: pa.y + ( pb.y - pa.y ) * tj, z: pa.z + ( pb.z - pa.z ) * tj,
+					ry: pa.ry + ( pb.ry - pa.ry ) * tj, rx: pa.rx + ( pb.rx - pa.rx ) * tj, rot: pa.rot + ( pb.rot - pa.rot ) * tj,
+					s: ( pa.s + ( pb.s - pa.s ) * tj ) * pop, op: pa.op + ( pb.op - pa.op ) * tj
+				} );
+			}
+		}
+		return { poseAt: poseAt, N: N, k: k };
+	}
+
+	// Authoring sugar: a gallery with the "Chain" switch on carries data-tdg-chain. Walk element siblings
+	// and wrap each run of 2+ ADJACENT chained galleries in a `.tdg-choreo-chain` container, so the author
+	// just drops several Scroll-Choreography galleries next to each other and ticks Chain — no css_class.
+	// The section-like block a chained gallery lives in — what we insert the wrapper before and hide once
+	// the gallery is relocated out of it (so galleries stacked in one column AND galleries each in their
+	// own section both chain).
+	function tdgSectionOf( g ) {
+		return ( g.closest && ( g.closest( 'section' ) || g.closest( '.upw-section' ) || g.closest( '.fw-main-row' ) ) ) || g.parentNode;
+	}
+	// A section is safe to hide once its gallery moved out only if nothing else of substance remains in it.
+	function tdgSectionEmpty( sec ) {
+		if ( ! sec || sec.classList.contains( 'tdg-choreo-chain' ) ) { return false; }
+		if ( sec.querySelector( '.tdg--scroll-choreography' ) ) { return false; } // another gallery still lives here
+		if ( ( sec.innerText || '' ).trim().length ) { return false; }            // visible text — keep it
+		if ( sec.querySelector( 'img, svg, video, canvas, iframe, .wp-block-image, [style*="background-image"]' ) ) { return false; }
+		return true;
+	}
+	function autoGroupChains() {
+		// Runs of CONSECUTIVE chained galleries in document order (a non-chained gallery breaks a run).
+		// Members may sit in different sections — they are relocated into one overlay wrapper.
+		var all = Array.prototype.slice.call( document.querySelectorAll( '.tdg--scroll-choreography' ) );
+		var runs = [], cur = [];
+		all.forEach( function ( g ) {
+			var chained = g.getAttribute( 'data-tdg-chain' ) && ! ( g.closest && g.closest( '.tdg-choreo-chain' ) );
+			if ( chained ) { cur.push( g ); }
+			else if ( cur.length ) { runs.push( cur ); cur = []; }
+		} );
+		if ( cur.length ) { runs.push( cur ); }
+		runs.forEach( function ( run ) {
+			if ( run.length < 2 ) { return; } // a lone chained gallery → initChoreo drives it on its own
+			var anchor = tdgSectionOf( run[ 0 ] );
+			var box = document.createElement( 'div' );
+			box.className = 'tdg-choreo-chain tdg-choreo-chain--auto';
+			anchor.parentNode.insertBefore( box, anchor );
+			run.forEach( function ( g ) {
+				var sec = tdgSectionOf( g );
+				box.appendChild( g ); // relocate the gallery into the shared overlay wrapper
+				if ( sec && sec !== box && tdgSectionEmpty( sec ) ) { sec.classList.add( 'tdg-choreo-vacated' ); } // hide the emptied section (non-destructive)
+			} );
+		} );
+	}
+
+	// Builds one chain container: overlays its galleries and drives ONE pinned, scrubbed master timeline
+	// that plays each gallery's pose sequence and OVERLAPS each exit with the next entrance — gallery 1
+	// flies out AS gallery 2 assembles in.
+	function buildChain( box ) {
+		if ( box.__tdgChain ) { return; }
+		box.__tdgChain = true;
+		var gals = Array.prototype.slice.call( box.querySelectorAll( '.tdg--scroll-choreography' ) ).filter( function ( g ) { return ! g.__tdg; } );
+		if ( gals.length < 2 ) { return; } // one gallery → let it drive itself normally
+		var stageH = '70vh', items = [];
+		gals.forEach( function ( g ) {
+			g.__tdg = true;
+			g.classList.remove( 'tdg--pinned' );
+			var h = ( getComputedStyle( g ).getPropertyValue( '--tdg-stage-h' ) || '70vh' ).trim();
+			stageH = h || stageH;
+			g.style.position = 'absolute'; g.style.left = '0'; g.style.right = '0'; g.style.top = '0'; g.style.height = h;
+			var p = choreoPoser( g );
+			if ( p ) { items.push( { g: g, poseAt: p.poseAt } ); }
+		} );
+		if ( items.length < 2 ) { return; }
+		box.style.position = 'relative';
+		box.style.height = stageH;
+		var OVERLAP = 0.3, UNIT = 2.4; // step overlap fraction, and screen-heights of scroll per gallery
+		var master = window.gsap.timeline();
+		var total = 0;
+		items.forEach( function ( it, idx ) {
+			window.gsap.set( it.g, { opacity: idx === 0 ? 1 : 0 } );
+			it.poseAt( 0 );
+			var proxy = { p: 0 }, sub = window.gsap.timeline();
+			sub.set( it.g, { opacity: 1 }, 0 );
+			sub.to( proxy, { p: 1, duration: 1, ease: 'none', onUpdate: function () { it.poseAt( proxy.p ); } }, 0 );
+			sub.set( it.g, { opacity: 0 }, 1 ); // after its turn (cards are already scattered/faded)
+			var pos = idx * ( 1 - OVERLAP );
+			master.add( sub, pos );
+			total = pos + 1;
+		} );
+		window.ScrollTrigger.create( {
+			trigger: box, start: 'top top', end: '+=' + Math.round( total * UNIT * window.innerHeight ),
+			pin: true, pinSpacing: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true, animation: master
+		} );
+	}
+
+	// Chain controller: auto-group adjacent chained galleries, then build every `.tdg-choreo-chain`
+	// container (explicit css_class OR auto-grouped). Requires GSAP; without it the galleries fall back
+	// to the single-gallery driver (sequential pins), still functional.
+	function initChoreoChain() {
+		if ( IN_EDITOR || ! window.gsap || ! window.ScrollTrigger ) { return; }
+		window.gsap.registerPlugin( window.ScrollTrigger );
+		autoGroupChains();
+		Array.prototype.forEach.call( document.querySelectorAll( '.tdg-choreo-chain' ), buildChain );
+	}
+
+	function initChoreo( el ) {
+		if ( el.__tdg ) { return; }
+		if ( el.closest && el.closest( '.tdg-choreo-chain' ) ) { return; } // driven by the chain controller
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' ) || el;
+		var pp = choreoPoser( el );
+		if ( ! pp ) { return; }
+		var poseAt = pp.poseAt, k = pp.k;
+
+		if ( reduce || window.upwReduceMotion ) { poseAt( k > 1 ? 1 / ( k - 1 ) : 0 ); return; } // the first formed look, static
+
+		// GSAP path: when gsap + ScrollTrigger are on the page, drive the choreography with a pinned,
+		// scrubbed ScrollTrigger (robust pin + scrub) instead of the hand-rolled rAF. poseAt does the
+		// posing either way (same formations, holds, cascade, easing). Falls back to rAF below if absent.
+		if ( ! IN_EDITOR && window.gsap && window.ScrollTrigger ) {
+			window.gsap.registerPlugin( window.ScrollTrigger );
+			var len = clamp( num( el, 'data-tdg-len', 3 ), 1, 6 );
+			el.classList.remove( 'tdg--pinned' );                       // drop the CSS sticky pin
+			el.style.height = ( getComputedStyle( el ).getPropertyValue( '--tdg-stage-h' ) || '70vh' ).trim();
+			poseAt( 0 );
+			window.ScrollTrigger.create( {
+				trigger: el, start: 'top top', end: '+=' + Math.round( len * window.innerHeight ),
+				pin: true, pinSpacing: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true,
+				onUpdate: function ( self ) { poseAt( self.progress ); },
+				onRefresh: function ( self ) { poseAt( self.progress ); }
+			} );
+			return;
+		}
+
+		// Idle-skip: only re-pose when the scroll progress actually changed (no DOM writes while still).
+		var lastGp = -1;
+		( function loop() {
+			var gp = clamp( scrollProgress( el, stage ), 0, 1 );
+			if ( Math.abs( gp - lastGp ) > 0.0008 ) { lastGp = gp; poseAt( gp ); }
+			requestAnimationFrame( loop );
+		}() );
+	}
+
+	// Build the context object handed to a registered design's build(ctx). It exposes the same
+	// primitives the built-in drivers use (stage, cards, progress, drag, rAF, resize) so a child-theme
+	// design is a first-class driver, not a second-class bolt-on.
+	function ctxFor( el ) {
+		var stage = el.querySelector( '.tdg__stage' ) || el;
+		var cards = Array.prototype.slice.call( el.querySelectorAll( '.tdg__card' ) );
+		return {
+			el: el,
+			stage: stage,
+			cards: cards,
+			reduce: reduce,
+			IN_EDITOR: IN_EDITOR,
+			clamp: clamp,
+			num: function ( attr, dflt ) { return num( el, attr, dflt ); },
+			attr: function ( name, dflt ) { var v = el.getAttribute( name ); return v === null ? dflt : v; },
+			progress: function () { return scrollProgress( el, stage ); },
+			attachDrag: function ( down, move, up ) { attachDrag( el, down, move, up ); },
+			raf: requestAnimationFrame,
+			// A self-rescheduling rAF loop stamped with the current generation (freezes in the editor,
+			// dies on a preview rebuild) — the pattern every built-in driver uses.
+			loop: function ( fn ) {
+				function tick( t ) { fn( t ); requestAnimationFrame( tick ); }
+				requestAnimationFrame( tick );
+			},
+			onResize: function ( fn ) { window.addEventListener( 'resize', fn, { passive: true } ); }
+		};
+	}
+
+	// Init one element whose design was registered from a child theme. Matches .tdg--<dashed key>,
+	// respects the __tdg once-guard, and isolates a faulty build() so it can never break the page.
+	function initCustom( el ) {
+		if ( el.__tdg ) { return; }
+		for ( var key in CUSTOM ) {
+			if ( ! CUSTOM.hasOwnProperty( key ) ) { continue; }
+			if ( el.classList.contains( 'tdg--' + dashed( key ) ) ) {
+				el.__tdg = true;
+				try { CUSTOM[ key ]( ctxFor( el ) ); }
+				catch ( e ) { if ( window.console ) { window.console.error( 'Motion Gallery custom design "' + key + '" failed:', e ); } }
+				return;
+			}
+		}
+	}
+
 	function scan() {
 		var i, els;
 		// Live Editor: un-pin every gallery so a "Pin while scrubbing" stage doesn't stick over the viewport
@@ -2714,6 +3078,18 @@
 		for ( i = 0; i < els.length; i++ ) { initDeviceCycler( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--card-stack' );
 		for ( i = 0; i < els.length; i++ ) { initCardStack( els[ i ] ); }
+		// Chained choreography FIRST: auto-group adjacent chained galleries into one overlap sequence and
+		// claim them, so the single-gallery pass below skips the ones that belong to a chain. A lone
+		// chained gallery (no adjacent partner) is left for initChoreo to drive on its own.
+		initChoreoChain();
+		els = document.querySelectorAll( '.tdg--scroll-choreography' );
+		for ( i = 0; i < els.length; i++ ) { initChoreo( els[ i ] ); }
+		// Child-theme-registered designs (one querySelectorAll per key).
+		for ( var ck in CUSTOM ) {
+			if ( ! CUSTOM.hasOwnProperty( ck ) ) { continue; }
+			var cels = document.querySelectorAll( '.tdg--' + dashed( ck ) );
+			for ( i = 0; i < cels.length; i++ ) { initCustom( cels[ i ] ); }
+		}
 		// Built-in sequential Entrance — independent of the design, so one pass covers them all.
 		els = document.querySelectorAll( '.tdg--entrance' );
 		for ( i = 0; i < els.length; i++ ) { initReveal( els[ i ] ); }
@@ -2745,7 +3121,28 @@
 		else if ( el.classList.contains( 'tdg--photo-scatter' ) ) { initScatter( el ); }
 		else if ( el.classList.contains( 'tdg--device-cycler' ) ) { initDeviceCycler( el ); }
 		else if ( el.classList.contains( 'tdg--card-stack' ) ) { initCardStack( el ); }
+		else if ( el.classList.contains( 'tdg--scroll-choreography' ) ) { initChoreo( el ); }
+		initCustom( el ); // child-theme-registered design, if any matches
 		initReveal( el ); // built-in sequential Entrance (no-op unless data-tdg-entrance is set)
+	};
+
+	// Public registration API for child themes. registerDesign(key, build) adds a driver and rescans
+	// so an already-rendered host picks it up. Call it after this script loads — a registered design's
+	// asset bundle enqueues with this script as a dependency (upw_gallery_3d_design_assets filter).
+	window.upwGallery3d = window.upwGallery3d || {};
+	window.upwGallery3d.registerDesign = function ( key, build ) {
+		if ( ! key || typeof build !== 'function' ) { return; }
+		CUSTOM[ String( key ) ] = build;
+		if ( typeof scan === 'function' ) { scan(); }
+	};
+	// registerChoreoForm(name, fn) — contribute a Scroll-Choreography resting pose. fn(N) returns a pose
+	// array [{x,y,z,ry,rx,rot,s,op}, …] (x/y in %, z in px, angles in deg). The name is then usable as a
+	// choreography Step. Pair with the `fw_gallery_3d_choreo_formations` PHP filter so it shows in the
+	// Steps picker and passes the view's whitelist. Rescans so an already-rendered gallery re-poses.
+	window.upwGallery3d.registerChoreoForm = function ( name, fn ) {
+		if ( ! name || typeof fn !== 'function' ) { return; }
+		CHOREO_FORMS[ String( name ) ] = fn;
+		if ( typeof scan === 'function' ) { scan(); }
 	};
 
 	/* Re-init hook for surfaces that insert this element's markup after page load (the

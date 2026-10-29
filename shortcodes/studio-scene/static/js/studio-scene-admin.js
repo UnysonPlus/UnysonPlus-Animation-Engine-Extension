@@ -1,8 +1,8 @@
 /*
- * Studio Scene — builder side (admin only).
+ * Kinetic Scene — builder side (admin only).
  *
  * 1. A live summary under the Scene field ("Make it move": 7 layers, 7 s), or what is wrong with it.
- * 2. "Open in Animation Studio": opens the Studio in a new window, and talks to it over postMessage:
+ * 2. "Open in Kinetic Scenes": opens the Studio in a new window, and talks to it over postMessage:
  *      Studio → us   { type: 'upw-studio:hello' }            once it has loaded
  *      us → Studio   { type: 'upw-studio:scene', scene }      this element's scene (or null)
  *      Studio → us   { type: 'upw-studio:save', scene }       "Save to page" was clicked
@@ -15,7 +15,7 @@
 
 	var cfg = window.upwStudioScene || {};
 	var t = cfg.i18n || {};
-	var studioUrl = cfg.studioUrl || 'https://animation-studio.unysonplus.com/';
+	var studioUrl = cfg.studioUrl || 'https://kinetic-scenes.unysonplus.com/';
 	var studioOrigin;
 	try { studioOrigin = new URL(studioUrl).origin; } catch (e) { return; }
 
@@ -76,7 +76,7 @@
 		e.preventDefault();
 		var tools = $(this).closest('.upw-studio-tools')[0];
 		var $field = fieldFor(tools);
-		var win = window.open(studioUrl + '?connect=unysonplus', 'upw-animation-studio');
+		var win = window.open(studioUrl + '?connect=unysonplus', 'upw-kinetic-scenes');
 		if (!win) {
 			setStatus(tools, t.blocked, 'error');
 			return;

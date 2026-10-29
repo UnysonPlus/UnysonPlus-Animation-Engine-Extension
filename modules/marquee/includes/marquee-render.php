@@ -41,6 +41,9 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	if ( isset( $o['pause_on_hover'] ) && $o['pause_on_hover'] === 'no' ) {
 		$attr['data-mq-pause'] = '0';
 	}
+	if ( isset( $o['controls'] ) && $o['controls'] === 'yes' ) {
+		$attr['data-mq-controls'] = '1';
+	}
 	if ( isset( $o['edge_fade'] ) && $o['edge_fade'] === 'yes' ) {
 		$attr['data-mq-fade'] = '1';
 	}

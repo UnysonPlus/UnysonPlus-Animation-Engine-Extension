@@ -13,6 +13,9 @@
  *   animation-site-modules  the site-wide modules (custom cursor, page transitions, preloader, scroll
  *                           progress, smooth scroll …) and whether each is on — switch them with the AI
  *                           Assistant's update_theme_settings, e.g. { animation_cursor: { enable: "yes" } }
+ *   animation-gallery-designs  the Motion Gallery (gallery_3d) designs available — the 3D / flow / stack
+ *                           layouts a gallery can take, incl. child-theme-registered custom designs — so an
+ *                           agent replicating a source carousel/slider/3D gallery can try a native one first
  *
  * Effect values are the field's saved multi-picker value: { <picker>: "<effect>", "<effect>": { settings } },
  * and "none" (the field's off value) removes the effect.
@@ -38,6 +41,43 @@ if ( ! function_exists( 'fw_ext_animation_engine_ai_register' ) ) :
 	 * @param string $tag Element tag (or layout type).
 	 * @return array
 	 */
+	/**
+	 * Motion Gallery (gallery_3d) designs flattened to { key, label, group, coming_soon, custom }. Sourced
+	 * from the shortcode's OWN options, so a child-theme design registered via the 'upw_gallery_3d_design_groups'
+	 * filter appears here too. soon_* keys are placeholder families (render as a fallback, not their own
+	 * design) and are flagged coming_soon.
+	 *
+	 * @return array list of { key, label, group, coming_soon, custom }
+	 */
+	function fw_ext_animation_engine_ai_gallery_designs() {
+		$sc = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+		$g3 = ( $sc && method_exists( $sc, 'get_shortcode' ) ) ? $sc->get_shortcode( 'gallery_3d' ) : null;
+		if ( ! $g3 || ! method_exists( $g3, 'get_options' ) ) {
+			return array();
+		}
+		$opts   = $g3->get_options();
+		$groups = $opts['tab_design']['options']['design_settings']['picker']['design']['choices'] ?? array();
+		// Keys a child theme added to the render whitelist (the filter applied to an EMPTY base returns only
+		// the custom-registered designs), used to flag which designs are custom.
+		$custom = array_values( (array) apply_filters( 'upw_gallery_3d_render_designs', array() ) );
+		$out = array();
+		foreach ( (array) $groups as $gkey => $group ) {
+			$glabel  = ( is_array( $group ) && isset( $group['label'] ) ) ? wp_strip_all_tags( $group['label'] ) : (string) $gkey;
+			$choices = ( is_array( $group ) && isset( $group['choices'] ) ) ? $group['choices'] : array();
+			foreach ( (array) $choices as $dkey => $tile ) {
+				$label = ( is_array( $tile ) && ! empty( $tile['label'] ) ) ? wp_strip_all_tags( $tile['label'] ) : (string) $dkey;
+				$out[] = array(
+					'key'         => (string) $dkey,
+					'label'       => $label,
+					'group'       => $glabel,
+					'coming_soon' => ( strpos( (string) $dkey, 'soon_' ) === 0 ),
+					'custom'      => in_array( (string) $dkey, $custom, true ),
+				);
+			}
+		}
+		return $out;
+	}
+
 	function fw_ext_animation_engine_ai_fields( $tag ) {
 		$defs   = function_exists( 'upw_anim_field_defs' ) ? (array) upw_anim_field_defs() : array();
 		$leaves = FW_AI_Schema::leaves( $tag );
@@ -155,6 +195,23 @@ if ( ! function_exists( 'fw_ext_animation_engine_ai_register' ) ) :
 				}
 				$g = (array) fw_get_db_settings_option( 'animation_engine', array() );
 				return array( 'modules' => $out, 'respect_reduced_motion' => ( $g['respect_reduced_motion'] ?? 'yes' ) === 'yes' );
+			},
+		) );
+
+		fw_ai_register_ability( 'animation-gallery-designs', array(
+			'label'       => __( 'List Motion Gallery designs', 'fw' ),
+			'description' => 'The Motion Gallery (gallery_3d element) designs available on this site — the 3D / flow / stack layouts a gallery can take (carousel_ring, cover_flow, card_stack, device_cycler …), each with its group and whether it is a child-theme-registered custom design. Set one as a gallery_3d element\'s design_settings.design (via get_page / the builder). When replicating a source carousel, slider or 3D gallery, pick the closest native design here BEFORE writing a custom one.',
+			'permission'  => 'edit_posts',
+			'readonly'    => true,
+			'execute'     => function () {
+				$all        = fw_ext_animation_engine_ai_gallery_designs();
+				$renderable = array_values( array_filter( $all, function ( $d ) { return empty( $d['coming_soon'] ); } ) );
+				$soon       = array_values( array_map( function ( $d ) { return $d['key']; }, array_filter( $all, function ( $d ) { return ! empty( $d['coming_soon'] ); } ) ) );
+				return array(
+					'designs'      => $renderable,
+					'coming_soon'  => $soon,
+					'note'         => 'Set on a gallery_3d element via design_settings.design. A child theme can register its own design (filter upw_gallery_3d_design_groups + upw_gallery_3d_render_designs + window.upwGallery3d.registerDesign); such designs show custom:true. Honour reduced motion (on by default).',
+				);
 			},
 		) );
 	}

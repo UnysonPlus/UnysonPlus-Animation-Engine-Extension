@@ -3,11 +3,11 @@
 }
 
 /**
- * Studio Scene — plays a scene made in the Unyson+ Animation Studio.
+ * Kinetic Scene — plays a scene made in Unyson+ Kinetic Scenes.
  *
  * The scene file is stored as text in the `scene` att. The bundled scene player (static/js/vendor/
  * scene-player.js, a copy of the Studio's published player) mounts every `[data-upw-scene]` block on
- * the page. In the builder, "Open in Animation Studio" opens the Studio in a new window and the two
+ * the page. In the builder, "Open in Kinetic Scenes" opens the Studio in a new window and the two
  * talk over postMessage: the Studio says hello, we send it this element's scene, and its "Save to
  * page" sends the edited scene back into the field. We only accept messages from the Studio's own
  * address; the Studio only sends back to the window that opened it.
@@ -15,14 +15,14 @@
  * Helpers here are prefixed upw_studio_scene_ and loaded once, at registration.
  */
 
-/** The Animation Studio's address (filterable, e.g. to a local copy while developing the Studio). */
+/** Kinetic Scenes' address (filterable, e.g. to a local copy while developing the Studio). */
 function upw_studio_scene_studio_url() {
 	/**
-	 * Filters the Animation Studio address used by "Open in Animation Studio".
+	 * Filters Kinetic Scenes address used by "Open in Kinetic Scenes".
 	 *
 	 * @param string $url The Studio URL, ending in a slash.
 	 */
-	return trailingslashit( apply_filters( 'fw_studio_scene_studio_url', 'https://animation-studio.unysonplus.com/' ) );
+	return trailingslashit( apply_filters( 'fw_studio_scene_studio_url', 'https://kinetic-scenes.unysonplus.com/' ) );
 }
 
 /**
@@ -33,7 +33,12 @@ function upw_studio_scene_studio_url() {
  * @return array|null
  */
 function upw_studio_scene_parse( $raw ) {
-	$raw = trim( (string) $raw );
+	// wpautop runs on the page content before shortcodes, and turns every line break inside the scene
+	// attribute into "<br />\n" (a scene pasted with a trailing newline, or pretty-printed JSON), which
+	// no longer parses. A JSON string cannot hold a raw line break, so a <br> before one is always
+	// wpautop's: drop it, and any <p> it wrapped around the ends.
+	$raw = preg_replace( '#<br\s*/?>(?=\s*[\r\n])#i', '', (string) $raw );
+	$raw = trim( preg_replace( '#^(?:\s|</?p>)+|(?:\s|</?p>|<br\s*/?>)+$#i', '', $raw ) );
 	if ( $raw === '' ) {
 		return null;
 	}
@@ -45,6 +50,24 @@ function upw_studio_scene_parse( $raw ) {
 		return null;
 	}
 	return $scene;
+}
+
+/**
+ * A layer's link, if it is one the player follows (web, same-site, anchor, mailto: and tel: addresses;
+ * never script or data ones). Mirrors SAFE_HREF in the player's types.ts.
+ *
+ * @param mixed $link The layer's `link` value.
+ * @return array|null array( 'href' => …, 'newTab' => bool ) or null.
+ */
+function upw_studio_scene_link( $link ) {
+	if ( ! is_array( $link ) || ! isset( $link['href'] ) || ! is_string( $link['href'] ) ) {
+		return null;
+	}
+	$href = trim( $link['href'] );
+	if ( ! preg_match( '~^(https?://|mailto:|tel:|/|#|\?|\.\.?/)~i', $href ) ) {
+		return null;
+	}
+	return array( 'href' => $href, 'newTab' => ! empty( $link['newTab'] ) );
 }
 
 /**
@@ -73,9 +96,58 @@ function upw_studio_scene_transcript_items( array $scene, $headline = '' ) {
 		return is_numeric( $v ) ? (float) $v : 0.0;
 	};
 
+	// When a layer first shows: its start, or its first entrance clip; a group, when its first layer does.
+	$appears = function ( array $l, $offset ) use ( &$appears, $num ) {
+		$own = $num( isset( $l['start'] ) ? $l['start'] : 0 );
+		if ( isset( $l['type'] ) && 'group' === $l['type'] && ! empty( $l['layers'] ) && is_array( $l['layers'] ) ) {
+			$times = array();
+			foreach ( $l['layers'] as $child ) {
+				if ( is_array( $child ) ) {
+					$times[] = $appears( $child, $offset + $own );
+				}
+			}
+			if ( $times ) {
+				return min( $times );
+			}
+		}
+		$ins = array();
+		foreach ( ( isset( $l['clips'] ) && is_array( $l['clips'] ) ? $l['clips'] : array() ) as $clip ) {
+			if ( isset( $clip['params']['direction'] ) && 'out' === $clip['params']['direction'] ) {
+				continue;
+			}
+			$ins[] = $num( isset( $clip['start'] ) ? $clip['start'] : 0 );
+		}
+		return $offset + max( $own, $ins ? min( $ins ) : $own );
+	};
+	// Every text inside a layer, in order (a linked group reads as one link).
+	$words_in = function ( array $l ) use ( &$words_in, $clean ) {
+		$type = isset( $l['type'] ) ? $l['type'] : '';
+		if ( 'text' === $type ) {
+			return $clean( isset( $l['text'] ) ? $l['text'] : '' );
+		}
+		if ( 'model' === $type && isset( $l['model']['kind'] ) && 'text' === $l['model']['kind'] ) {
+			return $clean( isset( $l['model']['text'] ) ? $l['model']['text'] : '' );
+		}
+		if ( 'image' === $type ) {
+			return $clean( isset( $l['alt'] ) ? $l['alt'] : '' );
+		}
+		if ( 'group' === $type && isset( $l['layers'] ) && is_array( $l['layers'] ) ) {
+			$parts = array();
+			foreach ( $l['layers'] as $child ) {
+				$w = is_array( $child ) ? $words_in( $child ) : '';
+				if ( '' !== $w ) {
+					$parts[] = $w;
+				}
+			}
+			return $clean( implode( ' ', $parts ) );
+		}
+		return '';
+	};
+
 	// Every text layer (and 3D text), with when it appears and which top-level container (act) it is in.
+	// A linked layer is one entry: the link, never part of a heading.
 	$entries = array();
-	$walk    = function ( array $list, $offset, $container ) use ( &$walk, &$entries, $clean, $num ) {
+	$walk    = function ( array $list, $offset, $container ) use ( &$walk, &$entries, $clean, $num, $appears, $words_in ) {
 		foreach ( array_values( $list ) as $i => $l ) {
 			if ( ! is_array( $l ) ) {
 				continue;
@@ -83,17 +155,17 @@ function upw_studio_scene_transcript_items( array $scene, $headline = '' ) {
 			$type = isset( $l['type'] ) ? $l['type'] : '';
 			$c    = $container < 0 ? ( 'group' === $type ? $i : -1 ) : $container;
 			$own  = $num( isset( $l['start'] ) ? $l['start'] : 0 );
-			$ins  = array();
-			foreach ( ( isset( $l['clips'] ) && is_array( $l['clips'] ) ? $l['clips'] : array() ) as $clip ) {
-				if ( isset( $clip['params']['direction'] ) && 'out' === $clip['params']['direction'] ) {
-					continue;
-				}
-				$ins[] = $num( isset( $clip['start'] ) ? $clip['start'] : 0 );
+			$at   = $appears( $l, $offset );
+			$box  = isset( $l['box'] ) && is_array( $l['box'] ) ? $l['box'] : array();
+			$y    = $num( isset( $box['y'] ) ? $box['y'] : 0 );
+			$x    = $num( isset( $box['x'] ) ? $box['x'] : 0 );
+			$link = upw_studio_scene_link( isset( $l['link'] ) ? $l['link'] : null );
+			if ( $link ) {
+				$label     = $clean( isset( $l['link']['label'] ) ? $l['link']['label'] : '' );
+				$text      = '' !== $label ? $label : $words_in( $l );
+				$entries[] = array( 'text' => '' !== $text ? $text : $link['href'], 'size' => 0.0, 'at' => $at, 'y' => $y, 'x' => $x, 'container' => $c, 'model' => false, 'link' => $link, 'layer' => isset( $l['id'] ) ? (string) $l['id'] : '' );
+				continue;
 			}
-			$at  = $offset + max( $own, $ins ? min( $ins ) : $own );
-			$box = isset( $l['box'] ) && is_array( $l['box'] ) ? $l['box'] : array();
-			$y   = $num( isset( $box['y'] ) ? $box['y'] : 0 );
-			$x   = $num( isset( $box['x'] ) ? $box['x'] : 0 );
 			if ( 'text' === $type && '' !== $clean( isset( $l['text'] ) ? $l['text'] : '' ) ) {
 				$entries[] = array( 'text' => $clean( $l['text'] ), 'size' => $num( isset( $l['style']['fontSize'] ) ? $l['style']['fontSize'] : 0 ), 'at' => $at, 'y' => $y, 'x' => $x, 'container' => $c, 'model' => false );
 			}
@@ -113,7 +185,7 @@ function upw_studio_scene_transcript_items( array $scene, $headline = '' ) {
 	// Sizes: the median text size, and the biggest per container; 3D text counts as its container's headline.
 	$flat = array();
 	foreach ( $entries as $e ) {
-		if ( ! $e['model'] ) {
+		if ( ! $e['model'] && empty( $e['link'] ) ) {
 			$flat[] = $e['size'];
 		}
 	}
@@ -121,7 +193,7 @@ function upw_studio_scene_transcript_items( array $scene, $headline = '' ) {
 	$median = $flat ? $flat[ (int) floor( count( $flat ) / 2 ) ] : 1.0;
 	$max_in = array();
 	foreach ( $entries as $e ) {
-		if ( ! $e['model'] ) {
+		if ( ! $e['model'] && empty( $e['link'] ) ) {
 			$max_in[ $e['container'] ] = max( isset( $max_in[ $e['container'] ] ) ? $max_in[ $e['container'] ] : 0.0, $e['size'] );
 		}
 	}
@@ -151,19 +223,19 @@ function upw_studio_scene_transcript_items( array $scene, $headline = '' ) {
 	}
 	$entries = $sorted;
 
-	$scene_max  = max( $max_in );
-	$scene_head = null;
+	$scene_max  = $max_in ? max( $max_in ) : 0.0;
+	$scene_head = -2;
 	foreach ( $entries as $e ) {
-		if ( $max_in[ $e['container'] ] >= $scene_max ) {
+		if ( empty( $e['link'] ) && $max_in[ $e['container'] ] >= $scene_max ) {
 			$scene_head = $e['container'];
 			break;
 		}
 	}
 	$is_big     = function ( $e ) use ( $max_in, $median, $scene_head ) {
-		return $e['size'] >= $max_in[ $e['container'] ] * 0.75 && ( $e['container'] === $scene_head || $e['size'] >= $median * 1.4 );
+		return empty( $e['link'] ) && $e['size'] >= $max_in[ $e['container'] ] * 0.75 && ( $e['container'] === $scene_head || $e['size'] >= $median * 1.4 );
 	};
 	$is_display = function ( $e ) use ( $max_in, $median ) {
-		return $e['size'] >= $max_in[ $e['container'] ] * 0.3 && $e['size'] >= $median * 1.4;
+		return empty( $e['link'] ) && $e['size'] >= $max_in[ $e['container'] ] * 0.3 && $e['size'] >= $median * 1.4;
 	};
 
 	$items = array();
@@ -194,6 +266,10 @@ function upw_studio_scene_transcript_items( array $scene, $headline = '' ) {
 				continue;
 			}
 		}
+		if ( ! empty( $e['link'] ) ) {
+			$items[] = array( 'level' => 0, 'text' => $e['text'], 'link' => $e['link'], 'layer' => $e['layer'] );
+			continue;
+		}
 		if ( isset( $seen[ $e['text'] ] ) ) {
 			continue;
 		}
@@ -218,6 +294,12 @@ function upw_studio_scene_transcript_html( array $scene, $headline = '' ) {
 	}
 	$html = '';
 	foreach ( $items as $item ) {
+		if ( ! empty( $item['link'] ) ) {
+			// The real, focusable link; focusing it rings its layer on the stage.
+			$tab   = ! empty( $item['link']['newTab'] ) ? ' target="_blank" rel="noopener"' : '';
+			$html .= '<p><a href="' . esc_url( $item['link']['href'] ) . '" data-upw-link="' . esc_attr( $item['layer'] ) . '"' . $tab . '>' . esc_html( $item['text'] ) . '</a></p>';
+			continue;
+		}
 		$tag   = $item['level'] ? 'h' . (int) $item['level'] : 'p';
 		$html .= '<' . $tag . '>' . esc_html( $item['text'] ) . '</' . $tag . '>';
 	}
@@ -229,7 +311,7 @@ function upw_studio_scene_transcript_html( array $scene, $headline = '' ) {
 function upw_studio_scene_tools_html() {
 	return '<div class="upw-studio-tools" data-studio="' . esc_attr( upw_studio_scene_studio_url() ) . '">'
 		. '<div class="upw-studio-tools__row">'
-		. '<button type="button" class="button button-primary upw-studio-open">' . esc_html__( 'Open in Animation Studio', 'fw' ) . '</button>'
+		. '<button type="button" class="button button-primary upw-studio-open">' . esc_html__( 'Open in Kinetic Scenes', 'fw' ) . '</button>'
 		. '<a class="upw-studio-new" href="' . esc_url( upw_studio_scene_studio_url() ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Open the Studio in a new tab', 'fw' ) . '</a>'
 		. '</div>'
 		. '<p class="upw-studio-status" role="status" aria-live="polite"></p>'

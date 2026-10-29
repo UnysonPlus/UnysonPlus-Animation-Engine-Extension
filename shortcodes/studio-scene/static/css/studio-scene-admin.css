@@ -1,4 +1,4 @@
-/* Studio Scene — builder tools under the Scene field. */
+/* Kinetic Scene — builder tools under the Scene field. */
 .upw-studio-scene-field { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
 .upw-studio-tools { display: flex; flex-direction: column; gap: 8px; }
 .upw-studio-tools__row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }

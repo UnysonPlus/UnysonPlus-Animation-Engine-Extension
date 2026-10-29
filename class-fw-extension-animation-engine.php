@@ -69,6 +69,8 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/viewport-units/viewport-units.php'; // Viewport Units (site-wide — stable --vh/--vw custom properties)
 		require_once dirname( __FILE__ ) . '/modules/scroll-var/scroll-var.php';        // Scroll Variable (per-element — publish in-view progress to a CSS var)
 		require_once dirname( __FILE__ ) . '/modules/scroll-progress/scroll-progress.php'; // Scroll Progress indicator (site-wide)
+		require_once dirname( __FILE__ ) . '/modules/scroll-ruler/scroll-ruler.php';     // Scroll Ruler (admin-only author tool)
+		require_once dirname( __FILE__ ) . '/modules/scroll-timeline-editor/scroll-timeline-editor.php'; // Scroll Timeline Editor (admin-only — visual timeline + live scrub)
 		require_once dirname( __FILE__ ) . '/modules/sticky-stack/sticky-stack.php';    // Sticky Card Stack (Section-level, scroll)
 		require_once dirname( __FILE__ ) . '/modules/horizontal-scroll/horizontal-scroll.php'; // Horizontal Scroll Section (Section-level, scroll)
 		require_once dirname( __FILE__ ) . '/modules/scroll-reveal/scroll-reveal.php';    // Scroll Reveal (per-element clip wipe)
@@ -80,6 +82,7 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/preloader/preloader.php';                 // Preloader / Page Loader (site-wide)
 		require_once dirname( __FILE__ ) . '/modules/motion-path/motion-path.php';       // Motion Path (per-element — element travels a path)
 		require_once dirname( __FILE__ ) . '/modules/confetti/confetti.php';             // Confetti (per-element — celebratory particle burst)
+		require_once dirname( __FILE__ ) . '/modules/kinetic-preset/kinetic-preset.php'; // Kinetic Scenes Preset (per-element — the Studio's presets on page elements)
 
 		// Central effects control — consolidates the per-module enable switches into one
 		// "Effects" tab and hides a disabled module's options. Loaded last (after modules).

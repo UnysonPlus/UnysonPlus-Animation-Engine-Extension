@@ -47,7 +47,8 @@
 		'uniform float uTime; uniform vec2 uResolution; uniform vec2 uMouse;',
 		'uniform float uScroll; uniform vec3 uColorA; uniform vec3 uColorB;',
 		'uniform float uP1; uniform float uP2; uniform float uP3;',
-		'uniform sampler2D uTexture; uniform float uHasTex;'
+		'uniform sampler2D uTexture; uniform float uHasTex;',
+		'uniform sampler2D uTexB; uniform float uProgress;'
 	].join('\n');
 
 	var FBM = 'float fbm(vec3 q){float f=0.0,a=0.5;for(int i=0;i<5;i++){f+=a*snoise(q);q*=2.0;a*=0.5;}return f;}';
@@ -82,7 +83,30 @@
 			'void main(){vec2 p=vUv;float amt=uP1;' +
 			'vec2 flow=vec2(snoise(vec3(p*4.0,uTime*0.3)),snoise(vec3(p*4.0+10.0,uTime*0.3)));' +
 			'vec2 uv=p+flow*amt*0.1;' +
-			'gl_FragColor=vec4(uHasTex>0.5?texture2D(uTexture,uv).rgb:mix(uColorA,uColorB,p.y),1.0);}'
+			'gl_FragColor=vec4(uHasTex>0.5?texture2D(uTexture,uv).rgb:mix(uColorA,uColorB,p.y),1.0);}',
+		// Cross-fade uTexture (current) → uTexB (next) by uProgress 0..1, with a style chosen by uP2
+		// (0 fade, 1 ripple, 2 liquid dissolve, 3 displace, 4 wave) and strength uP1.
+		image_transition: SIMPLEX +
+			'void main(){vec2 p=vUv;float pr=clamp(uProgress,0.0,1.0);float st=uP2;float str=uP1;vec3 col;' +
+			'if(st<0.5){' +
+				'col=mix(texture2D(uTexture,p).rgb,texture2D(uTexB,p).rgb,smoothstep(0.0,1.0,pr));' +
+			'}else if(st<1.5){' + // ripple — radial wave distortion while it crossfades
+				'vec2 c=p-0.5;float d=length(c);float amp=str*0.06*sin(pr*3.14159);' +
+				'vec2 uv=p+normalize(c+0.0001)*sin(d*40.0-pr*26.0)*amp;' +
+				'col=mix(texture2D(uTexture,uv).rgb,texture2D(uTexB,uv).rgb,smoothstep(0.0,1.0,pr));' +
+			'}else if(st<2.5){' + // liquid dissolve — noise threshold reveal with an edge glow
+				'float n=snoise(vec3(p*5.0,0.0))*0.5+0.5;float e=0.12;float m=smoothstep(n-e,n+e,pr);' +
+				'col=mix(texture2D(uTexture,p).rgb,texture2D(uTexB,p).rgb,m);' +
+				'float g=1.0-abs(pr-n)/e;col+=max(0.0,g)*0.12*str;' +
+			'}else if(st<3.5){' + // displace — opposing noise flow on each image
+				'vec2 fl=vec2(snoise(vec3(p*5.0,0.0)),snoise(vec3(p*5.0+9.0,0.0)));float amp=str*0.3*sin(pr*3.14159);' +
+				'vec3 a=texture2D(uTexture,p+fl*amp).rgb;vec3 b=texture2D(uTexB,p-fl*amp).rgb;' +
+				'col=mix(a,b,smoothstep(0.0,1.0,pr));' +
+			'}else{' + // wave — wavy left→right sweep
+				'float wob=sin(p.y*18.0+pr*6.2831)*0.06*str;float x=p.x+wob;' +
+				'float m=smoothstep(x-0.08,x+0.08,pr*1.16-0.08);' +
+				'col=mix(texture2D(uTexture,p).rgb,texture2D(uTexB,p).rgb,m);' +
+			'}gl_FragColor=vec4(col,1.0);}'
 	};
 
 	function isShaderPreset(p) { return FRAG.hasOwnProperty(p); }
@@ -118,9 +142,38 @@
 		'varying vec3 vColor;',
 		'void main(){',
 		'  vec2 c = gl_PointCoord - 0.5;',
-		'  float a = smoothstep(0.5, 0.32, length(c));',              // round soft point
+		'  float a = 1.0 - smoothstep(0.32, 0.5, length(c));',        // round soft point (edge0 < edge1)',
 		'  if (a < 0.02) discard;',
 		'  gl_FragColor = vec4(vColor, a);',
+		'}'
+	].join('\n');
+
+	// Plain Particle-Field cloud: each particle is a camera-facing QUAD (two triangles), not a GL point.
+	// gl_PointSize / THREE.Points render unreliably (software renderers and some drivers drop point sprites
+	// entirely — they came out black); billboarded quads draw on every GPU. Each vertex carries the
+	// particle's `center` plus a `corner` (-0.5..0.5); the quad is offset in VIEW space so it always faces
+	// the camera, and the fragment shader draws a soft round dot.
+	var QUADCLOUD_VS = [
+		'attribute vec2 corner;',             // `position` is the particle centre (built-in attribute)
+		'uniform float uSize;',
+		'varying vec2 vC;',
+		'void main(){',
+		'  vC = corner;',
+		'  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+		'  mv.xy += corner * uSize;',          // billboard: offset in camera space
+		'  gl_Position = projectionMatrix * mv;',
+		'}'
+	].join('\n');
+	var QUADCLOUD_FS = [
+		'precision highp float;',
+		'uniform vec3 uColor;',
+		'varying vec2 vC;',
+		'void main(){',
+		// edge0 MUST be < edge1 (smoothstep is undefined otherwise — that returned 0 everywhere and the
+		// whole cloud discarded). 1.0 - smoothstep gives the round soft dot: opaque centre, fading edge.
+		'  float a = 1.0 - smoothstep(0.15, 0.5, length(vC));',
+		'  if (a < 0.02) discard;',
+		'  gl_FragColor = vec4(uColor, a * 0.5);',   // softer: overlapping additive points build up gradually',
 		'}'
 	].join('\n');
 
@@ -196,6 +249,7 @@
 			case 'fluid':         t = [num(o.viscosity, 0.5), num(o.splat_strength, 0.6), 0]; break;
 			case 'dots':          t = [num(o.grid_density, 40), num(o.dot_size, 0.5), (o.dot_style === 'halftone' ? 1 : 0)]; break;
 			case 'image_distort': t = [num(o.strength, 0.3), 0, 0]; break;
+			case 'image_transition': t = [num(o.strength, 0.6), ({ fade: 0, ripple: 1, liquid: 2, displace: 3, wave: 4 })[o.transition] || 0, 0]; break;
 			default:              t = [0, 0, 0];
 		}
 		return t[n - 1];
@@ -213,7 +267,9 @@
 			uP2:         { value: paramFor(cfg, 2) },
 			uP3:         { value: paramFor(cfg, 3) },
 			uTexture:    { value: null },
-			uHasTex:     { value: 0 }
+			uHasTex:     { value: 0 },
+			uTexB:       { value: null },
+			uProgress:   { value: 0 }
 		};
 		var mat = new THREE.ShaderMaterial({
 			vertexShader: QUAD_VS,
@@ -228,7 +284,23 @@
 			// hover_only starts un-distorted and eases up on pointer-over.
 			if (cfg.presetOpts.hover_only === 'yes') { uniforms.uP1.value = 0; }
 		}
-		return { object: new THREE.Mesh(geo, mat), uniforms: uniforms, geometry: geo, material: mat, texture: tex, shader: true };
+		var txState = null;
+		if (cfg.preset === 'image_transition' && cfg.presetOpts) {
+			var urls = cfg.presetOpts.imageUrls || [];
+			var loader = new THREE.TextureLoader();
+			var list = urls.map(function (u) { var tx = loader.load(u); tx.minFilter = THREE.LinearFilter; tx.generateMipmaps = false; return tx; });
+			if (list.length) {
+				uniforms.uTexture.value = list[0];
+				uniforms.uTexB.value = list[list.length > 1 ? 1 : 0];
+				uniforms.uHasTex.value = 1;
+			}
+			txState = {
+				list: list, i: 0, t0: null, phase: 'hold',
+				interval: Math.max(0.5, parseFloat(cfg.presetOpts.interval) || 3.5),
+				duration: Math.max(0.1, parseFloat(cfg.presetOpts.duration) || 1.2)
+			};
+		}
+		return { object: new THREE.Mesh(geo, mat), uniforms: uniforms, geometry: geo, material: mat, texture: tex, shader: true, txState: txState };
 	}
 
 	function hasWebGL() {
@@ -287,23 +359,64 @@
 		if (preset === 'particles') {
 			var count = Math.max(500, Math.min(12000, opts.particle_count || 4000));
 			var pos = new Float32Array(count * 3);
+			// Particle FORMATION — the cloud's resting shape (the 3D path then auto-rotates / parallaxes it).
+			var shape = opts.shape || 'sphere';
+			var rnd = (function () { var s = 2246; return function () { s = (s * 16807) % 2147483647; return s / 2147483647; }; })(); // deterministic
 			var off = 2 / count, inc = Math.PI * (3 - Math.sqrt(5));
 			for (var i = 0; i < count; i++) {
-				var y = i * off - 1 + off / 2;
-				var r = Math.sqrt(Math.max(0, 1 - y * y));
-				var phi = i * inc;
-				pos[i * 3] = Math.cos(phi) * r;
-				pos[i * 3 + 1] = y;
-				pos[i * 3 + 2] = Math.sin(phi) * r;
+				var x3 = i * 3, X, Y, Z;
+				if (shape === 'galaxy') {            // a spiral galaxy — logarithmic arms, thin disk, tilted toward the camera
+					var arms = 4, t = i / count, arm = ( i % arms ) * ( 2 * Math.PI / arms );
+					var ang = t * 5.5 * Math.PI + arm + ( rnd() - 0.5 ) * 0.5, rad = Math.pow( t, 0.65 );
+					var gx = Math.cos( ang ) * rad, gy = Math.sin( ang ) * rad, gz = ( rnd() - 0.5 ) * 0.12 * ( 1 - rad * 0.7 );
+					// Disk in XY (faces the camera on +Z), tilted ~55° around X so it reads as a 3D spiral.
+					X = gx; Y = gy * 0.57 - gz * 0.82; Z = gy * 0.82 + gz * 0.57;
+				} else if (shape === 'ring') {       // a torus band
+					var u = rnd() * 6.2831853, v = rnd() * 6.2831853, Rr = 0.82, rr = 0.2;
+					X = ( Rr + rr * Math.cos( v ) ) * Math.cos( u ); Y = rr * Math.sin( v ); Z = ( Rr + rr * Math.cos( v ) ) * Math.sin( u );
+				} else if (shape === 'wave') {       // a rippling grid plane (tilted by rotation)
+					var side = Math.max( 2, Math.round( Math.sqrt( count ) ) ), gx = i % side, gz = ( i / side ) | 0;
+					X = ( gx / ( side - 1 ) - 0.5 ) * 2; Z = ( gz / ( side - 1 ) - 0.5 ) * 2; Y = Math.sin( X * 3.0 ) * Math.cos( Z * 3.0 ) * 0.22;
+				} else if (shape === 'cube') {       // a soft-edged volumetric cloud
+					X = ( rnd() - 0.5 ) * 2; Y = ( rnd() - 0.5 ) * 2; Z = ( rnd() - 0.5 ) * 2;
+				} else if (shape === 'helix') {      // a double helix
+					var strand = i % 2, hp = ( i >> 1 ) / Math.max( 1, count / 2 ), ha = hp * 9.0 * Math.PI + strand * Math.PI;
+					X = Math.cos( ha ) * 0.5; Z = Math.sin( ha ) * 0.5; Y = ( hp - 0.5 ) * 2;
+				} else {                             // sphere shell (fibonacci) — the default
+					var y = i * off - 1 + off / 2, r = Math.sqrt( Math.max( 0, 1 - y * y ) ), phi = i * inc;
+					X = Math.cos( phi ) * r; Y = y; Z = Math.sin( phi ) * r;
+				}
+				pos[ x3 ] = X; pos[ x3 + 1 ] = Y; pos[ x3 + 2 ] = Z;
+			}
+			// Expand each particle center into a camera-facing quad (4 verts + 2 triangles) — see QUADCLOUD_VS.
+			var V = count * 4, verts = new Float32Array(V * 3), corners = new Float32Array(V * 2);
+			var index = new Uint32Array(count * 6);
+			var CQ = [ -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5 ];
+			for (i = 0; i < count; i++) {
+				var cx = pos[ i * 3 ], cy = pos[ i * 3 + 1 ], cz = pos[ i * 3 + 2 ];
+				for (var k = 0; k < 4; k++) {
+					var vi = i * 4 + k;
+					verts[ vi * 3 ] = cx; verts[ vi * 3 + 1 ] = cy; verts[ vi * 3 + 2 ] = cz;
+					corners[ vi * 2 ] = CQ[ k * 2 ]; corners[ vi * 2 + 1 ] = CQ[ k * 2 + 1 ];
+				}
+				var b = i * 4, ii = i * 6;
+				index[ ii ] = b; index[ ii + 1 ] = b + 1; index[ ii + 2 ] = b + 2;
+				index[ ii + 3 ] = b; index[ ii + 4 ] = b + 2; index[ ii + 5 ] = b + 3;
 			}
 			var pg = new THREE.BufferGeometry();
-			pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-			var pm = new THREE.PointsMaterial({
-				color: colA, size: opts.particle_size || 0.02,
-				transparent: true, opacity: 0.9, depthWrite: false,
-				blending: THREE.AdditiveBlending, sizeAttenuation: true
+			pg.setAttribute('position', new THREE.BufferAttribute(verts, 3)); // centre per vertex (Three.js needs `position` for the bounding sphere)
+			pg.setAttribute('corner', new THREE.BufferAttribute(corners, 2));
+			pg.setIndex(new THREE.BufferAttribute(index, 1));
+			// Particle world radius from particle_size (0.005–0.08). The quad spans ±0.5·uSize.
+			var usz = Math.max(0.015, Math.min(0.14, (opts.particle_size || 0.02) * 1.8));
+			var pm = new THREE.ShaderMaterial({
+				vertexShader: QUADCLOUD_VS, fragmentShader: QUADCLOUD_FS,
+				uniforms: { uSize: { value: usz }, uColor: { value: new THREE.Color(colA) } },
+				transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
 			});
-			return { object: new THREE.Points(pg, pm), uniforms: null, geometry: pg, material: pm };
+			var pmesh = new THREE.Mesh(pg, pm);
+			pmesh.frustumCulled = false; // billboard quads extend past the centre-based bounding sphere
+			return { object: pmesh, uniforms: null, geometry: pg, material: pm };
 		}
 
 		var geo = new THREE.IcosahedronGeometry(1, detailFor(cfg.quality));
@@ -428,7 +541,8 @@
 		var shaderMode = isShaderPreset(cfg.preset);
 
 		var scene = new THREE.Scene();
-		var camera, env = null, built, obj, s = cfg.scale || 1;
+		var camera, env = null, built, obj, s = parseFloat(cfg.scale);
+		if (!isFinite(s) || s <= 0) { s = 1; } // guard: a non-finite scale makes the object matrix NaN → nothing renders
 
 		if (shaderMode) {
 			// Full-screen quad + fragment shader: no 3D camera/lights/env needed.
@@ -442,8 +556,9 @@
 			// edges, like Hatom's hero blobs) rather than floating small in the middle.
 			camera.position.set(0, 0, 2.5);
 
-			// Image Particles is unlit (vertex-coloured points) — skip the env + lights it never uses.
-			if (cfg.preset !== 'image_particles') {
+			// Particle presets are unlit (their own shader) — skip the env + lights they never use (the PMREM
+			// env can also stall/fail silently on some GPUs, which would take the whole canvas black).
+			if (cfg.preset !== 'image_particles' && cfg.preset !== 'particles') {
 				// Glass transmission needs an environment; metal/sphere use it for reflections.
 				env = makeEnv(renderer, cfg.colorA || '#6aa6ff', cfg.colorB || '#b388ff');
 				scene.environment = env;
@@ -518,6 +633,22 @@
 					var want = hoverActive * (parseFloat(cfg.presetOpts.strength) || 0.3);
 					u.uP1.value += (want - u.uP1.value) * 0.08;
 				}
+				// Image Transitions: hold each image, then animate the crossfade and advance to the next.
+				var txs = built.txState; // NOTE: not `s` — a `var s` here hoists and shadows the outer scale `s`.
+				if (cfg.preset === 'image_transition' && txs && txs.list.length > 1) {
+					if (txs.t0 === null) { txs.t0 = t; }
+					if (txs.phase === 'hold') {
+						if (t - txs.t0 >= txs.interval) { txs.phase = 'trans'; txs.t0 = t; }
+					} else {
+						var tpr = (t - txs.t0) / txs.duration;
+						if (tpr >= 1) {
+							txs.i = (txs.i + 1) % txs.list.length;
+							u.uTexture.value = txs.list[txs.i];
+							u.uTexB.value = txs.list[(txs.i + 1) % txs.list.length];
+							u.uProgress.value = 0; txs.phase = 'hold'; txs.t0 = t;
+						} else { u.uProgress.value = tpr; }
+					}
+				}
 				renderer.render(scene, camera);
 				return;
 			}
@@ -575,6 +706,7 @@
 			if (built.geometry) { built.geometry.dispose(); }
 			if (built.material) { built.material.dispose(); }
 			if (built.texture) { built.texture.dispose(); }
+			if (built.txState && built.txState.list) { built.txState.list.forEach(function (tx) { if (tx && tx.dispose) { tx.dispose(); } }); }
 			if (env) { env.dispose(); }
 			renderer.dispose();
 			if (renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); }

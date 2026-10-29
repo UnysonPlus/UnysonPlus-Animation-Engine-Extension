@@ -31,6 +31,37 @@
 		sine:   function (t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
 	};
 
+	// Registry (element key -> element) + beat-position override plumbing, for the Scroll Timeline editor.
+	var REG = {};
+	function keyOf(el) {
+		if (!el || !el.getAttribute) { return ''; }
+		var k = el.getAttribute('data-upw-g-key');
+		if (k) { return k; }
+		var a = el.closest ? el.closest('[data-upw-g-key]') : null;
+		return a ? (a.getAttribute('data-upw-g-key') || '') : '';
+	}
+	// Set each kf[i].at from atArr[i], clamped to [0,1] and kept non-decreasing so beats never cross.
+	function applyKfAt(kf, atArr) {
+		if (!kf || !atArr) { return; }
+		var prev = 0;
+		for (var i = 0; i < kf.length; i++) {
+			var a = (typeof atArr[i] === 'number' && isFinite(atArr[i])) ? atArr[i] : kf[i].at;
+			a = a < 0 ? 0 : (a > 1 ? 1 : a);
+			if (a < prev) { a = prev; }
+			kf[i].at = a; prev = a;
+		}
+	}
+	// Override each beat's STATE: merge kfsArr[i] = { v:{prop:val,…}, ease } | null into the beat.
+	function applyKfState(kf, kfsArr) {
+		if (!kf || !kfsArr) { return; }
+		for (var i = 0; i < kf.length && i < kfsArr.length; i++) {
+			var o = kfsArr[i];
+			if (!o) { continue; }
+			if (o.v) { for (var k in o.v) { if (typeof o.v[k] === 'number' && isFinite(o.v[k])) { kf[i].v[k] = o.v[k]; } } }
+			if (o.ease) { kf[i].ease = o.ease; }
+		}
+	}
+
 	function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 	function reduced() {
 		return cfg.reducedMotion !== false && (typeof window.upwReduceMotion === 'function'
@@ -128,22 +159,39 @@
 		// Fill any missing prop with its identity so every segment interpolates cleanly.
 		kf.forEach(function (k) { KEYS.forEach(function (key) { if (k.v[key] == null) { k.v[key] = IDENT[key]; } }); });
 
+		// Expose to the Scroll Timeline editor (keyframe lanes), remember the authored beat positions,
+		// and apply any persisted per-page retime of those positions (ships for every visitor).
+		var key = keyOf(el);
+		el.__skfKf = kf;
+		el.__skfBaseAt = kf.map(function (k) { return k.at; });
+		el.__skfBaseV = kf.map(function (k) { var c = {}; KEYS.forEach(function (kk) { c[kk] = k.v[kk]; }); return c; });
+		el.__skfBaseEase = kf.map(function (k) { return k.ease; });
+		if (key) {
+			REG[key] = el;
+			var ov = window.upwTimingOverrides && window.upwTimingOverrides[key];
+			if (ov) {
+				if (ov.kf) { applyKfAt(kf, ov.kf); }     // beat positions (Phase 3a)
+				if (ov.kfs) { applyKfState(kf, ov.kfs); } // beat states  (Phase 3b)
+			}
+		}
+
 		if (el.hasAttribute('data-upw-skf-pin')) { pinWrap(el); } // Pin · Hold · Exit → sticky runway
 		el.style.willChange = 'transform, opacity, filter';
 		var cache = { story: null, scene: undefined };
-		var lastP = -1;
+		el.__skfLastP = -1;
 		function frame() {
 			if (!document.documentElement.contains(el)) { return false; } // self-clean on builder re-render
 			var p = progressOf(el, cache);
-			if (p === lastP) { return; }
-			lastP = p;
+			if (p === el.__skfLastP) { return; }
+			el.__skfLastP = p;
 			applyTo(el, interp(kf, p));
 		}
+		el.__skfTick = frame; // let a live retime force an immediate re-tick
 		if (window.upwAnimRaf && window.upwAnimRaf.add) {
 			window.upwAnimRaf.add(frame);
 		} else {
 			var pending = false;
-			var onScroll = function () { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; lastP = -1; frame(); }); };
+			var onScroll = function () { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; el.__skfLastP = -1; frame(); }); };
 			window.addEventListener('scroll', onScroll, { passive: true });
 			window.addEventListener('resize', onScroll, { passive: true });
 		}
@@ -158,4 +206,45 @@
 
 	if (document.readyState !== 'loading') { init(); } else { document.addEventListener('DOMContentLoaded', function () { init(); }); }
 	window.upwSkfRescan = init;
+
+	// --- Scroll Timeline editor hooks (keyframe lanes) ---------------------------------------------
+	function reTick(el) { el.__skfLastP = -1; if (el.__skfTick) { el.__skfTick(); } }
+
+	// Live retime: set an element's beat positions and re-tick at the current scroll immediately.
+	window.upwSkfRetime = function (key, atArr) {
+		var el = REG[key];
+		if (!el || !el.__skfKf) { return; }
+		applyKfAt(el.__skfKf, atArr);
+		reTick(el);
+	};
+	// Live state edit: merge a v-partial and/or ease into beat i, re-tick.
+	window.upwSkfSetState = function (key, i, vPartial, ease) {
+		var el = REG[key];
+		if (!el || !el.__skfKf || !el.__skfKf[i]) { return; }
+		if (vPartial) { for (var k in vPartial) { if (typeof vPartial[k] === 'number' && isFinite(vPartial[k])) { el.__skfKf[i].v[k] = vPartial[k]; } } }
+		if (ease) { el.__skfKf[i].ease = ease; }
+		reTick(el);
+	};
+	// Revert ONE beat to its authored position + state + ease.
+	window.upwSkfResetBeat = function (key, i) {
+		var el = REG[key];
+		if (!el || !el.__skfKf || !el.__skfKf[i]) { return; }
+		if (el.__skfBaseAt) { el.__skfKf[i].at = el.__skfBaseAt[i]; }
+		if (el.__skfBaseV && el.__skfBaseV[i]) { KEYS.forEach(function (kk) { el.__skfKf[i].v[kk] = el.__skfBaseV[i][kk]; }); }
+		if (el.__skfBaseEase) { el.__skfKf[i].ease = el.__skfBaseEase[i]; }
+		applyKfAt(el.__skfKf, el.__skfKf.map(function (k) { return k.at; })); // re-clamp monotonic
+		reTick(el);
+	};
+	// Revert the whole element to its authored positions + states + eases.
+	window.upwSkfReset = function (key) {
+		var el = REG[key];
+		if (!el || !el.__skfKf) { return; }
+		if (el.__skfBaseAt) { applyKfAt(el.__skfKf, el.__skfBaseAt.slice()); }
+		el.__skfKf.forEach(function (k, i) {
+			if (el.__skfBaseV && el.__skfBaseV[i]) { KEYS.forEach(function (kk) { k.v[kk] = el.__skfBaseV[i][kk]; }); }
+			if (el.__skfBaseEase) { k.ease = el.__skfBaseEase[i]; }
+		});
+		reTick(el);
+	};
+	window.upwSkfReg = REG;
 })();

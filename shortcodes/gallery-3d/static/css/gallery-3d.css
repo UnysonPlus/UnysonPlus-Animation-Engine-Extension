@@ -377,3 +377,26 @@
 @media (prefers-reduced-motion: reduce) {
 	.tdg--entrance .tdg__inner { opacity: 1; }   /* no scrubbing under reduced motion — just show them */
 }
+
+/* ---- Scroll Choreography (cards morph through formations as you scroll) ---- */
+.tdg--scroll-choreography .tdg__stage {
+	perspective: 1200px;
+	transform-style: preserve-3d;
+	overflow: hidden;
+}
+/* The driver poses every card every frame (absolute, centred, sized in JS) — no CSS transition. */
+.tdg--scroll-choreography .tdg__card {
+	position: absolute;
+	backface-visibility: hidden;
+	transition: none;
+}
+
+/* ---- Chained galleries (overlap handoff) ---- */
+/* The chain controller overlays each gallery inside the marked container and drives one master
+   timeline; galleries are stacked absolutely so one can fly out while the next assembles in. */
+.tdg-choreo-chain { position: relative; }
+.tdg-choreo-chain .tdg--scroll-choreography { margin: 0; }
+.tdg-choreo-chain .tdg--scroll-choreography .tdg__stage { height: 100%; }
+/* A section whose only content was a chained gallery that got relocated into the overlay wrapper — hidden
+   non-destructively (no DOM removal) so cross-section chains don't leave empty gaps. */
+.tdg-choreo-vacated { display: none !important; }
