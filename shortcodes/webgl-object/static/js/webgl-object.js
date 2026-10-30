@@ -237,6 +237,156 @@
 		return { object: points, uniforms: uniforms, geometry: geo, material: mat };
 	}
 
+	// ---- Scroll-camera 3D scenes (Phase 2) --------------------------------------------------------
+	// Each builds a THREE.Group of unlit image planes and returns a `scene3d` descriptor the generic
+	// scene path (initOne + renderFrame) drives: fog bounds, an initCamera(cam) and a per-frame
+	// frame(cam, prog, t, px, py) that moves the camera along its path from the scroll progress.
+	var SCENE_PRESETS = ['image_tunnel', 'gallery_dolly', 'product_orbit'];
+	function isScenePreset(p) { return SCENE_PRESETS.indexOf(p) >= 0; }
+
+	function scenePlaneMat() {
+		return new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, side: THREE.DoubleSide, toneMapped: false, depthWrite: false });
+	}
+	// Load a texture into a plane and size the plane to the image's aspect (keeping `size` as the larger edge).
+	function loadPlaneTex(loader, mesh, url, size, texes) {
+		loader.load(url, function (tex) {
+			if (THREE.sRGBEncoding) { tex.encoding = THREE.sRGBEncoding; }
+			var ar = (tex.image && tex.image.width) ? (tex.image.width / tex.image.height) : 1;
+			if (ar >= 1) { mesh.scale.set(size * ar, size, 1); } else { mesh.scale.set(size, size / ar, 1); }
+			mesh.material.map = tex;
+			mesh.material.needsUpdate = true;
+			texes.push(tex);
+		});
+	}
+	function sceneCleanup(geo, mats, texes) {
+		return function () {
+			geo.dispose();
+			mats.forEach(function (m) { m.dispose(); });
+			texes.forEach(function (t) { if (t && t.dispose) { t.dispose(); } });
+		};
+	}
+
+	// Image Tunnel: image planes line a receding tunnel; the camera dollies forward through them.
+	function buildImageTunnel(cfg) {
+		var o = cfg.presetOpts || {};
+		var num = function (v, d) { var f = parseFloat(v); return isNaN(f) ? d : f; };
+		var urls = (o.imageUrls || []).filter(Boolean);
+		var count = Math.max(4, Math.min(40, Math.round(num(o.density, 14))));
+		var spacing = num(o.spacing, 3.2), spread = num(o.spread, 1.7), planeSize = num(o.plane_size, 1.5);
+		var arrange = o.arrangement || 'corridor', GOLDEN = 2.399963229728653;
+		var group = new THREE.Group(), geo = new THREE.PlaneGeometry(1, 1), loader = new THREE.TextureLoader();
+		var mats = [], texes = [], planes = [];
+
+		for (var i = 0; i < count; i++) {
+			var mat = scenePlaneMat(); mats.push(mat);
+			var mesh = new THREE.Mesh(geo, mat);
+			var x = 0, y = 0, ry = 0;
+			if (arrange === 'corridor') { var side = (i % 2 === 0) ? -1 : 1; x = side * spread; y = ((i % 4) < 2 ? 1 : -1) * spread * 0.35; ry = -side * 0.5; }
+			else if (arrange === 'spiral') { var a = i * GOLDEN; x = Math.cos(a) * spread; y = Math.sin(a) * spread; }
+			else { x = Math.sin(i * 1.7) * spread * 0.25; y = Math.cos(i * 2.3) * spread * 0.25; }
+			mesh.position.set(x, y, -i * spacing); mesh.rotation.y = ry; mesh.scale.set(planeSize, planeSize, 1);
+			group.add(mesh); planes.push(mesh);
+		}
+		if (urls.length) { planes.forEach(function (mesh, i) { loadPlaneTex(loader, mesh, urls[i % urls.length], planeSize, texes); }); }
+
+		var startZ = spacing, travel = count * spacing + 4, fog = num(o.fog, 0.6);
+		return {
+			object: group,
+			scene3d: {
+				fog: fog > 0 ? { near: spacing, far: Math.max(spacing + 2, spacing + travel * (1.25 - fog)) } : null,
+				initCamera: function (cam) { cam.fov = 65; cam.updateProjectionMatrix(); cam.position.set(0, 0, startZ); },
+				frame: function (cam, prog, t, px, py) {
+					cam.position.z = startZ - prog * travel;
+					cam.position.x += ((px * 0.5) - cam.position.x) * 0.05;
+					cam.position.y += ((-py * 0.4) - cam.position.y) * 0.05;
+					cam.lookAt(cam.position.x * 0.4, cam.position.y * 0.4, cam.position.z - 2);
+				}
+			},
+			cleanup: sceneCleanup(geo, mats, texes)
+		};
+	}
+
+	// Gallery Dolly: images hung on a (gently curved) wall; the camera glides sideways past them.
+	function buildGalleryDolly(cfg) {
+		var o = cfg.presetOpts || {};
+		var num = function (v, d) { var f = parseFloat(v); return isNaN(f) ? d : f; };
+		var urls = (o.imageUrls || []).filter(Boolean);
+		var count = Math.max(3, Math.min(30, Math.round(num(o.count, 8))));
+		var spacing = num(o.spacing, 2.6), planeSize = num(o.plane_size, 1.6);
+		var curve = num(o.curve, 0.35), depth = num(o.depth, 3);
+		var rows = num(o.rows, 1) >= 2 ? 2 : 1, perRow = Math.ceil(count / rows);
+		var group = new THREE.Group(), geo = new THREE.PlaneGeometry(1, 1), loader = new THREE.TextureLoader();
+		var mats = [], texes = [], planes = [];
+
+		for (var i = 0; i < count; i++) {
+			var mat = scenePlaneMat(); mats.push(mat);
+			var mesh = new THREE.Mesh(geo, mat);
+			var r = Math.floor(i / perRow), c = i % perRow;
+			var x = (c - (perRow - 1) / 2) * spacing;
+			var y = rows > 1 ? ((r === 0 ? 1 : -1) * planeSize * 0.62) : 0;
+			mesh.position.set(x, y, -depth - Math.abs(x) * curve); // concave arc hugging the camera path
+			mesh.rotation.y = -x * curve * 0.22;                   // angle outer images toward the walk
+			mesh.scale.set(planeSize, planeSize, 1);
+			group.add(mesh); planes.push(mesh);
+		}
+		if (urls.length) { planes.forEach(function (mesh, i) { loadPlaneTex(loader, mesh, urls[i % urls.length], planeSize, texes); }); }
+
+		var halfW = ((perRow - 1) / 2) * spacing, viewDist = depth + num(o.view_dist, 3.2), fog = num(o.fog, 0.35);
+		return {
+			object: group,
+			scene3d: {
+				fog: fog > 0 ? { near: viewDist * 0.5, far: viewDist + halfW * 2 + 8 } : null,
+				initCamera: function (cam) { cam.fov = 55; cam.updateProjectionMatrix(); cam.position.set(-halfW, 0, viewDist); },
+				frame: function (cam, prog, t, px, py) {
+					var x = -halfW + prog * (halfW * 2);
+					cam.position.x += (x - cam.position.x) * 0.2;
+					cam.position.y += ((-py * 0.3) - cam.position.y) * 0.05;
+					cam.position.z = viewDist + px * 0.3;
+					cam.lookAt(cam.position.x + (prog - 0.5) * 1.5, py * 0.2, -depth); // pan in the travel direction
+				}
+			},
+			cleanup: sceneCleanup(geo, mats, texes)
+		};
+	}
+
+	// Product Orbit: the images face outward on a ring (a turntable); the camera orbits the centre.
+	function buildProductOrbit(cfg) {
+		var o = cfg.presetOpts || {};
+		var num = function (v, d) { var f = parseFloat(v); return isNaN(f) ? d : f; };
+		var urls = (o.imageUrls || []).filter(Boolean);
+		var radius = num(o.radius, 1.4), planeSize = num(o.plane_size, 1.8);
+		var sweep = num(o.sweep, 300) * Math.PI / 180, tilt = num(o.tilt, 0.15);
+		var N = Math.max(3, urls.length || 3); // at least 3 faces so orbiting reveals real depth
+		var group = new THREE.Group(), geo = new THREE.PlaneGeometry(1, 1), loader = new THREE.TextureLoader();
+		var mats = [], texes = [], planes = [];
+
+		for (var i = 0; i < N; i++) {
+			var mat = scenePlaneMat(); mats.push(mat);
+			var mesh = new THREE.Mesh(geo, mat);
+			var a = (i / N) * Math.PI * 2;
+			mesh.position.set(Math.sin(a) * radius, 0, Math.cos(a) * radius);
+			mesh.rotation.y = a; // face radially outward
+			mesh.scale.set(planeSize, planeSize, 1);
+			group.add(mesh); planes.push(mesh);
+		}
+		if (urls.length) { planes.forEach(function (mesh, i) { loadPlaneTex(loader, mesh, urls[i % urls.length], planeSize, texes); }); }
+
+		var orbitR = radius + num(o.distance, 3.8), camY = tilt * orbitR, fog = num(o.fog, 0.3);
+		return {
+			object: group,
+			scene3d: {
+				fog: fog > 0 ? { near: orbitR * 0.5, far: orbitR + radius + 6 } : null,
+				initCamera: function (cam) { cam.fov = 50; cam.updateProjectionMatrix(); cam.position.set(0, camY, orbitR); },
+				frame: function (cam, prog, t, px, py) {
+					var th = prog * sweep + px * 0.3;
+					cam.position.set(Math.sin(th) * orbitR, camY + (-py * 0.5), Math.cos(th) * orbitR);
+					cam.lookAt(0, 0, 0);
+				}
+			},
+			cleanup: sceneCleanup(geo, mats, texes)
+		};
+	}
+
 	// Map each preset's named sub-options onto the generic uP1..uP3 slots.
 	function paramFor(cfg, n) {
 		var o = cfg.presetOpts || {};
@@ -355,6 +505,9 @@
 		var colA = new THREE.Color(cfg.colorA || '#6aa6ff');
 
 		if (preset === 'image_particles') { return buildImageParticles(cfg); }
+		if (preset === 'image_tunnel') { return buildImageTunnel(cfg); }
+		if (preset === 'gallery_dolly') { return buildGalleryDolly(cfg); }
+		if (preset === 'product_orbit') { return buildProductOrbit(cfg); }
 
 		if (preset === 'particles') {
 			var count = Math.max(500, Math.min(12000, opts.particle_count || 4000));
@@ -558,7 +711,7 @@
 
 			// Particle presets are unlit (their own shader) — skip the env + lights they never use (the PMREM
 			// env can also stall/fail silently on some GPUs, which would take the whole canvas black).
-			if (cfg.preset !== 'image_particles' && cfg.preset !== 'particles') {
+			if (cfg.preset !== 'image_particles' && cfg.preset !== 'particles' && !isScenePreset(cfg.preset)) {
 				// Glass transmission needs an environment; metal/sphere use it for reflections.
 				env = makeEnv(renderer, cfg.colorA || '#6aa6ff', cfg.colorB || '#b388ff');
 				scene.environment = env;
@@ -573,6 +726,16 @@
 			obj = built.object;
 			obj.scale.setScalar(s);
 			scene.add(obj);
+
+			// Scroll-camera 3D scenes (tunnel / gallery dolly / product orbit): seat the camera on its path
+			// and add depth fog so far planes melt into the background. The camera move is in renderFrame.
+			if (built.scene3d) {
+				if (built.scene3d.initCamera) { built.scene3d.initCamera(camera); }
+				if (built.scene3d.fog) {
+					var fogCol = new THREE.Color(cfg.background === 'solid' ? (cfg.bgColor || '#05070d') : '#05070d');
+					scene.fog = new THREE.Fog(fogCol, built.scene3d.fog.near, built.scene3d.fog.far);
+				}
+			}
 		}
 
 		var size = function () {
@@ -662,6 +825,20 @@
 				return;
 			}
 
+			// ---- Scroll-camera 3D scenes: move the camera along its path from the scroll progress. ----
+			if (built.scene3d) {
+				var prog;
+				if (cfg.scrollLink) {
+					var tr = root.getBoundingClientRect();
+					prog = 1 - Math.max(0, Math.min(1, (tr.top + tr.height) / (window.innerHeight + tr.height)));
+				} else {
+					prog = (t * 0.03) % 1; // gentle auto motion when scroll-link is off
+				}
+				built.scene3d.frame(camera, prog, t, px, py);
+				renderer.render(scene, camera);
+				return;
+			}
+
 			// ---- 3D object path. ----
 			if (built.uniforms) { built.uniforms.uTime.value = t * (0.15 + (cfg.noiseSpeed || 0) * 0.6); }
 			var ps = cfg.pointerFollow ? (cfg.pointerStrength || 0) : 0;
@@ -707,6 +884,7 @@
 			if (built.material) { built.material.dispose(); }
 			if (built.texture) { built.texture.dispose(); }
 			if (built.txState && built.txState.list) { built.txState.list.forEach(function (tx) { if (tx && tx.dispose) { tx.dispose(); } }); }
+			if (built.cleanup) { built.cleanup(); } // Image Tunnel: dispose its planes' geometry/materials/textures
 			if (env) { env.dispose(); }
 			renderer.dispose();
 			if (renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); }

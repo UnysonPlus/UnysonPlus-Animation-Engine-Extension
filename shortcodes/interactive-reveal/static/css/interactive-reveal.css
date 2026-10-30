@@ -10,6 +10,13 @@
 	width: 100%;
 	overflow: visible; /* parts travel outside the box on reveal */
 }
+/* The exploding parts translate by a % of the box and travel outside it (overflow: visible above); at
+ * wide viewports they reach past the screen edge and would add a horizontal scrollbar. Clip the HORIZONTAL
+ * overflow of the full-width parent SECTION so the parts still spread to the screen edges but never scroll
+ * the page. Only the X axis is clipped — `overflow-y` stays visible, so parts still bleed vertically and no
+ * scroll container is created (a pinned sticky stage keeps working). `clip` (not hidden) also adds no
+ * scroll container. Scoped via :has() so it touches only the section(s) that actually hold a reveal. */
+section:has(.sc-ireveal) { overflow-x: clip; }
 .sc-ireveal__layer {
 	position: absolute;
 	inset: 0;
