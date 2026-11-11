@@ -17,7 +17,7 @@
 
 	var OPEN_KEY = 'upwScrollTimelineOpen';
 	var DATA = window.upwStlData || {};
-	var btn, panel, scrollEl, rowsHost, axisEl, playhead, readout, countEl;
+	var btn, panel, scrollEl, rowsHost, axisEl, playhead, readout, countEl, abItem;
 	var open = false, built = false, rows = [], dragging = false;
 
 	// Scroll Keyframes beat-state editor (Phase 3b): the eight animatable props + the ease curves,
@@ -144,12 +144,21 @@
 	function colorFor( i ) { return 'hsl(' + ( ( i * 47 + 190 ) % 360 ) + ' 68% 60%)'; }
 
 	function build() {
-		btn = document.createElement( 'button' );
-		btn.className = 'upw-stl-btn';
-		btn.type = 'button';
-		btn.title = 'Scroll Timeline (Shift+T)';
-		btn.innerHTML = '<span class="upw-stl-btn-glyph"><i></i><i></i><i></i></span><span>Timeline</span>';
-		btn.addEventListener( 'click', toggle );
+		// Prefer the admin-bar trigger (Scroll Tools → Timeline); fall back to a fixed floating pill
+		// only when the admin bar is hidden, so the editor never loses a clickable entry point.
+		abItem = document.getElementById( 'wp-admin-bar-upw-scroll-tools-timeline' );
+		var abLink = abItem ? abItem.querySelector( 'a' ) : null;
+		if ( abLink ) {
+			abLink.addEventListener( 'click', function ( e ) { e.preventDefault(); toggle(); } );
+		} else {
+			btn = document.createElement( 'button' );
+			btn.className = 'upw-stl-btn';
+			btn.type = 'button';
+			btn.title = 'Scroll Timeline (Shift+T)';
+			btn.innerHTML = '<span class="upw-stl-btn-glyph"><i></i><i></i><i></i></span><span>Timeline</span>';
+			btn.addEventListener( 'click', toggle );
+			document.body.appendChild( btn );
+		}
 
 		panel = document.createElement( 'div' );
 		panel.className = 'upw-stl';
@@ -177,7 +186,6 @@
 		playhead.querySelector( 'b' ).addEventListener( 'pointerdown', startScrub );
 		axisEl.addEventListener( 'pointerdown', function ( e ) { scrubToClientX( e.clientX ); startScrub( e ); } );
 
-		document.body.appendChild( btn );
 		document.body.appendChild( panel );
 		built = true;
 	}
@@ -653,6 +661,7 @@
 
 	function apply() {
 		document.documentElement.classList.toggle( 'upw-stl-on', open );
+		if ( abItem ) { abItem.classList.toggle( 'upw-ab-on', open ); }
 		if ( open ) { render(); } else { highlight( null ); closeBeatEditor(); }
 		try { localStorage.setItem( OPEN_KEY, open ? '1' : '0' ); } catch ( e ) {}
 	}

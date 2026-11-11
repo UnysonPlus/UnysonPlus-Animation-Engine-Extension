@@ -54,6 +54,14 @@ if ( ! function_exists( 'sc_get_sticky_stack_fields' ) ) :
 		$opts = array(
 			'top_offset' => $slider( __( 'Pin offset (px)', 'fw' ), 40, 0, 200, 4, __( 'Gap from the top of the viewport where each card pins.', 'fw' ) ),
 			'gap'        => $slider( __( 'Stagger (px)', 'fw' ), 18, 0, 80, 2, __( 'How much each stacked card peeks below the one above.', 'fw' ) ),
+			'heading_first' => array(
+				'type'         => 'switch',
+				'label'        => __( 'First column is a heading', 'fw' ),
+				'desc'         => __( 'Keep the first column of the Section out of the stack, so it can hold a heading or intro that scrolls normally above the cards. (Any column with the CSS class upw-ss-skip is also left out.)', 'fw' ),
+				'value'        => 'no',
+				'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+				'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+			),
 			'intensity'  => $slider( __( 'Intensity', 'fw' ), 0.5, 0, 1, 0.05, __( 'Strength of the chosen style — how much the covered cards scale / dim / blur / tilt, how wide the deck fans, etc.', 'fw' ) ),
 		);
 
@@ -178,6 +186,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	$attr['data-ss-offset']    = esc_attr( (string) ( isset( $o['top_offset'] ) ? (float) $o['top_offset'] : 40 ) );
 	$attr['data-ss-gap']       = esc_attr( (string) ( isset( $o['gap'] ) ? (float) $o['gap'] : 18 ) );
 	$attr['data-ss-intensity'] = esc_attr( (string) ( isset( $o['intensity'] ) ? (float) $o['intensity'] : 0.5 ) );
+	if ( isset( $o['heading_first'] ) && $o['heading_first'] === 'yes' ) { $attr['data-ss-skip-first'] = '1'; }
 
 	// On-demand assets: record this style so ONLY its per-card partial loads with the core.
 	if ( function_exists( 'upw_anim_use_asset' ) ) {

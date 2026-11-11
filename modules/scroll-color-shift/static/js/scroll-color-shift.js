@@ -33,8 +33,21 @@
 
 		var lastBg = null, lastColor = null;
 
+		// The shared scheduler reads the scroll position and viewport height once at the top of each
+		// frame, while the layout is still clean. Reading them here instead would land AFTER other
+		// subscribers had written styles, which forces a synchronous re-layout before the browser can
+		// answer. Fall back to reading the window when the scheduler is not present.
+		function vhOf() {
+			var r = window.upwAnimRaf;
+			return (r && r.vh) || window.innerHeight || document.documentElement.clientHeight;
+		}
+		function scrollYOf() {
+			var r = window.upwAnimRaf;
+			return (r && typeof r.scrollY === 'number') ? r.scrollY : (window.pageYOffset || document.documentElement.scrollTop || 0);
+		}
+
 		function pick() {
-			var vh = window.innerHeight || document.documentElement.clientHeight;
+			var vh = vhOf();
 			var mid = vh * 0.5;
 			var active = null, bestTop = -Infinity;
 			for (var i = 0; i < sections.length; i++) {
@@ -60,7 +73,7 @@
 		// with smooth scroll when scrolling.
 		var lastY = -1;
 		function frame() {
-			var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+			var y = scrollYOf();
 			if (y === lastY) return;
 			lastY = y;
 			pick();

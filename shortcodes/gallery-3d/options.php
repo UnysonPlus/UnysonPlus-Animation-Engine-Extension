@@ -13,12 +13,17 @@
  */
 
 $ratio_choices = array(
-	'1-1'  => __( 'Square (1:1)', 'fw' ),
-	'4-3'  => __( 'Landscape (4:3)', 'fw' ),
-	'3-4'  => __( 'Portrait (3:4)', 'fw' ),
-	'4-5'  => __( 'Portrait (4:5)', 'fw' ),
-	'16-9' => __( 'Wide (16:9)', 'fw' ),
-	'9-16' => __( 'Tall (9:16)', 'fw' ),
+	'1-1'      => __( 'Square (1:1)', 'fw' ),
+	'4-3'      => __( 'Landscape (4:3)', 'fw' ),
+	'3-4'      => __( 'Portrait (3:4)', 'fw' ),
+	'4-5'      => __( 'Portrait (4:5)', 'fw' ),
+	'16-9'     => __( 'Wide (16:9)', 'fw' ),
+	'9-16'     => __( 'Tall (9:16)', 'fw' ),
+	// Each card keeps its OWN image's shape, so a gallery of mixed portrait / landscape / square
+	// photos shows at their natural sizes instead of all being cropped to one ratio. Supported on the
+	// flat-card families (Carousel & Flow, Stack & Scatter, and the rings); designs that build their
+	// geometry from a single ratio (sphere, grids, device frames) fall back to Square.
+	'original' => __( 'Original — mixed (keep each image’s shape)', 'fw' ),
 );
 $slider = function ( $label, $val, $min, $max, $step, $desc = '' ) {
 	$f = array( 'type' => 'slider', 'label' => $label, 'value' => $val, 'properties' => array( 'min' => $min, 'max' => $max, 'step' => $step ) );
@@ -114,12 +119,11 @@ $img_base = $ae ? $ae->get_declared_URI( '/shortcodes/gallery-3d/static/img/desi
 $img_ver  = ( $ae && $ae->manifest ) ? '?v=' . rawurlencode( $ae->manifest->get_version() ) : '';
 // Category => designs (mirrors the reference grouping; the picker shows these as tabs).
 $design_groups = array(
-	'grp_choreo' => array(
-		'label'   => __( 'Scroll Choreography', 'fw' ),
-		'designs' => array(
-			'scroll_choreography' => __( 'Scroll Choreography', 'fw' ),
-		),
-	),
+	// NOTE: the abstract "Scroll Choreography" (scroll_choreography) design is RETIRED from the picker —
+	// native design-agnostic chaining (the top-level "Chain with adjacent galleries" switch) replaces it,
+	// so you chain real designs instead of configuring abstract formation steps. Its runtime, options and
+	// view are kept below only so galleries saved on it before this change keep rendering (back-compat);
+	// it is simply no longer offered for new galleries.
 	'grp_3dp' => array(
 		'label'   => __( '3D & Perspective', 'fw' ),
 		'designs' => array(
@@ -140,12 +144,18 @@ $design_groups = array(
 		'designs' => array(
 			'photo_scatter' => __( 'Photo Scatter', 'fw' ),
 			'card_stack'    => __( 'Card Stack', 'fw' ),
+			'card_fan'      => __( 'Card Fan', 'fw' ),
+			'shuffle_deck'  => __( 'Shuffle Deck', 'fw' ),
+			'polaroid_drop' => __( 'Polaroid Drop', 'fw' ),
 		),
 	),
 	'grp_device' => array(
 		'label'   => __( 'Devices & Screens', 'fw' ),
 		'designs' => array(
 			'device_cycler' => __( 'Device Cycler', 'fw' ),
+			'phone_lineup'  => __( 'Phone Lineup', 'fw' ),
+			'window_stack'  => __( 'Window Stack', 'fw' ),
+			'device_trio'   => __( 'Device Trio', 'fw' ),
 		),
 	),
 	/* Coming-soon FAMILIES — each is one badged "SOON" tile in its own category tab. These `soon_*`
@@ -154,11 +164,11 @@ $design_groups = array(
 	 * Their reveal (below) is a "coming soon" note instead of controls. Tile art: static/img/designs/
 	 * soon-*.svg (a muted family glyph + a SOON ribbon). */
 	'grp_carousel'  => array( 'label' => __( 'Carousel & Flow', 'fw' ),   'designs' => array( 'card_reel' => __( 'Card Reel', 'fw' ), 'film_strip' => __( 'Film Strip', 'fw' ), 'wheel_carousel' => __( 'Wheel Carousel', 'fw' ), 'cover_flow' => __( 'Cover Flow', 'fw' ), 'carousel_flow' => __( 'Carousel Flow', 'fw' ), 'hero_reel' => __( 'Hero Reel', 'fw' ), 'focus_slider' => __( 'Focus Slider', 'fw' ), 'mosaic_marquee' => __( 'Mosaic Marquee', 'fw' ) ) ),
-	'grp_grid'      => array( 'label' => __( 'Grid', 'fw' ),              'designs' => array( 'soon_grid' => __( 'Grid', 'fw' ) ),                     'soon' => true ),
-	'grp_iso'       => array( 'label' => __( 'Isometric', 'fw' ),         'designs' => array( 'soon_isometric' => __( 'Isometric', 'fw' ) ),           'soon' => true ),
-	'grp_orbit'     => array( 'label' => __( 'Orbit', 'fw' ),             'designs' => array( 'soon_orbit' => __( 'Orbit', 'fw' ) ),                   'soon' => true ),
-	'grp_reveal'    => array( 'label' => __( 'Reveal & Wipe', 'fw' ),     'designs' => array( 'soon_reveal_wipe' => __( 'Reveal & Wipe', 'fw' ) ),     'soon' => true ),
-	'grp_spotlight' => array( 'label' => __( 'Spotlight & Focus', 'fw' ), 'designs' => array( 'soon_spotlight' => __( 'Spotlight & Focus', 'fw' ) ), 'soon' => true ),
+	'grp_grid'      => array( 'label' => __( 'Grid', 'fw' ),              'designs' => array( 'wave_grid' => __( 'Wave Grid', 'fw' ), 'flip_grid' => __( 'Flip Grid', 'fw' ), 'magnet_grid' => __( 'Magnet Grid', 'fw' ) ) ),
+	'grp_iso'       => array( 'label' => __( 'Isometric', 'fw' ),         'designs' => array( 'tilt_deck' => __( 'Tilt Deck', 'fw' ), 'iso_orbit' => __( 'Iso Orbit', 'fw' ), 'iso_stack' => __( 'Iso Stack', 'fw' ), 'iso_cascade' => __( 'Iso Cascade', 'fw' ), 'iso_fan' => __( 'Iso Fan', 'fw' ) ) ),
+	'grp_orbit'     => array( 'label' => __( 'Orbit', 'fw' ),             'designs' => array( 'orbit_bloom' => __( 'Orbit Bloom', 'fw' ), 'focus_orbit' => __( 'Focus Orbit', 'fw' ), 'dual_orbit' => __( 'Dual Orbit', 'fw' ), 'comet_orbit' => __( 'Comet Orbit', 'fw' ), 'orbit_swarm' => __( 'Orbit Swarm', 'fw' ), 'ring_tilt' => __( 'Ring Tilt', 'fw' ), 'gyro_orbit' => __( 'Gyro Orbit', 'fw' ), 'infinity_orbit' => __( 'Infinity Orbit', 'fw' ), 'vortex' => __( 'Vortex', 'fw' ), 'pendulum_orbit' => __( 'Pendulum Orbit', 'fw' ), 'moon_orbit' => __( 'Moon Orbit', 'fw' ), 'tiered_orbit' => __( 'Tiered Orbit', 'fw' ) ) ),
+	'grp_reveal'    => array( 'label' => __( 'Reveal & Wipe', 'fw' ),     'designs' => array( 'blind_reveal' => __( 'Blind Reveal', 'fw' ), 'iris_wipe' => __( 'Iris Wipe', 'fw' ), 'tile_dissolve' => __( 'Tile Dissolve', 'fw' ) ) ),
+	'grp_spotlight' => array( 'label' => __( 'Spotlight & Focus', 'fw' ), 'designs' => array( 'spotlight_wall' => __( 'Spotlight Wall', 'fw' ), 'focus_pull' => __( 'Focus Pull', 'fw' ), 'loupe' => __( 'Loupe', 'fw' ) ) ),
 );
 
 /**
@@ -634,6 +644,852 @@ $depth_stack_opts = array(
 	'group_dz_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
 );
 
+/* Tilt Deck (Isometric) — photos lie flat on an isometric ground plane in a Columns × Depth grid and
+ * march diagonally across it; the tile crossing the focus point lifts off the plane, rotates flat to
+ * face the viewer and brightens (Focus Lift / Focus Brightness), then settles back. Works on Continuous
+ * or Scroll-scrub. An original design — the isometric look is a plain projection, not any template. */
+$tilt_deck_opts = array(
+	'group_iso_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 12, 4, 40, array( 'forward' => __( 'Forward', 'fw' ), 'backward' => __( 'Backward', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to march', 'fw' ), 'yes', __( 'Let visitors grab and march the grid by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep marching after releasing a drag (Drag to march).', 'fw' ) ),
+	) ),
+	'group_iso_grid' => array( 'type' => 'group', 'options' => array(
+		'columns'    => $slider( __( 'Columns', 'fw' ), 4, 2, 7, 1, __( 'How many tiles sit side by side across the isometric plane.', 'fw' ) ),
+		'depth_rows' => $slider( __( 'Depth (rows)', 'fw' ), 5, 3, 8, 1, __( 'How many rows march into depth. More rows = a longer run before a tile recycles.', 'fw' ) ),
+		'gap'        => $slider( __( 'Tile Gap (%)', 'fw' ), 12, 0, 60, 1, __( 'Spacing between tiles on the plane, as a % of tile size.', 'fw' ) ),
+		'iso_tilt'   => $slider( __( 'Iso Tilt (°)', 'fw' ), 58, 20, 75, 1, __( 'How steeply the ground plane tilts away from the camera. Lower reads flatter; higher is a steeper, more top-down isometric.', 'fw' ) ),
+	) ),
+	'group_iso_focus' => array( 'type' => 'group', 'options' => array(
+		'lift'       => $slider( __( 'Focus Lift (%)', 'fw' ), 60, 0, 100, 1, __( 'How far the tile at the focus point lifts off the plane and rotates to face you. 0 keeps every tile flat on the grid; higher gives a strong pop toward the viewer.', 'fw' ) ),
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 135, 100, 220, 1, __( 'How much brighter the focused tile is than the rest. 100 = no highlight.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 30, 0, 100, 1, __( 'Dims the tiles toward the back of the plane for a sense of distance.', 'fw' ) ),
+	) ),
+	'group_iso_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Tile Size (%)', 'fw' ), 16, 4, 60, 1, __( 'Tile width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Tile Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Tile Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the tile width.', 'fw' ) ),
+	) ),
+	'group_iso_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Iso Orbit (Isometric) — tiles ride a ring lying flat on an isometric ground plane and revolve around
+ * its centre; the tile at the near point lifts off the plane, rotates flat to face the viewer and
+ * brightens, then settles back. Works on Continuous spin, Scroll-scrub or Static. An original design. */
+$iso_orbit_opts = array(
+	'group_iso2_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 18, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the ring by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_iso2_ring' => array( 'type' => 'group', 'options' => array(
+		'radius'   => $slider( __( 'Orbit Size (%)', 'fw' ), 30, 8, 60, 1, __( 'Radius of the ring as a % of the stage width — how far the tiles sit from the centre.', 'fw' ) ),
+		'iso_tilt' => $slider( __( 'Iso Tilt (°)', 'fw' ), 58, 20, 75, 1, __( 'How steeply the ground plane tilts away from the camera. Lower reads flatter; higher is a steeper, more top-down isometric.', 'fw' ) ),
+	) ),
+	'group_iso2_focus' => array( 'type' => 'group', 'options' => array(
+		'lift'       => $slider( __( 'Focus Lift (%)', 'fw' ), 70, 0, 100, 1, __( 'How far the tile at the near point of the orbit lifts off the plane and rotates to face you. 0 keeps every tile flat on the ring.', 'fw' ) ),
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 140, 100, 220, 1, __( 'How much brighter the tile at the front is than the rest. 100 = no highlight.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 35, 0, 100, 1, __( 'Dims the tiles on the far side of the orbit for a sense of distance.', 'fw' ) ),
+	) ),
+	'group_iso2_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Tile Size (%)', 'fw' ), 16, 4, 60, 1, __( 'Tile width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Tile Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Tile Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the tile width.', 'fw' ) ),
+	) ),
+	'group_iso2_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Iso Stack (Isometric) — photo slabs stacked into a tower rising off the isometric plane, streaming
+ * upward on a gentle spiral; the slab at the focus height lifts to face the viewer and brightens, then
+ * flattens again as it carries on up. Works on Continuous, Scroll-scrub or Static. An original design. */
+$iso_stack_opts = array(
+	'group_iso3_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 14, 5, 50, array( 'up' => __( 'Up', 'fw' ), 'down' => __( 'Down', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to stream', 'fw' ), 'yes', __( 'Let visitors grab and stream the tower by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep streaming after releasing a drag (Drag to stream).', 'fw' ) ),
+	) ),
+	'group_iso3_stack' => array( 'type' => 'group', 'options' => array(
+		'gap'      => $slider( __( 'Stack Gap (%)', 'fw' ), 40, 10, 80, 1, __( 'Vertical spacing between slabs — larger makes a taller, airier tower.', 'fw' ) ),
+		'spiral'   => $slider( __( 'Spiral (%)', 'fw' ), 40, 0, 100, 1, __( 'How much the tower twists as it rises. 0 is a straight vertical stack; higher spirals the slabs around a gentle helix.', 'fw' ) ),
+		'iso_tilt' => $slider( __( 'Iso Tilt (°)', 'fw' ), 58, 20, 75, 1, __( 'How steeply the ground plane tilts away from the camera. Lower reads flatter; higher is a steeper, more top-down isometric.', 'fw' ) ),
+	) ),
+	'group_iso3_focus' => array( 'type' => 'group', 'options' => array(
+		'lift'       => $slider( __( 'Focus Lift (%)', 'fw' ), 70, 0, 100, 1, __( 'How far the slab at the focus height lifts to face you. 0 keeps every slab flat in the tower.', 'fw' ) ),
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 140, 100, 220, 1, __( 'How much brighter the focused slab is than the rest. 100 = no highlight.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 40, 0, 100, 1, __( 'Dims the slabs toward the bottom of the tower for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_iso3_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Slab Size (%)', 'fw' ), 17, 4, 60, 1, __( 'Slab width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Slab Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Slab Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the slab width.', 'fw' ) ),
+	) ),
+	'group_iso3_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Iso Cascade (Isometric) — photos descend a diagonal staircase across the isometric plane: high and
+ * far at the back, stepping down and toward the viewer; the tile reaching the front lifts flat to face
+ * you and brightens, then recycles to the back. Continuous, Scroll-scrub or Static. An original design. */
+$iso_cascade_opts = array(
+	'group_iso4_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 12, 5, 45, array( 'down' => __( 'Down', 'fw' ), 'up' => __( 'Up', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to cascade', 'fw' ), 'yes', __( 'Let visitors grab and run the cascade by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep cascading after releasing a drag (Drag to cascade).', 'fw' ) ),
+	) ),
+	'group_iso4_cascade' => array( 'type' => 'group', 'options' => array(
+		'spread'   => $slider( __( 'Spread (%)', 'fw' ), 60, 20, 100, 1, __( 'How far the staircase reaches diagonally across the floor — wider spreads the steps apart.', 'fw' ) ),
+		'rise'     => $slider( __( 'Rise (%)', 'fw' ), 50, 10, 100, 1, __( 'How tall the staircase is — how high the back of the cascade sits above the front.', 'fw' ) ),
+		'iso_tilt' => $slider( __( 'Iso Tilt (°)', 'fw' ), 58, 20, 75, 1, __( 'How steeply the ground plane tilts away from the camera. Lower reads flatter; higher is a steeper, more top-down isometric.', 'fw' ) ),
+	) ),
+	'group_iso4_focus' => array( 'type' => 'group', 'options' => array(
+		'lift'       => $slider( __( 'Focus Lift (%)', 'fw' ), 70, 0, 100, 1, __( 'How far the tile at the front of the cascade lifts to face you. 0 keeps every tile flat on the steps.', 'fw' ) ),
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 140, 100, 220, 1, __( 'How much brighter the tile at the front is than the rest. 100 = no highlight.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 45, 0, 100, 1, __( 'Dims the tiles toward the back (top) of the cascade for a sense of distance.', 'fw' ) ),
+	) ),
+	'group_iso4_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Tile Size (%)', 'fw' ), 17, 4, 60, 1, __( 'Tile width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Tile Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Tile Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the tile width.', 'fw' ) ),
+	) ),
+	'group_iso4_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Iso Fan (Isometric) — tiles spread along a flat arc (a fan) on the isometric plane and sweep across
+ * it; the tile passing the centre-front lifts flat to face the viewer and brightens, then settles back
+ * as it sweeps on. Continuous sweep, Scroll-scrub or Static. An original design. */
+$iso_fan_opts = array(
+	'group_iso5_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 16, 6, 50, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to sweep', 'fw' ), 'yes', __( 'Let visitors grab and sweep the fan by hand — layers on top of any Motion (grabbing pauses it, releasing resumes). No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep sweeping after releasing a drag (Drag to sweep).', 'fw' ) ),
+	) ),
+	'group_iso5_fan' => array( 'type' => 'group', 'options' => array(
+		'reach'    => $slider( __( 'Fan Reach (%)', 'fw' ), 34, 10, 60, 1, __( 'Radius of the fan as a % of the stage width — how far the tiles sweep out from the centre.', 'fw' ) ),
+		'arc'      => $slider( __( 'Fan Spread (°)', 'fw' ), 130, 40, 175, 1, __( 'How wide the fan opens — the arc the tiles spread across. Narrow is a tight sweep; wide fans the tiles right across the frame.', 'fw' ) ),
+		'iso_tilt' => $slider( __( 'Iso Tilt (°)', 'fw' ), 58, 20, 75, 1, __( 'How steeply the ground plane tilts away from the camera. Lower reads flatter; higher is a steeper, more top-down isometric.', 'fw' ) ),
+	) ),
+	'group_iso5_focus' => array( 'type' => 'group', 'options' => array(
+		'lift'       => $slider( __( 'Focus Lift (%)', 'fw' ), 70, 0, 100, 1, __( 'How far the tile at the centre-front of the fan lifts to face you. 0 keeps every tile flat on the arc.', 'fw' ) ),
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 140, 100, 220, 1, __( 'How much brighter the tile at the centre is than the rest. 100 = no highlight.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 40, 0, 100, 1, __( 'Dims the tiles toward the edges of the fan for a sense of distance.', 'fw' ) ),
+	) ),
+	'group_iso5_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Tile Size (%)', 'fw' ), 16, 4, 60, 1, __( 'Tile width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Tile Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Tile Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the tile width.', 'fw' ) ),
+	) ),
+	'group_iso5_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Orbit Bloom (Orbit) — a ring of billboarded cards that orbits a tilted disc and BREATHES: it blooms
+ * from a tight central cluster out to a wide ring and back, cards fading + scaling up as they open.
+ * Continuous, Scroll-scrub or Static. An original design. */
+$orbit_bloom_opts = array(
+	'group_orb_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 22, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the ring by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_orb_ring' => array( 'type' => 'group', 'options' => array(
+		'radius'  => $slider( __( 'Ring Size (%)', 'fw' ), 32, 10, 60, 1, __( 'Radius of the fully-bloomed ring as a % of the stage width.', 'fw' ) ),
+		'tilt'    => $slider( __( 'Ring Tilt (°)', 'fw' ), 58, 0, 80, 1, __( 'How far the orbit disc tilts back from the camera. 0 is a flat face-on ring; higher leans it into a shallow ellipse.', 'fw' ) ),
+		'bloom'   => $slider( __( 'Bloom (%)', 'fw' ), 70, 0, 100, 1, __( 'How much the ring breathes — how far it contracts to a tight central cluster between blooms. 0 = a steady ring with no breathing.', 'fw' ) ),
+	) ),
+	'group_orb_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much brighter the cards nearest the camera are than the far arc. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 45, 0, 100, 1, __( 'Dims the cards on the far side of the ring for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_orb_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 16, 4, 60, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_orb_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Focus Orbit (Orbit) — a ring of billboarded cards orbiting a tilted disc; the card reaching the front
+ * pulls into the centre, lifts toward you and enlarges into a hero, then returns to the ring as the next
+ * takes its place. Continuous, Scroll-scrub or Static. An original design. */
+$focus_orbit_opts = array(
+	'group_orb2_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 20, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the ring by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_orb2_ring' => array( 'type' => 'group', 'options' => array(
+		'radius' => $slider( __( 'Ring Size (%)', 'fw' ), 36, 10, 55, 1, __( 'Radius of the orbit as a % of the stage width — how far the satellites sit from the centre.', 'fw' ) ),
+		'tilt'   => $slider( __( 'Ring Tilt (°)', 'fw' ), 30, 0, 80, 1, __( 'How far the orbit disc tilts back from the camera. 0 is a flat face-on ring; higher leans it into a shallow ellipse.', 'fw' ) ),
+	) ),
+	'group_orb2_focus' => array( 'type' => 'group', 'options' => array(
+		'hero'       => $slider( __( 'Hero Pull (%)', 'fw' ), 70, 0, 100, 1, __( 'How strongly the card at the front pulls into the centre and enlarges into a hero. 0 keeps every card on the ring (an even revolve).', 'fw' ) ),
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 150, 100, 240, 1, __( 'How much brighter the hero is than the ring. 100 = no highlight.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 45, 0, 100, 1, __( 'Dims the cards on the far side of the ring for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_orb2_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 15, 4, 60, 1, __( 'Base card width (on the ring) as a % of the stage width — the hero scales up from this.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_orb2_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Dual Orbit (Orbit) — two concentric rings of billboarded cards on one tilted disc, the inner ring
+ * turning the other way (or the same way, faster) — a geared, layered orbit. An original design. */
+$dual_orbit_opts = array(
+	'group_dor_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 20, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the rings by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_dor_ring' => array( 'type' => 'group', 'options' => array(
+		'radius'      => $slider( __( 'Outer Ring Size (%)', 'fw' ), 33, 15, 55, 1, __( 'Radius of the outer ring as a % of the stage width.', 'fw' ) ),
+		'inner'       => $slider( __( 'Inner Ring Size (%)', 'fw' ), 50, 25, 85, 1, __( 'Radius of the inner ring as a % of the outer ring.', 'fw' ) ),
+		'tilt'        => $slider( __( 'Ring Tilt (°)', 'fw' ), 62, 0, 80, 1, __( 'How far the orbit disc tilts back from the camera. 0 is face-on; higher leans both rings into shallow ellipses.', 'fw' ) ),
+		'counter'     => $switch( __( 'Counter-rotate', 'fw' ), 'yes', __( 'Turn the inner ring the opposite way to the outer ring. Off = both rings turn the same way at their own speeds.', 'fw' ) ),
+		'inner_speed' => $slider( __( 'Inner Ring Speed (%)', 'fw' ), 150, 50, 300, 5, __( 'The inner ring\'s speed relative to the outer ring. 100 = the same speed.', 'fw' ) ),
+		'show_paths'  => $switch( __( 'Show Orbit Paths', 'fw' ), 'yes', __( 'A thin line along each ring, so the two orbits read clearly.', 'fw' ) ),
+	) ),
+	'group_dor_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much brighter the cards nearest the camera are than the far arc. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 45, 0, 100, 1, __( 'Dims the cards on the far side of each ring for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_dor_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 11, 4, 60, 1, __( 'Outer-ring card width as a % of the stage width (inner-ring cards are a little smaller).', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_dor_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Comet Orbit (Orbit) — cards travel an elliptical orbit around a glowing focus with orbital (Kepler)
+ * timing: they whip fast and flare large as they swing past the focus, then drift slow and small along
+ * the far end. An original design. */
+$comet_orbit_opts = array(
+	'group_com_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 24, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and push the orbit by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep moving after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_com_path' => array( 'type' => 'group', 'options' => array(
+		'radius'       => $slider( __( 'Orbit Size (%)', 'fw' ), 33, 15, 55, 1, __( 'Half the long axis of the ellipse, as a % of the stage width.', 'fw' ) ),
+		'eccentricity' => $slider( __( 'Eccentricity (%)', 'fw' ), 62, 0, 85, 1, __( 'How stretched the orbit is. 0 = a circle at an even pace; higher = a long ellipse where cards bunch up at the far end and race past the focus.', 'fw' ) ),
+		'tilt'         => $slider( __( 'Orbit Tilt (°)', 'fw' ), 45, 0, 80, 1, __( 'How far the orbit plane tilts back from the camera.', 'fw' ) ),
+		'show_focus'   => $switch( __( 'Show Focus Glow', 'fw' ), 'yes', __( 'A soft glowing "sun" at the focus the cards swing around.', 'fw' ) ),
+		'show_paths'   => $switch( __( 'Show Orbit Path', 'fw' ), 'yes', __( 'A thin line along the ellipse the cards travel.', 'fw' ) ),
+	) ),
+	'group_com_focus' => array( 'type' => 'group', 'options' => array(
+		'flare'      => $slider( __( 'Flare (%)', 'fw' ), 70, 0, 100, 1, __( 'How much the cards grow and brighten as they swing past the focus. 0 = no flare.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 40, 0, 100, 1, __( 'Dims the cards on the far side of the orbit for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_com_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 12, 4, 60, 1, __( 'Base card width as a % of the stage width — the flare scales up from this.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_com_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Orbit Swarm (Orbit) — every card keeps its own orbit (its own radius, speed and height), so inner
+ * cards overtake outer ones and the cloud drifts up and down; now and then the swarm gathers in toward
+ * the centre and scatters back out. An original design. */
+$orbit_swarm_opts = array(
+	'group_swm_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 26, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the swarm by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_swm_swarm' => array( 'type' => 'group', 'options' => array(
+		'radius'   => $slider( __( 'Swarm Size (%)', 'fw' ), 31, 15, 55, 1, __( 'Radius of the outermost orbit as a % of the stage width.', 'fw' ) ),
+		'spread'   => $slider( __( 'Spread (%)', 'fw' ), 55, 0, 90, 1, __( 'How far apart the orbits are. 0 = every card on one ring; higher = orbits from near the centre out to the edge.', 'fw' ) ),
+		'swirl'    => $slider( __( 'Swirl (%)', 'fw' ), 60, 0, 100, 1, __( 'How much faster the inner orbits run than the outer ones, so cards overtake each other. 0 = all at one pace.', 'fw' ) ),
+		'height'   => $slider( __( 'Height Drift (%)', 'fw' ), 30, 0, 100, 1, __( 'How far the cards rise and sink above and below the orbit plane.', 'fw' ) ),
+		'cohesion' => $slider( __( 'Gather (%)', 'fw' ), 45, 0, 100, 1, __( 'How strongly the swarm periodically gathers toward the centre before scattering back out. 0 = never gathers.', 'fw' ) ),
+		'tilt'     => $slider( __( 'Orbit Tilt (°)', 'fw' ), 55, 0, 80, 1, __( 'How far the orbit plane tilts back from the camera.', 'fw' ) ),
+	) ),
+	'group_swm_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much brighter the cards nearest the camera are. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 45, 0, 100, 1, __( 'Dims the cards on the far side of the swarm for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_swm_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 9, 4, 60, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_swm_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Ring Tilt (Orbit) — a steeply tilted flat ring, like a planet's rings: the cards lie IN the ring
+ * plane (not turned to face you) and stand up by Card Lift, around an optional planet; the whole ring
+ * slowly wobbles (precession). An original design. */
+$ring_tilt_opts = array(
+	'group_rt_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 30, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the ring by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_rt_ring' => array( 'type' => 'group', 'options' => array(
+		'radius' => $slider( __( 'Ring Size (%)', 'fw' ), 40, 15, 55, 1, __( 'Radius of the ring as a % of the stage width.', 'fw' ) ),
+		'tilt'   => $slider( __( 'Ring Tilt (°)', 'fw' ), 70, 30, 85, 1, __( 'How far the ring leans back. Higher = closer to edge-on.', 'fw' ) ),
+		'lift'   => $slider( __( 'Card Lift (°)', 'fw' ), 20, 0, 90, 1, __( 'How far each card stands up out of the ring plane. 0 = lying flat in the ring; 90 = standing upright, facing outward.', 'fw' ) ),
+		'wobble' => $slider( __( 'Wobble (°)', 'fw' ), 8, 0, 25, 1, __( 'How far the ring slowly rocks and precesses as it turns. 0 = a steady ring.', 'fw' ) ),
+	) ),
+	'group_rt_core' => array( 'type' => 'group', 'options' => array(
+		'show_core'  => $switch( __( 'Show Planet', 'fw' ), 'yes', __( 'A shaded sphere at the centre of the ring.', 'fw' ) ),
+		'core_size'  => $slider( __( 'Planet Size (%)', 'fw' ), 34, 10, 70, 1, __( 'Planet diameter as a % of the ring diameter.', 'fw' ) ),
+		'core_color' => array( 'type' => 'color-picker', 'label' => __( 'Planet Colour', 'fw' ), 'value' => '#2f74e6' ),
+	) ),
+	'group_rt_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 125, 100, 220, 1, __( 'How much brighter the front of the ring is than the back. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 50, 0, 100, 1, __( 'Dims the cards on the far side of the ring for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_rt_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 12, 4, 60, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_rt_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Gyro Orbit (Orbit) — an atom / gyroscope: 2–4 rings of billboarded cards, each on its own leaning
+ * plane, fanned round the vertical axis, neighbouring rings running opposite ways around a glowing core;
+ * the whole gyro slowly turns. An original design. */
+$gyro_orbit_opts = array(
+	'group_gyr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 22, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the gyro by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_gyr_rings' => array( 'type' => 'group', 'options' => array(
+		'radius'     => $slider( __( 'Gyro Size (%)', 'fw' ), 24, 15, 50, 1, __( 'Radius of the rings as a % of the stage width.', 'fw' ) ),
+		'rings'      => $slider( __( 'Rings', 'fw' ), 3, 2, 4, 1, __( 'How many orbit rings. The photos are dealt round them in turn.', 'fw' ) ),
+		'lean'       => $slider( __( 'Ring Lean (°)', 'fw' ), 62, 0, 85, 1, __( 'How far each ring leans from flat. 0 = all rings lie flat on top of each other; higher = the crossed rings of an atom.', 'fw' ) ),
+		'spin'       => $slider( __( 'Gyro Spin (%)', 'fw' ), 35, 0, 100, 1, __( 'How fast the whole gyro turns round its vertical axis while the cards travel their rings. 0 = the rings stay put.', 'fw' ) ),
+		'show_paths' => $switch( __( 'Show Ring Paths', 'fw' ), 'yes', __( 'A thin line along each ring.', 'fw' ) ),
+		'show_core'  => $switch( __( 'Show Core Glow', 'fw' ), 'yes', __( 'A soft glow at the centre of the rings.', 'fw' ) ),
+	) ),
+	'group_gyr_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much brighter the cards nearest the camera are. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 50, 0, 100, 1, __( 'Dims the cards on the far side of the gyro for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_gyr_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 9, 4, 60, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_gyr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Infinity Orbit (Orbit) — cards loop a figure-eight on a tilted plane; where the loops cross, one pass
+ * rises over the other. An original design. */
+$infinity_orbit_opts = array(
+	'group_inf_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 26, 6, 60, array( 'cw' => __( 'Forward', 'fw' ), 'ccw' => __( 'Reverse', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and push the loop by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep moving after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_inf_path' => array( 'type' => 'group', 'options' => array(
+		'radius'     => $slider( __( 'Loop Width (%)', 'fw' ), 38, 15, 50, 1, __( 'Half the width of the figure-eight as a % of the stage width.', 'fw' ) ),
+		'loop'       => $slider( __( 'Loop Height (%)', 'fw' ), 100, 40, 160, 1, __( 'How tall each loop of the eight is. Lower = a slim, flat ∞; higher = round lobes.', 'fw' ) ),
+		'cross'      => $slider( __( 'Cross Height (%)', 'fw' ), 40, 0, 100, 1, __( 'How far one pass rises over the other where the loops cross. 0 = both passes meet flat in the middle.', 'fw' ) ),
+		'tilt'       => $slider( __( 'Plane Tilt (°)', 'fw' ), 50, 0, 80, 1, __( 'How far the plane of the eight leans back from the camera.', 'fw' ) ),
+		'show_paths' => $switch( __( 'Show Path', 'fw' ), 'yes', __( 'A thin line along the figure-eight.', 'fw' ) ),
+	) ),
+	'group_inf_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much brighter the cards nearest the camera are. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 45, 0, 100, 1, __( 'Dims the cards on the far side of the loop for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_inf_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 11, 4, 60, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_inf_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Vortex (Orbit) — a top-down whirlpool: cards spiral in along a few arms, sinking, shrinking and dimming
+ * toward a glowing eye, then re-enter at the rim. Flows inward or outward. An original design. */
+$vortex_opts = array(
+	'group_vtx_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 30, 6, 60, array( 'in' => __( 'Inward', 'fw' ), 'out' => __( 'Outward', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and push the whirlpool by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep moving after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_vtx_swirl' => array( 'type' => 'group', 'options' => array(
+		'radius'    => $slider( __( 'Vortex Size (%)', 'fw' ), 42, 15, 55, 1, __( 'Radius of the rim as a % of the stage width.', 'fw' ) ),
+		'arms'      => $slider( __( 'Arms', 'fw' ), 3, 1, 6, 1, __( 'How many spiral arms the photos flow along.', 'fw' ) ),
+		'twist'     => $slider( __( 'Twist (turns)', 'fw' ), 0.8, -3, 3, 0.1, __( 'How many turns an arm makes from the rim to the eye. Negative = the whirlpool turns the other way.', 'fw' ) ),
+		'depth'     => $slider( __( 'Depth (%)', 'fw' ), 60, 0, 100, 1, __( 'How far the cards sink as they reach the eye. 0 = a flat swirl.', 'fw' ) ),
+		'tilt'      => $slider( __( 'Tilt (°)', 'fw' ), 52, 0, 80, 1, __( 'How far the whirlpool leans back. 0 = looking straight down into it.', 'fw' ) ),
+		'show_core' => $switch( __( 'Show Eye Glow', 'fw' ), 'yes', __( 'A cool glow at the bottom of the whirlpool.', 'fw' ) ),
+	) ),
+	'group_vtx_focus' => array( 'type' => 'group', 'options' => array(
+		'depth_fade' => $slider( __( 'Fade to Eye (%)', 'fw' ), 55, 0, 100, 1, __( 'How much the cards darken as they sink toward the eye.', 'fw' ) ),
+	) ),
+	'group_vtx_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 8, 4, 60, 1, __( 'Card width at the rim as a % of the stage width — cards shrink toward the eye.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_vtx_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Pendulum Orbit (Orbit) — cards along an arc of a tilted orbit that swings back and forth like a
+ * pendulum, easing at each end, instead of revolving. An original design. */
+$pendulum_orbit_opts = array(
+	'group_pen_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 8, 3, 40, array( 'cw' => __( 'Right first', 'fw' ), 'ccw' => __( 'Left first', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to swing', 'fw' ), 'yes', __( 'Let visitors grab and push the swing by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep moving after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_pen_arc' => array( 'type' => 'group', 'options' => array(
+		'radius' => $slider( __( 'Arc Size (%)', 'fw' ), 36, 15, 55, 1, __( 'Radius of the orbit the arc sits on, as a % of the stage width.', 'fw' ) ),
+		'arc'    => $slider( __( 'Arc Span (°)', 'fw' ), 130, 40, 300, 1, __( 'How much of the orbit the photos spread across.', 'fw' ) ),
+		'swing'  => $slider( __( 'Swing (°)', 'fw' ), 45, 0, 180, 1, __( 'How far the arc swings to each side. 0 = it stays still (use Drag to swing).', 'fw' ) ),
+		'tilt'   => $slider( __( 'Orbit Tilt (°)', 'fw' ), 58, 0, 80, 1, __( 'How far the orbit leans back from the camera.', 'fw' ) ),
+	) ),
+	'group_pen_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 140, 100, 220, 1, __( 'How much brighter (and larger) the card passing the front is. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 45, 0, 100, 1, __( 'Dims the cards as they swing away to the sides.', 'fw' ) ),
+	) ),
+	'group_pen_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 8, 4, 60, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_pen_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Moon Orbit (Orbit) — large "planet" cards orbit the main ring; the rest circle them as smaller,
+ * faster "moons". An original design. */
+$moon_orbit_opts = array(
+	'group_mon_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 30, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the system by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_mon_system' => array( 'type' => 'group', 'options' => array(
+		'radius'      => $slider( __( 'Orbit Size (%)', 'fw' ), 33, 15, 50, 1, __( 'Radius of the planets\' orbit as a % of the stage width.', 'fw' ) ),
+		'planets'     => $slider( __( 'Planets', 'fw' ), 4, 2, 6, 1, __( 'How many large planet cards; every other photo becomes one of their moons.', 'fw' ) ),
+		'moon_radius' => $slider( __( 'Moon Orbit (%)', 'fw' ), 8, 3, 20, 1, __( 'How far the moons circle from their planet, as a % of the stage width.', 'fw' ) ),
+		'moon_speed'  => $slider( __( 'Moon Speed (%)', 'fw' ), 300, 100, 600, 10, __( 'How fast the moons circle their planet, relative to the planets\' orbit.', 'fw' ) ),
+		'moon_size'   => $slider( __( 'Moon Size (%)', 'fw' ), 50, 25, 90, 1, __( 'Moon card size as a % of a planet card.', 'fw' ) ),
+		'tilt'        => $slider( __( 'Orbit Tilt (°)', 'fw' ), 55, 0, 80, 1, __( 'How far the orbit plane leans back from the camera.', 'fw' ) ),
+	) ),
+	'group_mon_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much brighter the cards nearest the camera are. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 45, 0, 100, 1, __( 'Dims the cards on the far side for a sense of depth.', 'fw' ) ),
+	) ),
+	'group_mon_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Planet Size (%)', 'fw' ), 11, 4, 60, 1, __( 'Planet card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_mon_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Tiered Orbit (Orbit) — stacked horizontal rings at different heights, neighbouring tiers turning
+ * opposite ways, tapering into a tree or a tornado. Seen from outside. An original design. */
+$tiered_orbit_opts = array(
+	'group_tie_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 26, 6, 60, array( 'cw' => __( 'Clockwise', 'fw' ), 'ccw' => __( 'Counter-clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the tiers by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag (Drag to spin).', 'fw' ) ),
+	) ),
+	'group_tie_tiers' => array( 'type' => 'group', 'options' => array(
+		'radius'     => $slider( __( 'Ring Size (%)', 'fw' ), 28, 15, 50, 1, __( 'Radius of the middle tier as a % of the stage width.', 'fw' ) ),
+		'tiers'      => $slider( __( 'Tiers', 'fw' ), 3, 2, 5, 1, __( 'How many stacked rings. The photos are shared out between them.', 'fw' ) ),
+		'gap'        => $slider( __( 'Tier Spacing (%)', 'fw' ), 16, 5, 40, 1, __( 'Height between tiers as a % of the stage height.', 'fw' ) ),
+		'taper'      => $slider( __( 'Taper (%)', 'fw' ), 35, -70, 70, 1, __( 'Positive = narrow at the top, like a tree; negative = wide at the top, like a tornado; 0 = a straight column.', 'fw' ) ),
+		'elevation'  => $slider( __( 'View Height (°)', 'fw' ), 22, 0, 45, 1, __( 'How far above the tiers you look from. 0 = level, the rings seen edge-on.', 'fw' ) ),
+		'alternate'  => $switch( __( 'Alternate Directions', 'fw' ), 'yes', __( 'Turn neighbouring tiers opposite ways. Off = every tier turns the same way.', 'fw' ) ),
+		'show_paths' => $switch( __( 'Show Ring Paths', 'fw' ), 'yes', __( 'A thin line along each tier.', 'fw' ) ),
+	) ),
+	'group_tie_focus' => array( 'type' => 'group', 'options' => array(
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much brighter the cards nearest the camera are. 100 = even.', 'fw' ) ),
+		'depth_fade' => $slider( __( 'Depth Fade (%)', 'fw' ), 50, 0, 100, 1, __( 'Dims the cards on the far side of each tier.', 'fw' ) ),
+	) ),
+	'group_tie_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 8, 4, 60, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_tie_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* ---- Grid family ---- */
+
+/* Wave Grid (Grid) — a grid of photos lying on a tilted floor with a ripple running across it, each
+ * photo rising and tipping with the wave. An original design. */
+$wave_grid_opts = array(
+	'group_wvg_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 5, 2, 20, array( 'out' => __( 'Outward', 'fw' ), 'in' => __( 'Inward', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag the wave', 'fw' ), 'yes', __( 'Let visitors grab and push the wave by hand — layers on top of any Motion. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep the wave moving after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_wvg_grid' => array( 'type' => 'group', 'options' => array(
+		'columns'    => $slider( __( 'Columns', 'fw' ), 6, 2, 12, 1 ),
+		'rows'       => $slider( __( 'Rows', 'fw' ), 4, 1, 8, 1, __( 'Photos repeat when the grid has more cells than the gallery has photos.', 'fw' ) ),
+		'gap'        => $slider( __( 'Gap (%)', 'fw' ), 14, 0, 80, 1, __( 'Space between photos as a % of a photo\'s width.', 'fw' ) ),
+		'tilt'       => $slider( __( 'Floor Tilt (°)', 'fw' ), 55, 0, 80, 1, __( 'How far the grid lies back. 0 = face-on, so the wave pushes photos straight toward you.', 'fw' ) ),
+		'amplitude'  => $slider( __( 'Wave Height (%)', 'fw' ), 35, 0, 120, 1, __( 'How high the crests lift the photos, as a % of a photo\'s width.', 'fw' ) ),
+		'wavelength' => $slider( __( 'Wavelength (photos)', 'fw' ), 3.5, 1.5, 10, 0.5, __( 'How many photos from one crest to the next. Small = choppy; large = long, gentle swells.', 'fw' ) ),
+		'origin'     => array( 'label' => __( 'Wave Starts From', 'fw' ), 'type' => 'select', 'value' => 'center', 'choices' => array( 'center' => __( 'The centre (rings)', 'fw' ), 'left' => __( 'The left edge (straight rows)', 'fw' ), 'corner' => __( 'The top-left corner (diagonal)', 'fw' ) ) ),
+		'focus_glow' => $slider( __( 'Crest Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much the photos on a crest light up. 100 = even.', 'fw' ) ),
+	) ),
+	'group_wvg_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 11, 4, 40, 1, __( 'Photo width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_wvg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Flip Grid (Grid) — a face-on grid of two-sided cards; every Loop Duration a wave of 3D flips turns
+ * each card over to the next photo, so a small grid cycles through the whole gallery. An original design. */
+$flip_grid_opts = array(
+	'group_flg_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 4, 2, 15, array( 'fwd' => __( 'Forward', 'fw' ), 'back' => __( 'Backward', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to flip', 'fw' ), 'no', __( 'Let visitors drag sideways to flip through the photos by hand. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep flipping after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_flg_grid' => array( 'type' => 'group', 'options' => array(
+		'columns'   => $slider( __( 'Columns', 'fw' ), 4, 1, 10, 1 ),
+		'rows'      => $slider( __( 'Rows', 'fw' ), 3, 1, 8, 1, __( 'With fewer cells than photos, each flip shows the next photos; with more cells, photos repeat.', 'fw' ) ),
+		'gap'       => $slider( __( 'Gap (%)', 'fw' ), 8, 0, 60, 1, __( 'Space between cards as a % of a card\'s width.', 'fw' ) ),
+		'flip_axis' => array( 'label' => __( 'Flip', 'fw' ), 'type' => 'select', 'value' => 'y', 'choices' => array( 'y' => __( 'Sideways (around the vertical)', 'fw' ), 'x' => __( 'Head over heels (around the horizontal)', 'fw' ) ) ),
+		'order'     => array( 'label' => __( 'Flip Order', 'fw' ), 'type' => 'select', 'value' => 'wave', 'choices' => array( 'wave' => __( 'A diagonal wave', 'fw' ), 'random' => __( 'Random', 'fw' ), 'rows' => __( 'Row by row', 'fw' ) ) ),
+		'tilt'      => $slider( __( 'Tilt (°)', 'fw' ), 8, 0, 40, 1, __( 'A slight backward lean, so the flips read in 3D. 0 = flat on.', 'fw' ) ),
+	) ),
+	'group_flg_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 15, 4, 40, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_flg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Magnet Grid (Grid) — a face-on grid that follows the pointer: nearby cards lift, grow and turn toward
+ * it, the grid leans toward it; with no pointer, an invisible one drifts around. An original design. */
+$magnet_grid_opts = array(
+	'group_mgg_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Drift when idle', 'fw' ), 10, 3, 40, array( 'roam' => __( 'Roam the whole grid', 'fw' ), 'center' => __( 'Stay near the centre', 'fw' ) ) ),
+	) ),
+	'group_mgg_grid' => array( 'type' => 'group', 'options' => array(
+		'columns'    => $slider( __( 'Columns', 'fw' ), 5, 2, 12, 1 ),
+		'rows'       => $slider( __( 'Rows', 'fw' ), 3, 1, 8, 1, __( 'Photos repeat when the grid has more cells than the gallery has photos.', 'fw' ) ),
+		'gap'        => $slider( __( 'Gap (%)', 'fw' ), 14, 0, 80, 1, __( 'Space between cards as a % of a card\'s width.', 'fw' ) ),
+		'reach'      => $slider( __( 'Reach (%)', 'fw' ), 22, 5, 60, 1, __( 'How far the pull spreads around the pointer, as a % of the stage width.', 'fw' ) ),
+		'lift'       => $slider( __( 'Lift (%)', 'fw' ), 90, 0, 150, 1, __( 'How far the nearest cards rise toward you, as a % of a card\'s width.', 'fw' ) ),
+		'lean'       => $slider( __( 'Grid Lean (°)', 'fw' ), 10, 0, 30, 1, __( 'How far the whole grid tips toward the pointer. 0 = it stays flat.', 'fw' ) ),
+		'focus_glow' => $slider( __( 'Focus Brightness (%)', 'fw' ), 130, 100, 220, 1, __( 'How much the cards near the pointer light up. 100 = even.', 'fw' ) ),
+	) ),
+	'group_mgg_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 12, 4, 40, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_mgg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* ---- Reveal & Wipe family — one large photo at a time, revealing the next ---- */
+
+/* Blind Reveal — the photo cut into slats that turn over in 3D one after another, like Venetian blinds,
+ * showing the next photo on their other side. An original design. */
+$blind_reveal_opts = array(
+	'group_blr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 4, 2, 15, array( 'fwd' => __( 'Forward', 'fw' ), 'back' => __( 'Backward', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to change', 'fw' ), 'no', __( 'Let visitors drag sideways to turn the blinds by hand. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep going after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_blr_blinds' => array( 'type' => 'group', 'options' => array(
+		'slats'       => $slider( __( 'Slats', 'fw' ), 10, 2, 40, 1, __( 'How many slats the photo is cut into.', 'fw' ) ),
+		'orientation' => array( 'label' => __( 'Slats', 'fw' ), 'type' => 'select', 'value' => 'v', 'choices' => array( 'v' => __( 'Vertical (turn sideways)', 'fw' ), 'h' => __( 'Horizontal (turn head over heels)', 'fw' ) ) ),
+		'stagger'     => $slider( __( 'Stagger (%)', 'fw' ), 50, 0, 100, 1, __( 'How far apart the slats start turning. 0 = all at once; 100 = a slow ripple from one side to the other.', 'fw' ) ),
+		'gap'         => $slider( __( 'Gap (px)', 'fw' ), 2, 0, 20, 1, __( 'A thin seam between slats. 0 = the photo looks whole at rest.', 'fw' ) ),
+	) ),
+	'group_blr_photo' => array( 'type' => 'group', 'options' => array(
+		'frame_size'    => $slider( __( 'Photo Size (%)', 'fw' ), 70, 20, 100, 1, __( 'Width of the photo as a % of the stage width (it shrinks to fit the Stage Height).', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Photo Ratio', 'fw' ), 'type' => 'select', 'value' => '16-9', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 10, 0, 60, 1 ),
+	) ),
+	'group_blr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Iris Wipe — the next photo opens up over the current one through a growing shape, with a gentle
+ * push-in zoom. An original design. */
+$iris_wipe_opts = array(
+	'group_irw_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 4, 2, 15, array( 'fwd' => __( 'Forward', 'fw' ), 'back' => __( 'Backward', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to change', 'fw' ), 'no', __( 'Let visitors drag sideways to wipe to the next photo by hand. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep going after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_irw_wipe' => array( 'type' => 'group', 'options' => array(
+		'shape'      => array( 'label' => __( 'Shape', 'fw' ), 'type' => 'select', 'value' => 'circle', 'choices' => array( 'circle' => __( 'Circle (an iris)', 'fw' ), 'diamond' => __( 'Diamond', 'fw' ), 'diagonal' => __( 'Diagonal sweep', 'fw' ), 'doors' => __( 'Barn doors', 'fw' ) ) ),
+		'zoom'       => $slider( __( 'Zoom (%)', 'fw' ), 12, 0, 40, 1, __( 'How much the incoming photo settles from a zoom while the outgoing one pushes in. 0 = a flat wipe.', 'fw' ) ),
+		'transition' => $slider( __( 'Wipe Length (%)', 'fw' ), 45, 15, 90, 1, __( 'How much of each photo\'s time the wipe takes. The rest of the time the photo holds still.', 'fw' ) ),
+	) ),
+	'group_irw_photo' => array( 'type' => 'group', 'options' => array(
+		'frame_size'    => $slider( __( 'Photo Size (%)', 'fw' ), 70, 20, 100, 1, __( 'Width of the photo as a % of the stage width (it shrinks to fit the Stage Height).', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Photo Ratio', 'fw' ), 'type' => 'select', 'value' => '16-9', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 10, 0, 60, 1 ),
+	) ),
+	'group_irw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Tile Dissolve — the photo breaks into tiles that fly toward you, spin and fade in a wave, uncovering
+ * the next photo underneath. An original design. */
+$tile_dissolve_opts = array(
+	'group_tld_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 4, 2, 15, array( 'fwd' => __( 'Forward', 'fw' ), 'back' => __( 'Backward', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to change', 'fw' ), 'no', __( 'Let visitors drag sideways to break the photo apart by hand. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep going after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_tld_tiles' => array( 'type' => 'group', 'options' => array(
+		'columns' => $slider( __( 'Columns', 'fw' ), 8, 2, 20, 1 ),
+		'rows'    => $slider( __( 'Rows', 'fw' ), 5, 2, 14, 1 ),
+		'pattern' => array( 'label' => __( 'Order', 'fw' ), 'type' => 'select', 'value' => 'corner', 'choices' => array( 'corner' => __( 'From the top-left corner', 'fw' ), 'random' => __( 'Random', 'fw' ), 'center' => __( 'From the centre out', 'fw' ) ) ),
+		'fly'     => $slider( __( 'Fly Distance (%)', 'fw' ), 60, 0, 100, 1, __( 'How far the tiles fly toward you and spin. 0 = they simply shrink and fade in place.', 'fw' ) ),
+	) ),
+	'group_tld_photo' => array( 'type' => 'group', 'options' => array(
+		'frame_size'    => $slider( __( 'Photo Size (%)', 'fw' ), 70, 20, 100, 1, __( 'Width of the photo as a % of the stage width (it shrinks to fit the Stage Height).', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Photo Ratio', 'fw' ), 'type' => 'select', 'value' => '16-9', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 10, 0, 60, 1 ),
+	) ),
+	'group_tld_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* ---- Spotlight & Focus family ---- */
+
+/* Spotlight Wall — a grid of photos in shadow; a spotlight glides from photo to photo, holding on each,
+ * bringing the photos in its pool up to full colour. Hovering can take the spotlight. An original design. */
+$spotlight_wall_opts = array(
+	'group_spw_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'         => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 3, 1, 12, array( 'fwd' => __( 'Forward', 'fw' ), 'back' => __( 'Backward', 'fw' ) ) ),
+		'follow_pointer' => $switch( __( 'Follow Pointer', 'fw' ), 'yes', __( 'While the visitor hovers the gallery, the spotlight follows their pointer.', 'fw' ) ),
+	) ),
+	'group_spw_light' => array( 'type' => 'group', 'options' => array(
+		'columns'   => $slider( __( 'Columns', 'fw' ), 5, 1, 12, 1 ),
+		'rows'      => $slider( __( 'Rows', 'fw' ), 3, 1, 8, 1, __( 'Photos repeat when the grid has more cells than the gallery has photos.', 'fw' ) ),
+		'gap'       => $slider( __( 'Gap (%)', 'fw' ), 10, 0, 80, 1, __( 'Space between photos as a % of a photo\'s width.', 'fw' ) ),
+		'spot_size' => $slider( __( 'Spotlight Size (%)', 'fw' ), 80, 30, 300, 5, __( 'The radius of the pool of light, as a % of a photo\'s width. Bigger lights the neighbours too.', 'fw' ) ),
+		'shadow'    => $slider( __( 'Shadow Brightness (%)', 'fw' ), 35, 0, 100, 1, __( 'How bright the photos outside the spotlight are. 0 = black; 100 = no shadow.', 'fw' ) ),
+		'greyscale' => $slider( __( 'Shadow Greyscale (%)', 'fw' ), 100, 0, 100, 1, __( 'How much colour the photos in shadow lose.', 'fw' ) ),
+		'lift'      => $slider( __( 'Lift (%)', 'fw' ), 8, 0, 30, 1, __( 'How much the lit photo grows.', 'fw' ) ),
+		'move_time' => $slider( __( 'Move Time (%)', 'fw' ), 35, 10, 90, 1, __( 'How much of each stop the spotlight spends gliding to the next photo; it holds still for the rest.', 'fw' ) ),
+		'order'     => array( 'label' => __( 'Order', 'fw' ), 'type' => 'select', 'value' => 'random', 'choices' => array( 'random' => __( 'Random (never the same photo twice in a row)', 'fw' ), 'reading' => __( 'Reading order', 'fw' ) ) ),
+	) ),
+	'group_spw_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 13, 3, 40, 1, __( 'Photo width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_spw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Focus Pull — photos float at several depths and the focus racks between them: the layer in focus is
+ * sharp and bright, the others blur and dim, and the field drifts gently. An original design. */
+$focus_pull_opts = array(
+	'group_fcp_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 3, 1, 12, array( 'front' => __( 'Start at the front', 'fw' ), 'back' => __( 'Start at the back', 'fw' ) ) ),
+	) ),
+	'group_fcp_depth' => array( 'type' => 'group', 'options' => array(
+		'layers'    => $slider( __( 'Layers', 'fw' ), 3, 2, 5, 1, __( 'How many depths the photos float at. The focus racks from the front layer to the back and back again.', 'fw' ) ),
+		'photos'    => $slider( __( 'Photos', 'fw' ), 15, 4, 40, 1, __( 'How many photos float in the scene (the gallery repeats to fill it).', 'fw' ) ),
+		'depth'     => $slider( __( 'Depth (%)', 'fw' ), 45, 10, 120, 1, __( 'The distance between layers, as a % of the stage width.', 'fw' ) ),
+		'blur'      => $slider( __( 'Blur (px)', 'fw' ), 7, 0, 20, 1, __( 'How blurred the layer next to the focus is; layers further away blur more.', 'fw' ) ),
+		'dim'       => $slider( __( 'Dim (%)', 'fw' ), 30, 0, 80, 1, __( 'How much the out-of-focus photos darken.', 'fw' ) ),
+		'drift'     => $slider( __( 'Drift (%)', 'fw' ), 30, 0, 100, 1, __( 'A gentle sideways drift, deeper layers moving more (parallax). 0 = still.', 'fw' ) ),
+		'move_time' => $slider( __( 'Rack Time (%)', 'fw' ), 40, 10, 90, 1, __( 'How much of each stop the focus spends racking to the next layer; it holds still for the rest.', 'fw' ) ),
+	) ),
+	'group_fcp_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 15, 3, 40, 1, __( 'Photo width as a % of the stage width (deeper layers look smaller).', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_fcp_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Loupe — a mosaic of small photos with a magnifying lens gliding over it, showing them enlarged inside
+ * the lens. Hovering can move the lens. An original design. */
+$loupe_opts = array(
+	'group_lpe_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'         => $motion_picker( 'continuous', __( 'Drift when idle', 'fw' ), 12, 3, 40, array( 'roam' => __( 'Roam the whole mosaic', 'fw' ), 'center' => __( 'Stay near the centre', 'fw' ) ) ),
+		'follow_pointer' => $switch( __( 'Follow Pointer', 'fw' ), 'yes', __( 'While the visitor hovers the gallery, the lens follows their pointer.', 'fw' ) ),
+	) ),
+	'group_lpe_lens' => array( 'type' => 'group', 'options' => array(
+		'columns'   => $slider( __( 'Columns', 'fw' ), 6, 2, 14, 1 ),
+		'rows'      => $slider( __( 'Rows', 'fw' ), 4, 1, 10, 1, __( 'Photos repeat when the mosaic has more cells than the gallery has photos.', 'fw' ) ),
+		'gap'       => $slider( __( 'Gap (%)', 'fw' ), 8, 0, 60, 1, __( 'Space between photos as a % of a photo\'s width.', 'fw' ) ),
+		'lens_size' => $slider( __( 'Lens Size (%)', 'fw' ), 24, 8, 60, 1, __( 'The lens diameter as a % of the stage width.', 'fw' ) ),
+		'zoom'      => $slider( __( 'Zoom (%)', 'fw' ), 220, 120, 500, 10, __( 'How much the lens enlarges. 200 = twice the size.', 'fw' ) ),
+		'lens_ring' => array( 'type' => 'color-picker', 'label' => __( 'Lens Ring Colour', 'fw' ), 'value' => '#ffffff' ),
+	) ),
+	'group_lpe_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 10, 3, 40, 1, __( 'Photo width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '1-1', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_lpe_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Card Fan — the photos held like a hand of playing cards; a highlight sweeps along the hand and the card
+ * it reaches rises out of the fan. An original design. */
+$card_fan_opts = array(
+	'group_cfn_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'         => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 2, 1, 10, array( 'ltr' => __( 'Start on the left', 'fw' ), 'rtl' => __( 'Start on the right', 'fw' ) ) ),
+		'follow_pointer' => $switch( __( 'Follow Pointer', 'fw' ), 'yes', __( 'While the visitor hovers the gallery, the card they point at rises.', 'fw' ) ),
+	) ),
+	'group_cfn_fan' => array( 'type' => 'group', 'options' => array(
+		'cards'      => $slider( __( 'Cards in Hand', 'fw' ), 7, 3, 15, 1, __( 'How many cards the hand holds (the gallery repeats to fill it).', 'fw' ) ),
+		'spread'     => $slider( __( 'Fan Spread (°)', 'fw' ), 70, 10, 200, 1, __( 'The angle between the first and the last card.', 'fw' ) ),
+		'pivot'      => $slider( __( 'Pivot Depth (%)', 'fw' ), 120, 30, 400, 5, __( 'How far below the cards the fan turns, as a % of a card\'s height. Deeper makes a flatter, wider arc.', 'fw' ) ),
+		'lift'       => $slider( __( 'Lift (%)', 'fw' ), 35, 0, 90, 1, __( 'How far the highlighted card rises out of the hand, as a % of its height.', 'fw' ) ),
+		'straighten' => $slider( __( 'Straighten (%)', 'fw' ), 60, 0, 100, 1, __( 'How upright the highlighted card turns as it rises. 100 = fully upright.', 'fw' ) ),
+		'dim'        => $slider( __( 'Dim (%)', 'fw' ), 25, 0, 90, 1, __( 'How much the other cards darken.', 'fw' ) ),
+		'sway'       => $slider( __( 'Sway (°)', 'fw' ), 3, 0, 20, 1, __( 'A gentle rocking of the whole hand. 0 = still.', 'fw' ) ),
+		'move_time'  => $slider( __( 'Move Time (%)', 'fw' ), 45, 10, 90, 1, __( 'How much of each step the highlight spends moving to the next card; it holds still for the rest.', 'fw' ) ),
+	) ),
+	'group_cfn_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 20, 4, 50, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 12, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_cfn_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Shuffle Deck — a loose deck; the top photo slides out to the side and tucks back in at the bottom while
+ * the others move up. An original design. */
+$shuffle_deck_opts = array(
+	'group_shd_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 3, 1, 12, array( 'alternate' => __( 'Alternate sides', 'fw' ), 'right' => __( 'Always to the right', 'fw' ), 'left' => __( 'Always to the left', 'fw' ) ) ),
+	) ),
+	'group_shd_deck' => array( 'type' => 'group', 'options' => array(
+		'behind'     => $slider( __( 'Cards Behind', 'fw' ), 4, 1, 8, 1, __( 'How many photos peek out behind the top one.', 'fw' ) ),
+		'offset'     => $slider( __( 'Deck Offset (%)', 'fw' ), 4, 0, 20, 0.5, __( 'How far each photo behind is nudged up and to the side, as a % of a card\'s width.', 'fw' ) ),
+		'jitter'     => $slider( __( 'Jitter (°)', 'fw' ), 4, 0, 20, 1, __( 'How much the photos behind lean, each its own way, for a hand-held look. 0 = a neat deck.', 'fw' ) ),
+		'slide'      => $slider( __( 'Slide Distance (%)', 'fw' ), 75, 30, 160, 1, __( 'How far the top photo slides out before it tucks back in, as a % of its width.', 'fw' ) ),
+		'slide_tilt' => $slider( __( 'Slide Tilt (°)', 'fw' ), 10, 0, 45, 1, __( 'How much the photo turns as it slides out.', 'fw' ) ),
+		'move_time'  => $slider( __( 'Shuffle Time (%)', 'fw' ), 55, 15, 95, 1, __( 'How much of each step the shuffle takes; the deck rests for the rest.', 'fw' ) ),
+	) ),
+	'group_shd_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 34, 6, 70, 1, __( 'Card width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 12, 0, 60, 1 ),
+		'padding'       => $slider( __( 'Card Padding (%)', 'fw' ), 0, 0, 20, 0.5, __( 'Inner frame around each image, as a % of the card width.', 'fw' ) ),
+	) ),
+	'group_shd_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Polaroid Drop — instant-photo prints drop one by one onto a growing pile; when it is full the oldest
+ * slides away, or the pile is swept off. An original design. */
+$polaroid_drop_opts = array(
+	'group_pld_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 2, 1, 10, array( 'above' => __( 'Drop from above', 'fw' ), 'camera' => __( 'Toss in from the camera', 'fw' ) ) ),
+	) ),
+	'group_pld_pile' => array( 'type' => 'group', 'options' => array(
+		'pile'        => $slider( __( 'Pile Size', 'fw' ), 6, 1, 20, 1, __( 'How many prints lie on the pile at once.', 'fw' ) ),
+		'when_full'   => array( 'label' => __( 'When Full', 'fw' ), 'type' => 'select', 'value' => 'oldest', 'choices' => array( 'oldest' => __( 'The oldest print slides away', 'fw' ), 'sweep' => __( 'Sweep the pile away and start again', 'fw' ) ) ),
+		'scatter'     => $slider( __( 'Scatter (%)', 'fw' ), 45, 0, 200, 1, __( 'How far from the centre the prints land, as a % of a print\'s width. 0 = a neat stack.', 'fw' ) ),
+		'max_tilt'    => $slider( __( 'Max Tilt (°)', 'fw' ), 14, 0, 45, 1, __( 'The most a print can lean as it lands.', 'fw' ) ),
+		'move_time'   => $slider( __( 'Drop Time (%)', 'fw' ), 45, 15, 95, 1, __( 'How much of each step the drop takes; the pile rests for the rest.', 'fw' ) ),
+		'frame_color' => array( 'type' => 'color-picker', 'label' => __( 'Frame Colour', 'fw' ), 'value' => '#ffffff' ),
+	) ),
+	'group_pld_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 24, 6, 60, 1, __( 'Print width as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-5', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 3, 0, 30, 1 ),
+	) ),
+	'group_pld_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Phone Lineup — every photo on a phone; the phones stand in a shallow V and the lineup turns like a
+ * carousel. An original design. */
+$phone_lineup_opts = array(
+	'group_phl_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Continuous', 'fw' ), 3, 1, 12, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'snap'          => $switch( __( 'Stop at Centre', 'fw' ), 'yes', __( 'Hold each phone in the middle for a moment (Loop Duration = seconds per phone). Off: the lineup turns without stopping.', 'fw' ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab the lineup and turn it by hand. No effect as a Section Background.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep turning after a drag is released.', 'fw' ) ),
+	) ),
+	'group_phl_line' => array( 'type' => 'group', 'options' => array(
+		'phones'      => $slider( __( 'Phones', 'fw' ), 7, 3, 15, 1, __( 'How many phones stand in the lineup (the gallery repeats to fill them). 5 or more lets the ends fade smoothly.', 'fw' ) ),
+		'spacing'     => $slider( __( 'Spacing (%)', 'fw' ), 70, 20, 200, 1, __( 'The distance between phones, as a % of a phone\'s width. Under 100 they overlap.', 'fw' ) ),
+		'depth'       => $slider( __( 'Depth (%)', 'fw' ), 50, 0, 150, 1, __( 'How far each phone steps back from the centre one. 0 = a straight line.', 'fw' ) ),
+		'turn'        => $slider( __( 'Turn (°)', 'fw' ), 25, 0, 80, 1, __( 'How much the side phones turn toward the centre.', 'fw' ) ),
+		'float'       => $slider( __( 'Float (%)', 'fw' ), 3, 0, 12, 0.5, __( 'A gentle up-and-down float. 0 = still.', 'fw' ) ),
+		'move_time'   => $slider( __( 'Move Time (%)', 'fw' ), 45, 10, 95, 1, __( 'With Stop at Centre: how much of each step the lineup spends moving.', 'fw' ) ),
+		'thickness'   => $slider( __( 'Thickness (%)', 'fw' ), 8, 0, 20, 0.5, __( 'How thick each phone is, as a % of its width — the metal side shows as the phones turn. 0 = a flat screen.', 'fw' ) ),
+		'frame_color' => array( 'type' => 'color-picker', 'label' => __( 'Frame Colour', 'fw' ), 'value' => '#3a3c41', 'desc' => __( 'The colour of each phone\'s metal frame, sides and back. The bezel round the screen stays black.', 'fw' ) ),
+	) ),
+	'group_phl_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'  => $slider( __( 'Phone Size (%)', 'fw' ), 16, 4, 40, 1, __( 'Phone width as a % of the stage width.', 'fw' ) ),
+		'card_ratio' => array( 'label' => __( 'Screen Ratio', 'fw' ), 'type' => 'select', 'value' => '9-16', 'choices' => $ratio_choices ),
+	) ),
+	'group_phl_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Window Stack — every photo in a browser window, stacked in a tilted 3D pile; the front window leaves
+ * and the rest move forward. An original design. */
+$window_stack_opts = array(
+	'group_wst_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 3, 1, 12, array( 'toward' => __( 'Front window comes toward you', 'fw' ), 'down' => __( 'Front window drops away', 'fw' ) ) ),
+	) ),
+	'group_wst_stack' => array( 'type' => 'group', 'options' => array(
+		'behind'       => $slider( __( 'Windows Behind', 'fw' ), 4, 1, 8, 1, __( 'How many windows show behind the front one.', 'fw' ) ),
+		'gap'          => $slider( __( 'Depth Gap (%)', 'fw' ), 30, 5, 100, 1, __( 'How far back each window sits from the one in front, as a % of a window\'s width.', 'fw' ) ),
+		'offset'       => $slider( __( 'Offset (%)', 'fw' ), 8, 0, 30, 0.5, __( 'How far each window behind is moved up and to the side.', 'fw' ) ),
+		'tilt'         => $slider( __( 'Tilt (°)', 'fw' ), 16, 0, 50, 1, __( 'How much the pile leans back.', 'fw' ) ),
+		'yaw'          => $slider( __( 'Turn (°)', 'fw' ), 22, -45, 45, 1, __( 'How much the pile turns to the side (negative turns it the other way).', 'fw' ) ),
+		'dim'          => $slider( __( 'Dim (%)', 'fw' ), 30, 0, 80, 1, __( 'How much the deepest window darkens.', 'fw' ) ),
+		'move_time'    => $slider( __( 'Move Time (%)', 'fw' ), 55, 15, 95, 1, __( 'How much of each step the change takes; the pile rests for the rest.', 'fw' ) ),
+		'chrome_color' => array( 'type' => 'color-picker', 'label' => __( 'Title Bar Colour', 'fw' ), 'value' => '#e9eaee' ),
+	) ),
+	'group_wst_card' => array( 'type' => 'group', 'options' => array(
+		'card_size'  => $slider( __( 'Window Size (%)', 'fw' ), 44, 10, 80, 1, __( 'Window width as a % of the stage width.', 'fw' ) ),
+		'card_ratio' => array( 'label' => __( 'Window Ratio', 'fw' ), 'type' => 'select', 'value' => '16-9', 'choices' => $ratio_choices ),
+	) ),
+	'group_wst_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
+/* Device Trio — a laptop with a tablet and a phone floating in front of it; the screens change one device
+ * at a time. An original design. */
+$device_trio_opts = array(
+	'group_dtr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'         => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 3, 1, 12, array( 'sway' => __( 'Gentle sway', 'fw' ), 'still' => __( 'Hold still', 'fw' ) ) ),
+		'follow_pointer' => $switch( __( 'Follow Pointer', 'fw' ), 'yes', __( 'While the visitor hovers the gallery, the devices turn slightly toward their pointer.', 'fw' ) ),
+	) ),
+	'group_dtr_trio' => array( 'type' => 'group', 'options' => array(
+		'card_size' => $slider( __( 'Size (%)', 'fw' ), 48, 15, 90, 1, __( 'The laptop\'s width as a % of the stage width; the tablet and phone scale with it.', 'fw' ) ),
+		'depth'     => $slider( __( 'Depth (%)', 'fw' ), 30, 0, 100, 1, __( 'How far in front of the laptop the tablet and phone float.', 'fw' ) ),
+		'float'     => $slider( __( 'Float (%)', 'fw' ), 2, 0, 8, 0.5, __( 'A gentle up-and-down float. 0 = still.', 'fw' ) ),
+		'tilt'      => $slider( __( 'Tilt (°)', 'fw' ), 10, 0, 30, 1, __( 'The most the group turns (toward the pointer, or as it sways).', 'fw' ) ),
+	) ),
+	'group_dtr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'overflow' => $overflow_field, 'background' => $bg_field ) ),
+);
+
 /* Card Reel — a vertical cover-flow carousel (Carousel & Flow). A single column of cards wraps around
  * a horizontal cylinder; the centre card is the flat, forward focus. Flows up/down, or "Stop at centre"
  * snaps each card to the middle. 3D Curve bends the cylinder (flat ↔ tight barrel). */
@@ -1023,6 +1879,32 @@ $options = array(
 					'card_tunnel'      => $card_tunnel_opts,
 					'spiral_stream'    => $spiral_stream_opts,
 					'depth_stack'      => $depth_stack_opts,
+					'tilt_deck'        => $tilt_deck_opts,
+					'iso_orbit'        => $iso_orbit_opts,
+					'iso_stack'        => $iso_stack_opts,
+					'iso_cascade'      => $iso_cascade_opts,
+					'iso_fan'          => $iso_fan_opts,
+					'orbit_bloom'      => $orbit_bloom_opts,
+					'focus_orbit'      => $focus_orbit_opts,
+					'dual_orbit'       => $dual_orbit_opts,
+					'comet_orbit'      => $comet_orbit_opts,
+					'orbit_swarm'      => $orbit_swarm_opts,
+					'ring_tilt'        => $ring_tilt_opts,
+					'gyro_orbit'       => $gyro_orbit_opts,
+					'infinity_orbit'   => $infinity_orbit_opts,
+					'vortex'           => $vortex_opts,
+					'pendulum_orbit'   => $pendulum_orbit_opts,
+					'moon_orbit'       => $moon_orbit_opts,
+					'tiered_orbit'     => $tiered_orbit_opts,
+					'wave_grid'        => $wave_grid_opts,
+					'flip_grid'        => $flip_grid_opts,
+					'magnet_grid'      => $magnet_grid_opts,
+					'blind_reveal'     => $blind_reveal_opts,
+					'iris_wipe'        => $iris_wipe_opts,
+					'tile_dissolve'    => $tile_dissolve_opts,
+					'spotlight_wall'   => $spotlight_wall_opts,
+					'focus_pull'       => $focus_pull_opts,
+					'loupe'            => $loupe_opts,
 					'card_reel'        => $card_reel_opts,
 					'film_strip'       => $film_strip_opts,
 					'wheel_carousel'   => $wheel_carousel_opts,
@@ -1033,7 +1915,13 @@ $options = array(
 					'mosaic_marquee'   => $mosaic_marquee_opts,
 					'photo_scatter'    => $photo_scatter_opts,
 					'card_stack'       => $card_stack_opts,
+					'card_fan'         => $card_fan_opts,
+					'shuffle_deck'     => $shuffle_deck_opts,
+					'polaroid_drop'    => $polaroid_drop_opts,
 					'device_cycler'    => $device_cycler_opts,
+					'phone_lineup'     => $phone_lineup_opts,
+					'window_stack'     => $window_stack_opts,
+					'device_trio'      => $device_trio_opts,
 				), $soon_choices ),
 			),
 		),
@@ -1098,6 +1986,14 @@ $options = array(
 						'type'         => 'switch',
 						'label'        => __( 'Animate out on leave', 'fw' ),
 						'desc'         => __( 'Fade and sink the images back out as the gallery scrolls off the top.', 'fw' ),
+						'value'        => 'no',
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+					),
+					'chain' => array(
+						'type'         => 'switch',
+						'label'        => __( 'Chain with adjacent galleries', 'fw' ),
+						'desc'         => __( 'On Scroll-scrub + Pin: connect this gallery to the adjacent chained galleries — of any design — into ONE pinned scroll sequence, each flying out as the next assembles in. Tick it on every gallery you want linked; they can sit in one column or in separate sections.', 'fw' ),
 						'value'        => 'no',
 						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
 						'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),

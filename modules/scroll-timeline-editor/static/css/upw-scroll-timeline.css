@@ -129,3 +129,6 @@
 .upw-stl-hl { outline: 2px solid #2dd4bf !important; outline-offset: 2px; transition: outline-color 0.1s ease; }
 
 @media ( prefers-reduced-motion: reduce ) { .upw-stl-btn { transition: none; } }
+
+/* Active state on the admin-bar "Scroll Tools → Timeline" item (set by upw-scroll-timeline.js). */
+#wpadminbar #wp-admin-bar-upw-scroll-tools-timeline.upw-ab-on > .ab-item { box-shadow: inset 3px 0 0 #2AD38B; color: #2AD38B; }

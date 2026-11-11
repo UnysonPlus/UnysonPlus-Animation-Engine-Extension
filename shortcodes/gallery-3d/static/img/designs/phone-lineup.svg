@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Phone Lineup: photos on phones standing in a row; the lineup slides along, stopping with a phone at the centre. Original design. -->
+<g><animateTransform attributeName="transform" type="translate" dur="2.4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.45;1" keySplines=".45 0 .55 1;0 0 1 1" values="0 0;-16 0;-16 0"/>
+<g fill="#5b6a8c" stroke="#1b1e27" stroke-width="1.6">
+<rect x="-10" y="20" width="12" height="24" rx="3" opacity=".45"/>
+<rect x="6" y="18" width="13" height="27" rx="3" opacity=".7"/>
+<rect x="22" y="16" width="14" height="30" rx="3.5"/>
+<rect x="41" y="16" width="14" height="30" rx="3.5"/>
+<rect x="60" y="16" width="14" height="30" rx="3.5"/>
+<rect x="77" y="18" width="13" height="27" rx="3" opacity=".7"/>
+<rect x="94" y="20" width="12" height="24" rx="3" opacity=".45"/>
+<rect x="110" y="20" width="12" height="24" rx="3" opacity=".45"/>
+</g></g>
+<rect x="38" y="10" width="20" height="40" rx="5" fill="url(#A)" stroke="#1b1e27" stroke-width="2"/>
+<rect x="44.5" y="13" width="7" height="2.2" rx="1.1" fill="#1b1e27"/>
+<rect x="8" y="54" width="80" height="2" rx="1" fill="#2a2f3d" opacity=".6"/>
+</svg>

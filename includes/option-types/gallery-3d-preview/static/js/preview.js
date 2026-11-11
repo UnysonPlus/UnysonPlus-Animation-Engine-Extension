@@ -55,7 +55,44 @@
 		// timer — a lively, representative preview of the design regardless of the saved cycle mode.
 		photo_scatter: { visible: 9, rotation: 12, size_variance: 30, spread: 90, card_size: 18, card_ratio: '3-4', corner_radius: 4, padding: 0, from: 'edges', exit: 'sweep' },
 		device_cycler: { device: 'laptop', transition: 'fade', card_size: 62, card_ratio: '16-9', corner_radius: 10, padding: 0 },
-		card_stack: { exit: 'down', behind: 3, stack_offset: 5, stack_scale: 6, card_size: 40, card_ratio: '4-3', corner_radius: 14, padding: 0 }
+		card_stack: { exit: 'down', behind: 3, stack_offset: 5, stack_scale: 6, card_size: 40, card_ratio: '4-3', corner_radius: 14, padding: 0 },
+		// Isometric family — all five share the .tdg__iso DOM (one combined branch in buildScene()).
+		tilt_deck:   { drive: 'continuous', allow_drag: 'yes', speed: 12, direction: 'forward', hover_behavior: 'slow', columns: 4, depth_rows: 5, gap: 12, iso_tilt: 58, lift: 60, focus_glow: 135, depth_fade: 30, card_size: 16, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		iso_orbit:   { drive: 'continuous', allow_drag: 'yes', speed: 18, direction: 'cw', hover_behavior: 'slow', radius: 30, iso_tilt: 58, lift: 70, focus_glow: 140, depth_fade: 35, card_size: 16, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		iso_stack:   { drive: 'continuous', allow_drag: 'yes', speed: 14, direction: 'up', hover_behavior: 'slow', gap: 40, spiral: 40, iso_tilt: 58, lift: 70, focus_glow: 140, depth_fade: 40, card_size: 17, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		iso_cascade: { drive: 'continuous', allow_drag: 'yes', speed: 12, direction: 'down', hover_behavior: 'slow', spread: 60, rise: 50, iso_tilt: 58, lift: 70, focus_glow: 140, depth_fade: 45, card_size: 17, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		iso_fan:     { drive: 'continuous', allow_drag: 'yes', speed: 16, direction: 'left', hover_behavior: 'slow', reach: 34, arc: 130, iso_tilt: 58, lift: 70, focus_glow: 140, depth_fade: 40, card_size: 16, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		// Orbit family — both share the .tdg__orbit DOM (one combined branch in buildScene()).
+		orbit_bloom: { drive: 'continuous', allow_drag: 'yes', speed: 22, direction: 'cw', hover_behavior: 'slow', radius: 32, tilt: 58, bloom: 70, focus_glow: 130, depth_fade: 45, card_size: 16, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		focus_orbit: { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'cw', hover_behavior: 'slow', radius: 36, tilt: 30, hero: 70, focus_glow: 150, depth_fade: 45, card_size: 15, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		dual_orbit:  { drive: 'continuous', allow_drag: 'yes', speed: 20, direction: 'cw', hover_behavior: 'slow', radius: 33, inner: 50, tilt: 62, counter: 'yes', inner_speed: 150, show_paths: 'yes', focus_glow: 130, depth_fade: 45, card_size: 11, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		comet_orbit: { drive: 'continuous', allow_drag: 'yes', speed: 24, direction: 'cw', hover_behavior: 'slow', radius: 33, eccentricity: 62, tilt: 45, show_focus: 'yes', show_paths: 'yes', flare: 70, depth_fade: 40, card_size: 12, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		orbit_swarm: { drive: 'continuous', allow_drag: 'yes', speed: 26, direction: 'cw', hover_behavior: 'slow', radius: 31, spread: 55, swirl: 60, height: 30, cohesion: 45, tilt: 55, focus_glow: 130, depth_fade: 45, card_size: 9, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		ring_tilt:   { drive: 'continuous', allow_drag: 'yes', speed: 30, direction: 'cw', hover_behavior: 'slow', radius: 40, tilt: 70, lift: 20, wobble: 8, show_core: 'yes', core_size: 34, core_color: '#2f74e6', focus_glow: 125, depth_fade: 50, card_size: 12, card_ratio: '4-3', corner_radius: 6, padding: 0 },
+		gyro_orbit:  { drive: 'continuous', allow_drag: 'yes', speed: 22, direction: 'cw', hover_behavior: 'slow', radius: 24, rings: 3, lean: 62, spin: 35, show_paths: 'yes', show_core: 'yes', focus_glow: 130, depth_fade: 50, card_size: 9, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		infinity_orbit: { drive: 'continuous', allow_drag: 'yes', speed: 26, direction: 'cw', hover_behavior: 'slow', radius: 38, loop: 100, cross: 40, tilt: 50, show_paths: 'yes', focus_glow: 130, depth_fade: 45, card_size: 11, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		vortex:      { drive: 'continuous', allow_drag: 'yes', speed: 30, direction: 'in', hover_behavior: 'slow', radius: 42, arms: 3, twist: 0.8, depth: 60, tilt: 52, show_core: 'yes', depth_fade: 55, card_size: 8, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		pendulum_orbit: { drive: 'continuous', allow_drag: 'yes', speed: 8, direction: 'cw', hover_behavior: 'slow', radius: 36, arc: 130, swing: 45, tilt: 58, focus_glow: 140, depth_fade: 45, card_size: 8, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		moon_orbit:  { drive: 'continuous', allow_drag: 'yes', speed: 30, direction: 'cw', hover_behavior: 'slow', radius: 33, planets: 4, moon_radius: 8, moon_speed: 300, moon_size: 50, tilt: 55, focus_glow: 130, depth_fade: 45, card_size: 11, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		tiered_orbit: { drive: 'continuous', allow_drag: 'yes', speed: 26, direction: 'cw', hover_behavior: 'slow', radius: 28, tiers: 3, gap: 16, taper: 35, elevation: 22, alternate: 'yes', show_paths: 'yes', focus_glow: 130, depth_fade: 50, card_size: 8, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		// Grid family — cards in a cols×rows grid on .tdg__grid (one combined branch in buildScene()).
+		wave_grid:   { drive: 'continuous', allow_drag: 'yes', speed: 5, direction: 'out', hover_behavior: 'slow', columns: 6, rows: 4, gap: 14, tilt: 55, amplitude: 35, wavelength: 3.5, origin: 'center', focus_glow: 130, card_size: 11, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		flip_grid:   { drive: 'continuous', allow_drag: 'no', speed: 4, direction: 'fwd', hover_behavior: 'slow', columns: 4, rows: 3, gap: 8, flip_axis: 'y', order: 'wave', tilt: 8, card_size: 15, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		magnet_grid: { drive: 'continuous', speed: 10, direction: 'roam', hover_behavior: 'slow', columns: 5, rows: 3, gap: 14, reach: 22, lift: 90, lean: 10, focus_glow: 130, card_size: 12, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		// Reveal & Wipe family — one large photo in a .tdg__frame, photos from a hidden .tdg__pool.
+		blind_reveal:  { drive: 'continuous', allow_drag: 'no', speed: 4, direction: 'fwd', hover_behavior: 'slow', frame_size: 70, slats: 10, orientation: 'v', stagger: 50, gap: 2, card_ratio: '16-9', corner_radius: 10, padding: 0 },
+		iris_wipe:     { drive: 'continuous', allow_drag: 'no', speed: 4, direction: 'fwd', hover_behavior: 'slow', frame_size: 70, shape: 'circle', zoom: 12, transition: 45, card_ratio: '16-9', corner_radius: 10, padding: 0 },
+		tile_dissolve: { drive: 'continuous', allow_drag: 'no', speed: 4, direction: 'fwd', hover_behavior: 'slow', frame_size: 70, columns: 8, rows: 5, pattern: 'corner', fly: 60, card_ratio: '16-9', corner_radius: 10, padding: 0 },
+		// Spotlight & Focus family — cards on .tdg__grid; light / blur / a magnifying lens.
+		spotlight_wall: { drive: 'continuous', speed: 3, direction: 'fwd', hover_behavior: 'none', follow_pointer: 'yes', columns: 5, rows: 3, gap: 10, spot_size: 80, shadow: 35, greyscale: 100, lift: 8, move_time: 35, order: 'random', card_size: 13, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		focus_pull:     { drive: 'continuous', speed: 3, direction: 'front', hover_behavior: 'none', layers: 3, photos: 15, depth: 45, blur: 7, dim: 30, drift: 30, move_time: 40, card_size: 15, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		loupe:          { drive: 'continuous', speed: 12, direction: 'roam', hover_behavior: 'none', follow_pointer: 'yes', columns: 6, rows: 4, gap: 8, lens_size: 24, zoom: 220, lens_ring: '#ffffff', card_size: 10, card_ratio: '1-1', corner_radius: 6, padding: 0 },
+		card_fan:       { drive: 'continuous', speed: 2, direction: 'ltr', hover_behavior: 'none', follow_pointer: 'yes', cards: 7, spread: 70, pivot: 120, lift: 35, straighten: 60, dim: 25, sway: 3, move_time: 45, card_size: 20, card_ratio: '3-4', corner_radius: 12, padding: 0 },
+		shuffle_deck:   { drive: 'continuous', speed: 3, direction: 'alternate', hover_behavior: 'none', behind: 4, offset: 4, jitter: 4, slide: 75, slide_tilt: 10, move_time: 55, card_size: 34, card_ratio: '4-3', corner_radius: 12, padding: 0 },
+		polaroid_drop:  { drive: 'continuous', speed: 2, direction: 'above', hover_behavior: 'none', pile: 6, when_full: 'oldest', scatter: 45, max_tilt: 14, move_time: 45, frame_color: '#ffffff', card_size: 24, card_ratio: '4-5', corner_radius: 3, padding: 0 },
+		phone_lineup:   { drive: 'continuous', speed: 3, direction: 'left', hover_behavior: 'none', snap: 'yes', allow_drag: 'yes', drag_momentum: 'yes', phones: 7, spacing: 70, depth: 50, turn: 25, float: 3, thickness: 8, move_time: 45, frame_color: '#3a3c41', card_size: 16, card_ratio: '9-16', corner_radius: 0, padding: 0 },
+		window_stack:   { drive: 'continuous', speed: 3, direction: 'toward', hover_behavior: 'none', behind: 4, gap: 30, offset: 8, tilt: 16, yaw: 22, dim: 30, move_time: 55, chrome_color: '#e9eaee', card_size: 44, card_ratio: '16-9', corner_radius: 0, padding: 0 },
+		device_trio:    { drive: 'continuous', speed: 3, direction: 'sway', hover_behavior: 'none', follow_pointer: 'yes', card_size: 48, depth: 30, float: 2, tilt: 10, card_ratio: '1-1', corner_radius: 0, padding: 0 }
 	};
 
 	// ---- placeholder cards (a gradient tile — the real photos render on the front end) ----
@@ -390,6 +427,264 @@
 			return '<div class="tdg tdg--card-stack" style="' + csStyle + '" ' + acs + '><div class="tdg__stage"><div class="tdg__deck">' + cards + '</div></div></div>';
 		}
 
+		// Isometric family (tilt_deck · iso_orbit · iso_stack · iso_cascade · iso_fan) — all share the
+		// .tdg__iso plane DOM; each adds its own data-tdg-* geometry. Mirrors views/designs/iso-*.php.
+		if (design === 'tilt_deck' || design === 'iso_orbit' || design === 'iso_stack' || design === 'iso_cascade' || design === 'iso_fan') {
+			var revMap = { tilt_deck: 'backward', iso_orbit: 'ccw', iso_stack: 'down', iso_cascade: 'up', iso_fan: 'right' };
+			var isoShared = $.extend({}, shared, {
+				'data-tdg-dir': o.direction === revMap[design] ? -1 : 1,
+				'data-tdg-tilt': o.iso_tilt, 'data-tdg-lift': o.lift, 'data-tdg-glow': o.focus_glow,
+				'data-tdg-dfade': o.depth_fade, 'data-tdg-card': o.card_size
+			});
+			var isoN;
+			if (design === 'tilt_deck') { isoShared['data-tdg-cols'] = o.columns; isoShared['data-tdg-gap'] = o.gap; isoN = Math.max(6, o.columns * o.depth_rows); }
+			else if (design === 'iso_orbit') { isoShared['data-tdg-radius'] = o.radius; isoN = 12; }
+			else if (design === 'iso_stack') { isoShared['data-tdg-gap'] = o.gap; isoShared['data-tdg-spiral'] = o.spiral; isoN = 9; }
+			else if (design === 'iso_cascade') { isoShared['data-tdg-spread'] = o.spread; isoShared['data-tdg-rise'] = o.rise; isoN = 10; }
+			else { isoShared['data-tdg-reach'] = o.reach; isoShared['data-tdg-arc'] = o.arc; isoN = 11; }
+			cards = '';
+			for (i = 0; i < isoN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + style + '" ' + attrStr(isoShared) + '><div class="tdg__stage"><div class="tdg__iso">' + cards + '</div></div></div>';
+		}
+
+		// Orbit family (orbit_bloom · focus_orbit) — billboarded cards on a tilted orbit disc (.tdg__orbit).
+		if (design === 'orbit_bloom' || design === 'focus_orbit') {
+			var ob = $.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'ccw' ? -1 : 1,
+				'data-tdg-radius': o.radius, 'data-tdg-tilt': o.tilt,
+				'data-tdg-glow': o.focus_glow, 'data-tdg-dfade': o.depth_fade,
+				'data-tdg-card': o.card_size, 'data-tdg-momentum': 1
+			});
+			if (design === 'orbit_bloom') { ob['data-tdg-bloom'] = o.bloom; } else { ob['data-tdg-hero'] = o.hero; }
+			cards = '';
+			for (i = 0; i < 12; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + style + '" ' + attrStr(ob) + '><div class="tdg__stage"><div class="tdg__orbit">' + cards + '</div></div></div>';
+		}
+
+		// More Orbit designs (dual_orbit · comet_orbit · orbit_swarm · ring_tilt) — same .tdg__orbit DOM,
+		// each with its own data-tdg-* geometry and extras (orbit paths, focus glow, planet). Mirrors
+		// views/designs/<dashed>.php.
+		if (design === 'dual_orbit' || design === 'comet_orbit' || design === 'orbit_swarm' || design === 'ring_tilt') {
+			var oa = $.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'ccw' ? -1 : 1,
+				'data-tdg-radius': o.radius, 'data-tdg-tilt': o.tilt,
+				'data-tdg-dfade': o.depth_fade, 'data-tdg-card': o.card_size, 'data-tdg-momentum': 1
+			});
+			var extra = '', oN = 12;
+			if (design === 'dual_orbit') {
+				oa['data-tdg-inner'] = o.inner; oa['data-tdg-counter'] = o.counter === 'yes' ? 1 : 0;
+				oa['data-tdg-ispeed'] = o.inner_speed; oa['data-tdg-glow'] = o.focus_glow; oN = 15;
+				if (o.show_paths === 'yes') { extra = '<div class="tdg__track"></div><div class="tdg__track"></div>'; }
+			} else if (design === 'comet_orbit') {
+				oa['data-tdg-ecc'] = o.eccentricity; oa['data-tdg-flare'] = o.flare;
+				if (o.show_paths === 'yes') { extra += '<div class="tdg__track"></div>'; }
+				if (o.show_focus === 'yes') { extra += '<div class="tdg__focus"></div>'; }
+			} else if (design === 'orbit_swarm') {
+				oa['data-tdg-spread'] = o.spread; oa['data-tdg-swirl'] = o.swirl; oa['data-tdg-height'] = o.height;
+				oa['data-tdg-cohesion'] = o.cohesion; oa['data-tdg-glow'] = o.focus_glow; oN = 16;
+			} else {
+				oa['data-tdg-lift'] = o.lift; oa['data-tdg-wobble'] = o.wobble; oa['data-tdg-core'] = o.core_size;
+				oa['data-tdg-glow'] = o.focus_glow; oN = 16;
+				if (o.show_core === 'yes') { extra = '<div class="tdg__planet" style="--tdg-core:' + (/^#[0-9a-f]{3,8}$/i.test(o.core_color) ? o.core_color : '#2f74e6') + '"></div>'; }
+			}
+			cards = '';
+			for (i = 0; i < oN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + style + '" ' + attrStr(oa) + '><div class="tdg__stage"><div class="tdg__orbit">' + extra + cards + '</div></div></div>';
+		}
+
+		// Gyro Orbit · Infinity Orbit · Vortex — .tdg__orbit DOM with their own geometry + extras.
+		// Mirrors views/designs/gyro-orbit.php, infinity-orbit.php, vortex.php.
+		if (design === 'gyro_orbit' || design === 'infinity_orbit' || design === 'vortex') {
+			var og = $.extend({}, shared, {
+				'data-tdg-radius': o.radius, 'data-tdg-dfade': o.depth_fade, 'data-tdg-card': o.card_size, 'data-tdg-momentum': 1
+			});
+			var gx = '', gN;
+			if (design === 'gyro_orbit') {
+				var gR = Math.max(2, Math.min(4, Math.round(o.rings)));
+				$.extend(og, { 'data-tdg-dir': o.direction === 'ccw' ? -1 : 1, 'data-tdg-rings': gR, 'data-tdg-lean': o.lean, 'data-tdg-spin': o.spin, 'data-tdg-glow': o.focus_glow });
+				if (o.show_paths === 'yes') { for (i = 0; i < gR; i++) { gx += '<div class="tdg__track"></div>'; } }
+				if (o.show_core === 'yes') { gx += '<div class="tdg__focus"></div>'; }
+				gN = Math.max(12, gR * 5);
+			} else if (design === 'infinity_orbit') {
+				$.extend(og, { 'data-tdg-dir': o.direction === 'ccw' ? -1 : 1, 'data-tdg-loop': o.loop, 'data-tdg-cross': o.cross, 'data-tdg-tilt': o.tilt, 'data-tdg-paths': o.show_paths === 'yes' ? 1 : 0, 'data-tdg-glow': o.focus_glow });
+				gN = 14;
+			} else {
+				$.extend(og, { 'data-tdg-dir': o.direction === 'out' ? -1 : 1, 'data-tdg-arms': o.arms, 'data-tdg-twist': o.twist, 'data-tdg-depth': o.depth, 'data-tdg-tilt': o.tilt });
+				if (o.show_core === 'yes') { gx = '<div class="tdg__focus"></div>'; }
+				gN = 24;
+			}
+			cards = '';
+			for (i = 0; i < gN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + style + '" ' + attrStr(og) + '><div class="tdg__stage"><div class="tdg__orbit">' + gx + cards + '</div></div></div>';
+		}
+
+		// Pendulum Orbit · Moon Orbit · Tiered Orbit — .tdg__orbit DOM. Mirrors pendulum-orbit.php,
+		// moon-orbit.php, tiered-orbit.php.
+		if (design === 'pendulum_orbit' || design === 'moon_orbit' || design === 'tiered_orbit') {
+			var op = $.extend({}, shared, {
+				'data-tdg-dir': o.direction === 'ccw' ? -1 : 1, 'data-tdg-radius': o.radius, 'data-tdg-glow': o.focus_glow,
+				'data-tdg-dfade': o.depth_fade, 'data-tdg-card': o.card_size, 'data-tdg-momentum': 1
+			});
+			var px = '', pN;
+			if (design === 'pendulum_orbit') {
+				$.extend(op, { 'data-tdg-arc': o.arc, 'data-tdg-swing': o.swing, 'data-tdg-tilt': o.tilt });
+				pN = 9;
+			} else if (design === 'moon_orbit') {
+				var pl = Math.max(2, Math.min(6, Math.round(o.planets)));
+				$.extend(op, { 'data-tdg-planets': pl, 'data-tdg-moonr': o.moon_radius, 'data-tdg-mspeed': o.moon_speed, 'data-tdg-msize': o.moon_size, 'data-tdg-tilt': o.tilt });
+				pN = Math.max(12, pl * 4);
+			} else {
+				var tr = Math.max(2, Math.min(5, Math.round(o.tiers)));
+				$.extend(op, { 'data-tdg-tiers': tr, 'data-tdg-gap': o.gap, 'data-tdg-taper': o.taper, 'data-tdg-elev': o.elevation, 'data-tdg-alt': o.alternate === 'yes' ? 1 : 0 });
+				if (o.show_paths === 'yes') { for (i = 0; i < tr; i++) { px += '<div class="tdg__track"></div>'; } }
+				pN = Math.max(12, tr * 7);
+			}
+			cards = '';
+			for (i = 0; i < pN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + style + '" ' + attrStr(op) + '><div class="tdg__stage"><div class="tdg__orbit">' + px + cards + '</div></div></div>';
+		}
+
+		// Grid family (wave_grid · flip_grid · magnet_grid) — a cols×rows grid on .tdg__grid. Mirrors
+		// views/designs/wave-grid.php, flip-grid.php, magnet-grid.php.
+		if (design === 'wave_grid' || design === 'flip_grid' || design === 'magnet_grid') {
+			var gc = Math.max(1, Math.round(o.columns)), gr = Math.max(1, Math.round(o.rows)), gcells = gc * gr;
+			var gg = $.extend({}, shared, { 'data-tdg-cols': gc, 'data-tdg-gap': o.gap, 'data-tdg-card': o.card_size });
+			var gbody = '', gpool = '', gcls = '';
+			if (design === 'wave_grid') {
+				$.extend(gg, { 'data-tdg-dir': o.direction === 'in' ? -1 : 1, 'data-tdg-tilt': o.tilt, 'data-tdg-amp': o.amplitude, 'data-tdg-wl': o.wavelength,
+					'data-tdg-origin': Math.max(0, ['center', 'left', 'corner'].indexOf(o.origin)), 'data-tdg-glow': o.focus_glow, 'data-tdg-momentum': 1 });
+				for (i = 0; i < gcells; i++) { gbody += cardHtml(i % 12, 12); }
+			} else if (design === 'flip_grid') {
+				// The flip refills a face's .tdg__inner CONTENTS (keeping the element), so the placeholder
+				// colour must live in a child, not on the inner itself.
+				var fInner = function (k) { var h = Math.round(k * 360 / 20); return '<div class="tdg__inner"><span style="display:block;width:100%;height:100%;background:linear-gradient(135deg,hsl(' + h + ',62%,60%),hsl(' + ((h + 40) % 360) + ',58%,42%))"></span></div>'; };
+				var np = 20, fFor = function (j, p) { return ((j + p * (gcells + 1)) % np + np) % np; };
+				$.extend(gg, { 'data-tdg-dir': o.direction === 'back' ? -1 : 1, 'data-tdg-axis': o.flip_axis === 'x' ? 'x' : 'y',
+					'data-tdg-order': Math.max(0, ['wave', 'random', 'rows'].indexOf(o.order)), 'data-tdg-tilt': o.tilt, 'data-tdg-allowdrag': o.allow_drag === 'yes' ? 1 : 0, 'data-tdg-momentum': 1 });
+				for (i = 0; i < gcells; i++) { gbody += '<div class="tdg__card"><div class="tdg__face tdg__face--a">' + fInner(fFor(i, 0)) + '</div><div class="tdg__face tdg__face--b" aria-hidden="true">' + fInner(fFor(i, 1)) + '</div></div>'; }
+				for (i = 0; i < np; i++) { gpool += '<div class="tdg__poolitem">' + fInner(i) + '</div>'; }
+				gpool = '<div class="tdg__pool" hidden>' + gpool + '</div>';
+				if (o.flip_axis === 'x') { gcls = ' tdg--flip-x'; }
+			} else {
+				$.extend(gg, { 'data-tdg-roam': o.direction === 'center' ? 0.4 : 1, 'data-tdg-reach': o.reach, 'data-tdg-lift': o.lift, 'data-tdg-lean': o.lean,
+					'data-tdg-glow': o.focus_glow, 'data-tdg-allowdrag': 0 });
+				for (i = 0; i < gcells; i++) { gbody += cardHtml(i % 12, 12); }
+			}
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + gcls + '" style="' + style + '" ' + attrStr(gg) + '><div class="tdg__stage"><div class="tdg__grid">' + gbody + '</div></div>' + gpool + '</div>';
+		}
+
+		// Reveal & Wipe family (blind_reveal · iris_wipe · tile_dissolve) — an empty .tdg__frame plus a
+		// hidden pool the runtime reads photo URLs from (so the placeholders here must be real <img>s).
+		// Mirrors views/designs/blind-reveal.php, iris-wipe.php, tile-dissolve.php.
+		if (design === 'blind_reveal' || design === 'iris_wipe' || design === 'tile_dissolve') {
+			var rv = $.extend({}, shared, { 'data-tdg-dir': o.direction === 'back' ? -1 : 1, 'data-tdg-frame': o.frame_size,
+				'data-tdg-allowdrag': o.allow_drag === 'yes' ? 1 : 0, 'data-tdg-momentum': 1 });
+			var rcls = '';
+			if (design === 'blind_reveal') {
+				$.extend(rv, { 'data-tdg-slats': o.slats, 'data-tdg-orient': o.orientation === 'h' ? 'h' : 'v', 'data-tdg-stagger': o.stagger, 'data-tdg-gap': o.gap });
+				if (o.orientation === 'h') { rcls = ' tdg--blind-h'; }
+			} else if (design === 'iris_wipe') {
+				$.extend(rv, { 'data-tdg-shape': o.shape, 'data-tdg-zoom': o.zoom, 'data-tdg-dur': o.transition });
+			} else {
+				$.extend(rv, { 'data-tdg-cols': o.columns, 'data-tdg-rows': o.rows, 'data-tdg-pattern': Math.max(0, ['corner', 'random', 'center'].indexOf(o.pattern)), 'data-tdg-fly': o.fly });
+			}
+			var rpool = '';
+			for (i = 0; i < 6; i++) {
+				var rh = i * 60;
+				var rsvg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl(" + rh + ",62%,62%)'/><stop offset='1' stop-color='hsl(" + ((rh + 50) % 360) + ",58%,40%)'/></linearGradient></defs><rect width='160' height='90' fill='url(%23g)'/><circle cx='112' cy='30' r='22' fill='rgba(255,255,255,.22)'/></svg>";
+				rpool += '<div class="tdg__poolitem"><div class="tdg__inner"><span class="tdg__link"><img class="tdg__img" src="data:image/svg+xml;utf8,' + rsvg.replace(/"/g, '&quot;') + '" alt=""></span></div></div>';
+			}
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + rcls + '" style="' + style + '" ' + attrStr(rv) + '><div class="tdg__stage"><div class="tdg__frame"></div></div><div class="tdg__pool" hidden>' + rpool + '</div></div>';
+		}
+
+		// Spotlight & Focus family (spotlight_wall · focus_pull · loupe) — cards on .tdg__grid. Mirrors
+		// views/designs/spotlight-wall.php, focus-pull.php, loupe.php.
+		if (design === 'spotlight_wall' || design === 'focus_pull' || design === 'loupe') {
+			var sf = $.extend({}, shared, { 'data-tdg-card': o.card_size, 'data-tdg-allowdrag': 0 });
+			var sN, sStyle = style;
+			if (design === 'spotlight_wall') {
+				$.extend(sf, { 'data-tdg-dir': o.direction === 'back' ? -1 : 1, 'data-tdg-cols': o.columns, 'data-tdg-gap': o.gap, 'data-tdg-spot': o.spot_size,
+					'data-tdg-dim': o.shadow, 'data-tdg-grey': o.greyscale, 'data-tdg-lift': o.lift, 'data-tdg-move': o.move_time,
+					'data-tdg-order': o.order === 'reading' ? 0 : 1, 'data-tdg-follow': o.follow_pointer === 'yes' ? 1 : 0 });
+				sN = Math.max(1, Math.round(o.columns)) * Math.max(1, Math.round(o.rows));
+			} else if (design === 'focus_pull') {
+				$.extend(sf, { 'data-tdg-dir': o.direction === 'back' ? -1 : 1, 'data-tdg-layers': o.layers, 'data-tdg-depth': o.depth, 'data-tdg-blur': o.blur,
+					'data-tdg-dim': o.dim, 'data-tdg-drift': o.drift, 'data-tdg-move': o.move_time });
+				sN = Math.max(4, Math.round(o.photos));
+			} else {
+				$.extend(sf, { 'data-tdg-roam': o.direction === 'center' ? 0.45 : 1, 'data-tdg-cols': o.columns, 'data-tdg-gap': o.gap, 'data-tdg-lens': o.lens_size,
+					'data-tdg-zoom': o.zoom, 'data-tdg-follow': o.follow_pointer === 'yes' ? 1 : 0 });
+				sN = Math.max(2, Math.round(o.columns)) * Math.max(1, Math.round(o.rows));
+				if (/^#[0-9a-f]{3,8}$/i.test(o.lens_ring)) { sStyle += '--tdg-lens-ring:' + o.lens_ring + ';'; }
+			}
+			cards = '';
+			for (i = 0; i < sN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + sStyle + '" ' + attrStr(sf) + '><div class="tdg__stage"><div class="tdg__grid">' + cards + '</div></div></div>';
+		}
+
+		// Stack & Scatter additions (card_fan · shuffle_deck · polaroid_drop) — cards on .tdg__grid. Mirrors
+		// views/designs/card-fan.php, shuffle-deck.php, polaroid-drop.php.
+		if (design === 'card_fan' || design === 'shuffle_deck' || design === 'polaroid_drop') {
+			var kf = $.extend({}, shared, { 'data-tdg-card': o.card_size, 'data-tdg-allowdrag': 0 });
+			var kN = 12, kStyle = style;
+			if (design === 'card_fan') {
+				$.extend(kf, { 'data-tdg-dir': o.direction === 'rtl' ? -1 : 1, 'data-tdg-spread': o.spread, 'data-tdg-pivot': o.pivot, 'data-tdg-lift': o.lift,
+					'data-tdg-straight': o.straighten, 'data-tdg-dim': o.dim, 'data-tdg-sway': o.sway, 'data-tdg-move': o.move_time,
+					'data-tdg-follow': o.follow_pointer === 'yes' ? 1 : 0 });
+				kN = Math.max(3, Math.min(15, Math.round(o.cards)));
+			} else if (design === 'shuffle_deck') {
+				$.extend(kf, { 'data-tdg-side': o.direction === 'right' ? 1 : (o.direction === 'left' ? -1 : 0), 'data-tdg-behind': o.behind, 'data-tdg-offset': o.offset,
+					'data-tdg-jitter': o.jitter, 'data-tdg-slide': o.slide, 'data-tdg-tilt': o.slide_tilt, 'data-tdg-move': o.move_time });
+				kN = 8;
+			} else {
+				var kPile = Math.max(1, Math.min(20, Math.round(o.pile)));
+				$.extend(kf, { 'data-tdg-from': o.direction === 'camera' ? 'camera' : 'above', 'data-tdg-pile': kPile, 'data-tdg-scatter': o.scatter,
+					'data-tdg-tilt': o.max_tilt, 'data-tdg-sweep': o.when_full === 'sweep' ? 1 : 0, 'data-tdg-move': o.move_time });
+				kN = 12 * Math.ceil((kPile + 1) / 12);
+				if (/^#[0-9a-f]{3,8}$/i.test(o.frame_color)) { kStyle += '--tdg-frame:' + o.frame_color + ';'; }
+			}
+			cards = '';
+			for (i = 0; i < kN; i++) {
+				// Polaroid: the colour goes on a child, so the print's frame (the .tdg__inner background) still shows.
+				cards += design === 'polaroid_drop'
+					? cardHtml(i % 12, 12).replace('" style="background:', '"><span style="display:block;width:100%;height:100%;background:').replace('"></div></div>', '"></span></div></div>')
+					: cardHtml(i % 12, 12);
+			}
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + kStyle + '" ' + attrStr(kf) + '><div class="tdg__stage"><div class="tdg__grid">' + cards + '</div></div></div>';
+		}
+
+		// Devices & Screens additions (phone_lineup · window_stack · device_trio). Mirrors
+		// views/designs/phone-lineup.php, window-stack.php, device-trio.php.
+		if (design === 'phone_lineup' || design === 'window_stack') {
+			var df = $.extend({}, shared, { 'data-tdg-card': o.card_size });
+			var dN = 8, dStyle = style;
+			if (design === 'phone_lineup') {
+				$.extend(df, { 'data-tdg-dir': o.direction === 'right' ? -1 : 1, 'data-tdg-spacing': o.spacing, 'data-tdg-depth': o.depth, 'data-tdg-turn': o.turn,
+					'data-tdg-bob': o.float, 'data-tdg-thick': o.thickness, 'data-tdg-snap': o.snap === 'yes' ? 1 : 0, 'data-tdg-move': o.move_time,
+					'data-tdg-allowdrag': o.allow_drag === 'yes' ? 1 : 0, 'data-tdg-momentum': o.drag_momentum === 'yes' ? 1 : 0 });
+				dN = Math.max(3, Math.min(15, Math.round(o.phones)));
+				if (/^#[0-9a-f]{3,8}$/i.test(o.frame_color)) { dStyle += '--tdg-frame:' + o.frame_color + ';'; }
+			} else {
+				$.extend(df, { 'data-tdg-allowdrag': 0, 'data-tdg-exit': o.direction === 'down' ? 'down' : 'toward', 'data-tdg-behind': o.behind, 'data-tdg-gap': o.gap,
+					'data-tdg-offset': o.offset, 'data-tdg-tilt': o.tilt, 'data-tdg-yaw': o.yaw, 'data-tdg-dim': o.dim, 'data-tdg-move': o.move_time });
+				if (/^#[0-9a-f]{3,8}$/i.test(o.chrome_color)) { dStyle += '--tdg-chrome:' + o.chrome_color + ';'; }
+			}
+			cards = '';
+			for (i = 0; i < dN; i++) { cards += cardHtml(i % 12, 12); }
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + dStyle + '" ' + attrStr(df) + '><div class="tdg__stage"><div class="tdg__grid">' + cards + '</div></div></div>';
+		}
+		if (design === 'device_trio') {
+			var tf = $.extend({}, shared, { 'data-tdg-card': o.card_size, 'data-tdg-allowdrag': 0, 'data-tdg-sway': o.direction === 'still' ? 0 : 1,
+				'data-tdg-float': o.float, 'data-tdg-depth': o.depth, 'data-tdg-tilt': o.tilt, 'data-tdg-follow': o.follow_pointer === 'yes' ? 1 : 0 });
+			var trio = '';
+			['laptop', 'tablet', 'phone'].forEach(function (kind, d) {
+				trio += '<div class="tdg__device tdg__device--' + kind + '"><div class="tdg__screen">';
+				for (var j = 0; j < 4; j++) { trio += cardHtml((d + j * 3) % 12, 12).replace('class="tdg__card"', 'class="tdg__card' + (j === 0 ? ' is-active' : '') + '"'); }
+				trio += '</div></div>';
+			});
+			return '<div class="tdg tdg--device-trio" style="' + style + '" ' + attrStr(tf) + '><div class="tdg__stage"><div class="tdg__trio">' + trio + '</div></div></div>';
+		}
+
 		// carousel_ring
 		var ar = attrStr($.extend({}, shared, {
 			'data-tdg-tilt': o.tilt, 'data-tdg-roll': o.roll, 'data-tdg-opening': o.ring_opening,
@@ -491,6 +786,9 @@
 				if (sv != null) { o[key] = sv; }
 			} else if (type === 'switch') {
 				o[key] = $d.find(':checkbox').is(':checked') ? 'yes' : 'no';
+			} else if (type === 'color-picker') {
+				var cv = $d.find('input[type=text], input').first().val();
+				if (cv && /^#[0-9a-f]{3,8}$/i.test(cv)) { o[key] = cv; }
 			}
 		});
 		return { design: design, o: o };

@@ -8,7 +8,7 @@
 	'use strict';
 
 	var OPEN_KEY = 'upwScrollRulerOpen';
-	var btn, panel, rail, list, playhead, open = false, built = false;
+	var btn, panel, rail, list, playhead, abItem, open = false, built = false;
 
 	function ST() { return window.ScrollTrigger || null; }
 	function maxScroll() { return Math.max( 1, ( document.documentElement.scrollHeight || document.body.scrollHeight ) - window.innerHeight ); }
@@ -38,12 +38,21 @@
 	}
 
 	function build() {
-		btn = document.createElement( 'button' );
-		btn.className = 'upw-sruler-btn';
-		btn.type = 'button';
-		btn.title = 'Scroll Ruler (Shift+R)';
-		btn.innerHTML = '<span>⟺</span>';
-		btn.addEventListener( 'click', toggle );
+		// Prefer the admin-bar trigger (Scroll Tools → Scroll Ruler); fall back to a fixed floating
+		// button only when the admin bar is hidden, so the overlay never loses a clickable entry point.
+		abItem = document.getElementById( 'wp-admin-bar-upw-scroll-tools-ruler' );
+		var abLink = abItem ? abItem.querySelector( 'a' ) : null;
+		if ( abLink ) {
+			abLink.addEventListener( 'click', function ( e ) { e.preventDefault(); toggle(); } );
+		} else {
+			btn = document.createElement( 'button' );
+			btn.className = 'upw-sruler-btn';
+			btn.type = 'button';
+			btn.title = 'Scroll Ruler (Shift+R)';
+			btn.innerHTML = '<span>⟺</span>';
+			btn.addEventListener( 'click', toggle );
+			document.body.appendChild( btn );
+		}
 
 		panel = document.createElement( 'div' );
 		panel.className = 'upw-sruler-panel';
@@ -60,7 +69,6 @@
 		rail.innerHTML = '<div class="upw-sruler-track"></div><div class="upw-sruler-playhead"></div>';
 		playhead = rail.querySelector( '.upw-sruler-playhead' );
 
-		document.body.appendChild( btn );
 		document.body.appendChild( panel );
 		document.body.appendChild( rail );
 		built = true;
@@ -111,6 +119,7 @@
 
 	function apply() {
 		document.documentElement.classList.toggle( 'upw-sruler-on', open );
+		if ( abItem ) { abItem.classList.toggle( 'upw-ab-on', open ); }
 		if ( open ) { render(); }
 		try { localStorage.setItem( OPEN_KEY, open ? '1' : '0' ); } catch ( e ) {}
 	}

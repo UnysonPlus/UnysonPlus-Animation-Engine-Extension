@@ -46,10 +46,12 @@ if ( ! function_exists( '_fw_gallery_3d_enqueue_instance' ) ) :
 				if ( ! empty( $a['js'] ) )  { wp_enqueue_script( $handle, $a['js'], array( 'fw-shortcode-gallery-3d' ), $dver, true ); }
 			}
 		}
-		// Scroll Choreography drives its pin + scrub through GSAP ScrollTrigger (robust pin, scrub). Load
-		// the bundled GSAP + ScrollTrigger (same handles the Scroll Motion engine uses, so they dedupe)
-		// and make the gallery runtime depend on ScrollTrigger so it loads AFTER it and takes the GSAP path.
-		if ( 'scroll_choreography' === $design ) {
+		// Scroll Choreography — and ANY chained gallery (data-tdg-chain) — drives its pin + scrub through GSAP
+		// ScrollTrigger (robust pin, scrub). Load the bundled GSAP + ScrollTrigger (same handles the Scroll
+		// Motion engine uses, so they dedupe) and make the gallery runtime depend on ScrollTrigger so it
+		// loads AFTER it and takes the GSAP path.
+		$is_chained = ( isset( $atts['chain'] ) && $atts['chain'] === 'yes' );
+		if ( 'scroll_choreography' === $design || $is_chained ) {
 			$ae = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
 			if ( $ae ) {
 				$gver = '3.13.0';

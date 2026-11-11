@@ -50,7 +50,7 @@ $slots = array_slice( $slots, 0, 30 );
 	<div class="tdg__stage">
 		<div class="tdg__reel">
 			<?php foreach ( $slots as $item ) {
-				echo '<div class="tdg__card">' . $render_card( $item ) . '</div>';
+				echo '<div class="tdg__card"' . $card_style( $item ) . '>' . $render_card( $item ) . '</div>';
 			} ?>
 		</div>
 	</div>

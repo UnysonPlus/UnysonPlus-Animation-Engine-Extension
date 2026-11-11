@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs>
+  <linearGradient id="fg-a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient>
+  <linearGradient id="fg-b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c7dcff"/><stop offset="1" stop-color="#5b95f0"/></linearGradient>
+  <g id="fg-c">
+    <rect x="-7" y="-7" width="14" height="14" rx="2" fill="url(#fg-a)"/>
+  </g>
+</defs>
+<!-- Flip Grid: a wave of cards flipping over to show the next photos. Original design. -->
+<g transform="translate(23,15)"><g><animateTransform attributeName="transform" type="scale" dur="3s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(41,15)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.15s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(59,15)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.3s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(77,15)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.45s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(23,33)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.15s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(41,33)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.3s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(59,33)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.45s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(77,33)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.6s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(23,51)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.3s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(41,51)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.45s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(59,51)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.6s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+<g transform="translate(77,51)"><g><animateTransform attributeName="transform" type="scale" dur="3s" begin="0.75s" repeatCount="indefinite" values="1 1;1 1;0.05 1;1 1;1 1" keyTimes="0;0.1;0.25;0.4;1"/><use href="#fg-c"/></g></g>
+</svg>

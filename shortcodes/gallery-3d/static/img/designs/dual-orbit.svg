@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="do-f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Dual Orbit: two concentric rings turning opposite ways on a tilted disc. Original design. -->
+<g transform="translate(48,32) scale(1,0.5)">
+  <circle r="34" stroke="#8fbcff" stroke-opacity=".35" stroke-width="1.6"/>
+  <circle r="17" stroke="#8fbcff" stroke-opacity=".35" stroke-width="1.6"/>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" dur="8s" repeatCount="indefinite" from="0" to="360"/>
+    <rect x="29" y="-5" width="10" height="10" rx="2" fill="url(#do-f)" transform="rotate(0)"/>
+    <rect x="29" y="-5" width="10" height="10" rx="2" fill="url(#do-f)" transform="rotate(72)"/>
+    <rect x="29" y="-5" width="10" height="10" rx="2" fill="url(#do-f)" transform="rotate(144)"/>
+    <rect x="29" y="-5" width="10" height="10" rx="2" fill="url(#do-f)" transform="rotate(216)"/>
+    <rect x="29" y="-5" width="10" height="10" rx="2" fill="url(#do-f)" transform="rotate(288)"/>
+  </g>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" dur="5s" repeatCount="indefinite" from="360" to="0"/>
+    <rect x="13.5" y="-3.5" width="7" height="7" rx="1.5" fill="url(#do-f)" opacity=".8" transform="rotate(30)"/>
+    <rect x="13.5" y="-3.5" width="7" height="7" rx="1.5" fill="url(#do-f)" opacity=".8" transform="rotate(150)"/>
+    <rect x="13.5" y="-3.5" width="7" height="7" rx="1.5" fill="url(#do-f)" opacity=".8" transform="rotate(270)"/>
+  </g>
+</g>
+</svg>

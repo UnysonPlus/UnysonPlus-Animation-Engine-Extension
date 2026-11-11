@@ -54,7 +54,7 @@ $attr['data-tdg-count']    = esc_attr( count( $items ) );
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="tdg__stage">
 		<div class="tdg__ring">
-			<?php foreach ( $items as $item ) { echo '<div class="tdg__card">' . $render_card( $item ) . '</div>'; } ?>
+			<?php foreach ( $items as $item ) { echo '<div class="tdg__card"' . $card_style( $item ) . '>' . $render_card( $item ) . '</div>'; } ?>
 		</div>
 	</div>
 </div>

@@ -1,0 +1,6 @@
+/* Painted (Animation Engine). The painting sits in .upw-paint-host, a layer the runtime adds inside the
+   element: behind its content (above its own background), or in front of it, blended like ink on paper. */
+.upw-painted { isolation: isolate; }
+.upw-paint-host { position: absolute; z-index: -1; pointer-events: none; }
+.upw-paint-host.is-front { z-index: 2; mix-blend-mode: multiply; }
+.upw-paint-host canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }

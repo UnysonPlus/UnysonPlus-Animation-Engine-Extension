@@ -61,6 +61,10 @@
 	// pinned stretch — the stage sticks while the stretched wrapper passes, so the span is
 	// wrapperH − stageH and the stick offset mirrors the CSS `top:` rule (viewport-centred stage).
 	function scrollProgress( el, stage ) {
+		// Chained gallery: the chain master drives its slice of the sequence and sets `__tdgChainProgress`
+		// (0..1) each frame. Return that so the design's own loop AND the entrance reveal scrub with the
+		// chain instead of the element's own viewport position — this is what makes chaining design-agnostic.
+		if ( el.__tdgChainProgress != null ) { return clamp( el.__tdgChainProgress, 0, 1 ); }
 		// Live Editor: scroll-driven galleries would sit at progress 0 (cards hidden by the entrance) and
 		// look empty. Pin a representative mid-frame so the cards are revealed and visible while editing.
 		if ( IN_EDITOR ) { return 0.4; }
@@ -1848,6 +1852,2709 @@
 		requestAnimationFrame( loop );
 	}
 
+	/* Tilt Deck (Isometric) — photos lie flat on an isometric ground plane in a grid and march
+	 * diagonally across it; the tile crossing the focus point lifts off the plane, rotates flat to
+	 * face the viewer and brightens, then settles back as the next one rises. Pure CSS 3D, one rAF
+	 * loop. The view emits cols*rows cards (images cycle). An original UnysonPlus design. */
+	function initTiltDeck( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var plane = el.querySelector( '.tdg__iso' );
+		if ( ! stage || ! plane ) { return; }
+		var cards = Array.prototype.slice.call( plane.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 12 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var cols    = Math.max( 1, Math.round( num( el, 'data-tdg-cols', 4 ) ) );
+		var gap     = clamp( num( el, 'data-tdg-gap', 12 ), 0, 60 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 58 ), 20, 75 );
+		var lift    = clamp( num( el, 'data-tdg-lift', 60 ) / 100, 0, 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 135 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 30 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 16 ), 4, 60 ) / 100;
+		var SPIN = 45; // the isometric Z rotation of the ground plane
+
+		var rows = Math.max( 1, Math.ceil( N / cols ) );
+		var cardW = 0, cell = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			cell  = cardW * ( 1 + gap );
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			plane.style.transform = 'rotateX(' + tilt + 'deg) rotateZ(' + SPIN + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var col = i % cols, row = Math.floor( i / cols );
+				var pos = ( ( ( row - S * dir ) % rows ) + rows ) % rows;          // 0..rows (the march, wrapped)
+				var py  = ( pos - ( rows - 1 ) / 2 ) * cell;                        // plane Y (depth across the grid)
+				var px  = ( col - ( cols - 1 ) / 2 ) * cell;                        // plane X (fixed per column)
+				var k   = Math.max( 0, 1 - Math.abs( py ) / ( cell * 1.15 ) );      // focus proximity (peak at plane centre)
+				k = k * k * ( 3 - 2 * k );                                          // smoothstep
+				var edge = Math.min( pos, rows - pos );
+				var seam = clamp( edge / 0.7, 0, 1 );                               // fade the wrap seam so recycling is invisible
+				var lz = lift * k * cardW * 0.95;                                   // lift off the plane toward the viewer
+				var rx = -tilt * lift * k;                                          // counter the plane tilt …
+				var rz = -SPIN * lift * k;                                          // … and spin, so the focus tile faces you
+				var sc = 1 + lift * k * 0.16;
+				c.style.transform = 'translate3d(' + px.toFixed( 1 ) + 'px,' + py.toFixed( 1 ) + 'px,' + lz.toFixed( 1 ) + 'px) rotateZ(' + rz.toFixed( 1 ) + 'deg) rotateX(' + rx.toFixed( 1 ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				var back = clamp( pos / rows, 0, 1 );                               // 0 front … 1 back
+				var bright = ( 1 - dFade * back ) * ( 1 + ( glow - 1 ) * k );
+				c.style.filter = 'brightness(' + bright.toFixed( 3 ) + ')';
+				c.style.opacity = seam.toFixed( 3 );
+			}
+		}
+
+		var S = 0, vel = 0;
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, py0 = 0, scrollTarget = null;
+		var advance = function ( dt ) { S += ( rows / Math.max( 1, speed ) ) * dt * hoverF(); };
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x, y ) { dragging = true; py0 = y; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var dy = y - py0; py0 = y; var dd = -dy * 0.006; S += dd; vel = dd; };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			attachDrag( el, down, move, up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * rows * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = ( tm - last ) / 1000; last = tm;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.94; }
+				else if ( drive === 'scroll' && scrollTarget !== null ) { S += ( scrollTarget - S ) * 0.14; if ( Math.abs( scrollTarget - S ) < 0.0004 ) { S = scrollTarget; } }
+			}
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* Iso Orbit (Isometric) — tiles sit on a ring lying flat on the isometric ground plane and revolve
+	 * around its centre; the tile at the near point of the orbit lifts off the plane, rotates flat to
+	 * face the viewer and brightens, settling back as it carries on round. Far side dims. Pure CSS 3D,
+	 * one rAF loop. The view emits one tile per image. An original UnysonPlus design. */
+	function initIsoOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var plane = el.querySelector( '.tdg__iso' );
+		if ( ! stage || ! plane ) { return; }
+		var cards = Array.prototype.slice.call( plane.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 18 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 30 ), 8, 60 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 58 ), 20, 75 );
+		var lift    = clamp( num( el, 'data-tdg-lift', 70 ) / 100, 0, 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 140 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 35 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 16 ), 4, 60 ) / 100;
+		var SPIN = 45; // the isometric Z rotation of the ground plane
+
+		var cardW = 0, R = 0, W = 1, TWO = Math.PI * 2;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			plane.style.transform = 'rotateX(' + tilt + 'deg) rotateZ(' + SPIN + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var theta = ( i / N ) * TWO + S * dir;                 // position on the ring (radians)
+				var px = Math.cos( theta ) * R;
+				var py = Math.sin( theta ) * R;                        // +py = the near arc (front of the orbit)
+				var near = ( Math.sin( theta ) + 1 ) / 2;              // 0 far … 1 near
+				var k = near * near * ( 3 - 2 * near );                // smoothstep — emphasise the near arc
+				var lz = lift * k * cardW * 0.95;                      // lift off the plane at the front …
+				var rx = -tilt * lift * k;                             // … and face the viewer
+				var rz = -SPIN * lift * k;
+				var sc = 1 + lift * k * 0.18;
+				c.style.transform = 'translate3d(' + px.toFixed( 1 ) + 'px,' + py.toFixed( 1 ) + 'px,' + lz.toFixed( 1 ) + 'px) rotateZ(' + rz.toFixed( 1 ) + 'deg) rotateX(' + rx.toFixed( 1 ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				var bright = ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * k );
+				c.style.filter = 'brightness(' + bright.toFixed( 3 ) + ')';
+			}
+		}
+
+		var S = 0, vel = 0;
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, px0 = 0, scrollTarget = null;
+		var advance = function ( dt ) { S += ( TWO / Math.max( 1, speed ) ) * dt * hoverF(); };
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x, y ) { dragging = true; px0 = x; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var dx = x - px0; px0 = x; var dd = dx * 0.006; S += dd; vel = dd; };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			attachDrag( el, down, move, up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * TWO * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = ( tm - last ) / 1000; last = tm;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.94; }
+				else if ( drive === 'scroll' && scrollTarget !== null ) { S += ( scrollTarget - S ) * 0.14; if ( Math.abs( scrollTarget - S ) < 0.0004 ) { S = scrollTarget; } }
+			}
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* Iso Stack (Isometric) — photo slabs stacked into a tower rising off the isometric ground plane,
+	 * streaming upward on a gentle spiral; the slab passing through the focus height lifts to face the
+	 * viewer and brightens, then flattens again as it carries on up and recycles. Pure CSS 3D, one rAF
+	 * loop. The view emits one slab per image (images cycle). An original UnysonPlus design. */
+	function initIsoStack( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var plane = el.querySelector( '.tdg__iso' );
+		if ( ! stage || ! plane ) { return; }
+		var cards = Array.prototype.slice.call( plane.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 8 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var sgap    = clamp( num( el, 'data-tdg-gap', 40 ), 10, 80 ) / 100;
+		var spiral  = clamp( num( el, 'data-tdg-spiral', 40 ), 0, 100 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 58 ), 20, 75 );
+		var lift    = clamp( num( el, 'data-tdg-lift', 70 ) / 100, 0, 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 140 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 40 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 17 ), 4, 60 ) / 100;
+		var SPIN = 45, TWO = Math.PI * 2, BAND = 0.26;
+
+		var cardW = 0, towerH = 0, driftR = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			towerH = cardW * N * sgap;
+			driftR = spiral * cardW * 0.6;
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			plane.style.transform = 'rotateX(' + tilt + 'deg) rotateZ(' + SPIN + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var pos = ( ( ( i / N + S * dir ) % 1 ) + 1 ) % 1;     // 0 bottom … 1 top (looping)
+				var ang = pos * TWO;                                   // one gentle revolution up the tower
+				var px = Math.cos( ang ) * driftR;
+				var py = Math.sin( ang ) * driftR;
+				var z = ( pos - 0.5 ) * towerH;                        // height off the plane
+				var k = Math.max( 0, 1 - Math.abs( pos - 0.5 ) / BAND );
+				k = k * k * ( 3 - 2 * k );                             // smoothstep focus band at mid height
+				var seam = clamp( Math.min( pos, 1 - pos ) / 0.08, 0, 1 ); // fade the top/bottom recycle seam
+				var lz = z + lift * k * cardW * 0.6;
+				var rx = -tilt * lift * k;
+				var rz = -SPIN * lift * k;
+				var sc = 1 + lift * k * 0.16;
+				c.style.transform = 'translate3d(' + px.toFixed( 1 ) + 'px,' + py.toFixed( 1 ) + 'px,' + lz.toFixed( 1 ) + 'px) rotateZ(' + rz.toFixed( 1 ) + 'deg) rotateX(' + rx.toFixed( 1 ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				var bright = ( 1 - dFade * ( 1 - pos ) ) * ( 1 + ( glow - 1 ) * k );
+				c.style.filter = 'brightness(' + bright.toFixed( 3 ) + ')';
+				c.style.opacity = seam.toFixed( 3 );
+			}
+		}
+
+		var S = 0, vel = 0;
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, py0 = 0, scrollTarget = null;
+		var advance = function ( dt ) { S += ( 1 / Math.max( 1, speed ) ) * dt * hoverF(); };
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x, y ) { dragging = true; py0 = y; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var dy = y - py0; py0 = y; var dd = -dy * 0.0018; S += dd; vel = dd; };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			attachDrag( el, down, move, up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = ( tm - last ) / 1000; last = tm;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.94; }
+				else if ( drive === 'scroll' && scrollTarget !== null ) { S += ( scrollTarget - S ) * 0.14; if ( Math.abs( scrollTarget - S ) < 0.0004 ) { S = scrollTarget; } }
+			}
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* Iso Cascade (Isometric) — photos descend a diagonal staircase across the isometric ground plane:
+	 * high and far at the back, stepping down and toward the viewer. The tile reaching the front of the
+	 * cascade lifts flat to face you and brightens, then recycles to the back. Pure CSS 3D, one rAF
+	 * loop. The view emits one tile per image (images cycle). An original UnysonPlus design. */
+	function initIsoCascade( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var plane = el.querySelector( '.tdg__iso' );
+		if ( ! stage || ! plane ) { return; }
+		var cards = Array.prototype.slice.call( plane.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 12 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var spread  = clamp( num( el, 'data-tdg-spread', 60 ), 20, 100 ) / 100;
+		var rise    = clamp( num( el, 'data-tdg-rise', 50 ), 10, 100 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 58 ), 20, 75 );
+		var lift    = clamp( num( el, 'data-tdg-lift', 70 ) / 100, 0, 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 140 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 45 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 17 ), 4, 60 ) / 100;
+		var SPIN = 45, FOCUS = 0.78, BAND = 0.15;
+
+		var cardW = 0, spanX = 0, spanY = 0, riseH = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			spanX = W * 1.10 * spread;
+			spanY = W * 0.26 * spread;
+			riseH = cardW * ( 0.6 + rise * 2.2 );
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			plane.style.transform = 'rotateX(' + tilt + 'deg) rotateZ(' + SPIN + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var t = ( ( ( i / N + S * dir ) % 1 ) + 1 ) % 1;      // 0 back(high/far) … 1 front(low/near)
+				var px = ( t - 0.5 ) * spanX;
+				var py = ( t - 0.5 ) * spanY;
+				var baseZ = ( 1 - t ) * riseH;                        // descends from the back down to the front
+				var k = Math.max( 0, 1 - Math.abs( t - FOCUS ) / BAND );
+				k = k * k * ( 3 - 2 * k );                            // smoothstep focus near the front of the cascade
+				var lz = baseZ + lift * k * cardW * 0.7;
+				var rx = -tilt * lift * k;
+				var rz = -SPIN * lift * k;
+				var sc = 1 + lift * k * 0.16;
+				c.style.transform = 'translate3d(' + px.toFixed( 1 ) + 'px,' + py.toFixed( 1 ) + 'px,' + lz.toFixed( 1 ) + 'px) rotateZ(' + rz.toFixed( 1 ) + 'deg) rotateX(' + rx.toFixed( 1 ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				var seam = clamp( Math.min( t, 1 - t ) / 0.07, 0, 1 ); // fade the back/front recycle seam
+				var bright = ( 1 - dFade * ( 1 - t ) ) * ( 1 + ( glow - 1 ) * k );
+				c.style.filter = 'brightness(' + bright.toFixed( 3 ) + ')';
+				c.style.opacity = seam.toFixed( 3 );
+			}
+		}
+
+		var S = 0, vel = 0;
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, py0 = 0, scrollTarget = null;
+		var advance = function ( dt ) { S += ( 1 / Math.max( 1, speed ) ) * dt * hoverF(); };
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x, y ) { dragging = true; py0 = y; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var dy = y - py0; py0 = y; var dd = dy * 0.0018; S += dd; vel = dd; };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			attachDrag( el, down, move, up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = ( tm - last ) / 1000; last = tm;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.94; }
+				else if ( drive === 'scroll' && scrollTarget !== null ) { S += ( scrollTarget - S ) * 0.14; if ( Math.abs( scrollTarget - S ) < 0.0004 ) { S = scrollTarget; } }
+			}
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* Iso Fan (Isometric) — tiles spread along a flat arc (a fan) on the isometric ground plane and
+	 * sweep across it; the tile passing the centre-front of the fan lifts flat to face the viewer and
+	 * brightens, then settles back as it sweeps on and recycles at the far edge. Pure CSS 3D, one rAF
+	 * loop. The view emits one tile per image (images cycle). An original UnysonPlus design. */
+	function initIsoFan( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var plane = el.querySelector( '.tdg__iso' );
+		if ( ! stage || ! plane ) { return; }
+		var cards = Array.prototype.slice.call( plane.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 16 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var reach   = clamp( num( el, 'data-tdg-reach', 34 ), 10, 60 ) / 100;
+		var arc     = clamp( num( el, 'data-tdg-arc', 130 ), 40, 175 ) * Math.PI / 180;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 58 ), 20, 75 );
+		var lift    = clamp( num( el, 'data-tdg-lift', 70 ) / 100, 0, 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 140 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 40 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 16 ), 4, 60 ) / 100;
+		var SPIN = 45, edgeNear = Math.cos( arc / 2 );
+
+		var cardW = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * reach;
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			plane.style.transform = 'rotateX(' + tilt + 'deg) rotateZ(' + SPIN + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var t = ( ( ( i / N + S * dir ) % 1 ) + 1 ) % 1;      // 0 … 1 sweeping across the fan
+				var a = ( t - 0.5 ) * arc;                            // angle across the arc
+				var px = Math.sin( a ) * R;
+				var py = Math.cos( a ) * R - R * 0.62;                 // arc curves in depth — centre near, edges recede
+				var near = ( Math.cos( a ) - edgeNear ) / ( 1 - edgeNear + 0.0001 ); // 0 edge … 1 centre
+				var k = Math.max( 0, 1 - Math.abs( a ) / ( arc * 0.16 ) );
+				k = k * k * ( 3 - 2 * k );                            // smoothstep focus at the centre-front
+				var lz = lift * k * cardW * 0.95;
+				var rx = -tilt * lift * k;
+				var rz = -SPIN * lift * k;
+				var sc = 1 + lift * k * 0.18;
+				c.style.transform = 'translate3d(' + px.toFixed( 1 ) + 'px,' + py.toFixed( 1 ) + 'px,' + lz.toFixed( 1 ) + 'px) rotateZ(' + rz.toFixed( 1 ) + 'deg) rotateX(' + rx.toFixed( 1 ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				var seam = clamp( Math.min( t, 1 - t ) / 0.06, 0, 1 ); // fade the tiles at the fan's edges (recycle)
+				var bright = ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * k );
+				c.style.filter = 'brightness(' + bright.toFixed( 3 ) + ')';
+				c.style.opacity = seam.toFixed( 3 );
+			}
+		}
+
+		var S = 0, vel = 0;
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, px0 = 0, scrollTarget = null;
+		var advance = function ( dt ) { S += ( 1 / Math.max( 1, speed ) ) * dt * hoverF(); };
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x, y ) { dragging = true; px0 = x; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var dx = x - px0; px0 = x; var dd = dx * 0.0016; S += dd; vel = dd; };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			attachDrag( el, down, move, up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = ( tm - last ) / 1000; last = tm;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.94; }
+				else if ( drive === 'scroll' && scrollTarget !== null ) { S += ( scrollTarget - S ) * 0.14; if ( Math.abs( scrollTarget - S ) < 0.0004 ) { S = scrollTarget; } }
+			}
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* Orbit Bloom (Orbit) — a ring of billboarded cards that slowly orbits a tilted disc and BREATHES:
+	 * it blooms from a tight central cluster out to a wide ring and back, cards fading + scaling up as
+	 * they open. Front cards (nearer the camera) are bigger + brighter; the far arc dims. Pure CSS 3D,
+	 * one rAF loop. The view emits one card per image (images cycle). An original UnysonPlus design. */
+	function initOrbitBloom( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 22 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 32 ), 10, 60 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 58 ), 0, 80 );
+		var bloomAmt = clamp( num( el, 'data-tdg-bloom', 70 ) / 100, 0, 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 45 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 16 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+
+		var cardW = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.7 ) + 'px';
+			orbit.style.transform = 'rotateX(' + tilt + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+
+		function applyFrame() {
+			var breath = ( 1 - Math.cos( S * TWO ) ) / 2;                 // 0 closed … 1 fully bloomed
+			var Rnow = R * ( 1 - bloomAmt * 0.72 * ( 1 - breath ) );      // tight cluster when closed, wide ring when open
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var theta = ( i / N ) * TWO + S * TWO * dir * 0.5;        // the ring also slowly orbits
+				var x = Math.cos( theta ) * Rnow, y = Math.sin( theta ) * Rnow;
+				var near = ( Math.sin( theta ) + 1 ) / 2;                 // bottom of the disc = nearer the camera
+				var sc = ( 0.74 + 0.26 * near ) * ( 0.5 + 0.5 * breath ); // cards also scale up as they open
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,0) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.opacity = ( 0.45 + 0.55 * breath ).toFixed( 3 );  // fade in as they bloom
+				var bright = ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * near );
+				c.style.filter = 'brightness(' + bright.toFixed( 3 ) + ')';
+				c.style.zIndex = String( Math.round( near * 100 ) );
+			}
+		}
+
+		var S = 0, vel = 0;
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, px0 = 0, scrollTarget = null;
+		var advance = function ( dt ) { S += ( 1 / Math.max( 1, speed ) ) * dt * hoverF(); };
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x, y ) { dragging = true; px0 = x; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var dx = x - px0; px0 = x; var dd = dx * 0.004; S += dd; vel = dd; };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			attachDrag( el, down, move, up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = ( tm - last ) / 1000; last = tm;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.94; }
+				else if ( drive === 'scroll' && scrollTarget !== null ) { S += ( scrollTarget - S ) * 0.14; if ( Math.abs( scrollTarget - S ) < 0.0004 ) { S = scrollTarget; } }
+			}
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* Focus Orbit (Orbit) — a ring of billboarded cards orbiting a tilted disc; the card reaching the
+	 * front of the orbit pulls INTO the centre, lifts toward you and enlarges into a hero, then returns
+	 * to the ring as the next card takes its place — a rolling central feature. Front cards are brighter;
+	 * the far arc dims. Pure CSS 3D, one rAF loop. One card per image (images cycle). An original design. */
+	function initFocusOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 20 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 30 ), 10, 55 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 55 ), 0, 80 );
+		var heroAmt = clamp( num( el, 'data-tdg-hero', 70 ) / 100, 0, 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 150 ), 100, 240 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 45 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 18 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+
+		var cardW = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.7 ) + 'px';
+			orbit.style.transform = 'rotateX(' + tilt + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var c = cards[ i ];
+				var theta = ( i / N ) * TWO + S * TWO * dir * 0.5;
+				var near = ( Math.sin( theta ) + 1 ) / 2;                 // front (bottom) = near
+				var k = Math.pow( near, 5 );                              // ONLY the very front becomes the hero (sharp)
+				var x0 = Math.cos( theta ) * R, y0 = Math.sin( theta ) * R;
+				var x = x0 * ( 1 - k * heroAmt ), y = y0 * ( 1 - k * heroAmt ); // pull toward centre as it fronts
+				var lz = k * heroAmt * cardW * 1.3;                       // lift the hero toward the camera (counter the disc tilt)
+				var sc = ( 0.46 + 0.30 * near ) * ( 1 + k * heroAmt * 1.5 ); // satellites small; the hero enlarges strongly
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,' + lz.toFixed( 1 ) + 'px) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				var bright = ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * k );
+				c.style.filter = 'brightness(' + bright.toFixed( 3 ) + ')';
+				c.style.zIndex = String( 100 + Math.round( ( near + k ) * 100 ) );
+			}
+		}
+
+		var S = 0, vel = 0;
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		var hoverF = hoverFactor( el );
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, px0 = 0, scrollTarget = null;
+		var advance = function ( dt ) { S += ( 1 / Math.max( 1, speed ) ) * dt * hoverF(); };
+
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			var down = function ( x, y ) { dragging = true; px0 = x; vel = 0; el.style.cursor = 'grabbing'; };
+			var move = function ( x, y ) { if ( ! dragging ) { return; } var dx = x - px0; px0 = x; var dd = dx * 0.004; S += dd; vel = dd; };
+			var up = function () { dragging = false; el.style.cursor = 'grab'; };
+			attachDrag( el, down, move, up );
+		}
+
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = ( tm - last ) / 1000; last = tm;
+			if ( ! dragging ) {
+				if ( autoRun ) { advance( dt ); }
+				if ( momentum && Math.abs( vel ) > 0.00002 ) { S += vel; vel *= 0.94; }
+				else if ( drive === 'scroll' && scrollTarget !== null ) { S += ( scrollTarget - S ) * 0.14; if ( Math.abs( scrollTarget - S ) < 0.0004 ) { S = scrollTarget; } }
+			}
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* Shared drive for the newer Orbit designs (Dual Orbit, Comet Orbit, Orbit Swarm, Ring Tilt): the
+	 * continuous / scroll-scrub / static drive, drag-to-spin with momentum and the hover slow-down — the
+	 * same behaviour as Orbit Bloom's inline loop, in one place. `st.S` is the design's phase (1 unit =
+	 * half a revolution); applyFrame() reads it. */
+	function orbitDrive( el, stage, st, speed, drive, applyFrame ) {
+		var hoverF = hoverFactor( el );
+		var dsign = num( el, 'data-tdg-dragsign', 1 );                       // -1 flips a drag (a design whose phase runs opposite to the screen)
+		var allowDrag = num( el, 'data-tdg-allowdrag', 1 );
+		var momentum = num( el, 'data-tdg-momentum', 1 );
+		var dragging = false, px0 = 0, vel = 0, scrollTarget = null;
+		if ( allowDrag ) {
+			el.style.cursor = 'grab';
+			attachDrag( el,
+				function ( x ) { dragging = true; px0 = x; vel = 0; el.style.cursor = 'grabbing'; },
+				function ( x ) { if ( ! dragging ) { return; } var dd = ( x - px0 ) * 0.004 * dsign; px0 = x; st.S += dd; vel = dd; },
+				function () { dragging = false; el.style.cursor = 'grab'; } );
+		}
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+		var autoRun = ( drive === 'continuous' && ! reduce );
+		if ( ! ( autoRun || allowDrag || drive === 'scroll' ) ) { return; }
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = Math.min( 0.1, ( tm - last ) / 1000 ); last = tm;
+			if ( ! dragging ) {
+				if ( autoRun ) { st.S += ( 1 / Math.max( 1, speed ) ) * dt * hoverF(); }
+				if ( momentum && Math.abs( vel ) > 0.00002 ) { st.S += vel; vel *= 0.94; }
+				else if ( drive === 'scroll' && scrollTarget !== null ) { st.S += ( scrollTarget - st.S ) * 0.14; if ( Math.abs( scrollTarget - st.S ) < 0.0004 ) { st.S = scrollTarget; } }
+			}
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* Size + place an orbit-path line (`.tdg__track`, a bordered ellipse lying in the orbit plane) with
+	 * semi-axes rx / ry, centred at x = cx. No-op when the design was rendered without paths. */
+	function orbitTrack( t, rx, ry, cx ) {
+		if ( ! t ) { return; }
+		t.style.width = ( 2 * rx ) + 'px';
+		t.style.height = ( 2 * ry ) + 'px';
+		t.style.marginLeft = ( -rx + cx ) + 'px';
+		t.style.marginTop = ( -ry ) + 'px';
+	}
+
+	/* Stable 0…1 pseudo-random per card index (same layout on every load / in the preview). */
+	function orbitHash( n ) { var x = Math.sin( n * 127.1 + 311.7 ) * 43758.5453; return x - Math.floor( x ); }
+
+	/* Dual Orbit (Orbit) — two concentric rings of billboarded cards on one tilted disc. Cards alternate
+	 * outer / inner; the inner ring turns the other way (Counter-rotate) at its own speed (Inner Ring
+	 * Speed), so the rings gear past each other. Front cards brighter, far arc dims. An original design. */
+	function initDualOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 20 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 33 ), 15, 55 ) / 100;
+		var inPct   = clamp( num( el, 'data-tdg-inner', 50 ), 25, 85 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 62 ), 0, 80 );
+		var counter = num( el, 'data-tdg-counter', 1 ) ? -1 : 1;
+		var iSpeed  = clamp( num( el, 'data-tdg-ispeed', 150 ), 50, 300 ) / 100;
+		var glow    = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 45 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 11 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+
+		// Every third card rides the inner ring, the rest the outer one (fewer than 5 → one ring), so
+		// the outer ring stays full and the inner one reads as a smaller, separate orbit.
+		var outer = [], inner = [];
+		cards.forEach( function ( c, i ) { ( N >= 5 && i % 3 === 1 ) ? inner.push( c ) : outer.push( c ); } );
+		var tracks = orbit.querySelectorAll( '.tdg__track' );
+
+		var cardW = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.7 ) + 'px';
+			orbit.style.transform = 'rotateX(' + tilt + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			orbitTrack( tracks[ 0 ], R, R, 0 );
+			orbitTrack( tracks[ 1 ], R * inPct, R * inPct, 0 );
+		}
+		function ring( list, Rr, ang, scl, off ) {
+			var n = list.length;
+			for ( var j = 0; j < n; j++ ) {
+				var theta = ( j / n ) * TWO + off + ang;
+				var x = Math.cos( theta ) * Rr, y = Math.sin( theta ) * Rr;
+				var near = ( Math.sin( theta ) + 1 ) / 2;
+				var sc = ( 0.72 + 0.28 * near ) * scl;
+				var c = list[ j ];
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,0) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * near ) ).toFixed( 3 ) + ')';
+				c.style.zIndex = String( Math.round( near * 100 ) );
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var a = st.S * TWO * dir * 0.5;
+			ring( outer, R, a, 1, 0 );
+			if ( inner.length ) { ring( inner, R * inPct, a * iSpeed * counter, 0.66, Math.PI / inner.length ); }
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Comet Orbit (Orbit) — billboarded cards travel one elliptical orbit around a glowing focus with
+	 * orbital (Kepler) timing: equal steps of "mean anomaly" become slow drifting at the far end and a fast
+	 * whip past the focus, where the cards flare larger and brighter. Eccentricity 0 = an even circle. An
+	 * original design. */
+	function initCometOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var focusEl = orbit.querySelector( '.tdg__focus' );
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 24 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 33 ), 15, 55 ) / 100;
+		var e       = clamp( num( el, 'data-tdg-ecc', 62 ), 0, 85 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 45 ), 0, 80 );
+		var flare   = clamp( num( el, 'data-tdg-flare', 70 ) / 100, 0, 1 );
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 40 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 12 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+		var flareK = flare * ( 0.35 + 0.65 * Math.min( 1, e / 0.5 ) ); // a near-circle flares only a little
+
+		var cardW = 0, A = 0, B = 0, shift = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			A = W * radPct;
+			B = A * Math.sqrt( 1 - e * e );
+			shift = -A * e * 0.15;                                         // balance the off-centre focus
+			orbitTrack( orbit.querySelector( '.tdg__track' ), A, B, shift );
+			stage.style.perspective = ( W * 1.7 ) + 'px';
+			orbit.style.transform = 'rotateX(' + tilt + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			if ( focusEl ) {
+				var fs = cardW * 1.7;
+				focusEl.style.width = focusEl.style.height = fs + 'px';
+				focusEl.style.marginLeft = focusEl.style.marginTop = ( -fs / 2 ) + 'px';
+				focusEl.style.transform = 'translate3d(' + ( A * e + shift ).toFixed( 1 ) + 'px,0,0) rotateX(' + ( -tilt ) + 'deg)';
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var M = ( i / N ) * TWO + st.S * TWO * dir * 0.5;          // mean anomaly — advances evenly
+				var E = M;                                                  // solve Kepler: E − e·sin E = M
+				for ( var it = 0; it < 6; it++ ) { E -= ( E - e * Math.sin( E ) - M ) / ( 1 - e * Math.cos( E ) ); }
+				var x = A * Math.cos( E ) + shift, y = B * Math.sin( E );
+				var near = ( Math.sin( E ) + 1 ) / 2;                       // front of the disc = near
+				var prox = ( 1 + Math.cos( E ) ) / 2;                       // 1 at perihelion (by the focus)
+				var kF = Math.pow( prox, 3 ) * flareK;
+				var sc = ( 0.62 + 0.25 * near ) * ( 1 + kF * 1.1 );
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,0) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + kF * 0.8 ) ).toFixed( 3 ) + ')';
+				c.style.zIndex = String( 10 + Math.round( ( near + kF ) * 100 ) );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Orbit Swarm (Orbit) — every billboarded card keeps its own orbit: its own radius (Spread), pace
+	 * (Swirl — inner orbits run faster, so cards overtake each other) and rise / sink above the plane
+	 * (Height Drift). Periodically the swarm gathers toward the centre and scatters back out (Gather).
+	 * Per-card values come from a stable hash, so the swarm is the same on every load. An original design. */
+	function initOrbitSwarm( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive    = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed    = num( el, 'data-tdg-speed', 26 );
+		var dir      = num( el, 'data-tdg-dir', 1 );
+		var radPct   = clamp( num( el, 'data-tdg-radius', 31 ), 15, 55 ) / 100;
+		var spread   = clamp( num( el, 'data-tdg-spread', 55 ), 0, 90 ) / 100;
+		var swirl    = clamp( num( el, 'data-tdg-swirl', 60 ), 0, 100 ) / 100;
+		var hAmt     = clamp( num( el, 'data-tdg-height', 30 ), 0, 100 ) / 100;
+		var cohesion = clamp( num( el, 'data-tdg-cohesion', 45 ), 0, 100 ) / 100;
+		var tilt     = clamp( num( el, 'data-tdg-tilt', 55 ), 0, 80 );
+		var glow     = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var dFade    = clamp( num( el, 'data-tdg-dfade', 45 ) / 100, 0, 1 );
+		var cardPct  = clamp( num( el, 'data-tdg-card', 9 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+
+		// Per-card orbit: radius fraction, start phase, angular speed, height phase. A "sunflower" layout
+		// (golden-angle phases, area-even radii) starts the swarm evenly scattered with no pile-ups; the
+		// faster inner orbits then shear it into drifting spiral arms.
+		var rf = [], ph = [], om = [], hp = [];
+		for ( var i = 0; i < N; i++ ) {
+			rf[ i ] = 1 - spread + spread * Math.sqrt( ( i + 0.5 ) / N );
+			ph[ i ] = i * 2.399963;
+			om[ i ] = 1 + swirl * 1.0 * ( 1 - rf[ i ] );
+			hp[ i ] = orbitHash( i + 100 ) * TWO;
+		}
+
+		var cardW = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.7 ) + 'px';
+			orbit.style.transform = 'rotateX(' + tilt + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var gp = ( 1 - Math.cos( st.S * TWO * 0.35 ) ) / 2;            // 0 scattered … 1 gathered
+			var gather = cohesion * 0.5 * gp * gp;
+			for ( var i = 0; i < N; i++ ) {
+				var theta = ph[ i ] + st.S * TWO * dir * 0.5 * om[ i ];
+				var r = R * rf[ i ] * ( 1 - gather );
+				var x = Math.cos( theta ) * r, y = Math.sin( theta ) * r;
+				var z = Math.sin( st.S * TWO * 0.7 + hp[ i ] ) * hAmt * R * 0.4;
+				var near = ( Math.sin( theta ) + 1 ) / 2;
+				var sc = 0.68 + 0.32 * near;
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,' + z.toFixed( 1 ) + 'px) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * near ) ).toFixed( 3 ) + ')';
+				c.style.zIndex = String( Math.round( near * 100 ) );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Ring Tilt (Orbit) — a steeply tilted flat ring, like a planet's rings. The cards are NOT billboarded:
+	 * each lies in the ring plane with its top edge toward the centre (so the front of the ring reads
+	 * upright) and stands up by Card Lift, facing outward. The ring turns around an optional shaded planet
+	 * (a billboarded disc) and slowly rocks and precesses (Wobble). An original design. */
+	function initRingTilt( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var planet = orbit.querySelector( '.tdg__planet' );
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 30 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 40 ), 15, 55 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 70 ), 30, 85 );
+		var lift    = clamp( num( el, 'data-tdg-lift', 20 ), 0, 90 );
+		var wob     = clamp( num( el, 'data-tdg-wobble', 8 ), 0, 25 );
+		var corePct = clamp( num( el, 'data-tdg-core', 34 ), 10, 70 ) / 100;
+		var glow    = clamp( num( el, 'data-tdg-glow', 125 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 50 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 12 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+		var sinL = Math.sin( lift * Math.PI / 180 );
+
+		var cardW = 0, cardH = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cardH = cards[ 0 ].offsetHeight || cardW;
+			cards.forEach( function ( c ) { c.style.marginTop = ( -cardH / 2 ) + 'px'; } );
+			if ( planet ) {
+				var ps = 2 * R * corePct;
+				planet.style.width = planet.style.height = ps + 'px';
+				planet.style.marginLeft = planet.style.marginTop = ( -ps / 2 ) + 'px';
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var tNow = tilt + wob * Math.sin( st.S * TWO * 0.6 );          // rock
+			var prec = wob * 1.2 * Math.sin( st.S * TWO * 0.3 + 1 );        // precess (sideways lean)
+			orbit.style.transform = 'rotateZ(' + prec.toFixed( 2 ) + 'deg) rotateX(' + tNow.toFixed( 2 ) + 'deg)';
+			if ( planet ) { planet.style.transform = 'rotateX(' + ( -tNow ).toFixed( 2 ) + 'deg) rotateZ(' + ( -prec ).toFixed( 2 ) + 'deg)'; }
+			var lz = ( cardH / 2 ) * sinL;                                  // keep the bottom edge on the ring plane
+			for ( var i = 0; i < N; i++ ) {
+				var theta = ( i / N ) * TWO + st.S * TWO * dir * 0.5;
+				var x = Math.cos( theta ) * R, y = Math.sin( theta ) * R;
+				var near = ( Math.sin( theta ) + 1 ) / 2;
+				var deg = theta * 180 / Math.PI - 90;                       // top edge points at the centre
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,' + lz.toFixed( 1 ) + 'px) rotateZ(' + deg.toFixed( 2 ) + 'deg) rotateX(' + ( -lift ) + 'deg)';
+				c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * near ) ).toFixed( 3 ) + ')';
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Gyro Orbit (Orbit) — an atom / gyroscope: 2–4 rings of billboarded cards, each ring on its own
+	 * plane (leaning by Ring Lean, fanned evenly around the vertical axis), neighbouring rings running
+	 * opposite ways, around a glowing core; the whole gyro slowly turns (Spin). Optional ring paths are
+	 * real 3D circles on the same planes. Seen slightly from above. An original design. */
+	function initGyroOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var tracks = orbit.querySelectorAll( '.tdg__track' );
+		var core = orbit.querySelector( '.tdg__focus' );
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 22 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 24 ), 15, 50 ) / 100;
+		var K       = Math.round( clamp( num( el, 'data-tdg-rings', 3 ), 2, 4 ) );
+		var incl    = clamp( num( el, 'data-tdg-lean', 62 ), 0, 85 );
+		var spin    = clamp( num( el, 'data-tdg-spin', 35 ), 0, 100 ) / 100;
+		var glow    = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 50 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 9 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2, DEG = Math.PI / 180;
+		var VIEW = -14;                                                    // look slightly down on the gyro
+		var ci = Math.cos( incl * DEG ), si = Math.sin( incl * DEG ), cv = Math.cos( VIEW * DEG ), sv = Math.sin( VIEW * DEG );
+
+		// Deal the cards round-robin onto the K rings.
+		var ringOf = [], idxIn = [], count = [];
+		for ( var k = 0; k < K; k++ ) { count[ k ] = 0; }
+		for ( var i = 0; i < N; i++ ) { ringOf[ i ] = i % K; idxIn[ i ] = count[ i % K ]++; }
+
+		var cardW = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			orbit.style.transform = 'none';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			for ( var t = 0; t < tracks.length; t++ ) { orbitTrack( tracks[ t ], R, R, 0 ); tracks[ t ].style.display = t < K ? '' : 'none'; }
+			if ( core ) { var cs = cardW * 1.6; core.style.width = core.style.height = cs + 'px'; core.style.marginLeft = core.style.marginTop = ( -cs / 2 ) + 'px'; }
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var yawAll = st.S * Math.PI * spin * dir;
+			for ( var t = 0; t < tracks.length && t < K; t++ ) {
+				var yawT = ( t * Math.PI / K + yawAll ) / DEG;
+				tracks[ t ].style.transform = 'rotateX(' + VIEW + 'deg) rotateY(' + yawT.toFixed( 2 ) + 'deg) rotateX(' + ( 90 + incl ) + 'deg)';
+			}
+			for ( var i = 0; i < N; i++ ) {
+				var k = ringOf[ i ], n = count[ k ];
+				var sgn = ( k % 2 ) ? -1 : 1;                                // neighbouring rings run opposite ways
+				var th = ( idxIn[ i ] / n ) * TWO + ( k * 0.7 ) + st.S * TWO * dir * 0.5 * ( 1 + 0.18 * k ) * sgn;
+				var yaw = k * Math.PI / K + yawAll;
+				var x = R * Math.cos( th ), z = R * Math.sin( th );
+				var y1 = -z * si, z1 = z * ci;                               // lean the ring (rotateX)
+				var cy = Math.cos( yaw ), sy = Math.sin( yaw );
+				var x2 = x * cy + z1 * sy, z2 = -x * sy + z1 * cy;           // fan it round the vertical (rotateY)
+				var y3 = y1 * cv - z2 * sv, z3 = y1 * sv + z2 * cv;          // view from slightly above (rotateX)
+				var near = clamp( ( z3 / R + 1 ) / 2, 0, 1 );
+				var sc = 0.62 + 0.38 * near;
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + x2.toFixed( 1 ) + 'px,' + y3.toFixed( 1 ) + 'px,' + z3.toFixed( 1 ) + 'px) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * near ) ).toFixed( 3 ) + ')';
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Infinity Orbit (Orbit) — billboarded cards loop a figure-eight (a lemniscate) on a tilted plane;
+	 * where the loops cross, one pass rises over the other (Cross Height) so the ∞ reads in 3D. Optional
+	 * path line (an SVG drawn in the plane). An original design. */
+	function initInfinityOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 26 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 38 ), 15, 50 ) / 100;
+		var loop    = clamp( num( el, 'data-tdg-loop', 100 ), 40, 160 ) / 100;
+		var cross   = clamp( num( el, 'data-tdg-cross', 40 ), 0, 100 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 50 ), 0, 80 );
+		var paths   = num( el, 'data-tdg-paths', 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 45 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 11 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+
+		function pt( t, A ) {                                               // lemniscate of Bernoulli
+			var s = Math.sin( t ), c = Math.cos( t ), d = 1 + s * s;
+			return [ A * c / d, A * loop * s * c / d ];
+		}
+
+		var svg = null;
+		if ( paths ) {
+			svg = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' );
+			svg.setAttribute( 'class', 'tdg__path' );
+			svg.setAttribute( 'aria-hidden', 'true' );
+			orbit.insertBefore( svg, orbit.firstChild );
+		}
+
+		var cardW = 0, A = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			A = W * radPct;
+			stage.style.perspective = ( W * 1.7 ) + 'px';
+			orbit.style.transform = 'rotateX(' + tilt + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			if ( svg ) {
+				var h = A * loop * 0.8, d = '';
+				for ( var s = 0; s <= 120; s++ ) { var p = pt( s / 120 * TWO, A ); d += ( s ? 'L' : 'M' ) + ( p[ 0 ] + A ).toFixed( 1 ) + ',' + ( p[ 1 ] + h / 2 ).toFixed( 1 ); }
+				svg.setAttribute( 'width', 2 * A ); svg.setAttribute( 'height', h );
+				svg.style.width = ( 2 * A ) + 'px'; svg.style.height = h + 'px';   // inline: beats a theme's svg { height: auto }
+				svg.setAttribute( 'viewBox', '0 0 ' + ( 2 * A ).toFixed( 1 ) + ' ' + h.toFixed( 1 ) );
+				svg.style.marginLeft = ( -A ) + 'px'; svg.style.marginTop = ( -h / 2 ) + 'px';
+				svg.innerHTML = '<path d="' + d + 'Z" fill="none" vector-effect="non-scaling-stroke"/>';
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var yMax = A * loop * 0.36 || 1;
+			for ( var i = 0; i < N; i++ ) {
+				var t = ( i / N ) * TWO + st.S * TWO * dir * 0.5;
+				var p = pt( t, A );
+				var lift = cross * A * 0.32 * Math.sin( t );                 // one pass over, one under, at the crossing
+				var near = clamp( ( p[ 1 ] / yMax + 1 ) / 2, 0, 1 );
+				var sc = 0.7 + 0.3 * near;
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + p[ 0 ].toFixed( 1 ) + 'px,' + p[ 1 ].toFixed( 1 ) + 'px,' + lift.toFixed( 1 ) + 'px) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * near ) ).toFixed( 3 ) + ')';
+				c.style.zIndex = String( Math.round( near * 100 ) );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Vortex (Orbit) — a top-down whirlpool: billboarded cards spiral in from the rim (Twist = turns, its
+	 * sign = the spin), sinking (Depth), shrinking and dimming as they near the eye, then fade out and
+	 * re-enter at the rim. Flow Inward or Outward. Optional glowing eye. An original design. */
+	function initVortex( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var eye = orbit.querySelector( '.tdg__focus' );
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 30 );
+		var dir     = num( el, 'data-tdg-dir', 1 );                          // 1 = inward, -1 = outward
+		var radPct  = clamp( num( el, 'data-tdg-radius', 42 ), 15, 55 ) / 100;
+		var twist   = clamp( num( el, 'data-tdg-twist', 0.8 ), -3, 3 );
+		var arms    = Math.round( clamp( num( el, 'data-tdg-arms', 3 ), 1, 6 ) );
+		var depth   = clamp( num( el, 'data-tdg-depth', 60 ), 0, 100 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 52 ), 0, 80 );
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 55 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 11 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+
+		// Deal the cards onto `arms` spiral arms (evenly spaced round the rim); along each arm they are
+		// evenly spaced in flow phase, and each arm is staggered so the cards never line up radially.
+		var off = [], th0 = [], perArm = Math.ceil( N / arms );
+		for ( var i = 0; i < N; i++ ) {
+			var a = i % arms;
+			off[ i ] = ( Math.floor( i / arms ) + a / arms ) / perArm;
+			th0[ i ] = ( a / arms ) * TWO;
+		}
+
+		var cardW = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			// Sinking toward the eye carries cards down the screen; lift the whole whirlpool by half that
+			// drop so it stays centred in the stage.
+			var drop = depth * R * 1.2 * Math.sin( tilt * Math.PI / 180 ) * 0.5;
+			orbit.style.transform = 'translateY(' + ( -drop ).toFixed( 1 ) + 'px) rotateX(' + tilt + 'deg)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			if ( eye ) {
+				var es = cardW * 1.8;
+				eye.style.width = eye.style.height = es + 'px';
+				eye.style.marginLeft = eye.style.marginTop = ( -es / 2 ) + 'px';
+				eye.style.transform = 'translate3d(0,0,' + ( -depth * R * 1.2 ).toFixed( 1 ) + 'px) rotateX(' + ( -tilt ) + 'deg)';
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var u = ( off[ i ] + st.S * 0.5 * dir ) % 1; if ( u < 0 ) { u += 1; }   // 0 = rim … 1 = the eye
+				var r = R * ( 0.05 + 0.95 * Math.pow( 1 - u, 0.85 ) );
+				var th = th0[ i ] + u * twist * TWO;
+				var x = Math.cos( th ) * r, y = Math.sin( th ) * r;
+				var lz = -u * depth * R * 1.2;
+				var near = ( Math.sin( th ) * ( r / R ) + 1 ) / 2;
+				var sc = ( 1 - 0.62 * u ) * ( 0.86 + 0.14 * near );
+				var op = Math.min( 1, u / 0.08 ) * Math.min( 1, ( 1 - u ) / 0.2 );
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,' + lz.toFixed( 1 ) + 'px) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.opacity = op.toFixed( 3 );
+				c.style.filter = 'brightness(' + ( 1 - dFade * u ).toFixed( 3 ) + ')';
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Pendulum Orbit (Orbit) — billboarded cards spread along an ARC of a tilted orbit (Arc Span) that
+	 * swings back and forth like a pendulum (Swing), easing to a stop at each end, instead of revolving.
+	 * The card passing the front is the brightest and largest. An original design. */
+	function initPendulumOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 8 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 36 ), 15, 55 ) / 100;
+		var arc     = clamp( num( el, 'data-tdg-arc', 130 ), 40, 300 );
+		var swing   = clamp( num( el, 'data-tdg-swing', 45 ), 0, 180 );
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 58 ), 0, 80 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 140 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 45 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 8 ), 4, 60 ) / 100;
+		var DEG = Math.PI / 180;
+
+		var cardW = 0, R = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			stage.style.perspective = ( W * 1.7 ) + 'px';
+			orbit.style.transform = 'translateY(' + ( -R * 0.6 * Math.cos( tilt * DEG ) ).toFixed( 1 ) + 'px) rotateX(' + tilt + 'deg)';   // the arc sits at the front: lift it to centre
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var sw = Math.sin( st.S * Math.PI * 2 * dir ) * swing;            // degrees; one full swing per Loop Duration, easing at the ends
+			for ( var i = 0; i < N; i++ ) {
+				var f = N > 1 ? i / ( N - 1 ) - 0.5 : 0;
+				var th = ( 90 + f * arc + sw ) * DEG;                         // 90° = the front of the disc
+				var x = Math.cos( th ) * R, y = Math.sin( th ) * R;
+				var near = ( Math.sin( th ) + 1 ) / 2;
+				var k = Math.pow( near, 4 );
+				var sc = ( 0.6 + 0.3 * near ) * ( 1 + 0.35 * k );
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,0) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * k ) ).toFixed( 3 ) + ')';
+				c.style.zIndex = String( Math.round( near * 100 ) );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Moon Orbit (Orbit) — a solar system of photos: a few large "planet" cards orbit the main ring of a
+	 * tilted disc, and the rest are dealt to them as smaller "moons" that circle their planet faster
+	 * (orbits within orbits). All billboarded. An original design. */
+	function initMoonOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 30 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 33 ), 15, 50 ) / 100;
+		var P       = Math.round( clamp( num( el, 'data-tdg-planets', 4 ), 2, 6 ) );
+		var moonPct = clamp( num( el, 'data-tdg-moonr', 8 ), 3, 20 ) / 100;
+		var mSpeed  = clamp( num( el, 'data-tdg-mspeed', 300 ), 100, 600 ) / 100;
+		var mSize   = clamp( num( el, 'data-tdg-msize', 50 ), 25, 90 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 55 ), 0, 80 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 45 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 11 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2;
+		if ( P > N ) { P = N; }
+
+		// The first P cards are planets; the rest are dealt round them as moons.
+		var host = [], mIdx = [], mCount = [];
+		for ( var p = 0; p < P; p++ ) { mCount[ p ] = 0; }
+		for ( var i = P; i < N; i++ ) { var h = ( i - P ) % P; host[ i ] = h; mIdx[ i ] = mCount[ h ]++; }
+
+		var cardW = 0, R = 0, rM = 0, W = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			rM = W * moonPct;
+			stage.style.perspective = ( W * 1.7 ) + 'px';
+			orbit.style.transform = 'rotateX(' + tilt + 'deg)';
+			cards.forEach( function ( c, j ) { var w = j < P ? cardW : cardW * mSize; c.style.width = w + 'px'; c.style.marginLeft = ( -w / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+		}
+		var px = [], py = [];
+		function place( c, x, y, near, sc ) {
+			c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,0) rotateX(' + ( -tilt ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+			c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * near ) ).toFixed( 3 ) + ')';
+			c.style.zIndex = String( Math.round( near * 1000 ) );
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			for ( var p = 0; p < P; p++ ) {
+				var th = ( p / P ) * TWO + st.S * TWO * dir * 0.5;
+				px[ p ] = Math.cos( th ) * R; py[ p ] = Math.sin( th ) * R;
+				var nr = clamp( ( py[ p ] / R + 1 ) / 2, 0, 1 );
+				place( cards[ p ], px[ p ], py[ p ], nr, 0.7 + 0.3 * nr );
+			}
+			for ( var i = P; i < N; i++ ) {
+				var h = host[ i ], n = mCount[ h ];
+				var a = ( mIdx[ i ] / n ) * TWO + st.S * TWO * dir * 0.5 * mSpeed + h;
+				var x = px[ h ] + Math.cos( a ) * rM, y = py[ h ] + Math.sin( a ) * rM;
+				var near = clamp( ( y / ( R + rM ) + 1 ) / 2, 0, 1 );
+				place( cards[ i ], x, y, near, 0.7 + 0.3 * near );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Tiered Orbit (Orbit) — 2–5 horizontal rings of billboarded cards stacked at different heights (seen
+	 * slightly from above), neighbouring tiers turning opposite ways. Taper narrows the top (a tree) or
+	 * the bottom (a tornado). Seen from OUTSIDE — unlike Panorama Wall, which wraps around the viewer. An
+	 * original design. */
+	function initTieredOrbit( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var orbit = el.querySelector( '.tdg__orbit' );
+		if ( ! stage || ! orbit ) { return; }
+		var cards = Array.prototype.slice.call( orbit.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 26 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var radPct  = clamp( num( el, 'data-tdg-radius', 28 ), 15, 50 ) / 100;
+		var T       = Math.round( clamp( num( el, 'data-tdg-tiers', 3 ), 2, 5 ) );
+		var gapPct  = clamp( num( el, 'data-tdg-gap', 16 ), 5, 40 ) / 100;
+		var taper   = clamp( num( el, 'data-tdg-taper', 35 ), -70, 70 ) / 100;
+		var elev    = clamp( num( el, 'data-tdg-elev', 22 ), 0, 45 );
+		var alt     = num( el, 'data-tdg-alt', 1 );
+		var glow    = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var dFade   = clamp( num( el, 'data-tdg-dfade', 50 ) / 100, 0, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 8 ), 4, 60 ) / 100;
+		var TWO = Math.PI * 2, DEG = Math.PI / 180;
+		var cv = Math.cos( -elev * DEG ), sv = Math.sin( -elev * DEG );
+
+		// Deal cards top tier first; each tier gets an even share.
+		var tracks = orbit.querySelectorAll( '.tdg__track' );
+		var tierOf = [], idx = [], cnt = [];
+		for ( var t = 0; t < T; t++ ) { cnt[ t ] = 0; }
+		for ( var i = 0; i < N; i++ ) { var tt = Math.min( T - 1, Math.floor( i * T / N ) ); tierOf[ i ] = tt; idx[ i ] = cnt[ tt ]++; }
+
+		var cardW = 0, R = 0, W = 1, gap = 0;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 20, W * cardPct );
+			R = W * radPct;
+			gap = ( stage.clientHeight || el.clientHeight || W * 0.5 ) * gapPct;   // % of the stage HEIGHT, so wide stages don't overflow
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			// The wider bottom tier (Taper > 0) sits lower and nearer; lift the stack so it stays centred.
+			orbit.style.transform = 'translateY(' + ( -taper * R * 0.5 * Math.sin( elev * DEG ) - gap * 0.1 ).toFixed( 1 ) + 'px)';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			// One path per tier: a flat circle of that tier's radius, laid horizontal, dropped to the tier's
+			// height and seen from the same elevation as the cards.
+			for ( var k = 0; k < tracks.length; k++ ) {
+				if ( k >= T ) { tracks[ k ].style.display = 'none'; continue; }
+				var uk = T > 1 ? k / ( T - 1 ) : 0.5, rk = R * ( 1 + taper * ( uk - 0.5 ) ), yk = ( uk - 0.5 ) * gap * ( T - 1 );
+				orbitTrack( tracks[ k ], rk, rk, 0 );
+				tracks[ k ].style.transform = 'rotateX(' + ( -elev ) + 'deg) translate3d(0,' + yk.toFixed( 1 ) + 'px,0) rotateX(90deg)';
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			for ( var i = 0; i < N; i++ ) {
+				var t = tierOf[ i ], n = cnt[ t ];
+				var u = T > 1 ? t / ( T - 1 ) : 0.5;                          // 0 = top tier … 1 = bottom tier
+				var r = R * ( 1 + taper * ( u - 0.5 ) );                       // taper > 0: narrow top (a tree)
+				var sgn = ( alt && t % 2 ) ? -1 : 1;
+				var th = ( idx[ i ] / n ) * TWO + t * 0.6 + st.S * TWO * dir * 0.5 * sgn;
+				var x = Math.cos( th ) * r, z = Math.sin( th ) * r;
+				var y = ( u - 0.5 ) * gap * ( T - 1 );
+				var y2 = y * cv - z * sv, z2 = y * sv + z * cv;               // seen from slightly above
+				var near = clamp( ( z / R + 1 ) / 2, 0, 1 );
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y2.toFixed( 1 ) + 'px,' + z2.toFixed( 1 ) + 'px) scale(' + ( 0.66 + 0.34 * near ).toFixed( 3 ) + ')';
+				c.style.filter = 'brightness(' + ( ( 1 - dFade * ( 1 - near ) ) * ( 1 + ( glow - 1 ) * near ) ).toFixed( 3 ) + ')';
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* ---- Grid family helpers ------------------------------------------------------------------- */
+	// Lay `cards` out as a cols×rows grid centred on (0,0): sets each card's width/margins and returns
+	// the per-card centre positions plus the pitch (card + gap) in px.
+	function gridLayout( cards, cols, rows, cardW, gapPct ) {
+		cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+		var h = cards.length ? ( cards[ 0 ].offsetHeight || cardW ) : cardW;
+		cards.forEach( function ( c ) { c.style.marginTop = ( -h / 2 ) + 'px'; } );
+		var gap = cardW * gapPct, px = cardW + gap, py = h + gap, pos = [];
+		for ( var i = 0; i < cards.length; i++ ) {
+			var c = i % cols, r = Math.floor( i / cols );
+			pos.push( { c: c, r: r, x: ( c - ( cols - 1 ) / 2 ) * px, y: ( r - ( rows - 1 ) / 2 ) * py } );
+		}
+		return { pos: pos, px: px, py: py, h: h };
+	}
+	function easeInOut( t ) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow( -2 * t + 2, 3 ) / 2; }
+
+	/* Wave Grid (Grid) — a grid of cards lying flat on a tilted floor; a ripple travels across it (from
+	 * the centre, the left edge or a corner) lifting each card on the crest and tipping it with the
+	 * slope of the wave, like tiles on water. Crests catch the light. An original design. */
+	function initWaveGrid( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 5 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var cols    = Math.round( clamp( num( el, 'data-tdg-cols', 6 ), 2, 12 ) );
+		var rows    = Math.ceil( N / cols );
+		var gapPct  = clamp( num( el, 'data-tdg-gap', 14 ), 0, 80 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 55 ), 0, 80 );
+		var amp     = clamp( num( el, 'data-tdg-amp', 35 ), 0, 120 ) / 100;
+		var wl      = clamp( num( el, 'data-tdg-wl', 3.5 ), 1.5, 10 );
+		var origin  = num( el, 'data-tdg-origin', 0 );                     // 0 centre · 1 left edge · 2 corner
+		var glow    = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var cardPct = clamp( num( el, 'data-tdg-card', 11 ), 4, 40 ) / 100;
+		var TWO = Math.PI * 2, RAD = 180 / Math.PI;
+
+		var cardW = 0, L = null, dist = [], ux = [], uy = [];
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 16, W * cardPct );
+			stage.style.perspective = ( W * 1.5 ) + 'px';
+			grid.style.transform = 'rotateX(' + tilt + 'deg)';
+			L = gridLayout( cards, cols, rows, cardW, gapPct );
+			for ( var i = 0; i < N; i++ ) {
+				var p = L.pos[ i ], dx, dy;
+				if ( origin === 1 ) { dx = p.c; dy = 0; }
+				else if ( origin === 2 ) { dx = p.c; dy = p.r; }
+				else { dx = p.x / L.px; dy = p.y / L.py; }
+				var d = Math.sqrt( dx * dx + dy * dy );
+				dist[ i ] = origin === 2 ? ( p.c + p.r ) / Math.SQRT2 : d;
+				ux[ i ] = d ? dx / d : 1; uy[ i ] = d ? dy / d : 0;
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var A = amp * cardW, k = TWO / ( wl * L.px );
+			for ( var i = 0; i < N; i++ ) {
+				var ph = dist[ i ] * TWO / wl - st.S * TWO * dir;
+				var s = Math.sin( ph );
+				var z = A * s;
+				var ang = Math.atan( A * k * Math.cos( ph ) ) * RAD;          // tip with the wave's slope
+				var p = L.pos[ i ], c = cards[ i ];
+				c.style.transform = 'translate3d(' + p.x.toFixed( 1 ) + 'px,' + p.y.toFixed( 1 ) + 'px,' + z.toFixed( 1 ) + 'px) rotate3d(' + uy[ i ].toFixed( 3 ) + ',' + ( -ux[ i ] ).toFixed( 3 ) + ',0,' + ang.toFixed( 2 ) + 'deg)';
+				c.style.filter = 'brightness(' + ( s > 0 ? 1 + ( glow - 1 ) * s : 1 + 0.18 * s ).toFixed( 3 ) + ')';
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Flip Grid (Grid) — a face-on grid of two-sided cards. Every Loop Duration a wave of 3D flips sweeps
+	 * across it (a diagonal wave, at random, or row by row) and each card turns over to show the next
+	 * photo, so a small grid cycles through the whole gallery. The photos come from a hidden pool (which
+	 * also keeps every photo in the lightbox); a card's hidden face is refilled before it turns into
+	 * view. An original design. */
+	function initFlipGrid( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var pool  = Array.prototype.slice.call( el.querySelectorAll( '.tdg__pool > .tdg__poolitem' ) ).map( function ( n ) { return n.innerHTML; } );
+		var N = cards.length, NP = pool.length;
+		if ( ! N || ! NP ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 4 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var cols    = Math.round( clamp( num( el, 'data-tdg-cols', 4 ), 1, 10 ) );
+		var rows    = Math.ceil( N / cols );
+		var gapPct  = clamp( num( el, 'data-tdg-gap', 8 ), 0, 60 ) / 100;
+		var axisX   = el.getAttribute( 'data-tdg-axis' ) === 'x';
+		var order   = num( el, 'data-tdg-order', 0 );                      // 0 wave · 1 random · 2 rows
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 8 ), 0, 40 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 15 ), 4, 40 ) / 100;
+		var ROT = axisX ? 'rotateX' : 'rotateY';
+
+		var faces = cards.map( function ( c ) { return c.querySelectorAll( '.tdg__face' ); } );
+		var shown = cards.map( function () { return [ -1, -1 ]; } );
+		var entrance = el.classList.contains( 'tdg--entrance' );
+		var tmp = document.createElement( 'div' );
+		function imgFor( j, p ) { return ( ( j + p * ( N + 1 ) ) % NP + NP ) % NP; }
+		// Refill a face IN PLACE: keep its .tdg__inner element (the built-in Entrance holds a reference to
+		// it and writes its styles there) and swap only its class + contents.
+		function setFace( face, a ) {
+			var inr = face.firstElementChild;
+			tmp.innerHTML = pool[ a ];
+			var src = tmp.firstElementChild;
+			if ( ! inr || ! src ) { face.innerHTML = pool[ a ]; return; }
+			inr.className = src.className;
+			inr.innerHTML = src.innerHTML;
+		}
+		function fill( p ) {                                                // face p%2 shows set p, the other set p+1
+			for ( var j = 0; j < N; j++ ) {
+				var vis = ( ( p % 2 ) + 2 ) % 2, hid = 1 - vis;
+				var a = imgFor( j, p ), b = imgFor( j, p + 1 );
+				if ( shown[ j ][ vis ] !== a ) { setFace( faces[ j ][ vis ], a ); shown[ j ][ vis ] = a; }
+				if ( shown[ j ][ hid ] !== b ) { setFace( faces[ j ][ hid ], b ); shown[ j ][ hid ] = b; }
+				faces[ j ][ vis ].removeAttribute( 'aria-hidden' ); faces[ j ][ vis ].inert = false;
+				faces[ j ][ hid ].setAttribute( 'aria-hidden', 'true' ); faces[ j ][ hid ].inert = true;
+			}
+		}
+		// Each card's start time within a page (0…1 of the flip window).
+		var delay = [];
+		for ( var j = 0; j < N; j++ ) {
+			var c = j % cols, r = Math.floor( j / cols );
+			delay[ j ] = order === 1 ? orbitHash( j + 7 ) : order === 2 ? ( N > 1 ? j / ( N - 1 ) : 0 ) : ( ( cols + rows - 2 ) ? ( c + r ) / ( cols + rows - 2 ) : 0 );
+		}
+		// Seed what PHP rendered: face A = photo j, face B = the next set.
+		for ( j = 0; j < N; j++ ) { shown[ j ][ 0 ] = imgFor( j, 0 ); shown[ j ][ 1 ] = imgFor( j, 1 ); }
+
+		var cardW = 0, L = null;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 16, W * cardPct );
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			grid.style.transform = 'rotateX(' + tilt + 'deg)';
+			L = gridLayout( cards, cols, rows, cardW, gapPct );
+		}
+		var st = { S: 0 }, page = null;
+		function applyFrame() {
+			var S = st.S * dir, p = Math.floor( S ), f = S - p;
+			if ( p !== page ) { page = p; fill( p ); }
+			for ( var j = 0; j < N; j++ ) {
+				var t = clamp( ( f - delay[ j ] * 0.35 ) / 0.22, 0, 1 ), e = easeInOut( t );
+				var ang = 180 * ( p + e ) * ( axisX ? -1 : 1 );
+				var z = Math.sin( t * Math.PI ) * cardW * 0.35;               // pop toward you mid-flip
+				var pos = L.pos[ j ];
+				cards[ j ].style.transform = 'translate3d(' + pos.x.toFixed( 1 ) + 'px,' + pos.y.toFixed( 1 ) + 'px,' + z.toFixed( 1 ) + 'px) ' + ROT + '(' + ang.toFixed( 2 ) + 'deg)';
+				cards[ j ].style.zIndex = t > 0 && t < 1 ? '2' : '1';
+				// The Entrance animates face A's inner only; mirror it onto face B so both fade together.
+				if ( entrance && faces[ j ][ 0 ].firstElementChild && faces[ j ][ 1 ].firstElementChild ) {
+					faces[ j ][ 1 ].firstElementChild.style.cssText = faces[ j ][ 0 ].firstElementChild.style.cssText;
+				}
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Magnet Grid (Grid) — a face-on grid that follows the pointer: cards near it lift toward you and
+	 * turn to face it, and the whole grid leans toward it. With no pointer (or on touch screens between
+	 * touches) an invisible pointer drifts over the grid so it is never still. Scroll-scrub moves the
+	 * drifting pointer with the page. An original design. */
+	function initMagnetGrid( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 10 );
+		var cols    = Math.round( clamp( num( el, 'data-tdg-cols', 5 ), 2, 12 ) );
+		var rows    = Math.ceil( N / cols );
+		var gapPct  = clamp( num( el, 'data-tdg-gap', 14 ), 0, 80 ) / 100;
+		var reachP  = clamp( num( el, 'data-tdg-reach', 22 ), 5, 60 ) / 100;
+		var lift    = clamp( num( el, 'data-tdg-lift', 90 ), 0, 150 ) / 100;
+		var lean    = clamp( num( el, 'data-tdg-lean', 10 ), 0, 30 );
+		var roam    = clamp( num( el, 'data-tdg-roam', 1 ), 0.2, 1 );            // how widely the idle pointer drifts
+		var glow    = clamp( num( el, 'data-tdg-glow', 130 ), 100, 220 ) / 100;
+		var cardPct = clamp( num( el, 'data-tdg-card', 12 ), 4, 40 ) / 100;
+		var TWO = Math.PI * 2;
+
+		var W = 1, cardW = 0, L = null, reach = 1, gw = 1, gh = 1;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 16, W * cardPct );
+			reach = W * reachP;
+			stage.style.perspective = ( W * 0.95 ) + 'px';
+			L = gridLayout( cards, cols, rows, cardW, gapPct );
+			gw = Math.max( 1, ( cols - 1 ) * L.px / 2 + cardW / 2 ); gh = Math.max( 1, ( rows - 1 ) * L.py / 2 + L.h / 2 );
+		}
+
+		var hover = false, tx = 0, ty = 0, cx = 0, cy = 0, S = 0, scrollTarget = null;
+		el.addEventListener( 'pointermove', function ( e ) {
+			var r = grid.getBoundingClientRect();                            // the grid's centre on screen
+			hover = true; tx = e.clientX - ( r.left + r.width / 2 ); ty = e.clientY - ( r.top + r.height / 2 );
+		}, { passive: true } );
+		el.addEventListener( 'pointerleave', function () { hover = false; }, { passive: true } );
+		if ( drive === 'scroll' ) {
+			var onScroll = function () { scrollTarget = scrollProgress( el, stage ) * num( el, 'data-tdg-rounds', 1 ); };
+			window.addEventListener( 'scroll', onScroll, { passive: true } );
+			onScroll();
+		}
+		var autoRun = ( drive === 'continuous' && ! reduce );
+
+		function applyFrame() {
+			if ( ! hover ) {                                                  // the drifting, invisible pointer
+				tx = Math.sin( S * TWO * 0.5 ) * gw * 0.85 * roam;
+				ty = Math.sin( S * TWO * 0.37 + 1.1 ) * gh * 0.8 * roam;
+			}
+			cx += ( tx - cx ) * 0.12; cy += ( ty - cy ) * 0.12;
+			grid.style.transform = 'rotateX(' + ( -cy / gh * lean ).toFixed( 2 ) + 'deg) rotateY(' + ( cx / gw * lean ).toFixed( 2 ) + 'deg)';
+			for ( var i = 0; i < N; i++ ) {
+				var p = L.pos[ i ], dx = p.x - cx, dy = p.y - cy;
+				var k = Math.exp( -( dx * dx + dy * dy ) / ( reach * reach ) );
+				var rx = clamp( dy / reach, -1, 1 ) * k * 34, ry = clamp( -dx / reach, -1, 1 ) * k * 34;
+				cards[ i ].style.transform = 'translate3d(' + p.x.toFixed( 1 ) + 'px,' + p.y.toFixed( 1 ) + 'px,' + ( lift * cardW * k ).toFixed( 1 ) + 'px) rotateX(' + rx.toFixed( 2 ) + 'deg) rotateY(' + ry.toFixed( 2 ) + 'deg) scale(' + ( 1 + 0.18 * k ).toFixed( 3 ) + ')';
+				cards[ i ].style.filter = 'brightness(' + ( 1 + ( glow - 1 ) * k ).toFixed( 3 ) + ')';
+				cards[ i ].style.zIndex = String( Math.round( k * 100 ) );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		var last = 0;
+		var loop = function ( tm ) {
+			if ( ! last ) { last = tm; }
+			var dt = Math.min( 0.1, ( tm - last ) / 1000 ); last = tm;
+			if ( autoRun ) { S += dt / Math.max( 1, speed ); }
+			else if ( scrollTarget !== null ) { S += ( scrollTarget * 2 - S ) * 0.14; }
+			applyFrame();
+			requestAnimationFrame( loop );
+		};
+		requestAnimationFrame( loop );
+	}
+
+	/* ---- Reveal & Wipe family helpers ---------------------------------------------------------- */
+	// One large photo at a time in a `.tdg__frame`; the photos come from the hidden `.tdg__pool` (its
+	// links also give click-to-lightbox / open-link and keep every photo in the lightbox). Returns the
+	// photo URLs/alts, a sizer, and wires click + Enter on the frame to the current photo's link.
+	function revealKit( el ) {
+		var stage = el.querySelector( '.tdg__stage' );
+		var frame = el.querySelector( '.tdg__frame' );
+		var items = Array.prototype.slice.call( el.querySelectorAll( '.tdg__pool > .tdg__poolitem' ) );
+		if ( ! stage || ! frame || ! items.length ) { return null; }
+		var urls = [], alts = [], links = [];
+		items.forEach( function ( it ) {
+			var img = it.querySelector( 'img' );
+			urls.push( img ? ( img.getAttribute( 'src' ) || '' ) : '' );
+			alts.push( img ? ( img.getAttribute( 'alt' ) || '' ) : '' );
+			links.push( it.querySelector( 'a.tdg__link' ) );
+		} );
+		var framePct = clamp( num( el, 'data-tdg-frame', 70 ), 20, 100 ) / 100;
+		var kit = { stage: stage, frame: frame, urls: urls, alts: alts, n: urls.length, w: 0, h: 0, current: 0 };
+		kit.size = function () {
+			var W = stage.clientWidth || el.clientWidth || 1, H = stage.clientHeight || el.clientHeight || W;
+			frame.style.width = ( W * framePct ) + 'px';
+			var h = frame.offsetHeight || W * framePct;
+			if ( h > H * 0.9 ) { frame.style.width = ( W * framePct * H * 0.9 / h ) + 'px'; h = frame.offsetHeight; }
+			kit.w = frame.offsetWidth; kit.h = h;
+			frame.style.marginLeft = ( -kit.w / 2 ) + 'px'; frame.style.marginTop = ( -kit.h / 2 ) + 'px';
+			stage.style.perspective = ( Math.max( kit.w, 1 ) * 2.2 ) + 'px';
+		};
+		kit.idx = function ( p ) { return ( ( p % kit.n ) + kit.n ) % kit.n; };
+		kit.bg = function ( node, i, x, y ) {                              // a slice of photo i at offset x,y
+			node.style.backgroundImage = 'url("' + kit.urls[ i ].replace( /"/g, '%22' ) + '")';
+			node.style.backgroundSize = kit.w + 'px ' + kit.h + 'px';
+			node.style.backgroundPosition = ( -x ) + 'px ' + ( -y ) + 'px';
+		};
+		kit.setCurrent = function ( i ) {
+			if ( kit.current === i && frame.getAttribute( 'aria-label' ) !== null ) { return; }
+			kit.current = i;
+			frame.setAttribute( 'aria-label', kit.alts[ i ] || '' );
+			frame.style.cursor = links[ i ] ? 'pointer' : '';
+		};
+		frame.setAttribute( 'role', 'img' );
+		var open = function () { var a = links[ kit.current ]; if ( a ) { a.click(); } };
+		var down = null;
+		frame.addEventListener( 'pointerdown', function ( e ) { down = [ e.clientX, e.clientY ]; } );
+		frame.addEventListener( 'click', function ( e ) {
+			if ( down && Math.abs( e.clientX - down[ 0 ] ) + Math.abs( e.clientY - down[ 1 ] ) > 6 ) { return; } // a drag, not a click
+			open();
+		} );
+		if ( links.some( Boolean ) ) {
+			frame.tabIndex = 0;
+			frame.addEventListener( 'keydown', function ( e ) { if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); open(); } } );
+		}
+		return kit;
+	}
+	// Transition timing inside one page: 0 until `start`, eased 0…1 across `dur`, then 1 (hold).
+	function revealT( f, start, dur ) { return easeInOut( clamp( ( f - start ) / dur, 0, 1 ) ); }
+
+	/* Blind Reveal (Reveal & Wipe) — one large photo cut into slats (Slats) that turn over in 3D one after
+	 * another, like Venetian blinds, each showing the next photo on its other side. Vertical slats turn
+	 * sideways, horizontal ones head over heels. An original design. */
+	function initBlindReveal( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var kit = revealKit( el );
+		if ( ! kit ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 4 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var count   = Math.round( clamp( num( el, 'data-tdg-slats', 10 ), 2, 40 ) );
+		var horiz   = el.getAttribute( 'data-tdg-orient' ) === 'h';
+		var stagger = clamp( num( el, 'data-tdg-stagger', 50 ), 0, 100 ) / 100;
+		var gapPx   = clamp( num( el, 'data-tdg-gap', 2 ), 0, 20 );
+		var frame = kit.frame;
+		frame.innerHTML = '';
+		var slats = [];
+		for ( var i = 0; i < count; i++ ) {
+			var s = document.createElement( 'div' ); s.className = 'tdg__slat';
+			var a = document.createElement( 'div' ); a.className = 'tdg__slatface';
+			var b = document.createElement( 'div' ); b.className = 'tdg__slatface';
+			s.appendChild( a ); s.appendChild( b ); frame.appendChild( s );
+			slats.push( { el: s, a: a, b: b } );
+		}
+		var page = null;
+		function layout() {
+			kit.size();
+			var L = horiz ? kit.h : kit.w, sz = L / count;
+			for ( var i = 0; i < count; i++ ) {
+				var o = slats[ i ], d = sz / 2;
+				o.x = horiz ? 0 : i * sz; o.y = horiz ? i * sz : 0;
+				var w = horiz ? kit.w : sz, h = horiz ? sz : kit.h;
+				o.el.style.cssText = 'left:' + o.x + 'px;top:' + o.y + 'px;width:' + ( w - ( horiz ? 0 : gapPx ) ) + 'px;height:' + ( h - ( horiz ? gapPx : 0 ) ) + 'px';
+				o.a.style.transform = 'translateZ(' + d + 'px)';
+				o.b.style.transform = ( horiz ? 'rotateX(-90deg)' : 'rotateY(90deg)' ) + ' translateZ(' + d + 'px)';
+				o.d = d;
+			}
+			page = null;
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var S = st.S * dir, p = Math.floor( S ), f = S - p;
+			if ( p !== page ) {
+				page = p;
+				var cur = kit.idx( p ), nxt = kit.idx( p + 1 );
+				for ( var i = 0; i < count; i++ ) { kit.bg( slats[ i ].a, cur, slats[ i ].x, slats[ i ].y ); kit.bg( slats[ i ].b, nxt, slats[ i ].x, slats[ i ].y ); }
+			}
+			var done = 0;
+			for ( var j = 0; j < count; j++ ) {
+				var t = revealT( f, ( count > 1 ? j / ( count - 1 ) : 0 ) * 0.45 * stagger, 0.45 - 0.45 * stagger * 0.6 );
+				var o = slats[ j ], ang = ( horiz ? 90 : -90 ) * t;
+				o.el.style.transform = 'translateZ(' + ( -o.d ) + 'px) ' + ( horiz ? 'rotateX(' : 'rotateY(' ) + ang.toFixed( 2 ) + 'deg)';
+				if ( t >= 1 ) { done++; }
+			}
+			kit.setCurrent( done > count / 2 ? kit.idx( p + 1 ) : kit.idx( p ) );
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, kit.stage, st, speed, drive, applyFrame );
+	}
+
+	/* Iris Wipe (Reveal & Wipe) — the next photo opens up over the current one through a growing shape
+	 * (a circle from the centre, a diamond, a diagonal sweep or barn doors parting) while the outgoing photo
+	 * pushes gently in and the incoming one settles from a slight zoom. An original design. */
+	function initIrisWipe( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var kit = revealKit( el );
+		if ( ! kit ) { return; }
+		var drive = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed = num( el, 'data-tdg-speed', 4 );
+		var dir   = num( el, 'data-tdg-dir', 1 );
+		var shape = el.getAttribute( 'data-tdg-shape' ) || 'circle';
+		var zoom  = clamp( num( el, 'data-tdg-zoom', 12 ), 0, 40 ) / 100;
+		var dur   = clamp( num( el, 'data-tdg-dur', 45 ), 15, 90 ) / 100;
+		var frame = kit.frame;
+		frame.innerHTML = '<div class="tdg__layer"></div><div class="tdg__layer"></div>';
+		var under = frame.children[ 0 ], over = frame.children[ 1 ];
+		var page = null;
+		function clip( t ) {
+			var q;
+			if ( shape === 'diamond' ) { q = ( t * 100 ).toFixed( 2 ); return 'polygon(50% ' + ( 50 - q ) + '%, ' + ( 50 + +q ) + '% 50%, 50% ' + ( 50 + +q ) + '%, ' + ( 50 - q ) + '% 50%)'; }
+			if ( shape === 'diagonal' ) { q = t * 200; return 'polygon(0 0, ' + q.toFixed( 2 ) + '% 0, 0 ' + q.toFixed( 2 ) + '%)'; }
+			if ( shape === 'doors' ) { q = ( 50 - t * 50 ).toFixed( 2 ); return 'inset(0 ' + q + '% 0 ' + q + '%)'; }
+			return 'circle(' + ( t * 75 ).toFixed( 2 ) + '% at 50% 50%)';
+		}
+		function layout() { kit.size(); page = null; }
+		var st = { S: 0 };
+		function applyFrame() {
+			var S = st.S * dir, p = Math.floor( S ), f = S - p;
+			if ( p !== page ) {
+				page = p;
+				kit.bg( under, kit.idx( p ), 0, 0 ); kit.bg( over, kit.idx( p + 1 ), 0, 0 );
+			}
+			var t = revealT( f, 0, dur );
+			over.style.clipPath = clip( t );
+			over.style.webkitClipPath = over.style.clipPath;
+			over.style.transform = 'scale(' + ( 1 + zoom * ( 1 - t ) ).toFixed( 4 ) + ')';
+			under.style.transform = 'scale(' + ( 1 + zoom * 0.6 * t ).toFixed( 4 ) + ')';
+			kit.setCurrent( t > 0.5 ? kit.idx( p + 1 ) : kit.idx( p ) );
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, kit.stage, st, speed, drive, applyFrame );
+	}
+
+	/* Tile Dissolve (Reveal & Wipe) — the photo is cut into a grid of tiles that break away in a wave (from
+	 * a corner, at random or from the centre out): each tile flies toward you, spins and fades, uncovering
+	 * the next photo underneath. An original design. */
+	function initTileDissolve( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var kit = revealKit( el );
+		if ( ! kit ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 4 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var cols    = Math.round( clamp( num( el, 'data-tdg-cols', 8 ), 2, 20 ) );
+		var rows    = Math.round( clamp( num( el, 'data-tdg-rows', 5 ), 2, 14 ) );
+		var pattern = num( el, 'data-tdg-pattern', 0 );                    // 0 corner · 1 random · 2 centre out
+		var flyAmt  = clamp( num( el, 'data-tdg-fly', 60 ), 0, 100 ) / 100;
+		var frame = kit.frame;
+		frame.innerHTML = '<div class="tdg__layer"></div>';
+		var under = frame.firstChild, tiles = [];
+		for ( var r = 0; r < rows; r++ ) {
+			for ( var c = 0; c < cols; c++ ) {
+				var t = document.createElement( 'div' ); t.className = 'tdg__tile'; frame.appendChild( t );
+				var dly;
+				if ( pattern === 1 ) { dly = orbitHash( r * cols + c + 3 ); }
+				else if ( pattern === 2 ) { var dx = ( c + 0.5 ) / cols - 0.5, dy = ( r + 0.5 ) / rows - 0.5; dly = Math.min( 1, Math.sqrt( dx * dx + dy * dy ) / 0.71 ); }
+				else { dly = ( cols + rows - 2 ) ? ( c + r ) / ( cols + rows - 2 ) : 0; }
+				tiles.push( { el: t, c: c, r: r, d: dly, spin: ( orbitHash( r * cols + c + 41 ) - 0.5 ) * 2 } );
+			}
+		}
+		var page = null, tw = 0, th = 0;
+		function layout() {
+			kit.size();
+			tw = kit.w / cols; th = kit.h / rows;
+			tiles.forEach( function ( o ) { o.x = o.c * tw; o.y = o.r * th; o.el.style.cssText = 'left:' + o.x + 'px;top:' + o.y + 'px;width:' + ( tw + 1 ) + 'px;height:' + ( th + 1 ) + 'px'; } );
+			page = null;
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var S = st.S * dir, p = Math.floor( S ), f = S - p;
+			if ( p !== page ) {
+				page = p;
+				kit.bg( under, kit.idx( p + 1 ), 0, 0 );
+				tiles.forEach( function ( o ) { kit.bg( o.el, kit.idx( p ), o.x, o.y ); } );
+			}
+			var gone = 0;
+			for ( var i = 0; i < tiles.length; i++ ) {
+				var o = tiles[ i ], t = clamp( ( f - o.d * 0.35 ) / 0.22, 0, 1 ), e = t * t;
+				var z = e * kit.w * 0.9 * flyAmt, sp = o.spin * 220 * e * flyAmt;
+				o.el.style.transform = 'translate3d(' + ( ( o.c + 0.5 - cols / 2 ) * e * tw * 0.6 * flyAmt ).toFixed( 1 ) + 'px,' + ( ( o.r + 0.5 - rows / 2 ) * e * th * 0.6 * flyAmt ).toFixed( 1 ) + 'px,' + z.toFixed( 1 ) + 'px) rotateX(' + sp.toFixed( 1 ) + 'deg) rotateY(' + ( -sp * 0.7 ).toFixed( 1 ) + 'deg) scale(' + ( 1 - 0.6 * e * ( 1 - flyAmt ) ).toFixed( 3 ) + ')';
+				o.el.style.opacity = ( 1 - Math.pow( t, 1.6 ) ).toFixed( 3 );
+				if ( t >= 1 ) { gone++; }
+			}
+			kit.setCurrent( gone > tiles.length / 2 ? kit.idx( p + 1 ) : kit.idx( p ) );
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, kit.stage, st, speed, drive, applyFrame );
+	}
+
+	/* ---- Spotlight & Focus family helpers ------------------------------------------------------ */
+	// Tracks the pointer over `el`, in px relative to the centre of `ref` (re-measured on every move).
+	function pointerTracker( el, ref ) {
+		var pt = { hover: false, x: 0, y: 0 };
+		el.addEventListener( 'pointermove', function ( e ) {
+			var r = ref.getBoundingClientRect();
+			pt.hover = true; pt.x = e.clientX - ( r.left + r.width / 2 ); pt.y = e.clientY - ( r.top + r.height / 2 );
+		}, { passive: true } );
+		el.addEventListener( 'pointerleave', function () { pt.hover = false; }, { passive: true } );
+		return pt;
+	}
+
+	/* Spotlight Wall (Spotlight & Focus) — a grid of photos in shadow (dimmed, greyed); a spotlight
+	 * glides from photo to photo in a set or random order, holding on each, and the photos inside its
+	 * pool come up to full colour and lift slightly. With Follow Pointer, hovering takes the spotlight.
+	 * An original design. */
+	function initSpotlightWall( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 3 );
+		var cols    = Math.round( clamp( num( el, 'data-tdg-cols', 5 ), 1, 12 ) );
+		var rows    = Math.ceil( N / cols );
+		var gapPct  = clamp( num( el, 'data-tdg-gap', 10 ), 0, 80 ) / 100;
+		var radius  = clamp( num( el, 'data-tdg-spot', 80 ), 30, 300 ) / 100;  // spotlight radius in card widths
+		var dim     = clamp( num( el, 'data-tdg-dim', 35 ), 0, 100 ) / 100;    // brightness of the unlit photos
+		var grey    = clamp( num( el, 'data-tdg-grey', 100 ), 0, 100 ) / 100;
+		var lift    = clamp( num( el, 'data-tdg-lift', 8 ), 0, 30 ) / 100;
+		var move    = clamp( num( el, 'data-tdg-move', 35 ), 10, 90 ) / 100;   // share of each stop spent travelling
+		var random  = num( el, 'data-tdg-order', 1 ) === 1;
+		var follow  = num( el, 'data-tdg-follow', 1 ) === 1;
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 13 ), 4, 40 ) / 100;
+
+		// The visiting order: a stable shuffle (no photo twice in a row), or reading order.
+		var order = [];
+		for ( var i = 0; i < N; i++ ) { order.push( i ); }
+		if ( random ) { order.sort( function ( a, b ) { return orbitHash( a + 17 ) - orbitHash( b + 17 ); } ); }
+
+		var cardW = 0, L = null, sx = 0, sy = 0;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 16, W * cardPct );
+			grid.style.transform = 'none';
+			L = gridLayout( cards, cols, rows, cardW, gapPct );
+		}
+		var pt = follow ? pointerTracker( el, grid ) : { hover: false };
+		var st = { S: 0 };
+		function applyFrame() {
+			var S = st.S * dir, p = Math.floor( S ), f = S - p, t = easeInOut( clamp( f / move, 0, 1 ) );
+			var a = L.pos[ order[ ( ( p % N ) + N ) % N ] ], b = L.pos[ order[ ( ( ( p + 1 ) % N ) + N ) % N ] ];
+			var tx = a.x + ( b.x - a.x ) * t, ty = a.y + ( b.y - a.y ) * t;
+			if ( pt.hover ) { tx = pt.x; ty = pt.y; }
+			sx += ( tx - sx ) * 0.2; sy += ( ty - sy ) * 0.2;   // always glide, so leaving the pointer never jumps
+			var R = radius * cardW;
+			for ( var i = 0; i < N; i++ ) {
+				var dx = L.pos[ i ].x - sx, dy = L.pos[ i ].y - sy;
+				var k = Math.exp( -( dx * dx + dy * dy ) / ( R * R ) );
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + L.pos[ i ].x.toFixed( 1 ) + 'px,' + L.pos[ i ].y.toFixed( 1 ) + 'px,0) scale(' + ( 1 + lift * k ).toFixed( 3 ) + ')';
+				c.style.filter = 'brightness(' + ( dim + ( 1 - dim ) * k ).toFixed( 3 ) + ') grayscale(' + ( grey * ( 1 - k ) ).toFixed( 3 ) + ')';
+				c.style.zIndex = String( Math.round( k * 100 ) );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		el.setAttribute( 'data-tdg-allowdrag', '0' );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+		if ( follow && ( drive !== 'continuous' || reduce ) ) {               // keep reacting to the pointer when nothing else animates
+			var tick = function () { if ( pt.hover ) { applyFrame(); } requestAnimationFrame( tick ); };
+			requestAnimationFrame( tick );
+		}
+	}
+
+	/* Focus Pull (Spotlight & Focus) — photos float at several depths (Layers) in a 3D field, like a scene
+	 * through a camera lens; the focus racks from the front layer to the back and back again, so the layer
+	 * in focus is sharp and bright while the others blur (Blur) and dim, and the field drifts gently
+	 * sideways (Drift). An original design. */
+	function initFocusPull( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var field = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! field ) { return; }
+		var cards = Array.prototype.slice.call( field.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 3 );
+		var LAY     = Math.round( clamp( num( el, 'data-tdg-layers', 3 ), 2, 5 ) );
+		var depthP  = clamp( num( el, 'data-tdg-depth', 45 ), 10, 120 ) / 100;
+		var blurMax = clamp( num( el, 'data-tdg-blur', 7 ), 0, 20 );
+		var dim     = clamp( num( el, 'data-tdg-dim', 30 ), 0, 80 ) / 100;
+		var drift   = clamp( num( el, 'data-tdg-drift', 30 ), 0, 100 ) / 100;
+		var move    = clamp( num( el, 'data-tdg-move', 40 ), 10, 90 ) / 100;
+		var fromBack = num( el, 'data-tdg-dir', 1 ) === -1;
+		var cardPct = clamp( num( el, 'data-tdg-card', 15 ), 4, 40 ) / 100;
+
+		// All photos share ONE staggered grid on screen; neighbouring cells go to different layers, so the
+		// layers interleave instead of stacking (a near, blurred layer never hides the sharp one behind).
+		var gCols = Math.max( 1, Math.ceil( Math.sqrt( N * 1.8 ) ) ), gRows = Math.ceil( N / gCols );
+		var layerOf = [], gc = [], gr = [];
+		for ( var i = 0; i < N; i++ ) { gc[ i ] = i % gCols; gr[ i ] = Math.floor( i / gCols ); layerOf[ i ] = ( gc[ i ] + gr[ i ] * 2 ) % LAY; }
+		var W = 1, H = 1, cardW = 0, D = 0, pos = [];
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1; H = stage.clientHeight || W * 0.6;
+			cardW = Math.max( 16, W * cardPct );
+			D = W * depthP;
+			stage.style.perspective = ( W * 1.2 ) + 'px';
+			cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+			cards.forEach( function ( c ) { c.style.marginTop = ( -( c.offsetHeight || cardW ) / 2 ) + 'px'; } );
+			pos = [];
+			var P = W * 1.2;
+			for ( var i = 0; i < N; i++ ) {
+				var z = -layerOf[ i ] * D, grow = ( P - z ) / P;                   // push back, then scale the position so it projects onto its cell
+				var jx = ( orbitHash( i + 5 ) - 0.5 ) * 0.35, jy = ( orbitHash( i + 9 ) - 0.5 ) * 0.35;
+				var xs = ( ( gc[ i ] + 0.5 + jx + ( gr[ i ] % 2 ? 0.25 : -0.25 ) ) / gCols - 0.5 ) * W * 0.82;
+				var ys = ( ( gr[ i ] + 0.5 + jy ) / gRows - 0.5 ) * H * 0.72;
+				pos.push( { x: xs * grow, y: ys * grow, z: z } );
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			// Ping-pong through the layers: 0,1,…,L-1,…,1,0,… one stop per Loop Duration.
+			var span = 2 * ( LAY - 1 ), p = Math.floor( st.S ), f = st.S - p;
+			var at = function ( q ) { q = ( ( q % span ) + span ) % span; q = q < LAY ? q : span - q; return fromBack ? LAY - 1 - q : q; };
+			var focus = at( p ) + ( at( p + 1 ) - at( p ) ) * easeInOut( clamp( f / move, 0, 1 ) );
+			var dx = Math.sin( st.S * Math.PI * 0.35 ) * W * 0.06 * drift;
+			for ( var i = 0; i < N; i++ ) {
+				var d = Math.abs( layerOf[ i ] - focus ), q = pos[ i ];
+				var c = cards[ i ];
+				c.style.transform = 'translate3d(' + ( q.x + dx * ( 1 + layerOf[ i ] * 0.6 ) ).toFixed( 1 ) + 'px,' + q.y.toFixed( 1 ) + 'px,' + q.z.toFixed( 1 ) + 'px)';
+				c.style.filter = 'blur(' + ( Math.min( 1, d ) * blurMax + Math.max( 0, d - 1 ) * blurMax * 0.5 ).toFixed( 2 ) + 'px) brightness(' + ( 1 - dim * Math.min( 1, d ) ).toFixed( 3 ) + ')';
+				c.style.opacity = ( layerOf[ i ] < focus - 0.05 ? 1 - 0.45 * Math.min( 1, focus - layerOf[ i ] ) : 1 ).toFixed( 3 );
+				c.style.zIndex = String( 10 - layerOf[ i ] );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		el.setAttribute( 'data-tdg-allowdrag', '0' );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Loupe (Spotlight & Focus) — a mosaic of small photos with a magnifying lens gliding over it; inside
+	 * the lens the same photos show enlarged (Zoom). With Follow Pointer, hovering moves the lens with the
+	 * pointer. The lens holds plain copies of the cards (aria-hidden, not clickable — clicks reach the
+	 * real cards beneath). An original design. */
+	function initLoupe( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 12 );
+		var cols    = Math.round( clamp( num( el, 'data-tdg-cols', 6 ), 2, 14 ) );
+		var rows    = Math.ceil( N / cols );
+		var gapPct  = clamp( num( el, 'data-tdg-gap', 8 ), 0, 60 ) / 100;
+		var lensP   = clamp( num( el, 'data-tdg-lens', 24 ), 8, 60 ) / 100;
+		var zoom    = clamp( num( el, 'data-tdg-zoom', 220 ), 120, 500 ) / 100;
+		var follow  = num( el, 'data-tdg-follow', 1 ) === 1;
+		var roam    = clamp( num( el, 'data-tdg-roam', 1 ), 0.2, 1 );
+		var cardPct = clamp( num( el, 'data-tdg-card', 10 ), 3, 30 ) / 100;
+
+		// The lens: a circle holding a copy of the mosaic, scaled up around the lens centre.
+		var lens = document.createElement( 'div' ); lens.className = 'tdg__lens'; lens.setAttribute( 'aria-hidden', 'true' );
+		var inner = document.createElement( 'div' ); inner.className = 'tdg__lensinner';
+		var copies = cards.map( function ( c ) {
+			var d = document.createElement( 'div' ); d.className = 'tdg__lenscard'; d.innerHTML = c.innerHTML; inner.appendChild( d ); return d;
+		} );
+		lens.appendChild( inner );
+		stage.appendChild( lens );
+
+		var W = 1, cardW = 0, L = null, R = 0, gw = 1, gh = 1, lx = 0, ly = 0;
+		function layout() {
+			W = stage.clientWidth || el.clientWidth || 1;
+			cardW = Math.max( 12, W * cardPct );
+			grid.style.transform = 'none';
+			L = gridLayout( cards, cols, rows, cardW, gapPct );
+			gw = ( cols - 1 ) * L.px / 2; gh = ( rows - 1 ) * L.py / 2;
+			R = W * lensP / 2;
+			lens.style.width = lens.style.height = ( 2 * R ) + 'px';
+			lens.style.marginLeft = lens.style.marginTop = ( -R ) + 'px';
+			copies.forEach( function ( d, i ) {
+				d.style.width = cardW + 'px'; d.style.height = L.h + 'px';
+				d.style.left = ( L.pos[ i ].x - cardW / 2 ) + 'px'; d.style.top = ( L.pos[ i ].y - L.h / 2 ) + 'px';
+			} );
+		}
+		var pt = follow ? pointerTracker( el, grid ) : { hover: false };
+		var st = { S: 0 };
+		function applyFrame() {
+			var tx = Math.sin( st.S * Math.PI * 2 * 0.5 ) * gw * 0.9 * roam, ty = Math.sin( st.S * Math.PI * 2 * 0.37 + 0.8 ) * gh * 0.9 * roam;
+			if ( pt.hover ) { tx = pt.x; ty = pt.y; }
+			lx += ( tx - lx ) * 0.25; ly += ( ty - ly ) * 0.25;
+			lens.style.transform = 'translate3d(' + lx.toFixed( 1 ) + 'px,' + ly.toFixed( 1 ) + 'px,0)';
+			// Inner origin = the stage centre; place it so the point under the lens centre sits at the lens centre.
+			inner.style.transform = 'translate(' + ( R - lx * zoom ).toFixed( 1 ) + 'px,' + ( R - ly * zoom ).toFixed( 1 ) + 'px) scale(' + zoom + ')';
+		}
+		layout();
+		cards.forEach( function ( c, i ) { c.style.transform = 'translate3d(' + L.pos[ i ].x.toFixed( 1 ) + 'px,' + L.pos[ i ].y.toFixed( 1 ) + 'px,0)'; } );
+		applyFrame();
+		window.addEventListener( 'resize', function () {
+			layout();
+			cards.forEach( function ( c, i ) { c.style.transform = 'translate3d(' + L.pos[ i ].x.toFixed( 1 ) + 'px,' + L.pos[ i ].y.toFixed( 1 ) + 'px,0)'; } );
+			applyFrame();
+		}, { passive: true } );
+		el.setAttribute( 'data-tdg-allowdrag', '0' );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+		if ( follow && ( drive !== 'continuous' || reduce ) ) {
+			var tick = function () { if ( pt.hover ) { applyFrame(); } requestAnimationFrame( tick ); };
+			requestAnimationFrame( tick );
+		}
+	}
+
+	/* ---- Stack & Scatter additions (Card Fan, Shuffle Deck, Polaroid Drop) ----------------------- */
+	// Shared: size the cards (centred on the 0×0 .tdg__grid) and return their rendered height.
+	function stackSize( cards, cardW ) {
+		cards.forEach( function ( c ) { c.style.width = cardW + 'px'; c.style.marginLeft = ( -cardW / 2 ) + 'px'; } );
+		var h = cards.length ? ( cards[ 0 ].offsetHeight || cardW ) : cardW;
+		cards.forEach( function ( c ) { c.style.marginTop = ( -h / 2 ) + 'px'; } );
+		return h;
+	}
+	function modN( a, n ) { return ( ( a % n ) + n ) % n; }
+
+	/* Card Fan (Stack & Scatter) — the photos are held like a hand of playing cards, fanned around a pivot
+	 * below them. A highlight sweeps along the hand (and back): the card it reaches rises out of the fan,
+	 * straightens and comes forward while the rest dim. With Follow Pointer, the visitor picks the card by
+	 * pointing at it. An original design. */
+	function initCardFan( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var drive    = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed    = num( el, 'data-tdg-speed', 2.5 );
+		var dir      = num( el, 'data-tdg-dir', 1 );
+		var spread   = clamp( num( el, 'data-tdg-spread', 70 ), 10, 200 );
+		var pivot    = clamp( num( el, 'data-tdg-pivot', 120 ), 30, 400 ) / 100;
+		var lift     = clamp( num( el, 'data-tdg-lift', 35 ), 0, 90 ) / 100;
+		var straight = clamp( num( el, 'data-tdg-straight', 60 ), 0, 100 ) / 100;
+		var dim      = clamp( num( el, 'data-tdg-dim', 25 ), 0, 90 ) / 100;
+		var sway     = clamp( num( el, 'data-tdg-sway', 3 ), 0, 20 );
+		var move     = clamp( num( el, 'data-tdg-move', 45 ), 10, 90 ) / 100;
+		var follow   = num( el, 'data-tdg-follow', 1 ) === 1;
+		var cardPct  = clamp( num( el, 'data-tdg-card', 20 ), 4, 50 ) / 100;
+		var RAD = Math.PI / 180;
+		var span = Math.max( 1, N - 1 ), L2 = 2 * span;
+		function angleOf( i ) { return N === 1 ? 0 : -spread / 2 + spread * i / span; }
+		// The highlight's position along the hand at step k: 0 → N-1 → 0 (ping-pong), reversed for Right first.
+		function posAt( k ) { var m = modN( k, L2 ), q = m <= span ? m : L2 - m; return dir < 0 ? span - q : q; }
+
+		var cardW = 0, h = 0, P = 0, offY = 0, Fs = null;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1, H = stage.clientHeight || el.clientHeight || W;
+			cardW = Math.max( 20, W * cardPct );
+			var top = 0, bottom = 0;
+			// Measure the whole hand (the raised card's top, the outer cards' lowest corner); everything
+			// scales with the card size, so a hand taller than the stage is shrunk once to fit it.
+			for ( var pass = 0; pass < 2; pass++ ) {
+				h = stackSize( cards, cardW );
+				P = h / 2 + pivot * h;
+				top = -h / 2 - lift * h; bottom = h / 2;
+				for ( var i = 0; i < N; i++ ) {
+					var a = angleOf( i ) * RAD, cs = Math.cos( a ), sn = Math.sin( a );
+					[ [ -1, -1 ], [ 1, -1 ], [ -1, 1 ], [ 1, 1 ] ].forEach( function ( q ) {
+						var x = q[ 0 ] * cardW / 2, y = q[ 1 ] * h / 2 - P, yy = P + x * sn + y * cs;
+						top = Math.min( top, yy ); bottom = Math.max( bottom, yy );
+					} );
+				}
+				if ( pass || bottom - top <= H * 0.92 ) { break; }
+				cardW = Math.max( 20, cardW * H * 0.92 / ( bottom - top ) );
+			}
+			offY = -( top + bottom ) / 2;
+			grid.style.transform = 'translate3d(0,' + offY.toFixed( 1 ) + 'px,0)';
+		}
+		var pt = follow ? pointerTracker( el, grid ) : { hover: false };
+		var st = { S: 0 };
+		function applyFrame() {
+			var p = Math.floor( st.S ), f = st.S - p, t = easeInOut( clamp( f / move, 0, 1 ) );
+			var a0 = posAt( p ), a1 = posAt( p + 1 ), F = a0 + ( a1 - a0 ) * t;
+			if ( pt.hover && N > 1 ) {
+				var ang = Math.atan2( pt.x, P - pt.y ) / RAD;
+				F = clamp( ( ang + spread / 2 ) / spread * span, 0, span );
+			}
+			Fs = Fs === null ? F : Fs + ( F - Fs ) * 0.2;
+			var sw = sway * Math.sin( st.S * 1.1 );
+			for ( var i = 0; i < N; i++ ) {
+				var d = Math.abs( i - Fs ), k = d < 1 ? ( 1 + Math.cos( Math.PI * d ) ) / 2 : 0;
+				var a = angleOf( i ) + sw, c = cards[ i ];
+				c.style.transform = 'translate3d(0,' + P.toFixed( 1 ) + 'px,0) rotate(' + a.toFixed( 2 ) + 'deg) translate3d(0,' + ( -P - lift * h * k ).toFixed( 1 ) + 'px,0) rotate(' + ( -a * straight * k ).toFixed( 2 ) + 'deg) scale(' + ( 1 + 0.06 * k ).toFixed( 3 ) + ')';
+				c.style.filter = dim ? 'brightness(' + ( 1 - dim * ( 1 - k ) ).toFixed( 3 ) + ')' : '';
+				c.style.zIndex = String( i + Math.round( k * 100 ) );
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		el.setAttribute( 'data-tdg-allowdrag', '0' );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+		if ( follow && ( drive !== 'continuous' || reduce ) ) {
+			var tick = function () { if ( pt.hover || ( Fs !== null && Math.abs( Fs - posAt( Math.floor( st.S ) ) ) > 0.002 ) ) { applyFrame(); } requestAnimationFrame( tick ); };
+			requestAnimationFrame( tick );
+		}
+	}
+
+	/* Shuffle Deck (Stack & Scatter) — a loose deck of photos, the ones behind peeking out at slight
+	 * angles. The top photo slides out to the side, then tucks back in at the bottom of the deck while the
+	 * others move up one place, like a hand shuffling a deck. An original design. */
+	function initShuffleDeck( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 3 );
+		var side    = num( el, 'data-tdg-side', 0 );                          // 0 = alternate, 1 = right, -1 = left
+		var behind  = Math.round( clamp( num( el, 'data-tdg-behind', 4 ), 1, 8 ) );
+		var off     = clamp( num( el, 'data-tdg-offset', 4 ), 0, 20 ) / 100;
+		var jitter  = clamp( num( el, 'data-tdg-jitter', 4 ), 0, 20 );
+		var slide   = clamp( num( el, 'data-tdg-slide', 75 ), 30, 160 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 10 ), 0, 45 );
+		var move    = clamp( num( el, 'data-tdg-move', 55 ), 15, 95 ) / 100;
+		var cardPct = clamp( num( el, 'data-tdg-card', 34 ), 6, 70 ) / 100;
+		var deep = Math.min( behind, N - 1 );
+
+		var cardW = 0, h = 0;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1, H = stage.clientHeight || el.clientHeight || W;
+			cardW = Math.max( 20, W * cardPct );
+			h = stackSize( cards, cardW );
+			var ext = h * 1.05 + deep * off * cardW;                             // the deck's height: top card + the steps behind it
+			if ( ext > H * 0.88 ) { cardW = Math.max( 20, cardW * H * 0.88 / ext ); h = stackSize( cards, cardW ); }
+			var shift = deep * off * cardW / 2;                                // centre the deck, not just the top card
+			grid.style.transform = 'translate3d(' + ( -shift ).toFixed( 1 ) + 'px,' + shift.toFixed( 1 ) + 'px,0)';
+		}
+		// The resting pose of the card `i` in slot `s` (0 = top). Deeper slots step up-right, shrink a little
+		// and lean by the card's own jitter; anything past the last visible slot waits there, hidden.
+		function slotPose( s, i ) {
+			var v = Math.min( s, deep );
+			return { x: v * off * cardW, y: -v * off * cardW, r: jitter * ( orbitHash( i + 5 ) * 2 - 1 ) * Math.min( v, 1 ), s: 1 - v * 0.035, o: s > deep ? 0 : 1 };
+		}
+		function mix( a, b, t ) { return { x: a.x + ( b.x - a.x ) * t, y: a.y + ( b.y - a.y ) * t, r: a.r + ( b.r - a.r ) * t, s: a.s + ( b.s - a.s ) * t, o: a.o + ( b.o - a.o ) * t }; }
+		function put( c, q, z ) {
+			c.style.transform = 'translate3d(' + q.x.toFixed( 1 ) + 'px,' + q.y.toFixed( 1 ) + 'px,0) rotate(' + q.r.toFixed( 2 ) + 'deg) scale(' + q.s.toFixed( 3 ) + ')';
+			c.style.opacity = q.o.toFixed( 3 );
+			c.style.zIndex = String( z );
+			c.style.visibility = q.o < 0.01 ? 'hidden' : '';
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var p = Math.floor( st.S ), f = st.S - p, u = clamp( f / move, 0, 1 );
+			var sd = side || ( modN( p, 2 ) ? -1 : 1 );
+			var t2 = easeInOut( clamp( ( u - 0.5 ) * 2, 0, 1 ) );
+			for ( var i = 0; i < N; i++ ) {
+				var s0 = modN( i - p, N ), c = cards[ i ];
+				if ( N === 1 ) { put( c, slotPose( 0, i ), 100 ); continue; }
+				if ( s0 === 0 ) {
+					var top = slotPose( 0, i ), out = { x: sd * slide * cardW, y: -0.05 * h, r: sd * tilt, s: 1.03, o: 1 };
+					if ( u < 0.5 ) { put( c, mix( top, out, easeInOut( u * 2 ) ), 300 ); }
+					else { put( c, mix( out, slotPose( N - 1, i ), t2 ), 1 ); }
+				} else {
+					var q = mix( slotPose( s0, i ), slotPose( s0 - 1, i ), t2 );
+					put( c, q, 200 - Math.round( ( s0 - t2 ) * 10 ) );
+				}
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		el.setAttribute( 'data-tdg-allowdrag', '0' );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Polaroid Drop (Stack & Scatter) — instant-photo prints drop one by one onto a growing pile, each
+	 * landing at its own spot and angle with a small bounce (from above, or tossed in from the camera).
+	 * When the pile is full the oldest print slides away as the next lands, or the whole pile is swept
+	 * off the table and a new one starts. An original design. */
+	function initPolaroidDrop( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var M = cards.length;
+		if ( ! M ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 2.5 );
+		var camera  = el.getAttribute( 'data-tdg-from' ) === 'camera';
+		var pile    = Math.round( clamp( num( el, 'data-tdg-pile', 6 ), 1, 20 ) );
+		var scatter = clamp( num( el, 'data-tdg-scatter', 45 ), 0, 200 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 14 ), 0, 45 );
+		var sweep   = num( el, 'data-tdg-sweep', 0 ) === 1;
+		var move    = clamp( num( el, 'data-tdg-move', 45 ), 15, 95 ) / 100;
+		var cardPct = clamp( num( el, 'data-tdg-card', 24 ), 6, 60 ) / 100;
+		pile = Math.min( pile, sweep ? M : Math.max( 1, M - 1 ) );
+
+		var cardW = 0, h = 0, H = 0;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1;
+			H = stage.clientHeight || el.clientHeight || W * 0.5;
+			cardW = Math.max( 20, W * cardPct );
+			h = stackSize( cards, cardW );
+			var ext = h * 1.1 + scatter * cardW * 1.1;                           // a print plus how far the pile spreads up and down
+			if ( ext > H * 0.9 ) { cardW = Math.max( 20, cardW * H * 0.9 / ext ); h = stackSize( cards, cardW ); }
+		}
+		// Where drop number `d` lands (stable per drop, so every pass lays a different-looking pile).
+		function spot( d ) {
+			return { x: ( orbitHash( d * 3 + 1 ) * 2 - 1 ) * scatter * cardW, y: ( orbitHash( d * 3 + 2 ) * 2 - 1 ) * scatter * cardW * 0.55, r: ( orbitHash( d * 3 + 3 ) * 2 - 1 ) * tilt };
+		}
+		function put( c, x, y, r, s, o, z ) {
+			c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,0) rotate(' + r.toFixed( 2 ) + 'deg) scale(' + s.toFixed( 3 ) + ')';
+			c.style.opacity = o.toFixed( 3 );
+			c.style.zIndex = String( z );
+			c.style.visibility = o < 0.01 ? 'hidden' : '';
+		}
+		function hide( c ) { put( c, 0, 0, 0, 1, 0, 0 ); }
+		// A print in the air (u 0→1): falls in (gravity), lands on its spot, then a small bounce settles it.
+		function dropping( c, d, u, z ) {
+			var g = spot( d ), fall = clamp( u / 0.8, 0, 1 ), e = fall * fall, bounce = u > 0.8 ? Math.sin( Math.PI * ( u - 0.8 ) / 0.2 ) : 0;
+			var turn = ( orbitHash( d * 7 ) > 0.5 ? 1 : -1 ) * 28 * ( 1 - e );
+			if ( camera ) {
+				put( c, g.x * e, g.y * e, g.r + turn, 1 + 1.7 * ( 1 - e ) - 0.035 * bounce, Math.min( 1, u * 5 ), z );
+			} else {
+				var y0 = -H / 2 - h;
+				put( c, g.x, y0 + ( g.y - y0 ) * e - 0.06 * h * bounce, g.r + turn, 1 + 0.12 * ( 1 - e ), Math.min( 1, u * 8 ), z );
+			}
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var S = st.S + pile - 1, p = Math.floor( S ), f = S - p, u = clamp( f / move, 0, 1 );
+			for ( var j = 0; j < M; j++ ) {
+				var c = cards[ j ], g;
+				if ( ! sweep ) {
+					var d = p - modN( p - j, M ), age = p - d;
+					if ( d < 0 || age > pile ) { hide( c ); continue; }
+					g = spot( d );
+					if ( age === 0 ) { dropping( c, d, u, 1000 ); }
+					else if ( age < pile ) { put( c, g.x, g.y, g.r, 1, 1, 1000 - age * 10 ); }
+					else { var e = easeInOut( u ); put( c, g.x, g.y + e * 0.15 * h, g.r, 1 - 0.06 * e, 1 - e, 1 ); }   // the oldest leaves
+				} else {
+					var C = pile + 1, cyc = Math.floor( p / C ), k = modN( p, C ), m = modN( j - cyc * pile, M );
+					if ( m >= pile ) { hide( c ); continue; }
+					var dd = cyc * pile + m;
+					g = spot( dd );
+					if ( k < pile ) {
+						if ( m < k ) { put( c, g.x, g.y, g.r, 1, 1, 10 + m * 10 ); }
+						else if ( m === k ) { dropping( c, dd, u, 10 + m * 10 ); }
+						else { hide( c ); }
+					} else {                                                     // sweep the whole pile off the table
+						var us = easeInOut( clamp( ( u - m * 0.03 ) / Math.max( 0.3, 1 - pile * 0.03 ), 0, 1 ) );
+						put( c, g.x + us * ( stage.clientWidth || 800 ) * 0.8, g.y + us * 0.1 * h, g.r + us * 30, 1, 1 - clamp( ( us - 0.4 ) / 0.6, 0, 1 ), 10 + m * 10 );
+					}
+				}
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		el.setAttribute( 'data-tdg-allowdrag', '0' );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* ---- Devices & Screens additions (Phone Lineup, Window Stack, Device Trio) ------------------- */
+	/* Phone Lineup (Devices & Screens) — every photo on the screen of a phone; the phones stand in a shallow
+	 * V (the centre one nearest, the others stepping back and turning toward it) and the lineup turns like a
+	 * carousel, phones fading out at one end and back in at the other. Stop at Centre holds each phone in
+	 * the middle; visitors can drag the lineup. An original design. */
+	function initPhoneLineup( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 3 );
+		var dir     = num( el, 'data-tdg-dir', 1 );
+		var spacing = clamp( num( el, 'data-tdg-spacing', 70 ), 20, 200 ) / 100;
+		var depth   = clamp( num( el, 'data-tdg-depth', 50 ), 0, 150 ) / 100;
+		var turn    = clamp( num( el, 'data-tdg-turn', 25 ), 0, 80 );
+		var bob     = clamp( num( el, 'data-tdg-bob', 3 ), 0, 12 ) / 100;
+		var snap    = num( el, 'data-tdg-snap', 1 ) === 1;
+		var move    = clamp( num( el, 'data-tdg-move', 45 ), 10, 95 ) / 100;
+		var cardPct = clamp( num( el, 'data-tdg-card', 16 ), 4, 40 ) / 100;
+		var half = N / 2;
+		el.setAttribute( 'data-tdg-dragsign', String( -dir ) );                // dragging right always moves the phones right
+
+		var thick   = clamp( num( el, 'data-tdg-thick', 8 ), 0, 20 ) / 100;
+		var entr    = el.getAttribute( 'data-tdg-entrance' );
+		var hasEnt  = !! entr && entr !== 'none' && ! reduce;
+		var inners  = cards.map( function ( c ) { return c.querySelector( '.tdg__inner' ); } );
+
+		// The phone's body: thin strips standing round the rounded outline (the metal side, following the
+		// corners), the buttons, and the back. They hang off the card (a 3D parent), so they turn with it.
+		var bodies = [], last = [];
+		function buildBodies() {
+			bodies.forEach( function ( list ) { list.forEach( function ( q ) { q.el.parentNode && q.el.parentNode.removeChild( q.el ); } ); } );
+			bodies = []; last = [];
+			if ( ! thick ) { return; }
+			var w = cardW, T = Math.max( 2, w * thick ), R = Math.min( Math.max( 3, w * 0.045 ) * 3.6, w / 2, h / 2 ), segs = [];
+			function seg( x1, y1, x2, y2, out, dz ) {
+				segs.push( { x: ( x1 + x2 ) / 2 + out[ 0 ], y: ( y1 + y2 ) / 2 + out[ 1 ], L: Math.sqrt( ( x2 - x1 ) * ( x2 - x1 ) + ( y2 - y1 ) * ( y2 - y1 ) ) + 0.6,
+					a: Math.atan2( y2 - y1, x2 - x1 ) * 180 / Math.PI, d: dz } );
+			}
+			seg( R, 0, w - R, 0, [ 0, 0 ], 1 ); seg( w, R, w, h - R, [ 0, 0 ], 1 ); seg( w - R, h, R, h, [ 0, 0 ], 1 ); seg( 0, h - R, 0, R, [ 0, 0 ], 1 );
+			[ [ R, R, 180 ], [ w - R, R, 270 ], [ w - R, h - R, 0 ], [ R, h - R, 90 ] ].forEach( function ( cn ) {
+				for ( var k = 0; k < 5; k++ ) {
+					var a1 = ( cn[ 2 ] + 18 * k ) * Math.PI / 180, a2 = ( cn[ 2 ] + 18 * ( k + 1 ) ) * Math.PI / 180;
+					seg( cn[ 0 ] + R * Math.cos( a1 ), cn[ 1 ] + R * Math.sin( a1 ), cn[ 0 ] + R * Math.cos( a2 ), cn[ 1 ] + R * Math.sin( a2 ), [ 0, 0 ], 1 );
+				}
+			} );
+			// Buttons: action + volume on the left, power on the right, standing slightly proud of the side.
+			var bo = Math.max( 1, T * 0.2 );
+			[ [ 0.17, 0.21 ], [ 0.25, 0.33 ], [ 0.36, 0.44 ] ].forEach( function ( b ) { seg( 0, h * b[ 1 ], 0, h * b[ 0 ], [ -bo, 0 ], 0.5 ); } );
+			seg( w, h * 0.27, w, h * 0.39, [ bo, 0 ], 0.5 );
+			cards.forEach( function ( c ) {
+				var list = [];
+				segs.forEach( function ( s ) {
+					var e = document.createElement( 'i' ), D = T * s.d;
+					e.className = 'tdg__phside';
+					e.setAttribute( 'aria-hidden', 'true' );
+					e.style.width = s.L.toFixed( 1 ) + 'px'; e.style.height = D.toFixed( 1 ) + 'px';
+					e.style.marginLeft = ( -s.L / 2 ).toFixed( 1 ) + 'px'; e.style.marginTop = ( -D / 2 ).toFixed( 1 ) + 'px';
+					// Light from above: the top side brightest, the bottom darkest.
+					e.style.filter = 'brightness(' + ( 0.78 - 0.32 * Math.sin( ( s.a - 90 ) * Math.PI / 180 ) ).toFixed( 3 ) + ')';
+					c.insertBefore( e, c.firstChild );                          // before the screen: on a depth tie the screen wins
+					list.push( { el: e, ox: w / 2, oy: h / 2, base: 'translate3d(' + s.x.toFixed( 1 ) + 'px,' + s.y.toFixed( 1 ) + 'px,' + ( -T / 2 ).toFixed( 1 ) + 'px) rotateZ(' + s.a.toFixed( 2 ) + 'deg) rotateX(90deg)' } );
+				} );
+				var bk = document.createElement( 'i' );
+				bk.className = 'tdg__phback';
+				bk.setAttribute( 'aria-hidden', 'true' );
+				bk.style.borderRadius = R.toFixed( 1 ) + 'px';
+				c.insertBefore( bk, c.firstChild );
+				list.push( { el: bk, ox: 0, oy: 0, base: 'translate3d(0,0,' + ( -T ).toFixed( 1 ) + 'px) rotateY(180deg)' } );
+				bodies.push( list );
+			} );
+			syncBodies();
+		}
+		// The per-card Entrance poses .tdg__inner (opacity + transform); the body copies it, so it appears with the screen.
+		// The screen (.tdg__inner) is what the entrances animate: the Style-tab Entrance with inline styles,
+		// the Animations tab's Entrance / Exit Animation with CSS classes (read back as computed values while
+		// they run). The body copies the screen's opacity and transform, pivoting about the phone's centre
+		// (ox/oy: the centre relative to each part's own origin), so the whole phone animates as one.
+		function screenState( inr ) {
+			if ( ! inr ) { return [ '', '' ]; }
+			var cl = inr.classList;
+			if ( cl.contains( 'sc-anim-pending' ) || cl.contains( 'sc-anim-gone' ) ) { return [ '0', '' ]; }
+			if ( cl.contains( 'animate__animated' ) ) {
+				var cs = window.getComputedStyle( inr ), t = cs.transform;
+				return [ cs.opacity, t && t !== 'none' ? t : '' ];
+			}
+			if ( hasEnt ) { return [ inr.style.opacity !== '' ? inr.style.opacity : '0', inr.style.transform || '' ]; }
+			return [ '', '' ];
+		}
+		function syncBodies() {
+			for ( var i = 0; i < bodies.length; i++ ) {
+				var ss = screenState( inners[ i ] ), op = ss[ 0 ], tr = ss[ 1 ];
+				var key = op + '|' + tr;
+				if ( last[ i ] === key ) { continue; }
+				last[ i ] = key;
+				for ( var j = 0; j < bodies[ i ].length; j++ ) {
+					var q = bodies[ i ][ j ];
+					q.el.style.opacity = op;
+					q.el.style.transform = ( tr ? 'translate(' + q.ox.toFixed( 1 ) + 'px,' + q.oy.toFixed( 1 ) + 'px) ' + tr + ' translate(' + ( -q.ox ).toFixed( 1 ) + 'px,' + ( -q.oy ).toFixed( 1 ) + 'px) ' : '' ) + q.base;
+				}
+			}
+		}
+
+		var cardW = 0, h = 0;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1, H = stage.clientHeight || el.clientHeight || W;
+			cardW = Math.max( 20, W * cardPct );
+			h = stackSize( cards, cardW );
+			if ( h * ( 1 + 2 * bob ) > H * 0.9 ) { cardW = Math.max( 20, cardW * H * 0.9 / ( h * ( 1 + 2 * bob ) ) ); h = stackSize( cards, cardW ); }
+			el.style.setProperty( '--tdg-bez', Math.max( 3, cardW * 0.045 ).toFixed( 1 ) + 'px' );
+			stage.style.perspective = ( W * 1.4 ) + 'px';
+			buildBodies();
+		}
+		var st = { S: 0 };
+		function applyFrame() {
+			var S = st.S * dir, p = Math.floor( S ), f = S - p;
+			var Se = snap ? p + easeInOut( clamp( f / move, 0, 1 ) ) : S;
+			var tb = st.S * 1.7;
+			for ( var i = 0; i < N; i++ ) {
+				var u = modN( i - Se + half, N ) - half, au = Math.abs( u ), c = cards[ i ];
+				var x = u * spacing * cardW, z = -au * depth * cardW, ry = -clamp( u, -2.2, 2.2 ) * turn;
+				var y = Math.sin( tb + i * 1.3 ) * bob * h;
+				// Shrink away at one end and grow back at the other (not an opacity fade: opacity would flatten the 3D body).
+				var sc = easeInOut( clamp( ( half - au ) / 0.9, 0, 1 ) );
+				c.style.transform = 'translate3d(' + x.toFixed( 1 ) + 'px,' + y.toFixed( 1 ) + 'px,' + z.toFixed( 1 ) + 'px) rotateY(' + ry.toFixed( 2 ) + 'deg) scale(' + sc.toFixed( 3 ) + ')';
+				c.style.visibility = sc < 0.02 ? 'hidden' : '';
+			}
+			syncBodies();
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+		if ( bodies.length ) {                                                   // keep following the screen when nothing else animates
+			var sync = function () { syncBodies(); requestAnimationFrame( sync ); };
+			requestAnimationFrame( sync );
+		}
+	}
+
+	/* Window Stack (Devices & Screens) — browser windows stacked in a tilted 3D pile, each one set back and
+	 * up from the one in front. The front window leaves (toward the visitor, or dropping away) and the
+	 * others move forward one place while it reappears at the back. An original design. */
+	function initWindowStack( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var grid  = el.querySelector( '.tdg__grid' );
+		if ( ! stage || ! grid ) { return; }
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( '.tdg__card' ) );
+		var N = cards.length;
+		if ( ! N ) { return; }
+		var drive   = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed   = num( el, 'data-tdg-speed', 3 );
+		var toward  = el.getAttribute( 'data-tdg-exit' ) !== 'down';
+		var behind  = Math.round( clamp( num( el, 'data-tdg-behind', 4 ), 1, 8 ) );
+		var gap     = clamp( num( el, 'data-tdg-gap', 30 ), 5, 100 ) / 100;
+		var off     = clamp( num( el, 'data-tdg-offset', 8 ), 0, 30 ) / 100;
+		var tilt    = clamp( num( el, 'data-tdg-tilt', 16 ), 0, 50 );
+		var yaw     = clamp( num( el, 'data-tdg-yaw', 22 ), -45, 45 );
+		var dim     = clamp( num( el, 'data-tdg-dim', 30 ), 0, 80 ) / 100;
+		var move    = clamp( num( el, 'data-tdg-move', 55 ), 15, 95 ) / 100;
+		var cardPct = clamp( num( el, 'data-tdg-card', 44 ), 10, 80 ) / 100;
+		var deep = Math.min( behind, N - 1 );
+
+		var cardW = 0, h = 0;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1, H = stage.clientHeight || el.clientHeight || W;
+			cardW = Math.max( 40, W * cardPct );
+			h = stackSize( cards, cardW );
+			var ext = h + deep * off * cardW * 0.7;
+			if ( ext > H * 0.8 ) { cardW = Math.max( 40, cardW * H * 0.8 / ext ); h = stackSize( cards, cardW ); }
+			el.style.setProperty( '--tdg-bez', Math.max( 3, cardW * 0.022 ).toFixed( 1 ) + 'px' );
+			stage.style.perspective = ( W * 1.6 ) + 'px';
+			var sx = -deep * off * cardW / 2, sy = deep * off * cardW * 0.35;
+			grid.style.transform = 'translate3d(' + sx.toFixed( 1 ) + 'px,' + sy.toFixed( 1 ) + 'px,0) rotateX(' + tilt + 'deg) rotateY(' + ( -yaw ) + 'deg)';
+		}
+		function slot( s ) {
+			var v = Math.min( s, deep );
+			return { x: v * off * cardW, y: -v * off * cardW * 0.7, z: -v * gap * cardW, b: 1 - dim * ( v / Math.max( 1, deep ) ), o: s > deep ? 0 : 1 };
+		}
+		function put( c, q ) {
+			c.style.transform = 'translate3d(' + q.x.toFixed( 1 ) + 'px,' + q.y.toFixed( 1 ) + 'px,' + q.z.toFixed( 1 ) + 'px)';
+			c.style.opacity = q.o.toFixed( 3 );
+			c.style.filter = q.b < 0.999 ? 'brightness(' + q.b.toFixed( 3 ) + ')' : '';
+			c.style.visibility = q.o < 0.01 ? 'hidden' : '';
+		}
+		function mix( a, b, t ) { return { x: a.x + ( b.x - a.x ) * t, y: a.y + ( b.y - a.y ) * t, z: a.z + ( b.z - a.z ) * t, b: a.b + ( b.b - a.b ) * t, o: a.o + ( b.o - a.o ) * t }; }
+		var st = { S: 0 };
+		function applyFrame() {
+			var p = Math.floor( st.S ), f = st.S - p, u = clamp( f / move, 0, 1 ), t = easeInOut( u );
+			for ( var i = 0; i < N; i++ ) {
+				var s0 = modN( i - p, N ), c = cards[ i ];
+				if ( N === 1 ) { put( c, slot( 0 ) ); continue; }
+				if ( s0 === 0 ) {
+					if ( u < 0.55 ) {                                              // the front window leaves
+						var e = easeInOut( u / 0.55 ), a = slot( 0 );
+						put( c, { x: a.x, y: a.y + ( toward ? 0.15 : 0.9 ) * h * e, z: a.z + ( toward ? 0.9 : 0.1 ) * cardW * e, b: 1, o: 1 - e } );
+					} else {                                                       // … and fades back in at the back
+						var g = slot( N - 1 > deep ? deep : N - 1 ), e2 = easeInOut( ( u - 0.55 ) / 0.45 );
+						put( c, { x: g.x, y: g.y, z: g.z - gap * cardW * ( 1 - e2 ), b: g.b, o: N - 1 > deep ? 0 : e2 } );
+					}
+				} else {
+					put( c, mix( slot( s0 ), slot( s0 - 1 ), t ) );
+				}
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		el.setAttribute( 'data-tdg-allowdrag', '0' );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+	}
+
+	/* Device Trio (Devices & Screens) — a laptop with a tablet and a phone floating in front of it, each
+	 * screen showing photos; the screens change one device at a time, the devices float gently, and the
+	 * group turns slightly toward the visitor's pointer (or sways on its own). An original design. */
+	function initDeviceTrio( el ) {
+		if ( el.__tdg ) { return; }
+		el.__tdg = true;
+		var stage = el.querySelector( '.tdg__stage' );
+		var trio  = el.querySelector( '.tdg__trio' );
+		if ( ! stage || ! trio ) { return; }
+		var devs = Array.prototype.slice.call( trio.querySelectorAll( '.tdg__device' ) );
+		if ( devs.length < 3 ) { return; }
+		var screens = devs.map( function ( d ) { return Array.prototype.slice.call( d.querySelectorAll( '.tdg__card' ) ); } );
+		var drive  = el.getAttribute( 'data-tdg-drive' ) || 'continuous';
+		var speed  = num( el, 'data-tdg-speed', 3 );
+		var sway   = el.getAttribute( 'data-tdg-sway' ) !== '0';
+		var size   = clamp( num( el, 'data-tdg-card', 48 ), 15, 90 ) / 100;
+		var float  = clamp( num( el, 'data-tdg-float', 2 ), 0, 8 ) / 100;
+		var depth  = clamp( num( el, 'data-tdg-depth', 30 ), 0, 100 ) / 100;
+		var tiltMx = clamp( num( el, 'data-tdg-tilt', 10 ), 0, 30 );
+		var follow = num( el, 'data-tdg-follow', 1 ) === 1;
+		// Device sizes and spots, as fractions of the laptop width: laptop centre-back, tablet front-left, phone front-right.
+		var SPEC = [ { w: 1, x: 0, y: -0.06, z: 0 }, { w: 0.34, x: -0.5, y: 0.13, z: 1 }, { w: 0.17, x: 0.52, y: 0.15, z: 1.4 } ];
+
+		var LW = 0;
+		function layout() {
+			var W = stage.clientWidth || el.clientWidth || 1, H = stage.clientHeight || el.clientHeight || W;
+			LW = W * size;
+			devs.forEach( function ( d, k ) { d.style.width = ( LW * SPEC[ k ].w ) + 'px'; d.style.fontSize = ( LW * SPEC[ k ].w / 100 ) + 'px'; } );
+			var hh = devs[ 0 ].offsetHeight || LW * 0.66;                      // the laptop's height (screen + base) sets the group height
+			if ( hh * 1.28 > H * 0.9 ) {
+				LW = LW * H * 0.9 / ( hh * 1.28 );
+				devs.forEach( function ( d, k ) { d.style.width = ( LW * SPEC[ k ].w ) + 'px'; d.style.fontSize = ( LW * SPEC[ k ].w / 100 ) + 'px'; } );
+			}
+			devs.forEach( function ( d ) { d.style.marginLeft = ( -d.offsetWidth / 2 ) + 'px'; d.style.marginTop = ( -d.offsetHeight / 2 ) + 'px'; } );
+			stage.style.perspective = ( W * 1.5 ) + 'px';
+		}
+		var pt = follow ? pointerTracker( el, stage ) : { hover: false };
+		var st = { S: 0 }, rx = 0, ry = 0, shown = [ -1, -1, -1 ];
+		function applyFrame() {
+			var p = Math.floor( st.S );
+			// Screens change one device at a time: step 1 changes the laptop, step 2 the tablet, step 3 the phone, …
+			for ( var k = 0; k < 3; k++ ) {
+				var list = screens[ k ], n = list.length;
+				if ( ! n ) { continue; }
+				var changes = p > k ? Math.floor( ( p - k - 1 ) / 3 ) + 1 : 0, a = modN( changes, n );
+				if ( a !== shown[ k ] ) { shown[ k ] = a; for ( var j = 0; j < n; j++ ) { list[ j ].classList.toggle( 'is-active', j === a ); } }
+			}
+			var tx = 0, ty = 0;
+			if ( pt.hover ) {
+				var r = stage.getBoundingClientRect();
+				ty = clamp( pt.x / ( r.width / 2 ), -1, 1 ) * tiltMx; tx = -clamp( pt.y / ( r.height / 2 ), -1, 1 ) * tiltMx * 0.6;
+			} else if ( sway ) { ty = Math.sin( st.S * 0.9 ) * tiltMx * 0.6; tx = Math.sin( st.S * 0.6 ) * tiltMx * 0.2; }
+			rx += ( tx - rx ) * 0.08; ry += ( ty - ry ) * 0.08;
+			trio.style.transform = 'rotateX(' + rx.toFixed( 2 ) + 'deg) rotateY(' + ry.toFixed( 2 ) + 'deg)';
+			for ( var d = 0; d < 3; d++ ) {
+				var s = SPEC[ d ], bobY = Math.sin( st.S * 2.1 + d * 2.2 ) * float * LW;
+				devs[ d ].style.transform = 'translate3d(' + ( s.x * LW ).toFixed( 1 ) + 'px,' + ( s.y * LW + bobY ).toFixed( 1 ) + 'px,' + ( s.z * depth * LW ).toFixed( 1 ) + 'px)';
+			}
+		}
+		layout();
+		applyFrame();
+		window.addEventListener( 'resize', function () { layout(); applyFrame(); }, { passive: true } );
+		el.setAttribute( 'data-tdg-allowdrag', '0' );
+		orbitDrive( el, stage, st, speed, drive, applyFrame );
+		if ( follow && ( drive !== 'continuous' || reduce ) ) {
+			var tick = function () { if ( pt.hover || Math.abs( rx ) + Math.abs( ry ) > 0.01 ) { applyFrame(); } requestAnimationFrame( tick ); };
+			requestAnimationFrame( tick );
+		}
+	}
+
 	/* Card Reel — a vertical cover-flow carousel. A single column of cards wraps around a horizontal
 	 * cylinder: the card at the centre sits flat and forward (the focus), the ones above and below tilt
 	 * back and recede along the curve. The reel flows up/down continuously, or "Stop at centre" snaps
@@ -2875,8 +5582,9 @@
 	}
 	function autoGroupChains() {
 		// Runs of CONSECUTIVE chained galleries in document order (a non-chained gallery breaks a run).
-		// Members may sit in different sections — they are relocated into one overlay wrapper.
-		var all = Array.prototype.slice.call( document.querySelectorAll( '.tdg--scroll-choreography' ) );
+		// Members may sit in different sections — they are relocated into one overlay wrapper. Any gallery
+		// design can chain (not just Scroll Choreography): every `.tdg` wrapper, chained via `data-tdg-chain`.
+		var all = Array.prototype.slice.call( document.querySelectorAll( '.tdg' ) );
 		var runs = [], cur = [];
 		all.forEach( function ( g ) {
 			var chained = g.getAttribute( 'data-tdg-chain' ) && ! ( g.closest && g.closest( '.tdg-choreo-chain' ) );
@@ -2904,19 +5612,26 @@
 	function buildChain( box ) {
 		if ( box.__tdgChain ) { return; }
 		box.__tdgChain = true;
-		var gals = Array.prototype.slice.call( box.querySelectorAll( '.tdg--scroll-choreography' ) ).filter( function ( g ) { return ! g.__tdg; } );
+		// Every chained gallery in the box — NOT filtered by `__tdg`: a non-choreography design's own init
+		// already ran (set `__tdg`) and started the loop that reads `__tdgChainProgress`, which is exactly
+		// what we want; only Scroll Choreography is init-skipped when chained.
+		var gals = Array.prototype.slice.call( box.querySelectorAll( '.tdg' ) ).filter( function ( g ) { return g.getAttribute( 'data-tdg-chain' ); } );
 		if ( gals.length < 2 ) { return; } // one gallery → let it drive itself normally
 		var stageH = '70vh', items = [];
 		gals.forEach( function ( g ) {
 			g.__tdg = true;
-			g.classList.remove( 'tdg--pinned' );
+			g.classList.remove( 'tdg--pinned' ); // the master pins the chain; drop the gallery's own CSS sticky pin
 			var h = ( getComputedStyle( g ).getPropertyValue( '--tdg-stage-h' ) || '70vh' ).trim();
 			stageH = h || stageH;
 			g.style.position = 'absolute'; g.style.left = '0'; g.style.right = '0'; g.style.top = '0'; g.style.height = h;
-			var p = choreoPoser( g );
-			if ( p ) { items.push( { g: g, poseAt: p.poseAt } ); }
+			// Scroll Choreography poses its cards directly (choreoPoser); EVERY OTHER design is driven by its
+			// own already-running loop reading `__tdgChainProgress` (scrollProgress returns it) — so pose is
+			// null for them. Gate on the design class: choreoPoser returns a (default) poser even without
+			// formation data, which would wrongly hijack a real design's own layout.
+			items.push( { g: g, pose: g.classList.contains( 'tdg--scroll-choreography' ) ? choreoPoser( g ) : null } );
 		} );
 		if ( items.length < 2 ) { return; }
+		function poseIt( it, p ) { if ( it.pose ) { it.pose.poseAt( p ); } else { it.g.__tdgChainProgress = p; } }
 		box.style.position = 'relative';
 		box.style.height = stageH;
 		var OVERLAP = 0.3, UNIT = 2.4; // step overlap fraction, and screen-heights of scroll per gallery
@@ -2924,10 +5639,10 @@
 		var total = 0;
 		items.forEach( function ( it, idx ) {
 			window.gsap.set( it.g, { opacity: idx === 0 ? 1 : 0 } );
-			it.poseAt( 0 );
+			poseIt( it, 0 );
 			var proxy = { p: 0 }, sub = window.gsap.timeline();
 			sub.set( it.g, { opacity: 1 }, 0 );
-			sub.to( proxy, { p: 1, duration: 1, ease: 'none', onUpdate: function () { it.poseAt( proxy.p ); } }, 0 );
+			sub.to( proxy, { p: 1, duration: 1, ease: 'none', onUpdate: function () { poseIt( it, proxy.p ); } }, 0 );
 			sub.set( it.g, { opacity: 0 }, 1 ); // after its turn (cards are already scattered/faded)
 			var pos = idx * ( 1 - OVERLAP );
 			master.add( sub, pos );
@@ -3058,6 +5773,70 @@
 		for ( i = 0; i < els.length; i++ ) { initSpiral( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--depth-stack' );
 		for ( i = 0; i < els.length; i++ ) { initDepthStack( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--tilt-deck' );
+		for ( i = 0; i < els.length; i++ ) { initTiltDeck( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--iso-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initIsoOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--iso-stack' );
+		for ( i = 0; i < els.length; i++ ) { initIsoStack( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--iso-cascade' );
+		for ( i = 0; i < els.length; i++ ) { initIsoCascade( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--iso-fan' );
+		for ( i = 0; i < els.length; i++ ) { initIsoFan( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--orbit-bloom' );
+		for ( i = 0; i < els.length; i++ ) { initOrbitBloom( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--focus-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initFocusOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--dual-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initDualOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--comet-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initCometOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--orbit-swarm' );
+		for ( i = 0; i < els.length; i++ ) { initOrbitSwarm( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--ring-tilt' );
+		for ( i = 0; i < els.length; i++ ) { initRingTilt( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--gyro-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initGyroOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--infinity-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initInfinityOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--vortex' );
+		for ( i = 0; i < els.length; i++ ) { initVortex( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--pendulum-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initPendulumOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--moon-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initMoonOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--tiered-orbit' );
+		for ( i = 0; i < els.length; i++ ) { initTieredOrbit( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--wave-grid' );
+		for ( i = 0; i < els.length; i++ ) { initWaveGrid( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--flip-grid' );
+		for ( i = 0; i < els.length; i++ ) { initFlipGrid( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--magnet-grid' );
+		for ( i = 0; i < els.length; i++ ) { initMagnetGrid( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--blind-reveal' );
+		for ( i = 0; i < els.length; i++ ) { initBlindReveal( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--iris-wipe' );
+		for ( i = 0; i < els.length; i++ ) { initIrisWipe( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--tile-dissolve' );
+		for ( i = 0; i < els.length; i++ ) { initTileDissolve( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--spotlight-wall' );
+		for ( i = 0; i < els.length; i++ ) { initSpotlightWall( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--focus-pull' );
+		for ( i = 0; i < els.length; i++ ) { initFocusPull( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--loupe' );
+		for ( i = 0; i < els.length; i++ ) { initLoupe( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--card-fan' );
+		for ( i = 0; i < els.length; i++ ) { initCardFan( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--shuffle-deck' );
+		for ( i = 0; i < els.length; i++ ) { initShuffleDeck( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--polaroid-drop' );
+		for ( i = 0; i < els.length; i++ ) { initPolaroidDrop( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--phone-lineup' );
+		for ( i = 0; i < els.length; i++ ) { initPhoneLineup( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--window-stack' );
+		for ( i = 0; i < els.length; i++ ) { initWindowStack( els[ i ] ); }
+		els = document.querySelectorAll( '.tdg--device-trio' );
+		for ( i = 0; i < els.length; i++ ) { initDeviceTrio( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--card-reel' );
 		for ( i = 0; i < els.length; i++ ) { initReel( els[ i ] ); }
 		els = document.querySelectorAll( '.tdg--film-strip' );
@@ -3111,6 +5890,38 @@
 		else if ( el.classList.contains( 'tdg--card-tunnel' ) ) { initTunnel( el ); }
 		else if ( el.classList.contains( 'tdg--spiral-stream' ) ) { initSpiral( el ); }
 		else if ( el.classList.contains( 'tdg--depth-stack' ) ) { initDepthStack( el ); }
+		else if ( el.classList.contains( 'tdg--tilt-deck' ) ) { initTiltDeck( el ); }
+		else if ( el.classList.contains( 'tdg--iso-orbit' ) ) { initIsoOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--iso-stack' ) ) { initIsoStack( el ); }
+		else if ( el.classList.contains( 'tdg--iso-cascade' ) ) { initIsoCascade( el ); }
+		else if ( el.classList.contains( 'tdg--iso-fan' ) ) { initIsoFan( el ); }
+		else if ( el.classList.contains( 'tdg--orbit-bloom' ) ) { initOrbitBloom( el ); }
+		else if ( el.classList.contains( 'tdg--focus-orbit' ) ) { initFocusOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--dual-orbit' ) ) { initDualOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--comet-orbit' ) ) { initCometOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--orbit-swarm' ) ) { initOrbitSwarm( el ); }
+		else if ( el.classList.contains( 'tdg--ring-tilt' ) ) { initRingTilt( el ); }
+		else if ( el.classList.contains( 'tdg--gyro-orbit' ) ) { initGyroOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--infinity-orbit' ) ) { initInfinityOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--vortex' ) ) { initVortex( el ); }
+		else if ( el.classList.contains( 'tdg--pendulum-orbit' ) ) { initPendulumOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--moon-orbit' ) ) { initMoonOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--tiered-orbit' ) ) { initTieredOrbit( el ); }
+		else if ( el.classList.contains( 'tdg--wave-grid' ) ) { initWaveGrid( el ); }
+		else if ( el.classList.contains( 'tdg--flip-grid' ) ) { initFlipGrid( el ); }
+		else if ( el.classList.contains( 'tdg--magnet-grid' ) ) { initMagnetGrid( el ); }
+		else if ( el.classList.contains( 'tdg--blind-reveal' ) ) { initBlindReveal( el ); }
+		else if ( el.classList.contains( 'tdg--iris-wipe' ) ) { initIrisWipe( el ); }
+		else if ( el.classList.contains( 'tdg--tile-dissolve' ) ) { initTileDissolve( el ); }
+		else if ( el.classList.contains( 'tdg--spotlight-wall' ) ) { initSpotlightWall( el ); }
+		else if ( el.classList.contains( 'tdg--focus-pull' ) ) { initFocusPull( el ); }
+		else if ( el.classList.contains( 'tdg--loupe' ) ) { initLoupe( el ); }
+		else if ( el.classList.contains( 'tdg--card-fan' ) ) { initCardFan( el ); }
+		else if ( el.classList.contains( 'tdg--shuffle-deck' ) ) { initShuffleDeck( el ); }
+		else if ( el.classList.contains( 'tdg--polaroid-drop' ) ) { initPolaroidDrop( el ); }
+		else if ( el.classList.contains( 'tdg--phone-lineup' ) ) { initPhoneLineup( el ); }
+		else if ( el.classList.contains( 'tdg--window-stack' ) ) { initWindowStack( el ); }
+		else if ( el.classList.contains( 'tdg--device-trio' ) ) { initDeviceTrio( el ); }
 		else if ( el.classList.contains( 'tdg--card-reel' ) ) { initReel( el ); }
 		else if ( el.classList.contains( 'tdg--film-strip' ) ) { initReel( el ); }
 		else if ( el.classList.contains( 'tdg--wheel-carousel' ) ) { initWheel( el ); }

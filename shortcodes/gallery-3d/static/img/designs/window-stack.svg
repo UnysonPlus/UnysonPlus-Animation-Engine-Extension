@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Window Stack: browser windows stacked in a tilted pile; the front one leaves and the rest move forward. Original design. -->
+<g transform="skewY(-8) translate(0 8)">
+<g><animateTransform attributeName="transform" type="translate" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.25;0.7;1" keySplines="0 0 1 1;.45 0 .55 1;0 0 1 1" values="0 0;0 0;-6 6;-6 6"/>
+<g><rect x="42" y="6" width="40" height="26" rx="2.5" fill="#4a5470"/><rect x="42" y="6" width="40" height="5" rx="2" fill="#8e97ab"/></g>
+<g><rect x="36" y="12" width="40" height="26" rx="2.5" fill="#5b6a8c"/><rect x="36" y="12" width="40" height="5" rx="2" fill="#a3abbd"/></g>
+<g><rect x="30" y="18" width="40" height="26" rx="2.5" fill="#6f7fa3"/><rect x="30" y="18" width="40" height="5" rx="2" fill="#c4cad6"/></g>
+</g>
+<g><animateTransform attributeName="transform" type="translate" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.25;0.6;1" keySplines="0 0 1 1;.5 0 .9 .6;0 0 1 1" values="0 0;0 0;-8 16;-8 16"/>
+<animate attributeName="opacity" dur="3s" repeatCount="indefinite" keyTimes="0;0.25;0.6;1" values="1;1;0;0"/>
+<rect x="24" y="24" width="40" height="26" rx="2.5" fill="url(#A)"/><rect x="24" y="24" width="40" height="5" rx="2" fill="#e9eaee"/>
+<circle cx="27.5" cy="26.5" r="1" fill="#ff5f57"/><circle cx="30.5" cy="26.5" r="1" fill="#febc2e"/><circle cx="33.5" cy="26.5" r="1" fill="#28c840"/></g>
+</g>
+</svg>

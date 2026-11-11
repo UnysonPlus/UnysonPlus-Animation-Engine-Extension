@@ -55,7 +55,7 @@ $ni = max( 1, count( $items ) );
 		<div class="tdg__depth">
 			<?php for ( $k = 0; $k < $count; $k++ ) {
 				$item = $items[ $k % $ni ];
-				echo '<div class="tdg__card">' . $render_card( $item ) . '</div>';
+				echo '<div class="tdg__card"' . $card_style( $item ) . '>' . $render_card( $item ) . '</div>';
 			} ?>
 		</div>
 	</div>

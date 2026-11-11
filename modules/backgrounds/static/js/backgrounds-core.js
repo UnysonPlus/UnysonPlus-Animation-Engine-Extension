@@ -20,19 +20,35 @@
 	}
 
 	function canvasLayer(host) {
+		// Measure the host BEFORE the canvas is put inside it. A geometry read that follows a DOM
+		// write forces the browser to lay the whole page out again before it can answer, and reading
+		// the host immediately after inserting a child into it is exactly that. Measured on a real
+		// page under 4x CPU throttling this one read cost 9.9ms - the largest single forced-layout
+		// item on that page. Taking the measurement first costs nothing and gives the same number:
+		// inserting an absolutely-positioned background layer does not change the host's own box.
+		var box = host.getBoundingClientRect();
 		var cv = document.createElement('canvas'); cv.className = 'upw-bg-layer upw-bg-canvas'; cv.setAttribute('aria-hidden', 'true');
 		host.insertBefore(cv, host.firstChild);
 		var ctx = cv.getContext('2d'), dpr = Math.min(2, window.devicePixelRatio || 1);
 		var L = { cv: cv, ctx: ctx, w: 1, h: 1, seed: null };
-		function size() {
-			var r = host.getBoundingClientRect();
+		// `r` is supplied whenever a box is already to hand - the first measurement above, or the one
+		// ResizeObserver hands us, which the browser produced during its own layout pass. Only the
+		// plain resize fallback has to measure for itself.
+		function size(r) {
+			if (!r) { r = host.getBoundingClientRect(); }
 			L.w = Math.max(1, r.width); L.h = Math.max(1, r.height);
 			cv.width = L.w * dpr; cv.height = L.h * dpr; cv.style.width = L.w + 'px'; cv.style.height = L.h + 'px';
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 			if (L.seed) { L.seed(); }
 		}
-		size();
-		if ('ResizeObserver' in window) { new ResizeObserver(size).observe(host); } else { window.addEventListener('resize', size, { passive: true }); }
+		size(box);
+		if ('ResizeObserver' in window) {
+			new ResizeObserver(function (entries) {
+				size(entries && entries[0] ? entries[0].contentRect : null);
+			}).observe(host);
+		} else {
+			window.addEventListener('resize', function () { size(); }, { passive: true });
+		}
 		return L;
 	}
 

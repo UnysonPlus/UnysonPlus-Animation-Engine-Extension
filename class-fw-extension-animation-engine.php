@@ -72,6 +72,7 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/scroll-ruler/scroll-ruler.php';     // Scroll Ruler (admin-only author tool)
 		require_once dirname( __FILE__ ) . '/modules/scroll-timeline-editor/scroll-timeline-editor.php'; // Scroll Timeline Editor (admin-only — visual timeline + live scrub)
 		require_once dirname( __FILE__ ) . '/modules/sticky-stack/sticky-stack.php';    // Sticky Card Stack (Section-level, scroll)
+		require_once dirname( __FILE__ ) . '/modules/interactions/interactions.php';    // Interactions (per-element triggers that animate other elements)
 		require_once dirname( __FILE__ ) . '/modules/horizontal-scroll/horizontal-scroll.php'; // Horizontal Scroll Section (Section-level, scroll)
 		require_once dirname( __FILE__ ) . '/modules/scroll-reveal/scroll-reveal.php';    // Scroll Reveal (per-element clip wipe)
 		require_once dirname( __FILE__ ) . '/modules/flip-card/flip-card.php';          // 3D Flip Card (per-element, pointer)
@@ -83,6 +84,7 @@ class FW_Extension_Animation_Engine extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/modules/motion-path/motion-path.php';       // Motion Path (per-element — element travels a path)
 		require_once dirname( __FILE__ ) . '/modules/confetti/confetti.php';             // Confetti (per-element — celebratory particle burst)
 		require_once dirname( __FILE__ ) . '/modules/kinetic-preset/kinetic-preset.php'; // Kinetic Scenes Preset (per-element — the Studio's presets on page elements)
+		require_once dirname( __FILE__ ) . '/modules/painted/painted.php';               // Painted (per-element — real brush marks and watercolour, painted on in view; p5.brush)
 
 		// Central effects control — consolidates the per-module enable switches into one
 		// "Effects" tab and hides a disabled module's options. Loaded last (after modules).

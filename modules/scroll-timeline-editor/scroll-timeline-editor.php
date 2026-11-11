@@ -46,3 +46,27 @@ add_action( 'wp_enqueue_scripts', function () {
 		'canEdit'  => ( $pid && current_user_can( 'edit_post', $pid ) ) ? 1 : 0,
 	) );
 }, 31 );
+
+/**
+ * Admin-bar entry for the Scroll Timeline editor — see the Scroll Ruler module for the rationale (the
+ * floating "Timeline" pill collided with site-side floating chrome). Adds the shared "Scroll Tools"
+ * parent node idempotently plus this module's "Timeline" item; the timeline JS wires the click.
+ */
+add_action( 'admin_bar_menu', function ( $bar ) {
+	if ( is_admin() || ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	$bar->add_node( array(
+		'id'    => 'upw-scroll-tools',
+		'title' => '<span class="ab-icon dashicons dashicons-chart-bar" style="top:2px;font:400 20px/1 dashicons;"></span><span class="ab-label">Scroll Tools</span>',
+		'href'  => false,
+		'meta'  => array( 'title' => __( 'Unyson+ scroll author tools', 'fw' ) ),
+	) );
+	$bar->add_node( array(
+		'parent' => 'upw-scroll-tools',
+		'id'     => 'upw-scroll-tools-timeline',
+		'title'  => __( 'Timeline', 'fw' ),
+		'href'   => '#',
+		'meta'   => array( 'class' => 'upw-scroll-tools-item', 'title' => __( 'Toggle the Scroll Timeline (Shift+T)', 'fw' ) ),
+	) );
+}, 80 );

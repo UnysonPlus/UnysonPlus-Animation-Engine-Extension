@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Polaroid Drop: instant prints drop one by one onto a growing pile. Original design. -->
+<g transform="rotate(-12 36 38)"><rect x="25" y="24" width="22" height="27" rx="1.5" fill="#e8ecf4"/><rect x="27.5" y="26.5" width="17" height="17" fill="#5b6a8c"/></g>
+<g transform="rotate(10 58 36)"><rect x="47" y="22" width="22" height="27" rx="1.5" fill="#e8ecf4"/><rect x="49.5" y="24.5" width="17" height="17" fill="#6f7fa3"/></g>
+<g transform="rotate(-3 47 41)"><rect x="36" y="27" width="22" height="27" rx="1.5" fill="#f3f5fa"/><rect x="38.5" y="29.5" width="17" height="17" fill="#8193b8"/></g>
+<g><animateTransform attributeName="transform" type="translate" dur="2.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.4;0.5;0.58;1" keySplines=".55 0 1 .45;0 0 .5 1;.5 0 1 1;0 0 1 1" values="0 -52;0 0;0 -2;0 0;0 0"/>
+<animate attributeName="opacity" dur="2.6s" repeatCount="indefinite" keyTimes="0;0.08;0.85;1" values="0;1;1;0"/>
+<g transform="rotate(7 50 33)"><rect x="39" y="19" width="22" height="27" rx="1.5" fill="#fff"/><rect x="41.5" y="21.5" width="17" height="17" fill="url(#A)"/></g></g>
+</svg>

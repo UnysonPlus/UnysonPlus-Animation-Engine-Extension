@@ -31,7 +31,7 @@
 		return document.body && (
 			document.body.classList.contains('fw-builder-active') ||
 			document.body.classList.contains('fw-backend-builder') ||
-			window.self !== window.top
+			(window.self !== window.top && !/[?&]fw-le-motion-preview=/.test(window.location.search)) /* the Live Editor Preview canvas plays like the real page */
 		);
 	}
 

@@ -19,8 +19,12 @@
 
 	function cardsOf(sec) {
 		var row = sec.querySelector('.fw-row') || sec.querySelector('.upw-row') || sec;
-		var cols = row.querySelectorAll(':scope > [class*="fw-col"]');
-		if (cols.length >= 2) return Array.prototype.slice.call(cols);
+		var cols = Array.prototype.slice.call(row.querySelectorAll(':scope > [class*="fw-col"]'));
+		// "First column is a heading" (data-ss-skip-first) and any column with the class upw-ss-skip stay
+		// out of the stack: they scroll normally (e.g. a heading above the cards).
+		if (sec.getAttribute('data-ss-skip-first') === '1' && cols.length) { cols = cols.slice(1); }
+		cols = cols.filter(function (c) { return !c.classList.contains('upw-ss-skip') && !c.querySelector(':scope > .upw-ss-skip, :scope > * > .upw-ss-skip'); });
+		if (cols.length >= 2) return cols;
 		return Array.prototype.slice.call(sec.children).filter(function (c) { return c.offsetHeight > 40; });
 	}
 

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="td-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+  </defs>
+  <!-- Tilt Deck: tiles march across an isometric plane; the one at the focus lifts (scales up)
+       and brightens, then fades at the wrap. Original design. -->
+  <g opacity="0.16">
+    <g transform="translate(34,27)"><rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#td-f)" transform="scale(1,0.5) rotate(45)"/></g>
+    <g transform="translate(48,34)"><rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#td-f)" transform="scale(1,0.5) rotate(45)"/></g>
+    <g transform="translate(62,41)"><rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#td-f)" transform="scale(1,0.5) rotate(45)"/></g>
+  </g>
+  <g>
+    <animateMotion dur="3.2s" begin="0.00s" repeatCount="indefinite" path="M 20,18 L 76,46" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.2s" begin="0.00s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.6;1.4;0.6"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#td-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.2s" begin="0.00s" repeatCount="indefinite" keyTimes="0;0.14;0.5;0.86;1" values="0;0.85;1;0.85;0"/>
+      </rect>
+    </g>
+  </g>
+  <g>
+    <animateMotion dur="3.2s" begin="-0.80s" repeatCount="indefinite" path="M 20,18 L 76,46" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.2s" begin="-0.80s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.6;1.4;0.6"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#td-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.2s" begin="-0.80s" repeatCount="indefinite" keyTimes="0;0.14;0.5;0.86;1" values="0;0.85;1;0.85;0"/>
+      </rect>
+    </g>
+  </g>
+  <g>
+    <animateMotion dur="3.2s" begin="-1.60s" repeatCount="indefinite" path="M 20,18 L 76,46" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.2s" begin="-1.60s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.6;1.4;0.6"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#td-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.2s" begin="-1.60s" repeatCount="indefinite" keyTimes="0;0.14;0.5;0.86;1" values="0;0.85;1;0.85;0"/>
+      </rect>
+    </g>
+  </g>
+  <g>
+    <animateMotion dur="3.2s" begin="-2.40s" repeatCount="indefinite" path="M 20,18 L 76,46" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.2s" begin="-2.40s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.6;1.4;0.6"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#td-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.2s" begin="-2.40s" repeatCount="indefinite" keyTimes="0;0.14;0.5;0.86;1" values="0;0.85;1;0.85;0"/>
+      </rect>
+    </g>
+  </g>
+</svg>

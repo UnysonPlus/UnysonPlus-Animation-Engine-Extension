@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+  <defs>
+    <linearGradient id="if-f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#2f74e6"/>
+    </linearGradient>
+  </defs>
+  <!-- Iso Fan: tiles sweep along an isometric arc; each scales up + brightens at the centre and
+       fades at the fan's edges. Original design. -->
+  <g>
+    <animateMotion dur="3.6s" begin="0.00s" repeatCount="indefinite" path="M 16,30 Q 48,52 80,30" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.6s" begin="0.00s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.5;1.3;0.5"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#if-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.6s" begin="0.00s" repeatCount="indefinite" keyTimes="0;0.14;0.86;1" values="0;0.9;0.9;0"/>
+      </rect>
+    </g>
+  </g>
+  <g>
+    <animateMotion dur="3.6s" begin="-0.72s" repeatCount="indefinite" path="M 16,30 Q 48,52 80,30" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.6s" begin="-0.72s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.5;1.3;0.5"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#if-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.6s" begin="-0.72s" repeatCount="indefinite" keyTimes="0;0.14;0.86;1" values="0;0.9;0.9;0"/>
+      </rect>
+    </g>
+  </g>
+  <g>
+    <animateMotion dur="3.6s" begin="-1.44s" repeatCount="indefinite" path="M 16,30 Q 48,52 80,30" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.6s" begin="-1.44s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.5;1.3;0.5"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#if-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.6s" begin="-1.44s" repeatCount="indefinite" keyTimes="0;0.14;0.86;1" values="0;0.9;0.9;0"/>
+      </rect>
+    </g>
+  </g>
+  <g>
+    <animateMotion dur="3.6s" begin="-2.16s" repeatCount="indefinite" path="M 16,30 Q 48,52 80,30" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.6s" begin="-2.16s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.5;1.3;0.5"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#if-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.6s" begin="-2.16s" repeatCount="indefinite" keyTimes="0;0.14;0.86;1" values="0;0.9;0.9;0"/>
+      </rect>
+    </g>
+  </g>
+  <g>
+    <animateMotion dur="3.6s" begin="-2.88s" repeatCount="indefinite" path="M 16,30 Q 48,52 80,30" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" dur="3.6s" begin="-2.88s" repeatCount="indefinite" keyTimes="0;0.5;1" values="0.5;1.3;0.5"/>
+      <rect x="-11" y="-11" width="22" height="22" rx="3" fill="url(#if-f)" transform="scale(1,0.5) rotate(45)">
+        <animate attributeName="opacity" dur="3.6s" begin="-2.88s" repeatCount="indefinite" keyTimes="0;0.14;0.86;1" values="0;0.9;0.9;0"/>
+      </rect>
+    </g>
+  </g>
+</svg>

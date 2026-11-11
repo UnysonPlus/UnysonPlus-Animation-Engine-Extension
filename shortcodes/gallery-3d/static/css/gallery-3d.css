@@ -263,6 +263,80 @@
 
 @media (prefers-reduced-motion: reduce) { .tdg--device-cycler .tdg__card { transition: none; } }
 
+/* Devices & Screens additions (Phone Lineup, Window Stack, Device Trio). JS sets --tdg-bez (a bezel unit in
+   px, scaled to the card) on Phone Lineup and Window Stack; Device Trio sizes each device's font-size to 1%
+   of its width, so its frames are drawn in em and scale with the device. */
+/* Phone Lineup — a 3D phone: the screen (.tdg__inner) sits in a thin black bezel with a metal rim (the Frame
+   Colour); JS adds the body round it: .tdg__phside strips standing along the rounded outline (the metal side,
+   shaded by JS for light from above), the buttons, and .tdg__phback (the back, with a camera block). */
+.tdg--phone-lineup .tdg__card { will-change: transform; }
+.tdg--phone-lineup .tdg__inner {
+	position: relative;
+	backface-visibility: hidden;                                   /* the screen shows only from the front … */
+	-webkit-backface-visibility: hidden;
+	border: calc(var(--tdg-bez, 6px) * .5) solid #0b0b0d;
+	border-radius: calc(var(--tdg-bez, 6px) * 3.6);
+	background: #000;
+	box-shadow:
+		0 0 0 max(1.5px, calc(var(--tdg-bez, 6px) * .28)) var(--tdg-frame, #3a3c41),
+		0 0 0 max(2px, calc(var(--tdg-bez, 6px) * .36)) rgba(255, 255, 255, .22),
+		0 24px 40px -18px rgba(0, 0, 0, .55);
+}
+/* The island rides .tdg__inner (not the card) so the per-card Entrance reveals it with the phone. */
+.tdg--phone-lineup .tdg__inner::after {
+	content: ""; position: absolute; z-index: 3; pointer-events: none;
+	top: calc(var(--tdg-bez, 6px) * 0.9); left: 50%; width: 30%; height: calc(var(--tdg-bez, 6px) * 1.5);
+	transform: translateX(-50%); border-radius: 99px; background: #0b0b0d;
+}
+.tdg__phside {
+	position: absolute; left: 0; top: 0; pointer-events: none;
+	background: linear-gradient(rgba(255, 255, 255, .3), rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, .3)), var(--tdg-frame, #3a3c41);
+	backface-visibility: visible;
+}
+.tdg__phback {
+	position: absolute; inset: 0; pointer-events: none;
+	backface-visibility: hidden; -webkit-backface-visibility: hidden;  /* … and the back only from behind */
+	background: linear-gradient(150deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, .22)), var(--tdg-frame, #3a3c41);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+}
+.tdg__phback::before {                                                    /* the camera block */
+	content: ""; position: absolute; top: 4%; left: 7%; width: 40%; aspect-ratio: 1; border-radius: 24%;
+	background:
+		radial-gradient(circle at 30% 30%, #2a2c33 0 13%, #0c0d10 14% 19%, transparent 20%),
+		radial-gradient(circle at 30% 72%, #2a2c33 0 13%, #0c0d10 14% 19%, transparent 20%),
+		radial-gradient(circle at 72% 50%, #2a2c33 0 13%, #0c0d10 14% 19%, transparent 20%),
+		rgba(255, 255, 255, .1);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 0 1px 3px rgba(0, 0, 0, .3);
+}
+.tdg--window-stack .tdg__card { will-change: transform, opacity, filter; }
+/* The title bar and its three buttons are painted on .tdg__inner itself (top padding + background), so the
+   per-card Entrance reveals the whole window at once. */
+.tdg--window-stack .tdg__inner {
+	--tdg-b: var(--tdg-bez, 6px);
+	border: 1px solid rgba(0, 0, 0, .12);
+	padding: calc(var(--tdg-b) * 3.4) 0 0 !important;
+	border-radius: calc(var(--tdg-b) * 1.4);
+	background:
+		radial-gradient(circle at calc(var(--tdg-b) * 2.3) calc(var(--tdg-b) * 1.7), #ff5f57 calc(var(--tdg-b) * .5), transparent calc(var(--tdg-b) * .5 + .5px)),
+		radial-gradient(circle at calc(var(--tdg-b) * 4) calc(var(--tdg-b) * 1.7), #febc2e calc(var(--tdg-b) * .5), transparent calc(var(--tdg-b) * .5 + .5px)),
+		radial-gradient(circle at calc(var(--tdg-b) * 5.7) calc(var(--tdg-b) * 1.7), #28c840 calc(var(--tdg-b) * .5), transparent calc(var(--tdg-b) * .5 + .5px)),
+		var(--tdg-chrome, #e9eaee);
+	box-shadow: 0 26px 50px -18px rgba(0, 0, 0, .45);
+}
+.tdg--device-trio .tdg__trio { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
+.tdg--device-trio .tdg__device { position: absolute; left: 0; top: 0; will-change: transform; }
+.tdg--device-trio .tdg__screen { position: relative; width: 100%; overflow: hidden; background: #0b0b0d; }
+.tdg--device-trio .tdg__device--laptop .tdg__screen { aspect-ratio: 16 / 10; border: 2.2em solid #1c1c1f; border-radius: 3em 3em 0.6em 0.6em; box-shadow: 0 3em 6em -2em rgba(0, 0, 0, .45); }
+.tdg--device-trio .tdg__device--laptop::after { content: ""; display: block; width: 116%; margin: -1px 0 0 -8%; height: 3.4em; background: linear-gradient(#cbced4, #a7abb4); border-radius: 0 0 3em 3em; box-shadow: 0 2em 3em -1em rgba(0, 0, 0, .3); }
+.tdg--device-trio .tdg__device--tablet .tdg__screen { aspect-ratio: 3 / 4; border: 4.5em solid #16161a; border-radius: 9em; box-shadow: 0 6em 12em -4em rgba(0, 0, 0, .55); }
+.tdg--device-trio .tdg__device--phone .tdg__screen { aspect-ratio: 9 / 19; border: 6em solid #0d0d11; border-radius: 17em; box-shadow: 0 10em 20em -6em rgba(0, 0, 0, .6); }
+.tdg--device-trio .tdg__device--phone::before { content: ""; position: absolute; top: 11em; left: 50%; transform: translateX(-50%); width: 30%; height: 7em; background: #0d0d11; border-radius: 99px; z-index: 3; }
+.tdg--device-trio .tdg__card { position: absolute; inset: 0; width: auto; margin: 0; aspect-ratio: auto; transform: none; opacity: 0; pointer-events: none; transition: opacity .7s ease; }
+.tdg--device-trio .tdg__card.is-active { opacity: 1; pointer-events: auto; }
+.tdg--device-trio .tdg__inner, .tdg--device-trio .tdg__link { position: absolute; inset: 0; display: block; padding: 0; border-radius: 0; }
+.tdg--device-trio .tdg__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (prefers-reduced-motion: reduce) { .tdg--device-trio .tdg__card { transition: none; } }
+
 /* Sphere Cascade — columns of cards on a sphere, cascading vertically (JS positions each card;
  * cards sit tangent to the surface, so the back hemisphere is hidden by backface-visibility). */
 .tdg__cascade {
@@ -300,6 +374,208 @@
    blur/fade toward the back. JS sets each card's translate3d + wobble + filter. */
 .tdg__depth { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
 .tdg--depth-stack .tdg__card { will-change: transform, opacity, filter; }
+
+/* Tilt Deck (Isometric) — an isometric ground plane (JS sets its rotateX/rotateZ) holding a grid of
+   tiles. The tile crossing the focus point lifts off the plane and faces the camera; JS writes each
+   tile's translate3d + counter-rotation + brightness per frame. */
+.tdg__iso { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
+.tdg--tilt-deck .tdg__card { will-change: transform, opacity, filter; backface-visibility: hidden; }
+/* Iso Orbit — a ring of tiles revolving on the same isometric plane (`.tdg__iso`); the near tile lifts
+   to face the camera. JS writes each tile's translate3d + counter-rotation + brightness per frame. */
+.tdg--iso-orbit .tdg__card { will-change: transform, filter; backface-visibility: hidden; }
+/* Iso Stack — slabs stacked into a tower on the same isometric plane (`.tdg__iso`), streaming up; the
+   focus slab lifts to face the camera. JS writes each slab's translate3d + counter-rotation per frame. */
+.tdg--iso-stack .tdg__card { will-change: transform, opacity, filter; backface-visibility: hidden; }
+/* Iso Cascade — tiles descend a diagonal staircase on the same isometric plane (`.tdg__iso`); the
+   front tile lifts to face the camera. JS writes each tile's translate3d + counter-rotation per frame. */
+.tdg--iso-cascade .tdg__card { will-change: transform, opacity, filter; backface-visibility: hidden; }
+/* Iso Fan — tiles spread along a flat arc on the same isometric plane (`.tdg__iso`) and sweep across;
+   the centre tile lifts to face the camera. JS writes each tile's translate3d + counter-rotation. */
+.tdg--iso-fan .tdg__card { will-change: transform, opacity, filter; backface-visibility: hidden; }
+
+/* Orbit Bloom + Focus Orbit — billboarded cards on a tilted orbit disc (reuses `.tdg__orbit`). JS sets
+   the per-card translate3d (+ counter-rotation to face the camera), scale, opacity and brightness. */
+.tdg--orbit-bloom .tdg__card,
+.tdg--focus-orbit .tdg__card { will-change: transform, opacity, filter; backface-visibility: hidden; }
+
+/* Dual Orbit, Comet Orbit, Orbit Swarm — more billboarded orbit designs on `.tdg__orbit`. */
+.tdg--dual-orbit .tdg__card,
+.tdg--comet-orbit .tdg__card,
+.tdg--orbit-swarm .tdg__card { will-change: transform, filter; backface-visibility: hidden; }
+
+/* Orbit paths (Dual Orbit, Comet Orbit) — a thin line lying in the orbit plane, so it shows the ring /
+   ellipse the cards travel. JS sizes it; colour via --tdg-track. */
+.tdg__track {
+	position: absolute;
+	left: 0;
+	top: 0;
+	border-radius: 50%;
+	pointer-events: none;
+	border: 1.5px solid var(--tdg-track, rgba(70, 130, 230, .5));
+	box-sizing: border-box;
+}
+
+/* Gyro Orbit, Infinity Orbit, Vortex — more billboarded orbit designs on `.tdg__orbit`. Gyro's ring paths
+   are `.tdg__track` circles turned onto each ring's plane; Infinity's ∞ path is an SVG lying in the plane. */
+.tdg--gyro-orbit .tdg__card,
+.tdg--infinity-orbit .tdg__card,
+.tdg--vortex .tdg__card,
+.tdg--pendulum-orbit .tdg__card,
+.tdg--moon-orbit .tdg__card,
+.tdg--tiered-orbit .tdg__card { will-change: transform, filter, opacity; backface-visibility: hidden; }
+.tdg__path {
+	position: absolute;
+	left: 0;
+	top: 0;
+	/* The orbit is a 0×0 box, so a theme's `svg { max-width: 100%; height: auto }` would collapse the path
+	   to nothing — JS sets the real size inline, and these keep a theme rule from overriding it. */
+	max-width: none !important;
+	max-height: none !important;
+	overflow: visible;
+	pointer-events: none;
+	stroke: var(--tdg-track, rgba(70, 130, 230, .5));
+	stroke-width: 1.5px;
+}
+
+/* Vortex's eye — a cool glow at the bottom of the whirlpool (JS sinks it to the vortex depth). */
+.tdg--vortex .tdg__focus {
+	background: radial-gradient(circle, #fff 0, rgba(190, 220, 255, .85) 14%, rgba(80, 150, 255, .4) 36%, rgba(47, 116, 230, .12) 58%, transparent 72%);
+}
+
+/* Grid family (Wave Grid, Flip Grid, Magnet Grid) — cards in a cols×rows grid on `.tdg__grid`, a 3D plane
+   centred in the stage (JS sizes the cards, writes each card's transform and the plane's tilt). */
+.tdg__grid {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform-style: preserve-3d;
+	will-change: transform;
+}
+.tdg--wave-grid .tdg__card,
+.tdg--magnet-grid .tdg__card { will-change: transform, filter; }
+/* Flip Grid — two-sided cards: face A in front, face B turned 180° behind it. The pool holds every photo
+   (hidden), so the lightbox can step through all of them and JS can refill a face before it turns into view. */
+.tdg--flip-grid .tdg__card { will-change: transform; }
+.tdg__face {
+	position: absolute;
+	inset: 0;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+}
+.tdg__face--b { transform: rotateY(180deg); }
+.tdg--flip-x .tdg__face--b { transform: rotateX(180deg); }
+.tdg__pool { display: none !important; }
+
+/* Reveal & Wipe family (Blind Reveal, Iris Wipe, Tile Dissolve) — one large photo at a time in a centred
+   `.tdg__frame` (width set by JS from Frame Size, height from Card Ratio). JS builds the slats / layers /
+   tiles inside it and paints each with a slice of the photo as a background. */
+.tdg__frame {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	aspect-ratio: var(--tdg-ratio, 16 / 9);
+	transform-style: preserve-3d;
+	outline-offset: 4px;
+}
+.tdg__frame:focus-visible { outline: 2px solid currentColor; }
+.tdg__slat,
+.tdg__tile {
+	position: absolute;
+	transform-style: preserve-3d;
+	will-change: transform;
+}
+/* Tiles fade as they fly; slats must NOT hint opacity — an opacity hint makes the browser flatten the
+   element, which collapses a slat's two 3D faces into one plane (the back face then never shows). */
+.tdg__tile { will-change: transform, opacity; }
+.tdg__slatface,
+.tdg__layer {
+	position: absolute;
+	inset: 0;
+	background-repeat: no-repeat;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+}
+.tdg__tile { background-repeat: no-repeat; }
+.tdg__layer { border-radius: var(--tdg-radius, 14px); will-change: transform, clip-path; }
+.tdg--iris-wipe .tdg__frame { overflow: hidden; border-radius: var(--tdg-radius, 14px); transform-style: flat; }
+/* Blind Reveal: round only the outer corners of the first and last slat. */
+.tdg--blind-reveal .tdg__slat:first-child .tdg__slatface { border-radius: var(--tdg-radius, 14px) 0 0 var(--tdg-radius, 14px); }
+.tdg--blind-reveal .tdg__slat:last-child .tdg__slatface { border-radius: 0 var(--tdg-radius, 14px) var(--tdg-radius, 14px) 0; }
+.tdg--blind-h .tdg__slat:first-child .tdg__slatface { border-radius: var(--tdg-radius, 14px) var(--tdg-radius, 14px) 0 0; }
+.tdg--blind-h .tdg__slat:last-child .tdg__slatface { border-radius: 0 0 var(--tdg-radius, 14px) var(--tdg-radius, 14px); }
+
+/* Spotlight & Focus family (Spotlight Wall, Focus Pull, Loupe) — cards on .tdg__grid; JS writes each
+   card's transform and filter (light / blur). Loupe adds a round lens holding enlarged copies of the cards. */
+.tdg--spotlight-wall .tdg__card,
+.tdg--loupe .tdg__card { will-change: transform, filter; }
+.tdg--focus-pull .tdg__card { will-change: transform, filter; }
+.tdg__lens {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	z-index: 50;
+	border-radius: 50%;
+	overflow: hidden;
+	pointer-events: none;
+	background: var(--tdg-bg, transparent);
+	border: 3px solid var(--tdg-lens-ring, #fff);
+	box-shadow: 0 18px 50px -10px rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(0, 0, 0, .15);
+	will-change: transform;
+}
+.tdg__lensinner {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 0;
+	height: 0;
+	transform-origin: 0 0;
+}
+.tdg__lenscard { position: absolute; }
+.tdg__lenscard .tdg__inner { width: 100%; height: 100%; }
+
+/* Stack & Scatter additions (Card Fan, Shuffle Deck, Polaroid Drop) — flat 2D piles on .tdg__grid, layered
+   with z-index (the grid is flat so z-index orders the cards; nothing here turns in 3D). JS writes each
+   card's transform, opacity and z-index. */
+.tdg--card-fan .tdg__grid,
+.tdg--shuffle-deck .tdg__grid,
+.tdg--polaroid-drop .tdg__grid { transform-style: flat; }
+.tdg--card-fan .tdg__card,
+.tdg--shuffle-deck .tdg__card,
+.tdg--polaroid-drop .tdg__card { transform-style: flat; will-change: transform; }
+.tdg--card-fan .tdg__inner,
+.tdg--shuffle-deck .tdg__inner { box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .45); }
+/* Polaroid Drop — each photo is an instant print: a frame (Frame Colour) with a deeper bottom margin. */
+.tdg--polaroid-drop .tdg__inner {
+	background-color: var(--tdg-frame, #fff);
+	padding: 5% 5% 20%;
+	box-shadow: 0 14px 30px -12px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .18);
+}
+
+/* Comet Orbit's focus — a soft "sun" the cards swing around (JS sizes + places it). */
+.tdg__focus {
+	position: absolute;
+	left: 0;
+	top: 0;
+	border-radius: 50%;
+	pointer-events: none;
+	background: radial-gradient(circle, #fff 0, rgba(255, 236, 190, .9) 14%, rgba(255, 190, 90, .45) 34%, rgba(255, 160, 60, .12) 56%, transparent 72%);
+}
+
+/* Ring Tilt — cards lie in the ring plane (not billboarded), so their backs can show on the far side
+   when lifted; the planet is a billboarded shaded disc in the middle (colour via --tdg-core). */
+.tdg--ring-tilt .tdg__card { will-change: transform, filter; backface-visibility: visible; }
+.tdg__planet {
+	position: absolute;
+	left: 0;
+	top: 0;
+	border-radius: 50%;
+	pointer-events: none;
+	/* Highlight on its own layer over an OPAQUE sphere, so the far side of the ring never shows through. */
+	background:
+		radial-gradient(circle at 34% 30%, rgba(255, 255, 255, .75) 0, rgba(255, 255, 255, 0) 38%),
+		radial-gradient(circle at 34% 30%, var(--tdg-core, #2f74e6) 0, var(--tdg-core, #2f74e6) 38%, color-mix(in srgb, var(--tdg-core, #2f74e6) 30%, #000) 100%);
+	box-shadow: 0 0 40px color-mix(in srgb, var(--tdg-core, #2f74e6) 45%, transparent);
+}
 
 /* Card Reel — a vertical cover-flow carousel: a single column of cards wrapped on a horizontal
    cylinder, the centre card flat and forward. JS sets each card's translate + rotateX. */

@@ -14,11 +14,11 @@ $base = $ext->get_declared_URI( '/shortcodes/studio-scene' );
 // `gsap` when no other copy is on the page, so it sits safely next to Scroll Motion.
 /** Filters the URL of the bundled scene player script. */
 $player_src = apply_filters( 'fw_studio_scene_player_src', $base . '/static/js/vendor/scene-player.js' );
-wp_enqueue_script( 'upw-scene-player', $player_src, array(), '0.0.44', true );
+wp_enqueue_script( 'upw-scene-player', $player_src, array(), '0.0.61', true );
 
-// The 3D runtime (three.js), loaded by the player only for scenes with a 3D layer. Said explicitly so it
+// The companion files (the 3D runtime, the Lottie runtime and the paint engine), each loaded by the player only for scenes that use it. Said explicitly so it
 // is still found when an optimiser combines or moves the player script.
-/** Filters the folder the player loads scene-3d.js from (with a trailing slash). */
+/** Filters the folder the player loads its companion files from (scene-3d.js, scene-lottie.js, scene-paint.js; with a trailing slash). */
 $asset_base = apply_filters( 'fw_studio_scene_asset_base', $base . '/static/js/vendor/' );
 wp_add_inline_script( 'upw-scene-player', 'window.UPW_SCENE_ASSET_BASE=' . wp_json_encode( esc_url_raw( $asset_base ) ) . ';', 'before' );
 

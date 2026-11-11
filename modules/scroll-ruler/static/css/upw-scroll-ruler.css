@@ -35,3 +35,6 @@
 .upw-sruler-bar:hover { opacity: 1; left: 0; right: 0; }
 .upw-sruler-playhead { position: absolute; left: -3px; right: -3px; height: 2px; background: #fff; box-shadow: 0 0 6px rgba( 255, 255, 255, 0.9 ); }
 @media ( prefers-reduced-motion: reduce ) { .upw-sruler-btn { transition: none; } }
+
+/* Active state on the admin-bar "Scroll Tools → Scroll Ruler" item (set by upw-scroll-ruler.js). */
+#wpadminbar #wp-admin-bar-upw-scroll-tools-ruler.upw-ab-on > .ab-item { box-shadow: inset 3px 0 0 #2AD38B; color: #2AD38B; }

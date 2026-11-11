@@ -48,7 +48,7 @@ $attr['style']           = ( isset( $attr['style'] ) ? rtrim( $attr['style'], ';
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="tdg__stage">
 		<div class="tdg__deck">
-			<?php foreach ( $items as $i => $item ) { echo '<div class="tdg__card' . ( 0 === $i ? ' is-active' : '' ) . '">' . $render_card( $item ) . '</div>'; } ?>
+			<?php foreach ( $items as $i => $item ) { echo '<div class="tdg__card' . ( 0 === $i ? ' is-active' : '' ) . '"' . $card_style( $item ) . '>' . $render_card( $item ) . '</div>'; } ?>
 		</div>
 	</div>
 </div>

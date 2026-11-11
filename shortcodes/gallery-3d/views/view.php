@@ -69,6 +69,8 @@ if ( $src_kind === 'posts' ) {
 			'title'       => (string) $qp->post_title,
 			'description' => (string) get_the_excerpt( $qp ),
 			'link'        => (string) get_permalink( $qp ),
+			'nw'          => ( $f && isset( $f[1] ) ) ? (int) $f[1] : 0,
+			'nh'          => ( $f && isset( $f[2] ) ) ? (int) $f[2] : 0,
 		);
 	}
 } else {
@@ -92,12 +94,16 @@ if ( $src_kind === 'posts' ) {
 			$url = $full = (string) $img['url'];
 		}
 		if ( $url === '' ) { continue; }
-		$items[] = array( 'id' => $id, 'url' => $url, 'full' => $full, 'alt' => $alt, 'caption' => $cap, 'title' => $title, 'description' => $desc, 'link' => $link, 'link_new_tab' => $lnt );
+		// Natural (full-size) pixel dimensions, for the "Original — mixed" Card Ratio (each card keeps its
+		// own shape). 0 when unknown (a bare-URL image) → that card falls back to the gallery's ratio.
+		$nw = ( ! empty( $f ) && isset( $f[1] ) ) ? (int) $f[1] : 0;
+		$nh = ( ! empty( $f ) && isset( $f[2] ) ) ? (int) $f[2] : 0;
+		$items[] = array( 'id' => $id, 'url' => $url, 'full' => $full, 'alt' => $alt, 'caption' => $cap, 'title' => $title, 'description' => $desc, 'link' => $link, 'link_new_tab' => $lnt, 'nw' => $nw, 'nh' => $nh );
 	}
 }
 
 /* ---- chosen design + per-design option reader ---- */
-$designs = array( 'scroll_choreography', 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'hero_reel', 'focus_slider', 'mosaic_marquee', 'photo_scatter', 'card_stack', 'device_cycler' );
+$designs = array( 'scroll_choreography', 'carousel_ring', 'panorama_wall', 'card_sphere', 'orbit_globe', 'sphere_cascade', 'totem_wall', 'parallax_totem', 'card_tunnel', 'spiral_stream', 'depth_stack', 'tilt_deck', 'iso_orbit', 'iso_stack', 'iso_cascade', 'iso_fan', 'orbit_bloom', 'focus_orbit', 'dual_orbit', 'comet_orbit', 'orbit_swarm', 'ring_tilt', 'gyro_orbit', 'infinity_orbit', 'vortex', 'pendulum_orbit', 'moon_orbit', 'tiered_orbit', 'wave_grid', 'flip_grid', 'magnet_grid', 'blind_reveal', 'iris_wipe', 'tile_dissolve', 'spotlight_wall', 'focus_pull', 'loupe', 'card_fan', 'shuffle_deck', 'polaroid_drop', 'phone_lineup', 'window_stack', 'device_trio', 'card_reel', 'film_strip', 'wheel_carousel', 'cover_flow', 'carousel_flow', 'hero_reel', 'focus_slider', 'mosaic_marquee', 'photo_scatter', 'card_stack', 'device_cycler' );
 /** Allow a child-theme-registered design key to render instead of falling back to carousel_ring.
  *  Pair with 'upw_gallery_3d_design_groups' (picker) + window.upwGallery3d.registerDesign (driver). */
 $designs = apply_filters( 'upw_gallery_3d_render_designs', $designs );
@@ -134,6 +140,7 @@ $motion_hover = ( isset( $mo['hover_behavior'] ) && in_array( $mo['hover_behavio
 $motion_pin   = ( ! isset( $mo['pin'] ) || $mo['pin'] === 'yes' ); // pin defaults ON for scroll-scrub
 $motion_len   = isset( $mo['scroll_length'] ) ? max( 1, min( 5, (float) $mo['scroll_length'] ) ) : 2.5;
 $motion_rounds = isset( $mo['rounds'] ) ? max( 0.25, min( 6, (float) $mo['rounds'] ) ) : 1; // scroll-scrub: full turns across the pin
+$motion_chain  = ( (string) $sc_get( 'chain', 'no' ) === 'yes' ); // chain with adjacent scroll-scrub galleries (top-level option)
 
 /* ---- shared style / caption / lightbox ---- */
 $boxp   = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : '';
@@ -186,7 +193,38 @@ $corner = max( 0, min( 60, (int) $dp( 'corner_radius', 6 ) ) );
  * stays uniform on all four sides) — matches the reference control and scales with Card Size. */
 $pad    = max( 0, min( 40, (float) $dp( 'padding', 0 ) ) );
 $ratio_key = (string) $dp( 'card_ratio', '1-1' );
+/* "Original — mixed": each card keeps its own image's shape (a per-card --tdg-ratio emitted on the
+ * card, below). Only the flat-card families lay out cleanly with mixed card heights — a single shared
+ * card height drives the geometry of the sphere / grids / device frames, so those fall back to Square.
+ * The global --tdg-ratio stays as the fallback for any card whose natural size is unknown. */
+$mix_designs = array(
+	'cover_flow', 'carousel_flow', 'card_reel', 'film_strip', 'focus_slider', 'hero_reel',
+	'card_stack', 'shuffle_deck', 'card_fan', 'photo_scatter', 'polaroid_drop',
+	'carousel_ring', 'spiral_stream', 'depth_stack',
+);
+$mix       = ( $ratio_key === 'original' && in_array( $design, $mix_designs, true ) );
 $ratio_css = str_replace( '-', ' / ', preg_match( '/^\d+-\d+$/', $ratio_key ) ? $ratio_key : '1-1' );
+/* Every design view that reads card_ratio itself (Card Sphere's tiling, Mosaic Marquee's grid cell,
+ * Device Cycler's screen) must see the same shape the CSS gets. Without this, "original" failed their
+ * N-M parse and each fell back to ITS OWN default (the sphere tiled for 16:9 while the cards rendered
+ * square). The mixed per-card shapes come from $card_style below, which keys off $mix, not this value. */
+if ( $ratio_key === 'original' ) {
+	$dp_raw = $dp;
+	$dp     = function ( $sub, $default = '' ) use ( $dp_raw ) {
+		$v = $dp_raw( $sub, $default );
+		return ( $sub === 'card_ratio' && $v === 'original' ) ? '1-1' : $v;
+	};
+}
+
+/* Per-card inline style for mixed mode: the card's own aspect from its natural pixel size. Returned by
+ * a helper the design views call when they emit each .tdg__card (empty string when not in mixed mode or
+ * the image's size is unknown, so the card keeps the gallery's shared ratio). */
+$card_style = function ( $item ) use ( $mix ) {
+	if ( $mix && ! empty( $item['nw'] ) && ! empty( $item['nh'] ) ) {
+		return ' style="--tdg-ratio:' . (int) $item['nw'] . ' / ' . (int) $item['nh'] . '"';
+	}
+	return '';
+};
 
 $inner_class = trim( 'tdg__inner' . ( $boxp !== '' ? ' ' . $boxp : '' ) );
 
@@ -237,11 +275,26 @@ $attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' tdg
  * design — they stay whole-element. */
 $tdg_flat       = ( 'mosaic_marquee' === $design );
 $tdg_hover_item = array();
-if ( $tdg_flat && ! empty( $attr['data-sc-anim'] ) && ( ! isset( $attr['data-sc-anim-seq'] ) || $attr['data-sc-anim-seq'] !== 'no' ) ) {
+$tdg_seq        = ( ! empty( $attr['data-sc-anim'] ) || ! empty( $attr['data-sc-exit'] ) ) && ( ! isset( $attr['data-sc-anim-seq'] ) || $attr['data-sc-anim-seq'] !== 'no' );
+if ( $tdg_flat && $tdg_seq ) {
 	// Cascade the entrance across .tdg__card. The cards are built by JS after load, so DEFER the
 	// wrapper bind — gallery-3d.js calls upwScAnimBind() once the grid exists (no children yet at scan).
 	$attr['data-sc-anim-children'] = '.tdg__card';
 	$attr['data-sc-anim-defer']    = '1';
+} elseif ( $tdg_seq ) {
+	/* The Animations tab's Entrance / Exit Animation on every other design that shows its photos as
+	 * cards: cascade it across each photo's INNER layer (.tdg__inner) — the layer the design never poses
+	 * (it moves .tdg__card every frame), so the photos animate in and out one by one while the ring
+	 * keeps turning / the orbit keeps orbiting. Flip Grid animates the face on show. Left as one block:
+	 * the one-photo / one-screen designs (Reveal & Wipe, Device Cycler, Device Trio), Photo Scatter (its
+	 * own scroll fly-in / fly-out), and a pinned Scroll-scrub (its scroll-driven in / out lives in the
+	 * Style-tab Entrance). */
+	$tdg_whole  = array( 'blind_reveal', 'iris_wipe', 'tile_dissolve', 'device_cycler', 'device_trio', 'photo_scatter', 'scroll_choreography' );
+	$tdg_pinned = ( $motion_mode === 'scroll' && $motion_pin );
+	if ( ! in_array( $design, $tdg_whole, true ) && ! $tdg_pinned ) {
+		$attr['data-sc-anim-children'] = '.tdg__card > .tdg__inner, .tdg__face--a > .tdg__inner';
+		if ( ! isset( $attr['data-sc-anim-stagger'] ) ) { $attr['data-sc-anim-stagger'] = '90'; }
+	}
 }
 if ( $tdg_flat && function_exists( 'upw_hover_scope' ) && upw_hover_scope( $atts ) === 'each'
 	&& function_exists( 'upw_hover_collection_item_attr' ) ) {
@@ -284,6 +337,11 @@ if ( $is_pinned ) { $attr['class'] = trim( $attr['class'] . ' tdg--pinned' ); }
  * range they travel is multiplied by it, so a viewer scrolls the deck by twice, thrice, … over the
  * pin. Emitted centrally for every design so each layout's onScroll can pick it up. Default 1. */
 if ( $motion_mode === 'scroll' ) { $attr['data-tdg-rounds'] = esc_attr( (string) $motion_rounds ); }
+
+/* Chain with adjacent galleries (scroll-scrub + pinned, any design): the runtime auto-groups consecutive
+ * chained galleries into one overlapping, pinned master scroll sequence. Guarded so it never doubles with
+ * the Scroll-Choreography design's own chain stamp. */
+if ( $is_pinned && $motion_chain && empty( $attr['data-tdg-chain'] ) ) { $attr['data-tdg-chain'] = '1'; }
 
 /* Stage Overflow = Spill: let fanned / oversized cards show in full beyond the Stage Height box
  * instead of being clipped by it (opt-in per design; default clips). Only in the normal flow — the

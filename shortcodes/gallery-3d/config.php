@@ -15,6 +15,13 @@ $cfg['page_builder'] = array(
 	'description'    => __( 'An animated image gallery — 3D carousels, rings and spheres, cover-flow, card scatter, marquee and more. Cards come from Media Library images or a post type\'s featured images, with drag-to-spin, scroll pinning, lightbox or per-card links.', 'fw' ),
 	'tab'            => __( 'Animation Engine', 'fw' ),
 	'popup_size'     => 'large',
+	// A NEW Motion Gallery (dropped in from the builder palette) starts with an Entrance Animation:
+	// Zoom In, one photo after another (view.php plays it on each photo's inner layer, so it composes
+	// with every design's motion). Only new elements; it shows on the Animations tab like any card.
+	'new_atts'       => array(
+		'animation'          => array( 'effect' => 'animate__zoomIn' ),
+		'animation_settings' => array( 'sequence' => 'yes', 'sequence_stagger' => 90 ),
+	),
 	'title_template' => '
 		{{ var gsrc  = ( o["source"] && typeof o["source"] === "object" ) ? o["source"] : null; }}
 		{{ var gimgs = ( gsrc && gsrc["media"] && gsrc["media"]["images"] && gsrc["media"]["images"].length ) ? gsrc["media"]["images"] : ( ( o["images"] && o["images"].length ) ? o["images"] : null ); }}

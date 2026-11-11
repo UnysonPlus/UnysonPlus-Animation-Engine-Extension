@@ -121,8 +121,27 @@
       }
       var warp = document.createElement('div'); warp.className = 'sc-mq-warp' + (vertical ? ' is-vertical' : ''); warp.appendChild(track);
       el.innerHTML = ''; el.appendChild(warp);
-      var span = vertical ? el.clientHeight : el.clientWidth, size = function () { return vertical ? track.scrollHeight : track.scrollWidth; }, g = 0;
-      do { addUnit(); g++; } while (size() < Math.max(1, span) && g < 80);
+      var span = Math.max(1, vertical ? el.clientHeight : el.clientWidth);
+      var size = function () { return vertical ? track.scrollHeight : track.scrollWidth; }, g = 0;
+      // Fill the track with as many copies of the content as it takes to cover the container.
+      //
+      // This used to be `do { addUnit(); } while (size() < span)` - append a copy, measure, repeat.
+      // Each measurement follows an append, and a geometry read that follows a DOM write forces the
+      // browser to lay the whole page out again before it can answer, so a strip needing twenty
+      // copies cost twenty full layouts. Measured on a real page under 4x CPU throttling that was
+      // 7.7ms for two marquees, out of a 57ms total forced-layout budget for the entire page.
+      //
+      // Instead: append one copy, measure once, work out arithmetically how many more are needed,
+      // append those without measuring, then measure once to confirm. Three layouts instead of N.
+      // The trailing loop is the safety net for content whose copies are not all the same size (an
+      // image that has not loaded yet, say) and normally runs zero times.
+      addUnit(); g++;
+      var one = size();
+      if (one > 0) {
+        var want = Math.min(80, Math.ceil(span / one));
+        while (g < want) { addUnit(); g++; }
+      }
+      while (size() < span && g < 80) { addUnit(); g++; }
       var fill = size(), pass = track.children.length;
       for (var i = 0; i < pass; i++) { var _cl = track.children[i].cloneNode(true); _cl.setAttribute('aria-hidden', 'true'); track.appendChild(_cl); } // seamless-loop duplicate: hide from SR so text isn't announced twice
       // Start any <video> we rebuilt/cloned into the track (a reel/clip card): the theme's bg-video play() JS
