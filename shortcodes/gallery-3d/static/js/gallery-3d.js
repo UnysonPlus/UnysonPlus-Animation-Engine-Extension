@@ -814,7 +814,7 @@
 				if ( ! card.classList.contains( 'is-set' ) ) { continue; }
 				var p = pts[ k ] || pts[ 0 ];
 				if ( exitStyle === 'gather' ) {
-					// Converge to a loose stack at the centre (the poly "collect into a pile" moment):
+					// Converge to a loose stack at the centre (a "collect into a pile" moment):
 					// each card slides to ~centre with a small residual offset + a lean, then fades.
 					var jx = ( Math.random() * 2 - 1 ) * 6, jy = ( Math.random() * 2 - 1 ) * 6;
 					card.style.transitionDelay = ( k * 45 ) + 'ms';
@@ -907,7 +907,7 @@
 
 		// SCROLL mode: the pile organizes itself as you scroll. Cards lerp from the scattered
 		// placement to the tidy grid by scroll progress (0 = scattered pile, 1 = organized grid) —
-		// the poly "find your files -> your search results" moment. Content stays live, editable cards.
+		// a "find your files -> your search results" moment. Content stays live, editable cards.
 		if ( cycleMd === 'scroll' ) {
 			var scat = pts, org = organized(), setEls = [], i2;
 			for ( i2 = 0; i2 < pool; i2++ ) {
@@ -948,7 +948,7 @@
 			return;   // scroll mode fully handles placement + motion
 		}
 
-		// SCROLL-CYCLE mode (Poly's cinematic pile): as the visitor scrolls, each SET of photos flies
+		// SCROLL-CYCLE mode (a cinematic pile): as the visitor scrolls, each SET of photos flies
 		// in from the chosen edge, holds scattered, then flies back out — one set after the next.
 		// Optionally the LAST set arrives as a tidy grid (entering from the bottom, the "search
 		// results" resolution) with a couple of corner stragglers from the previous set. Fully
@@ -1006,7 +1006,7 @@
 				} else if ( u < 1 ) { // EXIT: clear per the exit direction/style
 					x = ease( ( u - 0.72 ) / 0.28 );
 					if ( exitStyle === 'gather' ) {
-						// Gather into a centred OVERLAPPING PILE (poly's "all your files" stack): converge to
+						// Gather into a centred OVERLAPPING PILE (an "all your files" stack): converge to
 						// centre with a loose stack spread + natural lean, keeping FULL size so the cards
 						// overlap into a visible pile (not a shrinking cluster). It forms over the first ~70%
 						// and HOLDS, then fades only at the very end so the next set can enter; later cards

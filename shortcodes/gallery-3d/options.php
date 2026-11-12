@@ -169,6 +169,7 @@ $design_groups = array(
 	'grp_orbit'     => array( 'label' => __( 'Orbit', 'fw' ),             'designs' => array( 'orbit_bloom' => __( 'Orbit Bloom', 'fw' ), 'focus_orbit' => __( 'Focus Orbit', 'fw' ), 'dual_orbit' => __( 'Dual Orbit', 'fw' ), 'comet_orbit' => __( 'Comet Orbit', 'fw' ), 'orbit_swarm' => __( 'Orbit Swarm', 'fw' ), 'ring_tilt' => __( 'Ring Tilt', 'fw' ), 'gyro_orbit' => __( 'Gyro Orbit', 'fw' ), 'infinity_orbit' => __( 'Infinity Orbit', 'fw' ), 'vortex' => __( 'Vortex', 'fw' ), 'pendulum_orbit' => __( 'Pendulum Orbit', 'fw' ), 'moon_orbit' => __( 'Moon Orbit', 'fw' ), 'tiered_orbit' => __( 'Tiered Orbit', 'fw' ) ) ),
 	'grp_reveal'    => array( 'label' => __( 'Reveal & Wipe', 'fw' ),     'designs' => array( 'blind_reveal' => __( 'Blind Reveal', 'fw' ), 'iris_wipe' => __( 'Iris Wipe', 'fw' ), 'tile_dissolve' => __( 'Tile Dissolve', 'fw' ) ) ),
 	'grp_spotlight' => array( 'label' => __( 'Spotlight & Focus', 'fw' ), 'designs' => array( 'spotlight_wall' => __( 'Spotlight Wall', 'fw' ), 'focus_pull' => __( 'Focus Pull', 'fw' ), 'loupe' => __( 'Loupe', 'fw' ) ) ),
+	'grp_webgl'     => array( 'label' => __( 'WebGL (real 3D)', 'fw' ), 'designs' => array( 'webgl_mirror_ring' => __( 'Mirror Ring', 'fw' ), 'webgl_depth_field' => __( 'Depth Field', 'fw' ), 'webgl_wave_wall' => __( 'Wave Wall', 'fw' ) ) ),
 );
 
 /**
@@ -360,7 +361,7 @@ $photo_scatter_opts = array(
 					'hover_pause' => $switch( __( 'Pause on Hover', 'fw' ), 'yes', __( 'Hold the current set while the visitor hovers the scatter.', 'fw' ) ),
 				),
 				'scroll_cycle' => array(
-					'final_organized' => $switch( __( 'End on an organized grid', 'fw' ), 'yes', __( 'The last set arrives in a tidy, upright grid (entering from the bottom) instead of scattered — the "search results" resolution, exactly like Poly.', 'fw' ) ),
+					'final_organized' => $switch( __( 'End on an organized grid', 'fw' ), 'yes', __( 'The last set arrives in a tidy, upright grid (entering from the bottom) instead of scattered — like a page of search results.', 'fw' ) ),
 					'corners'         => $switch( __( 'Leave a few in the corners', 'fw' ), 'no', __( 'A couple of photos from the set just before the final one linger in the corners as the grid flies in — a looser, layered hand-off.', 'fw' ) ),
 				),
 			),
@@ -397,8 +398,8 @@ $photo_scatter_opts = array(
 		'visible'       => $slider( __( 'Cards per Set', 'fw' ), 9, 3, 50, 1, __( 'How many photos rest on the table at once. Extra images form the next sets. Push it high (30–50) for a dense, edge-to-edge scatter; a single per-batch scene can then hold its whole set at once.', 'fw' ) ),
 		'rotation'      => $slider( __( 'Rotation Range (°)', 'fw' ), 12, 0, 35, 1, __( 'Each photo settles at a random tilt within this range — 0 lays them all straight.', 'fw' ) ),
 		'size_variance' => $slider( __( 'Size Variance (%)', 'fw' ), 30, 0, 60, 1, __( 'How much the photo sizes differ — 0 makes every photo the same size.', 'fw' ) ),
-		'spread'        => $slider( __( 'Spread (%)', 'fw' ), 90, 50, 100, 1, __( 'How much of the stage the scatter uses — lower gathers the pile toward the middle; 95–100 fills edge-to-edge (outer photos bleed off the frame and are clipped, like Poly).', 'fw' ) ),
-		'center_clear'  => $switch( __( 'Keep center clear', 'fw' ), 'no', __( 'Ring the photos around the middle so a centered heading placed over the scatter stays readable — best when the gallery shares a column with a title (the Poly per-batch look).', 'fw' ) ),
+		'spread'        => $slider( __( 'Spread (%)', 'fw' ), 90, 50, 100, 1, __( 'How much of the stage the scatter uses — lower gathers the pile toward the middle; 95–100 fills edge-to-edge (outer photos bleed off the frame and are clipped).', 'fw' ) ),
+		'center_clear'  => $switch( __( 'Keep center clear', 'fw' ), 'no', __( 'Ring the photos around the middle so a centered heading placed over the scatter stays readable — best when the gallery shares a column with a title.', 'fw' ) ),
 	) ),
 	'group_ps_card' => array( 'type' => 'group', 'options' => array(
 		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), 18, 8, 40, 1, __( 'Base photo width as a % of the stage width (Size Variance plays around it).', 'fw' ) ),
@@ -410,7 +411,7 @@ $photo_scatter_opts = array(
 );
 
 /* ---- Card Stack: a deck of image cards — the top one is featured; the rest peek behind it and the
- * deck advances (top card peels away, next comes forward) on scroll or a timer. Poly's "use cases"
+ * deck advances (top card peels away, next comes forward) on scroll or a timer. A "use cases"
  * deck of app windows. ---- */
 $card_stack_opts = array(
 	'group_cs_cycle' => array( 'type' => 'group', 'options' => array(
@@ -1476,6 +1477,80 @@ $window_stack_opts = array(
 
 /* Device Trio — a laptop with a tablet and a phone floating in front of it; the screens change one device
  * at a time. An original design. */
+/* ---- WebGL (real 3D) — drawn with Three.js by static/js/gallery-3d-webgl.js, loaded only when used.
+ * Real perspective, lights and (Mirror Ring) floor reflections; the photos also stay in the page as the
+ * accessible card list. No WebGL → a plain grid. */
+$webgl_light = array(
+	'label'   => __( 'Lighting', 'fw' ),
+	'type'    => 'select',
+	'value'   => 'studio',
+	'choices' => array(
+		'soft'     => __( 'Soft (even, low contrast)', 'fw' ),
+		'studio'   => __( 'Studio (key light + rim)', 'fw' ),
+		'dramatic' => __( 'Dramatic (dark, strong key light)', 'fw' ),
+	),
+);
+$webgl_card_group = function ( $size_def, $ratio_def ) use ( $slider, $ratio_choices ) {
+	return array(
+		'card_size'     => $slider( __( 'Card Size (%)', 'fw' ), $size_def, 6, 50, 1, __( 'How wide a photo at the front looks, as a % of the stage width.', 'fw' ) ),
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => $ratio_def, 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 12, 0, 60, 1 ),
+	);
+};
+$webgl_mirror_ring_opts = array(
+	'group_wmr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Auto-rotate', 'fw' ), 24, 4, 90, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab and spin the ring — grabbing pauses the motion, releasing resumes it.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep spinning after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_wmr_scene' => array( 'type' => 'group', 'options' => array(
+		'ring_size'   => $slider( __( 'Ring Size (%)', 'fw' ), 90, 40, 160, 1, __( 'How wide the ring is. Bigger leaves more room between the photos.', 'fw' ) ),
+		'camera_height' => $slider( __( 'Camera Height (°)', 'fw' ), 14, 0, 45, 1, __( 'How far above the ring you look from. 0 = level with the photos.', 'fw' ) ),
+		'reflection'  => $slider( __( 'Floor Reflection (%)', 'fw' ), 45, 0, 100, 1, __( 'How strongly the glossy floor reflects the photos. 0 = no floor reflection.', 'fw' ) ),
+		'floor_color' => array( 'type' => 'color-picker', 'label' => __( 'Floor Glow', 'fw' ), 'value' => '', 'desc' => __( 'A soft disc of colour on the floor under the ring. Empty = a neutral grey.', 'fw' ) ),
+		'lighting'    => $webgl_light,
+	) ),
+	'group_wmr_card'  => array( 'type' => 'group', 'options' => $webgl_card_group( 20, '3-4' ) ),
+	'group_wmr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_depth_field_opts = array(
+	'group_wdf_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Drift', 'fw' ), 20, 4, 90, array( 'toward' => __( 'Toward the viewer', 'fw' ), 'away' => __( 'Away from the viewer', 'fw' ) ) ),
+	) ),
+	'group_wdf_scene' => array( 'type' => 'group', 'options' => array(
+		'cards'     => $slider( __( 'Photos in the Field', 'fw' ), 18, 4, 60, 1, __( 'How many photos float in the scene (the gallery repeats to fill it).', 'fw' ) ),
+		'depth'     => $slider( __( 'Depth (%)', 'fw' ), 60, 0, 100, 1, __( 'How deep the field goes. Deeper spreads the photos further back.', 'fw' ) ),
+		'spread'    => $slider( __( 'Spread (%)', 'fw' ), 100, 40, 160, 1, __( 'How wide and tall the field is.', 'fw' ) ),
+		'fog'       => $slider( __( 'Fog (%)', 'fw' ), 55, 0, 100, 1, __( 'How quickly distant photos fade into the background colour.', 'fw' ) ),
+		'fog_color' => array( 'type' => 'color-picker', 'label' => __( 'Fog Colour', 'fw' ), 'value' => '', 'desc' => __( 'What distant photos fade into. Empty = the Stage Background, or a deep blue-black. Match it to the background.', 'fw' ) ),
+		'parallax'  => $slider( __( 'Pointer Parallax (%)', 'fw' ), 40, 0, 100, 1, __( 'How far the camera follows the pointer, so near photos move more than far ones.', 'fw' ) ),
+		'lighting'  => $webgl_light,
+	) ),
+	'group_wdf_card'  => array( 'type' => 'group', 'options' => $webgl_card_group( 18, '4-3' ) ),
+	'group_wdf_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_wave_wall_opts = array(
+	'group_wwv_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Ripple', 'fw' ), 8, 2, 40, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+	) ),
+	'group_wwv_scene' => array( 'type' => 'group', 'options' => array(
+		'columns'     => $slider( __( 'Columns', 'fw' ), 6, 2, 12, 1 ),
+		'rows'        => $slider( __( 'Rows', 'fw' ), 3, 1, 8, 1 ),
+		'wave_height' => $slider( __( 'Wave Height (%)', 'fw' ), 40, 0, 100, 1, __( 'How far the surface rises and falls.', 'fw' ) ),
+		'wave_length' => $slider( __( 'Wave Length (%)', 'fw' ), 80, 20, 200, 1, __( 'How long each wave is. Shorter makes busier ripples.', 'fw' ) ),
+		'view_angle'  => $slider( __( 'View Angle (°)', 'fw' ), 25, 0, 60, 1, __( 'How far below the wall you look up from. 0 = straight on.', 'fw' ) ),
+		'light_angle' => $slider( __( 'Light Angle (°)', 'fw' ), -30, -90, 90, 1, __( 'Where the key light comes from, left (−) to right (+). The photos catch it as they tilt.', 'fw' ) ),
+		'gloss'       => $slider( __( 'Gloss (%)', 'fw' ), 40, 0, 100, 1, __( 'How shiny the photos are: higher catches brighter highlights.', 'fw' ) ),
+		'gap'         => $slider( __( 'Gap (%)', 'fw' ), 8, 0, 30, 1, __( 'Space between the photos, as a % of a photo\'s width.', 'fw' ) ),
+		'lighting'    => $webgl_light,
+	) ),
+	'group_wwv_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 8, 0, 60, 1 ),
+	) ),
+	'group_wwv_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
 $device_trio_opts = array(
 	'group_dtr_motion' => array( 'type' => 'group', 'options' => array(
 		'motion'         => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 3, 1, 12, array( 'sway' => __( 'Gentle sway', 'fw' ), 'still' => __( 'Hold still', 'fw' ) ) ),
@@ -1922,6 +1997,9 @@ $options = array(
 					'phone_lineup'     => $phone_lineup_opts,
 					'window_stack'     => $window_stack_opts,
 					'device_trio'      => $device_trio_opts,
+					'webgl_mirror_ring' => $webgl_mirror_ring_opts,
+					'webgl_depth_field' => $webgl_depth_field_opts,
+					'webgl_wave_wall'   => $webgl_wave_wall_opts,
 				), $soon_choices ),
 			),
 		),

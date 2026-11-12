@@ -6,7 +6,7 @@
  * Motion Gallery design: Card Stack — a deck of image cards. The top card is featured; the rest peek
  * behind it (offset up + shrunk) forming a stack. The deck ADVANCES — the top card peels away and
  * the next comes forward — driven by scroll (best inside a pinned Scroll Story scene, where it
- * scrubs with the scene) or an automatic dwell timer. Poly's "use cases" deck of app windows.
+ * scrubs with the scene) or an automatic dwell timer. A "use cases" deck of app windows.
  * Every card is a live, user-replaceable Media-Library image.
  *
  * @var callable $dp          per-design option reader

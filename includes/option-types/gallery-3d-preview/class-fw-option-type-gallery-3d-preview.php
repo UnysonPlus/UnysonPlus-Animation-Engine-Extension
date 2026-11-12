@@ -49,6 +49,13 @@ class FW_Option_Type_Gallery_3D_Preview extends FW_Option_Type {
 		wp_enqueue_style( 'fw-gallery-3d-runtime', $this->gallery_uri( '/css/gallery-3d.css' ), array(), $ver );
 		wp_enqueue_style( 'fw-gallery-3d-preview', $this->own_uri( '/static/css/preview.css' ), array( 'fw-gallery-3d-runtime' ), $ver );
 		wp_enqueue_script( 'fw-gallery-3d-runtime', $this->gallery_uri( '/js/gallery-3d.js' ), array(), $ver, true );
+		// The WebGL designs (Mirror Ring, Depth Field, Wave Wall): Three.js + their driver, so the preview draws
+		// them for real. Same handle as the WebGL Object element.
+		if ( $ae ) {
+			$three = apply_filters( 'fw_shortcode_webgl_three_src', $ae->get_declared_URI( '/shortcodes/webgl-object/static/js/vendor/three.min.js' ) );
+			wp_enqueue_script( 'three', $three, array(), '0.149.0', true );
+			wp_enqueue_script( 'fw-gallery-3d-webgl', $this->gallery_uri( '/js/gallery-3d-webgl.js' ), array( 'fw-gallery-3d-runtime', 'three' ), $ver, true );
+		}
 		wp_enqueue_script( 'fw-gallery-3d-preview', $this->own_uri( '/static/js/preview.js' ), array( 'jquery', 'fw-gallery-3d-runtime' ), $ver, true );
 	}
 

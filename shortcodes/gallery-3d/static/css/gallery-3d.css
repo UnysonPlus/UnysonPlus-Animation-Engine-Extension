@@ -676,3 +676,14 @@
 /* A section whose only content was a chained gallery that got relocated into the overlay wrapper — hidden
    non-destructively (no DOM removal) so cross-section chains don't leave empty gaps. */
 .tdg-choreo-vacated { display: none !important; }
+
+/* ---- WebGL designs (Mirror Ring, Depth Field, Wave Wall) — the canvas draws the photos; the card list stays
+ * in the page for screen readers and keyboard users (focusing a card brings its photo forward), and shows as a
+ * plain grid when WebGL is not available. */
+.tdg--webgl .tdg__stage { overflow: hidden; } /* keeps the base absolute fill (or the pinned sticky stage) */
+.tdg--webgl .tdg__webgl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; }
+.tdg--webgl:not(.tdg--webgl-fallback) .tdg__webgl-list { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; list-style: none; }
+.tdg--webgl.tdg--webgl-focus .tdg__stage { outline: 3px solid #2f74e6; outline-offset: -3px; }
+.tdg--webgl-fallback .tdg__webgl-list { position: static; transform: none; left: auto; top: auto; width: 100%; align-self: stretch; list-style: none; margin: 0; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); align-content: start; gap: 16px; height: 100%; overflow: auto; box-sizing: border-box; }
+.tdg--webgl-fallback .tdg__webgl-list .tdg__card { position: static; transform: none; width: auto; height: auto; opacity: 1; }
+.tdg--webgl-fallback .tdg__webgl-list .tdg__img { width: 100%; aspect-ratio: var(--tdg-ratio, 4 / 3); object-fit: cover; border-radius: calc(var(--tdg-radius, 12) * 1px); display: block; }

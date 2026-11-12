@@ -92,6 +92,9 @@
 		polaroid_drop:  { drive: 'continuous', speed: 2, direction: 'above', hover_behavior: 'none', pile: 6, when_full: 'oldest', scatter: 45, max_tilt: 14, move_time: 45, frame_color: '#ffffff', card_size: 24, card_ratio: '4-5', corner_radius: 3, padding: 0 },
 		phone_lineup:   { drive: 'continuous', speed: 3, direction: 'left', hover_behavior: 'none', snap: 'yes', allow_drag: 'yes', drag_momentum: 'yes', phones: 7, spacing: 70, depth: 50, turn: 25, float: 3, thickness: 8, move_time: 45, frame_color: '#3a3c41', card_size: 16, card_ratio: '9-16', corner_radius: 0, padding: 0 },
 		window_stack:   { drive: 'continuous', speed: 3, direction: 'toward', hover_behavior: 'none', behind: 4, gap: 30, offset: 8, tilt: 16, yaw: 22, dim: 30, move_time: 55, chrome_color: '#e9eaee', card_size: 44, card_ratio: '16-9', corner_radius: 0, padding: 0 },
+		webgl_mirror_ring: { drive: 'continuous', allow_drag: 'yes', speed: 24, direction: 'left', hover_behavior: 'slow', ring_size: 90, camera_height: 14, reflection: 45, floor_color: '', lighting: 'studio', card_size: 20, card_ratio: '3-4', corner_radius: 12, padding: 0 },
+		webgl_depth_field: { drive: 'continuous', speed: 20, direction: 'toward', hover_behavior: 'slow', cards: 18, depth: 60, spread: 100, fog: 55, fog_color: '', parallax: 40, lighting: 'studio', card_size: 18, card_ratio: '4-3', corner_radius: 12, padding: 0 },
+		webgl_wave_wall: { drive: 'continuous', speed: 8, direction: 'left', hover_behavior: 'slow', columns: 6, rows: 3, wave_height: 40, wave_length: 80, view_angle: 25, light_angle: -30, gloss: 40, gap: 8, lighting: 'studio', card_ratio: '4-3', corner_radius: 8, padding: 0 },
 		device_trio:    { drive: 'continuous', speed: 3, direction: 'sway', hover_behavior: 'none', follow_pointer: 'yes', card_size: 48, depth: 30, float: 2, tilt: 10, card_ratio: '1-1', corner_radius: 0, padding: 0 }
 	};
 
@@ -683,6 +686,24 @@
 				trio += '</div></div>';
 			});
 			return '<div class="tdg tdg--device-trio" style="' + style + '" ' + attrStr(tf) + '><div class="tdg__stage"><div class="tdg__trio">' + trio + '</div></div></div>';
+		}
+
+		// WebGL designs (real 3D) — the same markup as the front end (views/designs/webgl-common.php); the
+		// WebGL driver (gallery-3d-webgl.js, enqueued with this preview) draws the cards on a canvas.
+		if (design.indexOf('webgl_') === 0) {
+			var wa = { 'data-tdg-light': o.lighting || 'studio' };
+			if (design === 'webgl_mirror_ring') {
+				$.extend(wa, { 'data-tdg-ring': o.ring_size, 'data-tdg-camh': o.camera_height, 'data-tdg-reflect': o.reflection, 'data-tdg-card': o.card_size });
+				if (o.floor_color) { wa['data-tdg-floor'] = o.floor_color; }
+			} else if (design === 'webgl_depth_field') {
+				$.extend(wa, { 'data-tdg-count': o.cards, 'data-tdg-depth': o.depth, 'data-tdg-spread': o.spread, 'data-tdg-fog': o.fog, 'data-tdg-parallax': o.parallax, 'data-tdg-dir': o.direction === 'away' ? -1 : 1, 'data-tdg-allowdrag': 0 });
+				if (o.fog_color) { wa['data-tdg-fogcolor'] = o.fog_color; }
+			} else {
+				$.extend(wa, { 'data-tdg-cols': o.columns, 'data-tdg-rows': o.rows, 'data-tdg-amp': o.wave_height, 'data-tdg-wavelength': o.wave_length, 'data-tdg-view': o.view_angle, 'data-tdg-lightang': o.light_angle, 'data-tdg-gloss': o.gloss, 'data-tdg-gap': o.gap, 'data-tdg-allowdrag': 0 });
+			}
+			var wcards = '';
+			for (i = 0; i < 12; i++) { wcards += cardHtml(i, 12).replace('<div class="tdg__card">', '<li class="tdg__card">').replace(/<\/div><\/div>$/, '</div></li>'); }
+			return '<div class="tdg tdg--' + design.replace(/_/g, '-') + '" style="' + style + ';--tdg-bg:#0d1017" ' + attrStr($.extend({}, shared, wa)) + '><div class="tdg__stage"><ul class="tdg__grid tdg__webgl-list">' + wcards + '</ul></div></div>';
 		}
 
 		// carousel_ring

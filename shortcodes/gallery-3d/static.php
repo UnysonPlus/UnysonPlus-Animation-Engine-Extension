@@ -36,6 +36,19 @@ if ( ! function_exists( '_fw_gallery_3d_enqueue_instance' ) ) :
 		// The script depends on the base driver so window.upwGallery3d.registerDesign exists first.
 		$design = ( isset( $atts['design_settings']['design'] ) && is_string( $atts['design_settings']['design'] ) )
 			? $atts['design_settings']['design'] : '';
+		// WebGL designs (Mirror Ring, Depth Field, Wave Wall): Three.js — the same handle + vendored copy the
+		// WebGL Object element uses, so a page with both loads it once — and the WebGL driver, only when used.
+		if ( $design && strpos( $design, 'webgl_' ) === 0 ) {
+			$ae = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+			if ( $ae ) {
+				$three = apply_filters( 'fw_shortcode_webgl_three_src', $ae->get_declared_URI( '/shortcodes/webgl-object/static/js/vendor/three.min.js' ) );
+				wp_enqueue_script( 'three', $three, array(), '0.149.0', true );
+				$wjs  = '/shortcodes/gallery-3d/static/js/gallery-3d-webgl.js';
+				$wabs = $ae->get_declared_path( $wjs );
+				$wver = $ae->manifest->get_version() . ( file_exists( $wabs ) ? '.' . filemtime( $wabs ) : '' );
+				wp_enqueue_script( 'fw-shortcode-gallery-3d-webgl', fw_min_uri( $ae->get_declared_URI( $wjs ) ), array( 'fw-shortcode-gallery-3d', 'three' ), $wver, true );
+			}
+		}
 		if ( $design ) {
 			$custom = apply_filters( 'upw_gallery_3d_design_assets', array() );
 			if ( isset( $custom[ $design ] ) && is_array( $custom[ $design ] ) ) {
