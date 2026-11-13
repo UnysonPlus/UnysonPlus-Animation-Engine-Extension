@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe2ff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Shatter (WebGL): the photo breaks into lit shards that fly off, revealing the next. Original design. -->
+<rect x="8" y="8" width="80" height="48" rx="3" fill="#4a5470" stroke="#0f1424" stroke-width=".8"/>
+<g stroke="#0f1424" stroke-width=".6">
+<path d="M8 8 L30 8 L22 24 Z" fill="url(#A)"/><path d="M30 8 L52 8 L40 22 Z" fill="url(#A)"/><path d="M8 8 L22 24 L8 34 Z" fill="#8fbcff"/>
+<path d="M52 8 L88 8 L70 18 Z" fill="url(#A)"/><path d="M8 56 L8 40 L24 50 Z" fill="url(#A)"/><path d="M70 56 L88 40 L88 56 Z" fill="#8fbcff"/>
+<path d="M46 30 L56 26 L52 36 Z" fill="#cfe2ff" transform="rotate(-20 52 31)"/><path d="M60 34 L70 30 L66 42 Z" fill="url(#A)" transform="rotate(25 65 36)"/>
+<path d="M34 34 L42 38 L34 44 Z" fill="#8fbcff" transform="rotate(15 37 39)"/><path d="M58 16 L64 20 L57 23 Z" fill="#cfe2ff"/>
+</g>
+</svg>

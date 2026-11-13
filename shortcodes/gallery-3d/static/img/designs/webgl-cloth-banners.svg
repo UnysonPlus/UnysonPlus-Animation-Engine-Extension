@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe2ff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Cloth Banners (WebGL): photos on fabric banners rippling in the wind. Original design. -->
+<path d="M6 9 H90" stroke="#8fbcff" stroke-width="2" stroke-linecap="round"/>
+<g stroke="#0f1424" stroke-width=".6">
+<path d="M10 10 H28 V52 C24 55 20 50 16 53 C14 54 12 52 10 54 Z" fill="url(#A)"/>
+<path d="M33 10 H51 C52 22 50 34 52 50 C47 54 43 49 38 53 C36 54 34 51 33 52 Z" fill="#5d6886"/>
+<path d="M56 10 H74 C73 24 76 36 74 52 C70 50 66 55 61 52 C59 51 57 54 56 53 Z" fill="url(#A)"/>
+<path d="M79 10 H90 V50 C87 53 83 49 79 52 Z" fill="#4a5470"/>
+</g>
+<path d="M14 18 C18 26 14 34 18 44 M60 18 C64 28 60 36 64 46" stroke="#e8f1ff" stroke-width=".8" opacity=".5"/>
+</svg>

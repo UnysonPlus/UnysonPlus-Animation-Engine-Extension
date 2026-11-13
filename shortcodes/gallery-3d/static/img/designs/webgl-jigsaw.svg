@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe2ff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Jigsaw (WebGL): the next photo's jigsaw pieces fly in and snap together. Original design. -->
+<rect x="14" y="10" width="54" height="44" fill="#5d6886" stroke="#0f1424" stroke-width=".5"/>
+<g stroke="#0f1424" stroke-width=".6" stroke-linejoin="round">
+<path d="M14 10 H32 V18 a3 3 0 1 1 0 5 V28 H25 a3 3 0 1 0 -5 0 H14 Z" fill="url(#A)"/>
+<path d="M32 10 H50 V28 H43 a3 3 0 1 1 -5 0 H32 V23 a3 3 0 1 0 0 -5 Z" fill="url(#A)"/>
+<path d="M14 28 H20 a3 3 0 1 1 5 0 H32 V46 H14 Z" fill="url(#A)"/>
+</g>
+<g stroke="#0f1424" stroke-width=".6" stroke-linejoin="round"><path d="M68 26 H84 V32 a3 3 0 1 1 0 5 V42 H68 V37 a3 3 0 1 0 0 -5 Z" fill="url(#A)" transform="rotate(-14 76 34)"/></g>
+<g stroke="#8a94ad" stroke-width=".7" stroke-dasharray="1.5 1.5"><path d="M64 36 L54 38"/></g>
+</svg>

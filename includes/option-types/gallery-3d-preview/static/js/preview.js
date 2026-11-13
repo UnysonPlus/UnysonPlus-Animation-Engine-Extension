@@ -95,6 +95,33 @@
 		webgl_mirror_ring: { drive: 'continuous', allow_drag: 'yes', speed: 24, direction: 'left', hover_behavior: 'slow', ring_size: 90, camera_height: 14, reflection: 45, floor_color: '', lighting: 'studio', card_size: 20, card_ratio: '3-4', corner_radius: 12, padding: 0 },
 		webgl_depth_field: { drive: 'continuous', speed: 20, direction: 'toward', hover_behavior: 'slow', cards: 18, depth: 60, spread: 100, fog: 55, fog_color: '', parallax: 40, lighting: 'studio', card_size: 18, card_ratio: '4-3', corner_radius: 12, padding: 0 },
 		webgl_wave_wall: { drive: 'continuous', speed: 8, direction: 'left', hover_behavior: 'slow', columns: 6, rows: 3, wave_height: 40, wave_length: 80, view_angle: 25, light_angle: -30, gloss: 40, gap: 8, lighting: 'studio', card_ratio: '4-3', corner_radius: 8, padding: 0 },
+		webgl_liquid_slider: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', swipe: 'yes', effect: 'liquid', strength: 50, move_time: 35, pointer: 30, zoom: 6, corner_radius: 12, padding: 0 },
+		webgl_particle_morph: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', swipe: 'yes', effect: 'explode', density: 140, particle: 90, scatter: 50, move_time: 50, repel: 40, padding: 0 },
+		webgl_flip_book: { drive: 'continuous', speed: 4, direction: 'left', hover_behavior: 'slow', swipe: 'yes', card_size: 60, tilt: 25, curl: 60, move_time: 45, cover_color: '#2b303b', lighting: 'studio', card_ratio: '3-4', corner_radius: 4, padding: 0 },
+		webgl_shatter: { drive: 'continuous', speed: 4, direction: 'left', hover_behavior: 'slow', swipe: 'yes', shape: 'shards', burst: 'toward', origin: 'center', pieces: 14, spin: 60, force: 60, move_time: 45, padding: 0 },
+		webgl_cloth_banners: { drive: 'continuous', speed: 40, direction: 'left', hover_behavior: 'slow', banners: 4, wind: 50, ripples: 2, gap: 14, view_angle: 8, rod_color: '#3a3c41', lighting: 'studio', card_ratio: '3-4', corner_radius: 0, padding: 0 },
+		webgl_fold_strip: { drive: 'continuous', speed: 40, direction: 'left', hover_behavior: 'slow', allow_drag: 'yes', drag_momentum: 'yes', panels: 6, fold: 35, unfold: 'yes', view_angle: 12, lighting: 'studio', card_ratio: '3-4', corner_radius: 0, padding: 0 },
+		webgl_water_pool: { drive: 'continuous', speed: 60, direction: 'left', hover_behavior: 'none', columns: 4, rows: 2, gap: 4, refraction: 50, rain: 30, shine: 50, water_color: '#2a8fbf', card_ratio: '4-3', corner_radius: 8, padding: 0 },
+		webgl_jelly_grid: { drive: 'continuous', speed: 8, direction: 'left', hover_behavior: 'none', columns: 5, rows: 3, gap: 6, jelly: 60, wobble: 60, wave: 30, view_angle: 10, gloss: 40, lighting: 'studio', card_ratio: '4-3', corner_radius: 10, padding: 0 },
+		webgl_stage_curtain: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', swipe: 'yes', pleats: 10, opening: 88, swag: 50, move_time: 50, valance: 'yes', curtain_color: '#7a1424', padding: 0 },
+		webgl_gallery_walk: { drive: 'continuous', speed: 40, direction: 'left', hover_behavior: 'none', wall_color: '#e9e4dc', floor_color: '#3a3029', frame_color: '#1c1c1c', mat: 'yes', light_pools: 60, spacing: 100, look_around: 40, card_ratio: '3-4', padding: 0 },
+		webgl_holo_cards: { drive: 'continuous', speed: 6, direction: 'left', hover_behavior: 'none', columns: 4, rows: 1, gap: 10, foil: 70, pattern: 'rainbow', tilt: 18, glare: 50, card_ratio: '3-4', corner_radius: 14, padding: 0 },
+		webgl_domino_row: { drive: 'continuous', speed: 10, direction: 'left', hover_behavior: 'none', dominoes: 8, spacing: 50, view_angle: 55, camera_height: 18, domino_color: '#f4f2ee', shadows: 'yes', card_ratio: '3-4', corner_radius: 4, padding: 0 },
+		webgl_photo_bubbles: { drive: 'continuous', speed: 40, direction: 'left', hover_behavior: 'none', bubbles: 12, card_size: 22, iridescence: 70, depth: 50, wobble: 50, pointer_push: 50, padding: 0 },
+		webgl_photo_cube: { drive: 'continuous', speed: 4, direction: 'left', hover_behavior: 'slow', swipe: 'yes', tumble: 'turn', card_size: 55, tilt: 18, move_time: 40, float: 40, cube_color: '#22252c', shadows: 'yes', lighting: 'studio', corner_radius: 6, padding: 0 },
+		webgl_film_ribbon: { drive: 'continuous', speed: 40, direction: 'left', hover_behavior: 'slow', frames: 5, wave: 50, twist: 40, film_color: '#16171b', sprocket_holes: 'yes', lighting: 'studio', card_ratio: '4-3', padding: 0 },
+		webgl_pixel_blocks: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', swipe: 'yes', pattern: 'diagonal', blocks: 14, depth: 40, gap: 4, pointer_push: 50, move_time: 50, side_color: '#2b2f38', lighting: 'studio', padding: 0 },
+		webgl_ferris_wheel: { drive: 'continuous', speed: 40, direction: 'left', hover_behavior: 'slow', allow_drag: 'yes', drag_momentum: 'yes', gondolas: 10, card_size: 26, swing: 50, view_angle: 12, wheel_color: '#e9ecf2', bulbs: 'yes', lighting: 'studio', card_ratio: '4-3', corner_radius: 6, padding: 0 },
+		webgl_photo_mobile: { drive: 'continuous', speed: 40, direction: 'left', hover_behavior: 'none', photos: 7, card_size: 18, breeze: 50, sway: 50, arm_color: '#3a3c41', lighting: 'studio', card_ratio: '3-4', corner_radius: 4, padding: 0 },
+		webgl_photo_fall: { drive: 'continuous', speed: 30, direction: 'left', hover_behavior: 'slow', photos: 18, card_size: 16, flutter: 50, wind: 0, depth: 50, pointer_push: 50, lighting: 'studio', card_ratio: '4-3', corner_radius: 4, padding: 0 },
+		webgl_lenticular: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', swipe: 'yes', ridges: 28, tilt: 30, card_size: 72, move_time: 40, follow: 50, frame_color: '#e9ecf2', lighting: 'studio', card_ratio: '4-3', corner_radius: 8, padding: 0 },
+		webgl_jigsaw: { drive: 'continuous', speed: 6, direction: 'left', hover_behavior: 'slow', swipe: 'yes', pieces: 8, scatter: 50, pointer_lift: 50, move_time: 60, board_color: '#1d2027', lighting: 'studio', padding: 0 },
+		webgl_paper_fold: { drive: 'continuous', speed: 6, direction: 'left', hover_behavior: 'slow', swipe: 'yes', order: 'side', card_size: 80, move_time: 60, follow: 40, paper_color: '#f4f1ea', lighting: 'studio', card_ratio: '4-3', corner_radius: 0, padding: 0 },
+		webgl_slot_reels: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', swipe: 'yes', reels: 3, spins: 2, stagger: 40, card_size: 78, move_time: 55, follow: 40, frame_color: '#1d2027', lighting: 'studio', card_ratio: '4-3', padding: 0 },
+		webgl_peel: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', swipe: 'yes', corner: 'cycle', curl: 50, lift: 40, move_time: 45, paper_color: '#f4f1ea', corner_radius: 12, padding: 0 },
+		webgl_bookshelf: { drive: 'continuous', speed: 4, direction: 'left', hover_behavior: 'slow', books: 16, shelves: 1, pull: 100, move_time: 45, wood_color: '#6b4a32', lighting: 'studio', card_ratio: '3-4', padding: 0 },
+		webgl_snow_globe: { drive: 'continuous', speed: 6, direction: 'left', hover_behavior: 'slow', swipe: 'yes', snow: 60, shake: 50, stir: 50, card_size: 85, move_time: 55, base_color: '#3b2a20', lighting: 'studio', card_ratio: '4-3', corner_radius: 6, padding: 0 },
+		webgl_tv_wall: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', tvs: 9, body_color: '#d8c9ad', mixed_colors: 'yes', scanlines: 50, static: 50, curve: 50, lighting: 'studio', padding: 0 },
 		device_trio:    { drive: 'continuous', speed: 3, direction: 'sway', hover_behavior: 'none', follow_pointer: 'yes', card_size: 48, depth: 30, float: 2, tilt: 10, card_ratio: '1-1', corner_radius: 0, padding: 0 }
 	};
 
@@ -698,6 +725,60 @@
 			} else if (design === 'webgl_depth_field') {
 				$.extend(wa, { 'data-tdg-count': o.cards, 'data-tdg-depth': o.depth, 'data-tdg-spread': o.spread, 'data-tdg-fog': o.fog, 'data-tdg-parallax': o.parallax, 'data-tdg-dir': o.direction === 'away' ? -1 : 1, 'data-tdg-allowdrag': 0 });
 				if (o.fog_color) { wa['data-tdg-fogcolor'] = o.fog_color; }
+			} else if (design === 'webgl_liquid_slider') {
+				$.extend(wa, { 'data-tdg-effect': o.effect, 'data-tdg-strength': o.strength, 'data-tdg-movetime': o.move_time, 'data-tdg-ptr': o.pointer, 'data-tdg-zoom': o.zoom, 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_particle_morph') {
+				$.extend(wa, { 'data-tdg-effect': o.effect, 'data-tdg-density': o.density, 'data-tdg-psize': o.particle, 'data-tdg-scatter': o.scatter, 'data-tdg-movetime': o.move_time, 'data-tdg-repel': o.repel, 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_pixel_blocks') {
+				$.extend(wa, { 'data-tdg-pattern': o.pattern, 'data-tdg-blocks': o.blocks, 'data-tdg-depth': o.depth, 'data-tdg-gap': o.gap, 'data-tdg-push': o.pointer_push, 'data-tdg-movetime': o.move_time, 'data-tdg-side': o.side_color || '#2b2f38', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_ferris_wheel') {
+				$.extend(wa, { 'data-tdg-count': o.gondolas, 'data-tdg-card': o.card_size, 'data-tdg-swing': o.swing, 'data-tdg-view': o.view_angle, 'data-tdg-wheel': o.wheel_color || '#e9ecf2', 'data-tdg-bulbs': o.bulbs === 'no' ? 0 : 1, 'data-tdg-allowdrag': o.allow_drag === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_photo_mobile') {
+				$.extend(wa, { 'data-tdg-count': o.photos, 'data-tdg-card': o.card_size, 'data-tdg-breeze': o.breeze, 'data-tdg-sway': o.sway, 'data-tdg-arm': o.arm_color || '#3a3c41', 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_photo_fall') {
+				$.extend(wa, { 'data-tdg-count': o.photos, 'data-tdg-card': o.card_size, 'data-tdg-flutter': o.flutter, 'data-tdg-wind': o.wind, 'data-tdg-depth': o.depth, 'data-tdg-push': o.pointer_push, 'data-tdg-dir': o.direction === 'right' ? -1 : 1, 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_lenticular') {
+				$.extend(wa, { 'data-tdg-ridges': o.ridges, 'data-tdg-tilt': o.tilt, 'data-tdg-card': o.card_size, 'data-tdg-movetime': o.move_time, 'data-tdg-follow': o.follow, 'data-tdg-frame': o.frame_color || '#e9ecf2', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_jigsaw') {
+				$.extend(wa, { 'data-tdg-pieces': o.pieces, 'data-tdg-scatter': o.scatter, 'data-tdg-lift': o.pointer_lift, 'data-tdg-movetime': o.move_time, 'data-tdg-board': o.board_color || '#1d2027', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_paper_fold') {
+				$.extend(wa, { 'data-tdg-order': o.order, 'data-tdg-card': o.card_size, 'data-tdg-movetime': o.move_time, 'data-tdg-follow': o.follow, 'data-tdg-paper': o.paper_color || '#f4f1ea', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_slot_reels') {
+				$.extend(wa, { 'data-tdg-reels': o.reels, 'data-tdg-spins': o.spins, 'data-tdg-stagger': o.stagger, 'data-tdg-card': o.card_size, 'data-tdg-movetime': o.move_time, 'data-tdg-follow': o.follow, 'data-tdg-frame': o.frame_color || '#1d2027', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_peel') {
+				$.extend(wa, { 'data-tdg-corner': o.corner, 'data-tdg-curl': o.curl, 'data-tdg-lift': o.lift, 'data-tdg-movetime': o.move_time, 'data-tdg-paper': o.paper_color || '#f4f1ea', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_bookshelf') {
+				$.extend(wa, { 'data-tdg-count': o.books, 'data-tdg-shelves': o.shelves, 'data-tdg-pull': o.pull, 'data-tdg-movetime': o.move_time, 'data-tdg-wood': o.wood_color || '#6b4a32', 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_snow_globe') {
+				$.extend(wa, { 'data-tdg-snow': o.snow, 'data-tdg-shake': o.shake, 'data-tdg-stir': o.stir, 'data-tdg-card': o.card_size, 'data-tdg-movetime': o.move_time, 'data-tdg-base': o.base_color || '#3b2a20', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_tv_wall') {
+				$.extend(wa, { 'data-tdg-count': o.tvs, 'data-tdg-body': o.body_color || '#d8c9ad', 'data-tdg-mixed': o.mixed_colors === 'no' ? 0 : 1, 'data-tdg-scan': o.scanlines, 'data-tdg-static': o.static, 'data-tdg-curve': o.curve, 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_photo_bubbles') {
+				$.extend(wa, { 'data-tdg-count': o.bubbles, 'data-tdg-card': o.card_size, 'data-tdg-irid': o.iridescence, 'data-tdg-depth': o.depth, 'data-tdg-wobble': o.wobble, 'data-tdg-push': o.pointer_push, 'data-tdg-dir': o.direction === 'right' ? -1 : 1, 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_photo_cube') {
+				$.extend(wa, { 'data-tdg-tumble': o.tumble, 'data-tdg-card': o.card_size, 'data-tdg-tilt': o.tilt, 'data-tdg-movetime': o.move_time, 'data-tdg-float': o.float, 'data-tdg-body': o.cube_color || '#22252c', 'data-tdg-shadows': o.shadows === 'no' ? 0 : 1, 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_film_ribbon') {
+				$.extend(wa, { 'data-tdg-frames': o.frames, 'data-tdg-wave': o.wave, 'data-tdg-twist': o.twist, 'data-tdg-film': o.film_color || '#16171b', 'data-tdg-holes': o.sprocket_holes === 'no' ? 0 : 1, 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_gallery_walk') {
+				$.extend(wa, { 'data-tdg-wall': o.wall_color || '#e9e4dc', 'data-tdg-floor': o.floor_color || '#3a3029', 'data-tdg-frame': o.frame_color || '#1c1c1c', 'data-tdg-mat': o.mat === 'no' ? 0 : 1, 'data-tdg-pools': o.light_pools, 'data-tdg-spacing': o.spacing, 'data-tdg-look': o.look_around, 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_holo_cards') {
+				$.extend(wa, { 'data-tdg-cols': o.columns, 'data-tdg-rows': o.rows, 'data-tdg-gap': o.gap, 'data-tdg-foil': o.foil, 'data-tdg-pattern': o.pattern, 'data-tdg-tilt': o.tilt, 'data-tdg-glare': o.glare, 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_domino_row') {
+				$.extend(wa, { 'data-tdg-count': o.dominoes, 'data-tdg-spacing': o.spacing, 'data-tdg-view': o.view_angle, 'data-tdg-camh': o.camera_height, 'data-tdg-body': o.domino_color || '#f4f2ee', 'data-tdg-shadows': o.shadows === 'no' ? 0 : 1, 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_water_pool') {
+				$.extend(wa, { 'data-tdg-cols': o.columns, 'data-tdg-rows': o.rows, 'data-tdg-gap': o.gap, 'data-tdg-refract': o.refraction, 'data-tdg-rain': o.rain, 'data-tdg-shine': o.shine, 'data-tdg-water': o.water_color || '#2a8fbf', 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_jelly_grid') {
+				$.extend(wa, { 'data-tdg-cols': o.columns, 'data-tdg-rows': o.rows, 'data-tdg-gap': o.gap, 'data-tdg-jelly': o.jelly, 'data-tdg-wobble': o.wobble, 'data-tdg-wave': o.wave, 'data-tdg-view': o.view_angle, 'data-tdg-gloss': o.gloss, 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_stage_curtain') {
+				$.extend(wa, { 'data-tdg-pleats': o.pleats, 'data-tdg-open': o.opening, 'data-tdg-swag': o.swag, 'data-tdg-movetime': o.move_time, 'data-tdg-valance': o.valance === 'no' ? 0 : 1, 'data-tdg-curtain': o.curtain_color || '#7a1424', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_shatter') {
+				$.extend(wa, { 'data-tdg-shape': o.shape, 'data-tdg-burst': o.burst, 'data-tdg-origin': o.origin, 'data-tdg-pieces': o.pieces, 'data-tdg-spin': o.spin, 'data-tdg-force': o.force, 'data-tdg-movetime': o.move_time, 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_cloth_banners') {
+				$.extend(wa, { 'data-tdg-banners': o.banners, 'data-tdg-wind': o.wind, 'data-tdg-ripples': o.ripples, 'data-tdg-gap': o.gap, 'data-tdg-view': o.view_angle, 'data-tdg-rod': o.rod_color || '#3a3c41', 'data-tdg-allowdrag': 0 });
+			} else if (design === 'webgl_fold_strip') {
+				$.extend(wa, { 'data-tdg-panels': o.panels, 'data-tdg-fold': o.fold, 'data-tdg-unfold': o.unfold === 'no' ? 0 : 1, 'data-tdg-view': o.view_angle, 'data-tdg-allowdrag': o.allow_drag === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_flip_book') {
+				$.extend(wa, { 'data-tdg-card': o.card_size, 'data-tdg-tilt': o.tilt, 'data-tdg-curl': o.curl, 'data-tdg-movetime': o.move_time, 'data-tdg-cover': o.cover_color || '#2b303b', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
 			} else {
 				$.extend(wa, { 'data-tdg-cols': o.columns, 'data-tdg-rows': o.rows, 'data-tdg-amp': o.wave_height, 'data-tdg-wavelength': o.wave_length, 'data-tdg-view': o.view_angle, 'data-tdg-lightang': o.light_angle, 'data-tdg-gloss': o.gloss, 'data-tdg-gap': o.gap, 'data-tdg-allowdrag': 0 });
 			}

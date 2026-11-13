@@ -169,7 +169,7 @@ $design_groups = array(
 	'grp_orbit'     => array( 'label' => __( 'Orbit', 'fw' ),             'designs' => array( 'orbit_bloom' => __( 'Orbit Bloom', 'fw' ), 'focus_orbit' => __( 'Focus Orbit', 'fw' ), 'dual_orbit' => __( 'Dual Orbit', 'fw' ), 'comet_orbit' => __( 'Comet Orbit', 'fw' ), 'orbit_swarm' => __( 'Orbit Swarm', 'fw' ), 'ring_tilt' => __( 'Ring Tilt', 'fw' ), 'gyro_orbit' => __( 'Gyro Orbit', 'fw' ), 'infinity_orbit' => __( 'Infinity Orbit', 'fw' ), 'vortex' => __( 'Vortex', 'fw' ), 'pendulum_orbit' => __( 'Pendulum Orbit', 'fw' ), 'moon_orbit' => __( 'Moon Orbit', 'fw' ), 'tiered_orbit' => __( 'Tiered Orbit', 'fw' ) ) ),
 	'grp_reveal'    => array( 'label' => __( 'Reveal & Wipe', 'fw' ),     'designs' => array( 'blind_reveal' => __( 'Blind Reveal', 'fw' ), 'iris_wipe' => __( 'Iris Wipe', 'fw' ), 'tile_dissolve' => __( 'Tile Dissolve', 'fw' ) ) ),
 	'grp_spotlight' => array( 'label' => __( 'Spotlight & Focus', 'fw' ), 'designs' => array( 'spotlight_wall' => __( 'Spotlight Wall', 'fw' ), 'focus_pull' => __( 'Focus Pull', 'fw' ), 'loupe' => __( 'Loupe', 'fw' ) ) ),
-	'grp_webgl'     => array( 'label' => __( 'WebGL (real 3D)', 'fw' ), 'designs' => array( 'webgl_mirror_ring' => __( 'Mirror Ring', 'fw' ), 'webgl_depth_field' => __( 'Depth Field', 'fw' ), 'webgl_wave_wall' => __( 'Wave Wall', 'fw' ) ) ),
+	'grp_webgl'     => array( 'label' => __( 'WebGL (real 3D)', 'fw' ), 'designs' => array( 'webgl_mirror_ring' => __( 'Mirror Ring', 'fw' ), 'webgl_depth_field' => __( 'Depth Field', 'fw' ), 'webgl_wave_wall' => __( 'Wave Wall', 'fw' ), 'webgl_liquid_slider' => __( 'Liquid Slider', 'fw' ), 'webgl_particle_morph' => __( 'Particle Morph', 'fw' ), 'webgl_flip_book' => __( 'Flip Book', 'fw' ), 'webgl_shatter' => __( 'Shatter', 'fw' ), 'webgl_cloth_banners' => __( 'Cloth Banners', 'fw' ), 'webgl_fold_strip' => __( 'Fold Strip', 'fw' ), 'webgl_water_pool' => __( 'Water Pool', 'fw' ), 'webgl_jelly_grid' => __( 'Jelly Grid', 'fw' ), 'webgl_stage_curtain' => __( 'Stage Curtain', 'fw' ), 'webgl_gallery_walk' => __( 'Gallery Walk', 'fw' ), 'webgl_holo_cards' => __( 'Holo Cards', 'fw' ), 'webgl_domino_row' => __( 'Domino Row', 'fw' ), 'webgl_photo_bubbles' => __( 'Photo Bubbles', 'fw' ), 'webgl_photo_cube' => __( 'Photo Cube', 'fw' ), 'webgl_film_ribbon' => __( 'Film Ribbon', 'fw' ), 'webgl_pixel_blocks' => __( 'Pixel Blocks', 'fw' ), 'webgl_ferris_wheel' => __( 'Ferris Wheel', 'fw' ), 'webgl_photo_mobile' => __( 'Photo Mobile', 'fw' ), 'webgl_photo_fall' => __( 'Photo Fall', 'fw' ), 'webgl_lenticular' => __( 'Lenticular', 'fw' ), 'webgl_jigsaw' => __( 'Jigsaw', 'fw' ), 'webgl_paper_fold' => __( 'Paper Fold', 'fw' ), 'webgl_slot_reels' => __( 'Slot Reels', 'fw' ), 'webgl_peel' => __( 'Peel', 'fw' ), 'webgl_bookshelf' => __( 'Bookshelf', 'fw' ), 'webgl_snow_globe' => __( 'Snow Globe', 'fw' ), 'webgl_tv_wall' => __( 'TV Wall', 'fw' ) ) ),
 );
 
 /**
@@ -1551,6 +1551,560 @@ $webgl_wave_wall_opts = array(
 	'group_wwv_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
 );
 
+/* One photo at a time (WebGL): the stage shows one photo, and the next arrives through the effect. */
+$webgl_swipe = $switch( __( 'Swipe to change', 'fw' ), 'yes', __( 'Let visitors swipe (or drag) left and right for the next and previous photo. Not with Scroll-scrub.', 'fw' ) );
+$webgl_liquid_slider_opts = array(
+	'group_wls_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 5, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wls_scene' => array( 'type' => 'group', 'options' => array(
+		'effect'    => array( 'label' => __( 'Transition', 'fw' ), 'type' => 'select', 'value' => 'liquid', 'choices' => array(
+			'liquid' => __( 'Liquid (the next photo flows in)', 'fw' ),
+			'ripple' => __( 'Ripple (waves open from the centre)', 'fw' ),
+			'slices' => __( 'Slices (strips slide in one by one)', 'fw' ),
+			'swirl'  => __( 'Swirl (the photo twists into the next)', 'fw' ),
+			'pixelate' => __( 'Pixelate (blocks grow, swap and sharpen)', 'fw' ),
+			'glitch'   => __( 'Glitch (bands jump sideways as it swaps)', 'fw' ),
+			'kaleido'  => __( 'Kaleidoscope (folds into mirrored segments)', 'fw' ),
+			'tear'     => __( 'Torn Paper (the photo is torn away)', 'fw' ),
+			'burn'     => __( 'Burn (burns away along a glowing edge)', 'fw' ),
+			'zoom'     => __( 'Zoom Blur (rushes in and settles on the next)', 'fw' ),
+			'mosaic'   => __( 'Mosaic (squares switch in random order)', 'fw' ),
+			'ink'      => __( 'Ink (spreads in with a dark ink edge)', 'fw' ),
+			'spiral'   => __( 'Spiral (winds in from the centre)', 'fw' ),
+			'leak'     => __( 'Light Leak (a warm flare washes over)', 'fw' ),
+			'stretch'  => __( 'Stretch (slides across, smeared by its speed)', 'fw' ),
+			'halftone' => __( 'Halftone (comes in as growing dots)', 'fw' ),
+			'pinch'    => __( 'Pinch (drawn into the centre and out as the next)', 'fw' ),
+			'wind'     => __( 'Wind (streaks away row by row)', 'fw' ),
+			'focus'    => __( 'Focus (blurs out and back in on the next)', 'fw' ),
+			'shutter'  => __( 'Shutter (camera blades close and open)', 'fw' ),
+		) ),
+		'strength'  => $slider( __( 'Strength (%)', 'fw' ), 50, 0, 100, 1, __( 'How strongly the transition distorts the photos.', 'fw' ) ),
+		'move_time' => $slider( __( 'Move Time (%)', 'fw' ), 35, 10, 90, 1, __( 'How much of each photo\'s time the transition takes; the photo holds still for the rest.', 'fw' ) ),
+		'pointer'   => $slider( __( 'Pointer Ripple (%)', 'fw' ), 30, 0, 100, 1, __( 'Soft ripples follow the pointer over the photo. 0 = off.', 'fw' ) ),
+		'zoom'      => $slider( __( 'Slow Zoom (%)', 'fw' ), 6, 0, 20, 1, __( 'A slow zoom in and out on each photo. 0 = still.', 'fw' ) ),
+	) ),
+	'group_wls_card'  => array( 'type' => 'group', 'options' => array(
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 12, 0, 60, 1 ),
+	) ),
+	'group_wls_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_particle_morph_opts = array(
+	'group_wpm_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 5, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wpm_scene' => array( 'type' => 'group', 'options' => array(
+		'effect'    => array( 'label' => __( 'Transition', 'fw' ), 'type' => 'select', 'value' => 'explode', 'choices' => array(
+			'explode' => __( 'Explode (burst out and gather)', 'fw' ),
+			'swirl'   => __( 'Swirl (spin round the centre)', 'fw' ),
+			'drift'   => __( 'Drift (blown sideways)', 'fw' ),
+			'rain'    => __( 'Rain (fall and rise again)', 'fw' ),
+		) ),
+		'density'   => $slider( __( 'Particles Across', 'fw' ), 140, 40, 240, 1, __( 'How many particles make one row of the picture. More shows finer detail and costs more.', 'fw' ) ),
+		'particle'  => $slider( __( 'Particle Size (%)', 'fw' ), 90, 40, 160, 1, __( 'Particle size against the space between them. Under 100 leaves gaps; over 100 they overlap into a solid picture.', 'fw' ) ),
+		'scatter'   => $slider( __( 'Scatter (%)', 'fw' ), 50, 0, 100, 1, __( 'How far the particles fly during a transition.', 'fw' ) ),
+		'move_time' => $slider( __( 'Move Time (%)', 'fw' ), 50, 10, 90, 1, __( 'How much of each photo\'s time the transition takes; the picture holds for the rest.', 'fw' ) ),
+		'repel'     => $slider( __( 'Pointer Push (%)', 'fw' ), 40, 0, 100, 1, __( 'The particles move away from the pointer. 0 = off.', 'fw' ) ),
+	) ),
+	'group_wpm_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_flip_book_opts = array(
+	'group_wfb_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 4, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wfb_scene' => array( 'type' => 'group', 'options' => array(
+		'card_size'   => $slider( __( 'Book Size (%)', 'fw' ), 60, 20, 95, 1, __( 'How wide the open book is, as a % of the stage width.', 'fw' ) ),
+		'tilt'        => $slider( __( 'Tilt (°)', 'fw' ), 25, 0, 60, 1, __( 'How far the book leans back, as if lying on a table. 0 = facing you.', 'fw' ) ),
+		'curl'        => $slider( __( 'Page Curl (%)', 'fw' ), 60, 0, 100, 1, __( 'How much a page bends as it turns. 0 = a stiff card.', 'fw' ) ),
+		'move_time'   => $slider( __( 'Move Time (%)', 'fw' ), 45, 10, 90, 1, __( 'How much of each spread\'s time the page turn takes.', 'fw' ) ),
+		'cover_color' => array( 'type' => 'color-picker', 'label' => __( 'Cover Colour', 'fw' ), 'value' => '#2b303b', 'desc' => __( 'The book\'s cover board, showing round the pages.', 'fw' ) ),
+		'lighting'    => $webgl_light,
+	) ),
+	'group_wfb_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Page Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 4, 0, 30, 1 ),
+	) ),
+	'group_wfb_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+$webgl_shatter_opts = array(
+	'group_wsh_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 4, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wsh_scene' => array( 'type' => 'group', 'options' => array(
+		'shape'     => array( 'label' => __( 'Pieces', 'fw' ), 'type' => 'select', 'value' => 'shards', 'choices' => array(
+			'shards' => __( 'Shards (broken glass)', 'fw' ),
+			'tiles'  => __( 'Tiles (square pieces)', 'fw' ),
+		) ),
+		'burst'     => array( 'label' => __( 'Break', 'fw' ), 'type' => 'select', 'value' => 'toward', 'choices' => array(
+			'toward'  => __( 'Toward you', 'fw' ),
+			'fall'    => __( 'Fall away', 'fw' ),
+			'outward' => __( 'Burst outward', 'fw' ),
+		) ),
+		'origin'    => array( 'label' => __( 'Breaks From', 'fw' ), 'type' => 'select', 'value' => 'center', 'choices' => array(
+			'center' => __( 'The centre', 'fw' ),
+			'left'   => __( 'The left edge', 'fw' ),
+			'top'    => __( 'The top edge', 'fw' ),
+			'random' => __( 'Everywhere at once', 'fw' ),
+		) ),
+		'pieces'    => $slider( __( 'Pieces Across', 'fw' ), 14, 4, 30, 1, __( 'How many pieces make one row of the photo. More makes smaller pieces.', 'fw' ) ),
+		'spin'      => $slider( __( 'Spin (%)', 'fw' ), 60, 0, 100, 1, __( 'How much the pieces turn as they fly; turning pieces catch the light.', 'fw' ) ),
+		'force'     => $slider( __( 'Force (%)', 'fw' ), 60, 0, 100, 1, __( 'How far and fast the pieces fly.', 'fw' ) ),
+		'move_time' => $slider( __( 'Move Time (%)', 'fw' ), 45, 10, 90, 1, __( 'How much of each photo\'s time the break takes; the photo holds still for the rest.', 'fw' ) ),
+	) ),
+	'group_wsh_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_cloth_banners_opts = array(
+	'group_wcb_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Drift along the rod', 'fw' ), 40, 6, 90, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+	) ),
+	'group_wcb_scene' => array( 'type' => 'group', 'options' => array(
+		'banners'    => $slider( __( 'Banners in View', 'fw' ), 4, 2, 8, 1, __( 'How many banners hang across the stage. With Drift, more slide in as others leave.', 'fw' ) ),
+		'wind'       => $slider( __( 'Wind (%)', 'fw' ), 50, 0, 100, 1, __( 'How strongly the cloth ripples. Pointing at a banner gives it a gust.', 'fw' ) ),
+		'ripples'    => $slider( __( 'Ripples', 'fw' ), 2, 0.5, 5, 0.5, __( 'How many waves run down each banner at once.', 'fw' ) ),
+		'gap'        => $slider( __( 'Gap (%)', 'fw' ), 14, 0, 60, 1, __( 'Space between the banners, as a % of a banner\'s width.', 'fw' ) ),
+		'view_angle' => $slider( __( 'View Angle (°)', 'fw' ), 8, 0, 40, 1, __( 'How far below the banners you look up from.', 'fw' ) ),
+		'rod_color'  => array( 'type' => 'color-picker', 'label' => __( 'Rod Colour', 'fw' ), 'value' => '#3a3c41' ),
+		'lighting'   => $webgl_light,
+	) ),
+	'group_wcb_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Banner Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 40, 1 ),
+	) ),
+	'group_wcb_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_fold_strip_opts = array(
+	'group_wfs_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Flow', 'fw' ), 40, 6, 90, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to slide', 'fw' ), 'yes', __( 'Let visitors grab the strip and slide it.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep sliding after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_wfs_scene' => array( 'type' => 'group', 'options' => array(
+		'panels'     => $slider( __( 'Panels in View', 'fw' ), 6, 3, 12, 1, __( 'How many folded panels fit across the stage.', 'fw' ) ),
+		'fold'       => $slider( __( 'Fold (°)', 'fw' ), 35, 0, 70, 1, __( 'How sharply the strip is folded. 0 = flat.', 'fw' ) ),
+		'unfold'     => $switch( __( 'Unfold on Hover', 'fw' ), 'yes', __( 'The strip flattens out while the pointer is over it.', 'fw' ) ),
+		'view_angle' => $slider( __( 'View Angle (°)', 'fw' ), 12, 0, 45, 1, __( 'How far above the strip you look down from.', 'fw' ) ),
+		'lighting'   => $webgl_light,
+	) ),
+	'group_wfs_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Panel Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 40, 1 ),
+	) ),
+	'group_wfs_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+$webgl_water_pool_opts = array(
+	'group_wwp_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Drift under the water', 'fw' ), 60, 10, 120, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+	) ),
+	'group_wwp_scene' => array( 'type' => 'group', 'options' => array(
+		'columns'     => $slider( __( 'Columns', 'fw' ), 4, 2, 8, 1 ),
+		'rows'        => $slider( __( 'Rows', 'fw' ), 2, 1, 5, 1 ),
+		'gap'         => $slider( __( 'Gap (%)', 'fw' ), 4, 0, 20, 1, __( 'Pool floor between the photos, as a % of a photo\'s width.', 'fw' ) ),
+		'refraction'  => $slider( __( 'Ripple Strength (%)', 'fw' ), 50, 0, 100, 1, __( 'How much the ripples bend the photos underneath.', 'fw' ) ),
+		'rain'        => $slider( __( 'Rain (%)', 'fw' ), 30, 0, 100, 1, __( 'Drops that land on the water now and then, on their own. 0 = only the pointer makes ripples.', 'fw' ) ),
+		'shine'       => $slider( __( 'Shine (%)', 'fw' ), 50, 0, 100, 1, __( 'How brightly the ripples catch the light.', 'fw' ) ),
+		'water_color' => array( 'type' => 'color-picker', 'label' => __( 'Water Colour', 'fw' ), 'value' => '#2a8fbf', 'desc' => __( 'Tints the water and colours the pool floor between the photos.', 'fw' ) ),
+	) ),
+	'group_wwp_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 8, 0, 60, 1 ),
+	) ),
+	'group_wwp_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_jelly_grid_opts = array(
+	'group_wjg_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Gentle wave', 'fw' ), 8, 2, 40, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+	) ),
+	'group_wjg_scene' => array( 'type' => 'group', 'options' => array(
+		'columns'    => $slider( __( 'Columns', 'fw' ), 5, 2, 10, 1 ),
+		'rows'       => $slider( __( 'Rows', 'fw' ), 3, 1, 6, 1 ),
+		'gap'        => $slider( __( 'Gap (%)', 'fw' ), 6, 0, 30, 1, __( 'Space between the photos, as a % of a photo\'s width.', 'fw' ) ),
+		'jelly'      => $slider( __( 'Jelly (%)', 'fw' ), 60, 0, 100, 1, __( 'How far a photo bulges toward you under the pointer.', 'fw' ) ),
+		'wobble'     => $slider( __( 'Wobble (%)', 'fw' ), 60, 0, 100, 1, __( 'How much the photos wobble before they settle. A click makes a photo jiggle.', 'fw' ) ),
+		'wave'       => $slider( __( 'Wave (%)', 'fw' ), 30, 0, 100, 1, __( 'A gentle swell that rolls across the grid on its own. 0 = still until touched.', 'fw' ) ),
+		'view_angle' => $slider( __( 'View Angle (°)', 'fw' ), 10, 0, 45, 1, __( 'How far below the grid you look up from.', 'fw' ) ),
+		'gloss'      => $slider( __( 'Gloss (%)', 'fw' ), 40, 0, 100, 1, __( 'How shiny the photos are: higher catches brighter highlights on the bulges.', 'fw' ) ),
+		'lighting'   => $webgl_light,
+	) ),
+	'group_wjg_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 10, 0, 60, 1 ),
+	) ),
+	'group_wjg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_stage_curtain_opts = array(
+	'group_wsc_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 5, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wsc_scene' => array( 'type' => 'group', 'options' => array(
+		'curtain_color' => array( 'type' => 'color-picker', 'label' => __( 'Curtain Colour', 'fw' ), 'value' => '#7a1424' ),
+		'pleats'        => $slider( __( 'Pleats', 'fw' ), 10, 4, 20, 1, __( 'How many folds run down each half of the curtain.', 'fw' ) ),
+		'opening'       => $slider( __( 'Opening (%)', 'fw' ), 88, 50, 100, 1, __( 'How far the curtain draws back when it is open.', 'fw' ) ),
+		'swag'          => $slider( __( 'Swag (%)', 'fw' ), 50, 0, 100, 1, __( 'How far the inner lower corners lift as the curtain opens. 0 = it slides straight.', 'fw' ) ),
+		'move_time'     => $slider( __( 'Move Time (%)', 'fw' ), 50, 10, 90, 1, __( 'How much of each photo\'s time the curtain takes to close and open again.', 'fw' ) ),
+		'valance'       => $switch( __( 'Valance', 'fw' ), 'yes', __( 'A pleated band of curtain across the top.', 'fw' ) ),
+	) ),
+	'group_wsc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+$webgl_gallery_walk_opts = array(
+	'group_wgw_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Walk', 'fw' ), 40, 10, 120, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+	) ),
+	'group_wgw_scene' => array( 'type' => 'group', 'options' => array(
+		'wall_color'  => array( 'type' => 'color-picker', 'label' => __( 'Wall Colour', 'fw' ), 'value' => '#e9e4dc' ),
+		'floor_color' => array( 'type' => 'color-picker', 'label' => __( 'Floor Colour', 'fw' ), 'value' => '#3a3029' ),
+		'frame_color' => array( 'type' => 'color-picker', 'label' => __( 'Frame Colour', 'fw' ), 'value' => '#1c1c1c' ),
+		'mat'         => $switch( __( 'Mat', 'fw' ), 'yes', __( 'A white mount round each photo inside its frame.', 'fw' ) ),
+		'light_pools' => $slider( __( 'Light Pools (%)', 'fw' ), 60, 0, 100, 1, __( 'The soft pool of light on the wall round each picture.', 'fw' ) ),
+		'spacing'     => $slider( __( 'Spacing (%)', 'fw' ), 100, 60, 180, 1, __( 'How far apart the pictures hang along the walls.', 'fw' ) ),
+		'look_around' => $slider( __( 'Look Around (%)', 'fw' ), 40, 0, 100, 1, __( 'How far the view turns toward the pointer. 0 = it looks straight ahead.', 'fw' ) ),
+	) ),
+	'group_wgw_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio' => array( 'label' => __( 'Picture Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+	) ),
+	'group_wgw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_holo_cards_opts = array(
+	'group_whc_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Shimmer', 'fw' ), 6, 2, 30, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+	) ),
+	'group_whc_scene' => array( 'type' => 'group', 'options' => array(
+		'columns' => $slider( __( 'Columns', 'fw' ), 4, 1, 8, 1 ),
+		'rows'    => $slider( __( 'Rows', 'fw' ), 1, 1, 4, 1 ),
+		'gap'     => $slider( __( 'Gap (%)', 'fw' ), 10, 0, 40, 1, __( 'Space between the cards, as a % of a card\'s width.', 'fw' ) ),
+		'foil'    => $slider( __( 'Foil (%)', 'fw' ), 70, 0, 100, 1, __( 'How strong the holographic foil is. It shows most as a card tilts.', 'fw' ) ),
+		'pattern' => array( 'label' => __( 'Foil Pattern', 'fw' ), 'type' => 'select', 'value' => 'rainbow', 'choices' => array(
+			'rainbow' => __( 'Rainbow (smooth colour bands)', 'fw' ),
+			'sparkle' => __( 'Sparkle (glittering flecks)', 'fw' ),
+			'lines'   => __( 'Lines (fine diagonal etching)', 'fw' ),
+		) ),
+		'tilt'    => $slider( __( 'Tilt (°)', 'fw' ), 18, 0, 35, 1, __( 'How far a card tilts toward the pointer.', 'fw' ) ),
+		'glare'   => $slider( __( 'Glare (%)', 'fw' ), 50, 0, 100, 1, __( 'A spot of light on the card that follows the pointer.', 'fw' ) ),
+	) ),
+	'group_whc_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 14, 0, 60, 1 ),
+	) ),
+	'group_whc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_domino_row_opts = array(
+	'group_wdr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Topple and reset', 'fw' ), 10, 4, 40, array( 'left' => __( 'Left to right', 'fw' ) ) ),
+	) ),
+	'group_wdr_scene' => array( 'type' => 'group', 'options' => array(
+		'dominoes'      => $slider( __( 'Dominoes', 'fw' ), 8, 4, 16, 1, __( 'How many stand in the row (the gallery repeats to fill it).', 'fw' ) ),
+		'spacing'       => $slider( __( 'Spacing (%)', 'fw' ), 50, 25, 90, 1, __( 'The gap between dominoes, as a % of their height. Wider gaps let each one lean further.', 'fw' ) ),
+		'view_angle'    => $slider( __( 'View Angle (°)', 'fw' ), 55, 0, 70, 1, __( 'How far round to the side you look along the row.', 'fw' ) ),
+		'camera_height' => $slider( __( 'Camera Height (°)', 'fw' ), 18, 0, 50, 1 ),
+		'domino_color'  => array( 'type' => 'color-picker', 'label' => __( 'Domino Colour', 'fw' ), 'value' => '#f4f2ee', 'desc' => __( 'The edges of each domino.', 'fw' ) ),
+		'shadows'       => $switch( __( 'Shadows', 'fw' ), 'yes', __( 'Real shadows on the floor. Off is lighter for slow devices.', 'fw' ) ),
+	) ),
+	'group_wdr_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Domino Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 4, 0, 30, 1 ),
+	) ),
+	'group_wdr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+$webgl_photo_bubbles_opts = array(
+	'group_wpb_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Float', 'fw' ), 40, 8, 120, array( 'left' => __( 'Rise', 'fw' ), 'right' => __( 'Sink', 'fw' ) ) ),
+	) ),
+	'group_wpb_scene' => array( 'type' => 'group', 'options' => array(
+		'bubbles'      => $slider( __( 'Bubbles', 'fw' ), 12, 4, 30, 1, __( 'How many bubbles float on the stage (the gallery repeats to fill them).', 'fw' ) ),
+		'card_size'    => $slider( __( 'Bubble Size (%)', 'fw' ), 22, 8, 45, 1, __( 'An average bubble\'s width as a % of the stage width; each one varies round it.', 'fw' ) ),
+		'iridescence'  => $slider( __( 'Iridescence (%)', 'fw' ), 70, 0, 100, 1, __( 'How strongly the rims shimmer with soap-film colours.', 'fw' ) ),
+		'depth'        => $slider( __( 'Depth (%)', 'fw' ), 50, 0, 100, 1, __( 'How far the bubbles spread toward and away from you. 0 = all on one plane.', 'fw' ) ),
+		'wobble'       => $slider( __( 'Wobble (%)', 'fw' ), 50, 0, 100, 1, __( 'How much they sway and squash as they float.', 'fw' ) ),
+		'pointer_push' => $slider( __( 'Pointer Push (%)', 'fw' ), 50, 0, 100, 1, __( 'Bubbles drift away from the pointer. 0 = off.', 'fw' ) ),
+	) ),
+	'group_wpb_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_photo_cube_opts = array(
+	'group_wpc_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 4, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wpc_scene' => array( 'type' => 'group', 'options' => array(
+		'tumble'     => array( 'label' => __( 'Turn', 'fw' ), 'type' => 'select', 'value' => 'turn', 'choices' => array(
+			'turn' => __( 'Sideways (turns round)', 'fw' ),
+			'roll' => __( 'Roll forward (tips over the top)', 'fw' ),
+		) ),
+		'card_size'  => $slider( __( 'Cube Size (%)', 'fw' ), 55, 20, 90, 1, __( 'How big the cube is, as a % of the stage height.', 'fw' ) ),
+		'tilt'       => $slider( __( 'Camera Height (°)', 'fw' ), 18, 0, 45, 1, __( 'How far above the cube you look from.', 'fw' ) ),
+		'move_time'  => $slider( __( 'Move Time (%)', 'fw' ), 40, 10, 90, 1, __( 'How much of each photo\'s time the turn takes.', 'fw' ) ),
+		'float'      => $slider( __( 'Float (%)', 'fw' ), 40, 0, 100, 1, __( 'A gentle up-and-down float. 0 = still.', 'fw' ) ),
+		'cube_color' => array( 'type' => 'color-picker', 'label' => __( 'Cube Colour', 'fw' ), 'value' => '#22252c', 'desc' => __( 'The two faces that never turn to the front.', 'fw' ) ),
+		'shadows'    => $switch( __( 'Shadow', 'fw' ), 'yes', __( 'A soft shadow under the cube. Off is lighter for slow devices.', 'fw' ) ),
+		'lighting'   => $webgl_light,
+	) ),
+	'group_wpc_card'  => array( 'type' => 'group', 'options' => array(
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 40, 1 ),
+	) ),
+	'group_wpc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_film_ribbon_opts = array(
+	'group_wfr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Flow', 'fw' ), 40, 8, 120, array( 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ) ),
+	) ),
+	'group_wfr_scene' => array( 'type' => 'group', 'options' => array(
+		'frames'         => $slider( __( 'Frames in View', 'fw' ), 5, 3, 10, 1, __( 'How many frames of film fit across the stage.', 'fw' ) ),
+		'wave'           => $slider( __( 'Wave (%)', 'fw' ), 50, 0, 100, 1, __( 'How far the film curves up, down, toward and away from you. 0 = straight.', 'fw' ) ),
+		'twist'          => $slider( __( 'Twist (%)', 'fw' ), 40, 0, 100, 1, __( 'How much the film twists about its length, catching the light.', 'fw' ) ),
+		'film_color'     => array( 'type' => 'color-picker', 'label' => __( 'Film Colour', 'fw' ), 'value' => '#16171b' ),
+		'sprocket_holes' => $switch( __( 'Sprocket Holes', 'fw' ), 'yes', __( 'The punched holes along both edges of the film.', 'fw' ) ),
+		'lighting'       => $webgl_light,
+	) ),
+	'group_wfr_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio' => array( 'label' => __( 'Frame Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+	) ),
+	'group_wfr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+$webgl_pixel_blocks_opts = array(
+	'group_wpx_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 5, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wpx_scene' => array( 'type' => 'group', 'options' => array(
+		'pattern'      => array( 'label' => __( 'Flip Order', 'fw' ), 'type' => 'select', 'value' => 'diagonal', 'choices' => array(
+			'diagonal' => __( 'Diagonal wave', 'fw' ),
+			'rows'     => __( 'Row by row', 'fw' ),
+			'center'   => __( 'Out from the centre', 'fw' ),
+			'random'   => __( 'Random', 'fw' ),
+		) ),
+		'blocks'       => $slider( __( 'Blocks Across', 'fw' ), 14, 6, 30, 1, __( 'How many blocks make one row of the photo.', 'fw' ) ),
+		'depth'        => $slider( __( 'Block Depth (%)', 'fw' ), 40, 10, 100, 1, __( 'How thick each block is, as a % of its width.', 'fw' ) ),
+		'gap'          => $slider( __( 'Gap (%)', 'fw' ), 4, 0, 20, 1, __( 'Space between the blocks.', 'fw' ) ),
+		'pointer_push' => $slider( __( 'Pointer Push (%)', 'fw' ), 50, 0, 100, 1, __( 'The blocks under the pointer sink back and tilt toward it. 0 = off.', 'fw' ) ),
+		'move_time'    => $slider( __( 'Move Time (%)', 'fw' ), 50, 10, 90, 1, __( 'How much of each photo\'s time the flip takes.', 'fw' ) ),
+		'side_color'   => array( 'type' => 'color-picker', 'label' => __( 'Block Side Colour', 'fw' ), 'value' => '#2b2f38' ),
+		'lighting'     => $webgl_light,
+	) ),
+	'group_wpx_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_ferris_wheel_opts = array(
+	'group_wfw_motion' => array( 'type' => 'group', 'options' => array(
+		'motion'        => $motion_picker( 'continuous', __( 'Turn', 'fw' ), 40, 10, 120, array( 'left' => __( 'Anticlockwise', 'fw' ), 'right' => __( 'Clockwise', 'fw' ) ) ),
+		'allow_drag'    => $switch( __( 'Drag to spin', 'fw' ), 'yes', __( 'Let visitors grab the wheel and spin it.', 'fw' ) ),
+		'drag_momentum' => $switch( __( 'Drag Momentum', 'fw' ), 'yes', __( 'Keep turning after releasing a drag.', 'fw' ) ),
+	) ),
+	'group_wfw_scene' => array( 'type' => 'group', 'options' => array(
+		'gondolas'    => $slider( __( 'Gondolas', 'fw' ), 10, 6, 16, 1, __( 'How many photos ride the wheel (the gallery repeats to fill them).', 'fw' ) ),
+		'card_size'   => $slider( __( 'Gondola Size (%)', 'fw' ), 26, 8, 34, 1, __( 'How big each photo is.', 'fw' ) ),
+		'swing'       => $slider( __( 'Swing (%)', 'fw' ), 50, 0, 100, 1, __( 'How much the gondolas swing as the wheel turns.', 'fw' ) ),
+		'view_angle'  => $slider( __( 'View Angle (°)', 'fw' ), 12, 0, 40, 1, __( 'How far round to the side you look at the wheel from.', 'fw' ) ),
+		'wheel_color' => array( 'type' => 'color-picker', 'label' => __( 'Wheel Colour', 'fw' ), 'value' => '#e9ecf2' ),
+		'bulbs'       => $switch( __( 'Lights', 'fw' ), 'yes', __( 'Twinkling bulbs round the rim.', 'fw' ) ),
+		'lighting'    => $webgl_light,
+	) ),
+	'group_wfw_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 40, 1 ),
+	) ),
+	'group_wfw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_photo_mobile_opts = array(
+	'group_wpm2_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Turn', 'fw' ), 40, 10, 120, array( 'left' => __( 'One way', 'fw' ), 'right' => __( 'The other way', 'fw' ) ) ),
+	) ),
+	'group_wpm2_scene' => array( 'type' => 'group', 'options' => array(
+		'photos'    => $slider( __( 'Photos', 'fw' ), 7, 3, 12, 1, __( 'How many photos hang from the mobile (the gallery repeats to fill them).', 'fw' ) ),
+		'card_size' => $slider( __( 'Photo Size (%)', 'fw' ), 18, 8, 30, 1 ),
+		'breeze'    => $slider( __( 'Breeze (%)', 'fw' ), 50, 0, 100, 1, __( 'How much moving the pointer across the mobile sets it spinning. 0 = off.', 'fw' ) ),
+		'sway'      => $slider( __( 'Sway (%)', 'fw' ), 50, 0, 100, 1, __( 'A gentle sway of the arms and strings.', 'fw' ) ),
+		'arm_color' => array( 'type' => 'color-picker', 'label' => __( 'Arm Colour', 'fw' ), 'value' => '#3a3c41', 'desc' => __( 'The arms and strings.', 'fw' ) ),
+		'lighting'  => $webgl_light,
+	) ),
+	'group_wpm2_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 4, 0, 40, 1 ),
+	) ),
+	'group_wpm2_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+$webgl_photo_fall_opts = array(
+	'group_wpf_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Fall', 'fw' ), 30, 8, 120, array( 'left' => __( 'Fall', 'fw' ), 'right' => __( 'Rise', 'fw' ) ) ),
+	) ),
+	'group_wpf_scene' => array( 'type' => 'group', 'options' => array(
+		'photos'       => $slider( __( 'Photos', 'fw' ), 18, 6, 40, 1, __( 'How many photos are falling at once (the gallery repeats to fill them).', 'fw' ) ),
+		'card_size'    => $slider( __( 'Photo Size (%)', 'fw' ), 16, 6, 30, 1 ),
+		'flutter'      => $slider( __( 'Flutter (%)', 'fw' ), 50, 0, 100, 1, __( 'How much the photos rock, turn and drift side to side as they fall, like leaves.', 'fw' ) ),
+		'wind'         => $slider( __( 'Wind (%)', 'fw' ), 0, -100, 100, 1, __( 'A steady wind that carries them sideways as they fall: below 0 to the left, above 0 to the right.', 'fw' ) ),
+		'depth'        => $slider( __( 'Depth (%)', 'fw' ), 50, 0, 100, 1, __( 'How far back the photos spread; farther ones look smaller.', 'fw' ) ),
+		'pointer_push' => $slider( __( 'Pointer Gust (%)', 'fw' ), 50, 0, 100, 1, __( 'Sweeping the pointer across blows the photos near it along, spinning. 0 = off.', 'fw' ) ),
+		'lighting'     => $webgl_light,
+	) ),
+	'group_wpf_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 4, 0, 40, 1 ),
+	) ),
+	'group_wpf_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_lenticular_opts = array(
+	'group_wlc_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 5, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wlc_scene' => array( 'type' => 'group', 'options' => array(
+		'ridges'      => $slider( __( 'Ridges', 'fw' ), 28, 10, 60, 1, __( 'How many ridges run across the card. More = finer stripes as it turns.', 'fw' ) ),
+		'tilt'        => $slider( __( 'Tilt (°)', 'fw' ), 30, 15, 50, 1, __( 'How far the card turns to each side. The ridges are cut so each side hides the other at this angle.', 'fw' ) ),
+		'card_size'   => $slider( __( 'Card Size (%)', 'fw' ), 72, 30, 95, 1, __( 'The card\'s height as a % of the stage height.', 'fw' ) ),
+		'move_time'   => $slider( __( 'Move Time (%)', 'fw' ), 40, 10, 90, 1, __( 'How much of each photo\'s time the turn takes.', 'fw' ) ),
+		'follow'      => $slider( __( 'Pointer Tilt (%)', 'fw' ), 50, 0, 100, 1, __( 'The card tilts toward the pointer, so visitors can turn it between the two photos. 0 = off.', 'fw' ) ),
+		'frame_color' => array( 'type' => 'color-picker', 'label' => __( 'Frame Colour', 'fw' ), 'value' => '#e9ecf2', 'desc' => __( 'The thin frame and back of the card.', 'fw' ) ),
+		'lighting'    => $webgl_light,
+	) ),
+	'group_wlc_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 8, 0, 40, 1 ),
+	) ),
+	'group_wlc_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_jigsaw_opts = array(
+	'group_wjg_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 6, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wjg_scene' => array( 'type' => 'group', 'options' => array(
+		'pieces'       => $slider( __( 'Pieces Across', 'fw' ), 8, 4, 16, 1, __( 'How many jigsaw pieces make one row of the photo.', 'fw' ) ),
+		'scatter'      => $slider( __( 'Scatter (%)', 'fw' ), 50, 0, 100, 1, __( 'How far away the pieces fly in from.', 'fw' ) ),
+		'pointer_lift' => $slider( __( 'Pointer Lift (%)', 'fw' ), 50, 0, 100, 1, __( 'The piece under the pointer lifts out of the puzzle. 0 = off.', 'fw' ) ),
+		'move_time'    => $slider( __( 'Move Time (%)', 'fw' ), 60, 10, 90, 1, __( 'How much of each photo\'s time the pieces take to fly in.', 'fw' ) ),
+		'board_color'  => array( 'type' => 'color-picker', 'label' => __( 'Board Colour', 'fw' ), 'value' => '#1d2027', 'desc' => __( 'Shows under a lifted piece and in the fine cut lines.', 'fw' ) ),
+		'lighting'     => $webgl_light,
+	) ),
+	'group_wjg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+$webgl_paper_fold_opts = array(
+	'group_wpf2_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 6, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wpf2_scene' => array( 'type' => 'group', 'options' => array(
+		'order'       => array( 'label' => __( 'Fold Order', 'fw' ), 'type' => 'select', 'value' => 'side', 'choices' => array(
+			'side' => __( 'Side first, then top', 'fw' ),
+			'top'  => __( 'Top first, then side', 'fw' ),
+		) ),
+		'card_size'   => $slider( __( 'Card Size (%)', 'fw' ), 80, 40, 95, 1, __( 'How much of the stage the unfolded photo fills.', 'fw' ) ),
+		'move_time'   => $slider( __( 'Move Time (%)', 'fw' ), 60, 20, 90, 1, __( 'How much of each photo\'s time the fold and unfold take.', 'fw' ) ),
+		'follow'      => $slider( __( 'Pointer Tilt (%)', 'fw' ), 40, 0, 100, 1, __( 'The sheet tilts toward the pointer. 0 = off.', 'fw' ) ),
+		'paper_color' => array( 'type' => 'color-picker', 'label' => __( 'Paper Colour', 'fw' ), 'value' => '#f4f1ea', 'desc' => __( 'The back of the sheet, seen when it is folded.', 'fw' ) ),
+		'lighting'    => $webgl_light,
+	) ),
+	'group_wpf2_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 0, 0, 40, 1 ),
+	) ),
+	'group_wpf2_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_slot_reels_opts = array(
+	'group_wsr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 5, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wsr_scene' => array( 'type' => 'group', 'options' => array(
+		'reels'       => $slider( __( 'Reels', 'fw' ), 3, 2, 6, 1, __( 'How many reels the photo is split across.', 'fw' ) ),
+		'spins'       => $slider( __( 'Spins', 'fw' ), 2, 0, 6, 1, __( 'How many extra full turns each reel makes before it stops.', 'fw' ) ),
+		'stagger'     => $slider( __( 'Stagger (%)', 'fw' ), 40, 0, 90, 1, __( 'How far apart the reels stop: 0 = all at once.', 'fw' ) ),
+		'card_size'   => $slider( __( 'Size (%)', 'fw' ), 78, 40, 95, 1, __( 'The machine\'s width as a % of the stage width.', 'fw' ) ),
+		'move_time'   => $slider( __( 'Move Time (%)', 'fw' ), 55, 20, 90, 1, __( 'How much of each photo\'s time the spin takes.', 'fw' ) ),
+		'follow'      => $slider( __( 'Pointer Tilt (%)', 'fw' ), 40, 0, 100, 1, __( 'The machine tilts toward the pointer. 0 = off.', 'fw' ) ),
+		'frame_color' => array( 'type' => 'color-picker', 'label' => __( 'Frame Colour', 'fw' ), 'value' => '#1d2027', 'desc' => __( 'The bars and dividers round the reels.', 'fw' ) ),
+		'lighting'    => $webgl_light,
+	) ),
+	'group_wsr_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio' => array( 'label' => __( 'Photo Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+	) ),
+	'group_wsr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_peel_opts = array(
+	'group_wpl_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 5, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wpl_scene' => array( 'type' => 'group', 'options' => array(
+		'corner'      => array( 'label' => __( 'Peel From', 'fw' ), 'type' => 'select', 'value' => 'cycle', 'choices' => array(
+			'cycle'        => __( 'A different corner each time', 'fw' ),
+			'top-right'    => __( 'Top right', 'fw' ),
+			'top-left'     => __( 'Top left', 'fw' ),
+			'bottom-right' => __( 'Bottom right', 'fw' ),
+			'bottom-left'  => __( 'Bottom left', 'fw' ),
+		) ),
+		'curl'        => $slider( __( 'Curl Size (%)', 'fw' ), 50, 0, 100, 1, __( 'How tight or wide the curl is as it peels.', 'fw' ) ),
+		'lift'        => $slider( __( 'Corner Lift (%)', 'fw' ), 40, 0, 100, 1, __( 'How far the corner is lifted while the photo shows, and how much more it lifts under the pointer.', 'fw' ) ),
+		'move_time'   => $slider( __( 'Move Time (%)', 'fw' ), 45, 15, 90, 1, __( 'How much of each photo\'s time the peel takes.', 'fw' ) ),
+		'paper_color' => array( 'type' => 'color-picker', 'label' => __( 'Backing Colour', 'fw' ), 'value' => '#f4f1ea', 'desc' => __( 'The back of the peeled photo.', 'fw' ) ),
+	) ),
+	'group_wpl_card'  => array( 'type' => 'group', 'options' => array(
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 12, 0, 60, 1 ),
+	) ),
+	'group_wpl_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
+$webgl_bookshelf_opts = array(
+	'group_wbs_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 4, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+	) ),
+	'group_wbs_scene' => array( 'type' => 'group', 'options' => array(
+		'books'      => $slider( __( 'Books', 'fw' ), 16, 6, 30, 1, __( 'How many books stand on the shelves (the gallery repeats to fill them).', 'fw' ) ),
+		'shelves'    => $slider( __( 'Shelves', 'fw' ), 1, 1, 3, 1, __( 'One long shelf suits a wide stage; more shelves make a taller bookcase.', 'fw' ) ),
+		'pull'       => $slider( __( 'Pull Out (%)', 'fw' ), 100, 30, 100, 1, __( 'How far a book comes out and turns to show its cover.', 'fw' ) ),
+		'move_time'  => $slider( __( 'Move Time (%)', 'fw' ), 45, 15, 90, 1, __( 'How much of each book\'s time the swap takes.', 'fw' ) ),
+		'wood_color' => array( 'type' => 'color-picker', 'label' => __( 'Shelf Colour', 'fw' ), 'value' => '#6b4a32' ),
+		'lighting'   => $webgl_light,
+	) ),
+	'group_wbs_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio' => array( 'label' => __( 'Cover Ratio', 'fw' ), 'type' => 'select', 'value' => '3-4', 'choices' => $ratio_choices ),
+	) ),
+	'group_wbs_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_snow_globe_opts = array(
+	'group_wsg_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 6, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wsg_scene' => array( 'type' => 'group', 'options' => array(
+		'snow'       => $slider( __( 'Snow (%)', 'fw' ), 60, 0, 100, 1, __( 'How much snow is in the globe.', 'fw' ) ),
+		'shake'      => $slider( __( 'Shake (%)', 'fw' ), 50, 0, 100, 1, __( 'How hard the globe shakes for each new photo.', 'fw' ) ),
+		'stir'       => $slider( __( 'Pointer Stir (%)', 'fw' ), 50, 0, 100, 1, __( 'Moving the pointer over the globe stirs up the snow. 0 = off.', 'fw' ) ),
+		'card_size'  => $slider( __( 'Globe Size (%)', 'fw' ), 85, 50, 100, 1, __( 'How much of the stage the globe fills.', 'fw' ) ),
+		'move_time'  => $slider( __( 'Move Time (%)', 'fw' ), 55, 20, 90, 1, __( 'How much of each photo\'s time the shake and swap take.', 'fw' ) ),
+		'base_color' => array( 'type' => 'color-picker', 'label' => __( 'Base Colour', 'fw' ), 'value' => '#3b2a20' ),
+		'lighting'   => $webgl_light,
+	) ),
+	'group_wsg_card'  => array( 'type' => 'group', 'options' => array(
+		'card_ratio'    => array( 'label' => __( 'Card Ratio', 'fw' ), 'type' => 'select', 'value' => '4-3', 'choices' => $ratio_choices ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 40, 1 ),
+	) ),
+	'group_wsg_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_tv_wall_opts = array(
+	'group_wtv_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Channel Change', 'fw' ), 5, 2, 30, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+	) ),
+	'group_wtv_scene' => array( 'type' => 'group', 'options' => array(
+		'tvs'          => $slider( __( 'TVs', 'fw' ), 9, 4, 20, 1, __( 'How many sets make the wall; the rows follow the stage\'s shape.', 'fw' ) ),
+		'body_color'   => array( 'type' => 'color-picker', 'label' => __( 'TV Colour', 'fw' ), 'value' => '#d8c9ad' ),
+		'mixed_colors' => $switch( __( 'Mixed Colours', 'fw' ), 'yes', __( 'Give each set a different retro colour instead of the TV Colour.', 'fw' ) ),
+		'scanlines'    => $slider( __( 'Scanlines (%)', 'fw' ), 50, 0, 100, 1 ),
+		'static'       => $slider( __( 'Static (%)', 'fw' ), 50, 0, 100, 1, __( 'How much static flickers across a screen as it changes channel.', 'fw' ) ),
+		'curve'        => $slider( __( 'Screen Curve (%)', 'fw' ), 50, 0, 100, 1, __( 'How much the glass screens bulge.', 'fw' ) ),
+		'lighting'     => $webgl_light,
+	) ),
+	'group_wtv_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
 $device_trio_opts = array(
 	'group_dtr_motion' => array( 'type' => 'group', 'options' => array(
 		'motion'         => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 3, 1, 12, array( 'sway' => __( 'Gentle sway', 'fw' ), 'still' => __( 'Hold still', 'fw' ) ) ),
@@ -1919,12 +2473,13 @@ $options = array(
 		'title'   => __( 'Design', 'fw' ),
 		'type'    => 'tab',
 		'options' => array(
-			/* Live in-modal preview of the picked design (placeholder cards; front end is final). */
-			'design_preview' => array(
-				'type'  => 'gallery-3d-preview',
-				'label' => false,
-				'desc'  => false,
-			),
+			/* Two columns in the full-size modal: the design picker and its controls on the left, the live
+			   preview pinned on the right. A column container saves its options flat, so the saved values
+			   are exactly as before; in a narrower panel the two stack with the preview on top, as it used to be. */
+			'design_main' => array(
+				'type'    => 'column',
+				'width'   => '3/5',
+				'options' => array(
 			'design_settings' => array(
 				'type'         => 'multi-picker',
 				'label'        => false,
@@ -2000,7 +2555,50 @@ $options = array(
 					'webgl_mirror_ring' => $webgl_mirror_ring_opts,
 					'webgl_depth_field' => $webgl_depth_field_opts,
 					'webgl_wave_wall'   => $webgl_wave_wall_opts,
+					'webgl_liquid_slider'  => $webgl_liquid_slider_opts,
+					'webgl_particle_morph' => $webgl_particle_morph_opts,
+					'webgl_flip_book'      => $webgl_flip_book_opts,
+					'webgl_shatter'        => $webgl_shatter_opts,
+					'webgl_cloth_banners'  => $webgl_cloth_banners_opts,
+					'webgl_fold_strip'     => $webgl_fold_strip_opts,
+					'webgl_water_pool'     => $webgl_water_pool_opts,
+					'webgl_jelly_grid'     => $webgl_jelly_grid_opts,
+					'webgl_stage_curtain'  => $webgl_stage_curtain_opts,
+					'webgl_gallery_walk'   => $webgl_gallery_walk_opts,
+					'webgl_holo_cards'     => $webgl_holo_cards_opts,
+					'webgl_domino_row'     => $webgl_domino_row_opts,
+					'webgl_photo_bubbles'  => $webgl_photo_bubbles_opts,
+					'webgl_photo_cube'     => $webgl_photo_cube_opts,
+					'webgl_film_ribbon'    => $webgl_film_ribbon_opts,
+					'webgl_pixel_blocks'   => $webgl_pixel_blocks_opts,
+					'webgl_ferris_wheel'   => $webgl_ferris_wheel_opts,
+					'webgl_photo_mobile'   => $webgl_photo_mobile_opts,
+					'webgl_photo_fall'     => $webgl_photo_fall_opts,
+					'webgl_lenticular'     => $webgl_lenticular_opts,
+					'webgl_jigsaw'         => $webgl_jigsaw_opts,
+					'webgl_paper_fold'     => $webgl_paper_fold_opts,
+					'webgl_slot_reels'     => $webgl_slot_reels_opts,
+					'webgl_peel'           => $webgl_peel_opts,
+					'webgl_bookshelf'      => $webgl_bookshelf_opts,
+					'webgl_snow_globe'     => $webgl_snow_globe_opts,
+					'webgl_tv_wall'        => $webgl_tv_wall_opts,
 				), $soon_choices ),
+			),
+				),
+			),
+			'design_side' => array(
+				'type'    => 'column',
+				'width'       => '2/5',
+				'sticky'      => true,
+				'stack_first' => true,
+				'options' => array(
+					/* Live in-modal preview of the picked design (placeholder cards; front end is final). */
+					'design_preview' => array(
+						'type'  => 'gallery-3d-preview',
+						'label' => false,
+						'desc'  => false,
+					),
+				),
 			),
 		),
 	),

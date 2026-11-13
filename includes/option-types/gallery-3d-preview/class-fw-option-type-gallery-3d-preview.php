@@ -73,7 +73,12 @@ class FW_Option_Type_Gallery_3D_Preview extends FW_Option_Type {
 			. '<button type="button" data-bg="light">' . esc_html__( 'Light', 'fw' ) . '</button>'
 			. '</span>'
 			. '</div>'
-			. '</div>';
+			. '</div>'
+			// Reassurance about weight, kept strictly true: the CSS designs share one small script, so this
+			// says what is loaded on demand rather than claiming only the chosen design ships.
+			. '<p class="fw-gallery-3d-preview__weight"><span class="dashicons dashicons-performance" aria-hidden="true"></span>'
+			. esc_html__( 'Lightweight by design: only what this gallery needs loads on your page. The 3D library loads only for WebGL designs, the lightbox only when it is on, and pages without a Motion Gallery load none of it.', 'fw' )
+			. '</p>';
 	}
 
 	/**

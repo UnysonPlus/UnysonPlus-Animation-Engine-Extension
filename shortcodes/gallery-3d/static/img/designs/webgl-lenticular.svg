@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe2ff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Lenticular (WebGL): a ridged card showing one photo from one side and the next from the other. Original design. -->
+<path d="M20 8 L76 14 L76 50 L20 56 Z" fill="#e9ecf2"/>
+<g stroke="#0f1424" stroke-width=".3">
+<path d="M22 10 L27 10.6 L27 53.4 L22 54 Z" fill="url(#A)"/><path d="M27 10.6 L29 10.8 L29 53.2 L27 53.4 Z" fill="#c98a5a"/>
+<path d="M29 10.8 L34 11.4 L34 52.6 L29 53.2 Z" fill="url(#A)"/><path d="M34 11.4 L36 11.6 L36 52.4 L34 52.6 Z" fill="#c98a5a"/>
+<path d="M36 11.6 L41 12.2 L41 51.8 L36 52.4 Z" fill="url(#A)"/><path d="M41 12.2 L43 12.4 L43 51.6 L41 51.8 Z" fill="#c98a5a"/>
+<path d="M43 12.4 L48 13 L48 51 L43 51.6 Z" fill="url(#A)"/><path d="M48 13 L50 13.2 L50 50.8 L48 51 Z" fill="#c98a5a"/>
+<path d="M50 13.2 L55 13.8 L55 50.2 L50 50.8 Z" fill="url(#A)"/><path d="M55 13.8 L57 14 L57 50 L55 50.2 Z" fill="#c98a5a"/>
+<path d="M57 14 L62 14.6 L62 49.4 L57 50 Z" fill="url(#A)"/><path d="M62 14.6 L64 14.8 L64 49.2 L62 49.4 Z" fill="#c98a5a"/>
+<path d="M64 14.8 L69 15.4 L69 48.6 L64 49.2 Z" fill="url(#A)"/><path d="M69 15.4 L74 16 L74 48 L69 48.6 Z" fill="#c98a5a"/>
+</g>
+</svg>

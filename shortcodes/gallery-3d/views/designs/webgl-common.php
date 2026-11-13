@@ -3,7 +3,8 @@
 }
 
 /**
- * Motion Gallery — shared markup for the WebGL designs (Mirror Ring, Depth Field, Wave Wall).
+ * Motion Gallery — shared markup for the WebGL designs. Each card carries its full-size image URL
+ * (data-tdg-full) for the designs that show one photo at the size of the stage.
  *
  * The photos are drawn by static/js/gallery-3d-webgl.js on a canvas it adds to the stage. The cards below
  * stay in the page as the accessible list: visually hidden while WebGL runs (still focusable; focusing one
@@ -25,7 +26,8 @@ $count = max( 1, min( 60, $count ) );
 			<?php
 			// One list entry per distinct photo (the canvas repeats them to fill the scene).
 			for ( $i = 0; $n && $i < min( $n, $count ); $i++ ) {
-				echo '<li class="tdg__card"' . $card_style( $items[ $i ] ) . '>' . $render_card( $items[ $i ] ) . '</li>';
+				$full_url = ! empty( $items[ $i ]['full'] ) ? $items[ $i ]['full'] : '';
+				echo '<li class="tdg__card"' . ( $full_url !== '' ? ' data-tdg-full="' . esc_url( $full_url ) . '"' : '' ) . $card_style( $items[ $i ] ) . '>' . $render_card( $items[ $i ] ) . '</li>';
 			} ?>
 		</ul>
 	</div>

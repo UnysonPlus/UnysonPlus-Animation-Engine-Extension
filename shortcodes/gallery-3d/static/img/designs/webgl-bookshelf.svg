@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe2ff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Bookshelf (WebGL): photos as book covers; one slides out and turns to show its cover. Original design. -->
+<rect x="8" y="6" width="80" height="52" rx="1.5" fill="#6b4a32"/><rect x="11" y="9" width="74" height="21" fill="#3e2b1e"/><rect x="11" y="34" width="74" height="21" fill="#3e2b1e"/>
+<g stroke="#0f1424" stroke-width=".4">
+<rect x="13" y="12" width="5" height="18" fill="#5d6886"/><rect x="18.5" y="14" width="4" height="16" fill="#8fbcff"/><rect x="23" y="11" width="6" height="19" fill="#4a5470"/><rect x="29.5" y="13" width="4" height="17" fill="#2f74e6"/>
+<rect x="56" y="12" width="5" height="18" fill="#8fbcff"/><rect x="61.5" y="14" width="6" height="16" fill="#5d6886"/><rect x="68" y="11" width="4" height="19" fill="#4a5470"/><rect x="72.5" y="13" width="5" height="17" fill="#2f74e6"/>
+<rect x="13" y="37" width="6" height="18" fill="#4a5470"/><rect x="19.5" y="38" width="4" height="17" fill="#8fbcff"/><rect x="24" y="36" width="5" height="19" fill="#5d6886"/><rect x="29.5" y="39" width="6" height="16" fill="#2f74e6"/><rect x="36" y="37" width="4" height="18" fill="#4a5470"/><rect x="40.5" y="38" width="5" height="17" fill="#8fbcff"/><rect x="46" y="36" width="6" height="19" fill="#5d6886"/><rect x="52.5" y="39" width="4" height="16" fill="#2f74e6"/><rect x="57" y="37" width="5" height="18" fill="#4a5470"/><rect x="62.5" y="38" width="6" height="17" fill="#8fbcff"/>
+<rect x="36" y="14" width="17" height="24" rx=".5" fill="url(#A)" transform="rotate(-4 44 26)"/>
+</g>
+</svg>

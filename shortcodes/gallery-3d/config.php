@@ -14,7 +14,7 @@ $cfg['page_builder'] = array(
 	'title'          => __( 'Motion Gallery', 'fw' ),
 	'description'    => __( 'An animated image gallery — 3D carousels, rings and spheres, cover-flow, card scatter, marquee and more. Cards come from Media Library images or a post type\'s featured images, with drag-to-spin, scroll pinning, lightbox or per-card links.', 'fw' ),
 	'tab'            => __( 'Animation Engine', 'fw' ),
-	'popup_size'     => 'large',
+	'popup_size'     => 'full', // the Design tab lays out the picker and a live preview side by side
 	// A NEW Motion Gallery (dropped in from the builder palette) starts with an Entrance Animation:
 	// Zoom In, one photo after another (view.php plays it on each photo's inner layer, so it composes
 	// with every design's motion). Only new elements; it shows on the Animations tab like any card.

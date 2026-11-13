@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe2ff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Snow Globe (WebGL): a photo inside a snow globe that shakes for each change. Original design. -->
+<path d="M30 52 L66 52 L70 60 L26 60 Z" fill="#3b2a20"/>
+<circle cx="48" cy="30" r="23" fill="#e9f1ff" fill-opacity=".25" stroke="#cfe2ff" stroke-width="1"/>
+<path d="M28 40 Q48 34 68 40 A23 23 0 0 1 28 40 Z" fill="#f4f6fa"/>
+<rect x="37" y="20" width="22" height="18" rx="1" fill="url(#A)" stroke="#0f1424" stroke-width=".5"/>
+<g fill="#ffffff"><circle cx="34" cy="18" r=".9"/><circle cx="41" cy="13" r=".7"/><circle cx="57" cy="15" r=".9"/><circle cx="62" cy="24" r=".8"/><circle cx="33" cy="29" r=".7"/><circle cx="50" cy="11" r=".6"/><circle cx="64" cy="32" r=".7"/><circle cx="31" cy="35" r=".6"/></g>
+<path d="M33 15 A20 20 0 0 1 44 9" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".8"/>
+</svg>

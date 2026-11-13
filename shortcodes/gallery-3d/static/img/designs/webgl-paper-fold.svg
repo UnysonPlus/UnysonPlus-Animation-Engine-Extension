@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe2ff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient></defs>
+<!-- Paper Fold (WebGL): the photo folds into a small note that unfolds as the next. Original design. -->
+<g stroke="#0f1424" stroke-width=".5" stroke-linejoin="round">
+<rect x="14" y="10" width="34" height="44" fill="url(#A)"/>
+<path d="M48 10 L70 16 L70 48 L48 54 Z" fill="#f4f1ea"/>
+<path d="M48 10 L70 16 L70 48 L48 54" stroke="#8a94ad"/>
+</g>
+<path d="M48 10 V54" stroke="#0f1424" stroke-width=".8" stroke-dasharray="2 1.5"/>
+<path d="M74 22 q8 10 0 20" stroke="#8a94ad" stroke-width=".8" fill="none"/><path d="M72 40 l2 2.5 l2.2 -2.6" stroke="#8a94ad" stroke-width=".8" fill="none"/>
+</svg>

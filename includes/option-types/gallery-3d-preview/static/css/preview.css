@@ -74,3 +74,27 @@
 .tdg-soon__badge { padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 800;
   letter-spacing: .12em; color: #cdd6e4; border: 1px solid #3a4658; background: rgba(255,255,255,.04); }
 .tdg-soon__t { font-size: 13px; color: #8b96a8; }
+
+/* In its own column (the full-size modal's Design tab), the preview is taller: it has the room. */
+.fw-backend-column .fw-gallery-3d-preview__stage {
+	height: clamp(300px, 52vh, 620px);
+}
+
+/* The weight note under the preview card. */
+.fw-gallery-3d-preview__weight {
+	display: flex;
+	gap: 6px;
+	align-items: flex-start;
+	margin: -6px 0 14px;
+	font-size: 12px;
+	line-height: 1.5;
+	color: #5f6b7a;
+}
+.fw-gallery-3d-preview__weight .dashicons {
+	flex: 0 0 auto;
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+	color: #00b295;
+	margin-top: 1px;
+}
