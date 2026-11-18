@@ -67,6 +67,10 @@ if ( function_exists( 'sc_build_wrapper_attr' ) ) {
 	$attr = array( 'class' => 'fw-studio-scene' );
 }
 $attr['data-upw-scene'] = '';
+// Pictures and footage load as the scene nears the screen (the player's default) unless this placement says "with the page".
+if ( isset( $atts['media_loading'] ) && 'page' === $atts['media_loading'] ) {
+	$attr['data-upw-load'] = 'page';
+}
 
 // Custom code clips are JavaScript. Like Motion Snippet, they run only when the post's author may
 // publish unfiltered HTML; for anyone else the player skips them and the rest of the scene plays.

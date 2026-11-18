@@ -74,6 +74,10 @@ $options = array(
 				'yes'   => __( 'Loop', 'fw' ),
 				'no'    => __( 'Play once', 'fw' ),
 			) ),
+			'media_loading' => $sel( __( 'Pictures and videos load', 'fw' ), 'near', array(
+				'near' => __( 'When the scene comes near the screen', 'fw' ),
+				'page' => __( 'With the page', 'fw' ),
+			), __( 'Near the screen: the scene’s pictures and video clips download only when a visitor scrolls within about one screen of it, so a scene further down the page costs nothing for visitors who never reach it. The scene keeps its size from the start, so nothing on the page moves.', 'fw' ) ),
 		),
 	),
 

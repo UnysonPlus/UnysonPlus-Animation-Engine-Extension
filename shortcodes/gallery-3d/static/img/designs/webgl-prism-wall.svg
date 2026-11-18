@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" fill="none">
+<defs><linearGradient id="A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe2ff"/><stop offset="1" stop-color="#2f74e6"/></linearGradient>
+<linearGradient id="B" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd9a8"/><stop offset="1" stop-color="#e5683a"/></linearGradient></defs>
+<!-- Prism Wall (WebGL): three-sided prisms turning in a wave to the next photo. Original design. -->
+<g stroke="#0f1424" stroke-width=".5">
+<rect x="10" y="10" width="11" height="44" fill="url(#B)"/><rect x="22" y="10" width="11" height="44" fill="url(#B)"/>
+<path d="M34 10 H40 L45 12 V52 L40 54 H34 Z" fill="url(#B)"/><path d="M40 10 L45 12 V52 L40 54 Z" fill="url(#A)"/>
+<path d="M47 12 L51 10 H57 V54 H51 L47 52 Z" fill="url(#A)"/><path d="M47 12 L51 10 V54 L47 52 Z" fill="#c6824f"/>
+<rect x="59" y="10" width="11" height="44" fill="url(#A)"/><rect x="71" y="10" width="11" height="44" fill="url(#A)"/>
+</g>
+</svg>

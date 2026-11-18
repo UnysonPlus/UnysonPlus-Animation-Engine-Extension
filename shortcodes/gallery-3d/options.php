@@ -169,7 +169,7 @@ $design_groups = array(
 	'grp_orbit'     => array( 'label' => __( 'Orbit', 'fw' ),             'designs' => array( 'orbit_bloom' => __( 'Orbit Bloom', 'fw' ), 'focus_orbit' => __( 'Focus Orbit', 'fw' ), 'dual_orbit' => __( 'Dual Orbit', 'fw' ), 'comet_orbit' => __( 'Comet Orbit', 'fw' ), 'orbit_swarm' => __( 'Orbit Swarm', 'fw' ), 'ring_tilt' => __( 'Ring Tilt', 'fw' ), 'gyro_orbit' => __( 'Gyro Orbit', 'fw' ), 'infinity_orbit' => __( 'Infinity Orbit', 'fw' ), 'vortex' => __( 'Vortex', 'fw' ), 'pendulum_orbit' => __( 'Pendulum Orbit', 'fw' ), 'moon_orbit' => __( 'Moon Orbit', 'fw' ), 'tiered_orbit' => __( 'Tiered Orbit', 'fw' ) ) ),
 	'grp_reveal'    => array( 'label' => __( 'Reveal & Wipe', 'fw' ),     'designs' => array( 'blind_reveal' => __( 'Blind Reveal', 'fw' ), 'iris_wipe' => __( 'Iris Wipe', 'fw' ), 'tile_dissolve' => __( 'Tile Dissolve', 'fw' ) ) ),
 	'grp_spotlight' => array( 'label' => __( 'Spotlight & Focus', 'fw' ), 'designs' => array( 'spotlight_wall' => __( 'Spotlight Wall', 'fw' ), 'focus_pull' => __( 'Focus Pull', 'fw' ), 'loupe' => __( 'Loupe', 'fw' ) ) ),
-	'grp_webgl'     => array( 'label' => __( 'WebGL (real 3D)', 'fw' ), 'designs' => array( 'webgl_mirror_ring' => __( 'Mirror Ring', 'fw' ), 'webgl_depth_field' => __( 'Depth Field', 'fw' ), 'webgl_wave_wall' => __( 'Wave Wall', 'fw' ), 'webgl_liquid_slider' => __( 'Liquid Slider', 'fw' ), 'webgl_particle_morph' => __( 'Particle Morph', 'fw' ), 'webgl_flip_book' => __( 'Flip Book', 'fw' ), 'webgl_shatter' => __( 'Shatter', 'fw' ), 'webgl_cloth_banners' => __( 'Cloth Banners', 'fw' ), 'webgl_fold_strip' => __( 'Fold Strip', 'fw' ), 'webgl_water_pool' => __( 'Water Pool', 'fw' ), 'webgl_jelly_grid' => __( 'Jelly Grid', 'fw' ), 'webgl_stage_curtain' => __( 'Stage Curtain', 'fw' ), 'webgl_gallery_walk' => __( 'Gallery Walk', 'fw' ), 'webgl_holo_cards' => __( 'Holo Cards', 'fw' ), 'webgl_domino_row' => __( 'Domino Row', 'fw' ), 'webgl_photo_bubbles' => __( 'Photo Bubbles', 'fw' ), 'webgl_photo_cube' => __( 'Photo Cube', 'fw' ), 'webgl_film_ribbon' => __( 'Film Ribbon', 'fw' ), 'webgl_pixel_blocks' => __( 'Pixel Blocks', 'fw' ), 'webgl_ferris_wheel' => __( 'Ferris Wheel', 'fw' ), 'webgl_photo_mobile' => __( 'Photo Mobile', 'fw' ), 'webgl_photo_fall' => __( 'Photo Fall', 'fw' ), 'webgl_lenticular' => __( 'Lenticular', 'fw' ), 'webgl_jigsaw' => __( 'Jigsaw', 'fw' ), 'webgl_paper_fold' => __( 'Paper Fold', 'fw' ), 'webgl_slot_reels' => __( 'Slot Reels', 'fw' ), 'webgl_peel' => __( 'Peel', 'fw' ), 'webgl_bookshelf' => __( 'Bookshelf', 'fw' ), 'webgl_snow_globe' => __( 'Snow Globe', 'fw' ), 'webgl_tv_wall' => __( 'TV Wall', 'fw' ) ) ),
+	'grp_webgl'     => array( 'label' => __( 'WebGL (real 3D)', 'fw' ), 'designs' => array( 'webgl_mirror_ring' => __( 'Mirror Ring', 'fw' ), 'webgl_depth_field' => __( 'Depth Field', 'fw' ), 'webgl_wave_wall' => __( 'Wave Wall', 'fw' ), 'webgl_liquid_slider' => __( 'Liquid Slider', 'fw' ), 'webgl_particle_morph' => __( 'Particle Morph', 'fw' ), 'webgl_flip_book' => __( 'Flip Book', 'fw' ), 'webgl_shatter' => __( 'Shatter', 'fw' ), 'webgl_cloth_banners' => __( 'Cloth Banners', 'fw' ), 'webgl_fold_strip' => __( 'Fold Strip', 'fw' ), 'webgl_water_pool' => __( 'Water Pool', 'fw' ), 'webgl_jelly_grid' => __( 'Jelly Grid', 'fw' ), 'webgl_stage_curtain' => __( 'Stage Curtain', 'fw' ), 'webgl_gallery_walk' => __( 'Gallery Walk', 'fw' ), 'webgl_holo_cards' => __( 'Holo Cards', 'fw' ), 'webgl_domino_row' => __( 'Domino Row', 'fw' ), 'webgl_photo_bubbles' => __( 'Photo Bubbles', 'fw' ), 'webgl_photo_cube' => __( 'Photo Cube', 'fw' ), 'webgl_film_ribbon' => __( 'Film Ribbon', 'fw' ), 'webgl_pixel_blocks' => __( 'Pixel Blocks', 'fw' ), 'webgl_ferris_wheel' => __( 'Ferris Wheel', 'fw' ), 'webgl_photo_mobile' => __( 'Photo Mobile', 'fw' ), 'webgl_photo_fall' => __( 'Photo Fall', 'fw' ), 'webgl_lenticular' => __( 'Lenticular', 'fw' ), 'webgl_jigsaw' => __( 'Jigsaw', 'fw' ), 'webgl_paper_fold' => __( 'Paper Fold', 'fw' ), 'webgl_slot_reels' => __( 'Slot Reels', 'fw' ), 'webgl_peel' => __( 'Peel', 'fw' ), 'webgl_bookshelf' => __( 'Bookshelf', 'fw' ), 'webgl_snow_globe' => __( 'Snow Globe', 'fw' ), 'webgl_tv_wall' => __( 'TV Wall', 'fw' ), 'webgl_relief' => __( 'Photo Relief', 'fw' ), 'webgl_prism_wall' => __( 'Prism Wall', 'fw' ), 'webgl_paint_reveal' => __( 'Paint Reveal', 'fw' ) ) ),
 );
 
 /**
@@ -2105,6 +2105,68 @@ $webgl_tv_wall_opts = array(
 	'group_wtv_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
 );
 
+$webgl_relief_opts = array(
+	'group_wrl_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 6, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wrl_scene' => array( 'type' => 'group', 'options' => array(
+		'relief_depth' => $slider( __( 'Relief Depth (%)', 'fw' ), 50, 0, 100, 1, __( 'How high the photo rises.', 'fw' ) ),
+		'height_from'  => array( 'label' => __( 'Raise', 'fw' ), 'type' => 'select', 'value' => 'bright', 'choices' => array(
+			'bright' => __( 'The bright parts', 'fw' ),
+			'dark'   => __( 'The dark parts', 'fw' ),
+		) ),
+		'smoothness'   => $slider( __( 'Smoothness (%)', 'fw' ), 40, 0, 100, 1, __( 'Low keeps fine detail in the relief; high makes soft, rounded shapes.', 'fw' ) ),
+		'tilt'         => $slider( __( 'Pointer Tilt (%)', 'fw' ), 50, 0, 100, 1, __( 'How far the relief turns toward the pointer (and sways when the pointer is away).', 'fw' ) ),
+		'light_sweep'  => $slider( __( 'Light Sweep (%)', 'fw' ), 40, 0, 100, 1, __( 'How far the raking light moves to and fro across the relief.', 'fw' ) ),
+		'gloss'        => $slider( __( 'Shine (%)', 'fw' ), 30, 0, 100, 1 ),
+		'move_time'    => $slider( __( 'Move Time (%)', 'fw' ), 50, 15, 90, 1, __( 'How much of each photo\'s time the change takes.', 'fw' ) ),
+		'card_size'    => $slider( __( 'Photo Size (%)', 'fw' ), 86, 50, 100, 1, __( 'How much of the stage the photo fills.', 'fw' ) ),
+		'corner_radius' => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 40, 1 ),
+	) ),
+	'group_wrl_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_prism_wall_opts = array(
+	'group_wpw_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 5, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wpw_scene' => array( 'type' => 'group', 'options' => array(
+		'prisms'     => $slider( __( 'Prisms', 'fw' ), 14, 4, 40, 1, __( 'How many prisms make the wall.', 'fw' ) ),
+		'gap'        => $slider( __( 'Gap (%)', 'fw' ), 6, 0, 40, 1, __( 'The space between prisms.', 'fw' ) ),
+		'wave_from'  => array( 'label' => __( 'Wave From', 'fw' ), 'type' => 'select', 'value' => 'left', 'choices' => array(
+			'left'   => __( 'Left', 'fw' ),
+			'right'  => __( 'Right', 'fw' ),
+			'center' => __( 'The centre', 'fw' ),
+			'random' => __( 'Random order', 'fw' ),
+		) ),
+		'wave'       => $slider( __( 'Wave Spread (%)', 'fw' ), 50, 0, 100, 1, __( 'How far apart the prisms start turning: 0 turns them all at once.', 'fw' ) ),
+		'peek'       => $slider( __( 'Pointer Peek (%)', 'fw' ), 50, 0, 100, 1, __( 'How far the prisms near the pointer turn toward the next photo.', 'fw' ) ),
+		'move_time'  => $slider( __( 'Move Time (%)', 'fw' ), 55, 20, 90, 1, __( 'How much of each photo\'s time the turn takes.', 'fw' ) ),
+		'card_size'  => $slider( __( 'Wall Size (%)', 'fw' ), 88, 50, 100, 1, __( 'How much of the stage the wall fills.', 'fw' ) ),
+	) ),
+	'group_wpw_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+$webgl_paint_reveal_opts = array(
+	'group_wpr_motion' => array( 'type' => 'group', 'options' => array(
+		'motion' => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 6, 2, 20, array( 'left' => __( 'Forward', 'fw' ), 'right' => __( 'Backward', 'fw' ) ) ),
+		'swipe'  => $webgl_swipe,
+	) ),
+	'group_wpr_scene' => array( 'type' => 'group', 'options' => array(
+		'brush_style'    => array( 'label' => __( 'Brush', 'fw' ), 'type' => 'select', 'value' => 'soft', 'choices' => array(
+			'soft' => __( 'Soft (wide, feathered strokes)', 'fw' ),
+			'dry'  => __( 'Dry brush (streaky bristle strokes)', 'fw' ),
+			'ink'  => __( 'Ink (crisp, solid strokes)', 'fw' ),
+		) ),
+		'brush_size'     => $slider( __( 'Brush Size (%)', 'fw' ), 16, 5, 40, 1, __( 'The brush width, as a share of the stage height.', 'fw' ) ),
+		'thickness'      => $slider( __( 'Paint Thickness (%)', 'fw' ), 50, 0, 100, 1, __( 'How much the strokes stand up, with light and shade on their edges.', 'fw' ) ),
+		'pointer_paints' => $switch( __( 'Pointer Paints', 'fw' ), 'yes', __( 'Let visitors paint the next photo in with the pointer.', 'fw' ) ),
+		'move_time'      => $slider( __( 'Move Time (%)', 'fw' ), 60, 20, 90, 1, __( 'How much of each photo\'s time the painting takes.', 'fw' ) ),
+		'corner_radius'  => $slider( __( 'Corner Radius (px)', 'fw' ), 6, 0, 40, 1 ),
+	) ),
+	'group_wpr_frame' => array( 'type' => 'group', 'options' => array( 'height' => $height_field, 'background' => $bg_field ) ),
+);
+
 $device_trio_opts = array(
 	'group_dtr_motion' => array( 'type' => 'group', 'options' => array(
 		'motion'         => $motion_picker( 'continuous', __( 'Autoplay', 'fw' ), 3, 1, 12, array( 'sway' => __( 'Gentle sway', 'fw' ), 'still' => __( 'Hold still', 'fw' ) ) ),
@@ -2582,6 +2644,9 @@ $options = array(
 					'webgl_bookshelf'      => $webgl_bookshelf_opts,
 					'webgl_snow_globe'     => $webgl_snow_globe_opts,
 					'webgl_tv_wall'        => $webgl_tv_wall_opts,
+					'webgl_relief'         => $webgl_relief_opts,
+					'webgl_prism_wall'     => $webgl_prism_wall_opts,
+					'webgl_paint_reveal'   => $webgl_paint_reveal_opts,
 				), $soon_choices ),
 			),
 				),

@@ -122,6 +122,9 @@
 		webgl_bookshelf: { drive: 'continuous', speed: 4, direction: 'left', hover_behavior: 'slow', books: 16, shelves: 1, pull: 100, move_time: 45, wood_color: '#6b4a32', lighting: 'studio', card_ratio: '3-4', padding: 0 },
 		webgl_snow_globe: { drive: 'continuous', speed: 6, direction: 'left', hover_behavior: 'slow', swipe: 'yes', snow: 60, shake: 50, stir: 50, card_size: 85, move_time: 55, base_color: '#3b2a20', lighting: 'studio', card_ratio: '4-3', corner_radius: 6, padding: 0 },
 		webgl_tv_wall: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', tvs: 9, body_color: '#d8c9ad', mixed_colors: 'yes', scanlines: 50, static: 50, curve: 50, lighting: 'studio', padding: 0 },
+		webgl_relief: { drive: 'continuous', speed: 6, direction: 'left', hover_behavior: 'slow', swipe: 'yes', relief_depth: 50, height_from: 'bright', smoothness: 40, tilt: 50, light_sweep: 40, gloss: 30, move_time: 50, card_size: 86, corner_radius: 6, padding: 0 },
+		webgl_prism_wall: { drive: 'continuous', speed: 5, direction: 'left', hover_behavior: 'slow', swipe: 'yes', prisms: 14, gap: 6, wave_from: 'left', wave: 50, peek: 50, move_time: 55, card_size: 88, padding: 0 },
+		webgl_paint_reveal: { drive: 'continuous', speed: 6, direction: 'left', hover_behavior: 'slow', swipe: 'yes', brush_style: 'soft', brush_size: 16, thickness: 50, pointer_paints: 'yes', move_time: 60, corner_radius: 6, padding: 0 },
 		device_trio:    { drive: 'continuous', speed: 3, direction: 'sway', hover_behavior: 'none', follow_pointer: 'yes', card_size: 48, depth: 30, float: 2, tilt: 10, card_ratio: '1-1', corner_radius: 0, padding: 0 }
 	};
 
@@ -751,6 +754,12 @@
 				$.extend(wa, { 'data-tdg-count': o.books, 'data-tdg-shelves': o.shelves, 'data-tdg-pull': o.pull, 'data-tdg-movetime': o.move_time, 'data-tdg-wood': o.wood_color || '#6b4a32', 'data-tdg-allowdrag': 0 });
 			} else if (design === 'webgl_snow_globe') {
 				$.extend(wa, { 'data-tdg-snow': o.snow, 'data-tdg-shake': o.shake, 'data-tdg-stir': o.stir, 'data-tdg-card': o.card_size, 'data-tdg-movetime': o.move_time, 'data-tdg-base': o.base_color || '#3b2a20', 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_relief') {
+				$.extend(wa, { 'data-tdg-depth': o.relief_depth, 'data-tdg-from': o.height_from, 'data-tdg-smooth': o.smoothness, 'data-tdg-tilt': o.tilt, 'data-tdg-sweep': o.light_sweep, 'data-tdg-gloss': o.gloss, 'data-tdg-movetime': o.move_time, 'data-tdg-card': o.card_size, 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_prism_wall') {
+				$.extend(wa, { 'data-tdg-count': o.prisms, 'data-tdg-gap': o.gap, 'data-tdg-from': o.wave_from, 'data-tdg-wave': o.wave, 'data-tdg-peek': o.peek, 'data-tdg-movetime': o.move_time, 'data-tdg-card': o.card_size, 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
+			} else if (design === 'webgl_paint_reveal') {
+				$.extend(wa, { 'data-tdg-brush': o.brush_style, 'data-tdg-size': o.brush_size, 'data-tdg-thick': o.thickness, 'data-tdg-ptrpaint': o.pointer_paints === 'no' ? 0 : 1, 'data-tdg-movetime': o.move_time, 'data-tdg-allowdrag': 0, 'data-tdg-swipe': o.swipe === 'no' ? 0 : 1 });
 			} else if (design === 'webgl_tv_wall') {
 				$.extend(wa, { 'data-tdg-count': o.tvs, 'data-tdg-body': o.body_color || '#d8c9ad', 'data-tdg-mixed': o.mixed_colors === 'no' ? 0 : 1, 'data-tdg-scan': o.scanlines, 'data-tdg-static': o.static, 'data-tdg-curve': o.curve, 'data-tdg-allowdrag': 0 });
 			} else if (design === 'webgl_photo_bubbles') {

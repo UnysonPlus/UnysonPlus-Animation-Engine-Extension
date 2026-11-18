@@ -3008,4 +3008,344 @@
 			}
 		} );
 	} );
+
+	/* ---------------------------------------------------------------- Photo Relief */
+	// The photo as a relief: its brightness (or darkness) becomes height, a raking light shows the shape, and a
+	// crest runs across the surface as it reshapes into the next photo. Heights come from a small copy of each
+	// photo (smooth, and cheap to read per vertex); the colours from the full photo.
+	var RELIEF_COVER = 'vec2 cover( vec2 uv, float ia ) { vec2 s = pa > ia ? vec2( 1.0, ia / pa ) : vec2( pa / ia, 1.0 ); return ( uv - 0.5 ) * s + 0.5; }';
+	var RELIEF_VS = [
+		'uniform sampler2D hA; uniform sampler2D hB; uniform float aA, aB, pa, depth, inv, e, soft, op; uniform vec2 seg;',
+		'varying vec2 vUv; varying vec3 vV; varying vec3 vN; varying float vM;',
+		RELIEF_COVER,
+		'float lum( sampler2D t, vec2 uv, float ia ) { vec2 c = cover( uv, ia ); vec2 o = vec2( soft / pa, soft );',
+		'  vec3 s = texture2D( t, c ).rgb * 0.4 + ( texture2D( t, c + vec2( o.x, 0.0 ) ).rgb + texture2D( t, c - vec2( o.x, 0.0 ) ).rgb + texture2D( t, c + vec2( 0.0, o.y ) ).rgb + texture2D( t, c - vec2( 0.0, o.y ) ).rgb ) * 0.15;',
+		'  float l = dot( s, vec3( 0.299, 0.587, 0.114 ) ); return mix( l, 1.0 - l, inv ); }',
+		'float F = 0.0;',
+		'float mixAt( vec2 uv ) { float d = uv.x * 0.85 + ( 1.0 - uv.y ) * 0.15; return 1.0 - smoothstep( F - 0.1, F + 0.1, d ); }',
+		// The height at a point: the two photos blended by the sweep, the crest, and the edges settling to the base.
+		'float hAt( vec2 uv ) { float d = uv.x * 0.85 + ( 1.0 - uv.y ) * 0.15;',
+		'  float h = mix( lum( hA, uv, aA ), lum( hB, uv, aB ), mixAt( uv ) ) + exp( -pow( ( d - F ) / 0.07, 2.0 ) ) * 0.5 * sin( e * 3.14159 );',
+		'  vec2 eg = min( uv, 1.0 - uv ); return h * smoothstep( 0.0, 0.05, min( eg.x * pa, eg.y ) ) * depth * op; }',
+		'void main() {',
+		'  vUv = uv; F = e * 1.5 - 0.25; vM = mixAt( uv );',
+		'  float h = hAt( uv );',
+		// Smooth normals from the height field itself (one grid step each way).
+		'  vec2 du = vec2( 1.0 / seg.x, 0.0 ), dv = vec2( 0.0, 1.0 / seg.y );',
+		'  float gx = ( hAt( uv + du ) - hAt( uv - du ) ) / ( 2.0 * du.x ), gy = ( hAt( uv + dv ) - hAt( uv - dv ) ) / ( 2.0 * dv.y );',
+		'  vN = normalize( normalMatrix * vec3( -gx, -gy, 1.0 ) );',
+		'  vec4 mv = modelViewMatrix * vec4( position + vec3( 0.0, 0.0, h ), 1.0 ); vV = mv.xyz;',
+		'  gl_Position = projectionMatrix * mv;',
+		'}'
+	].join( '\n' );
+	var RELIEF_FS = [
+		'uniform sampler2D tA; uniform sampler2D tB; uniform float aA, aB, pa, rad, op, light, la, gloss;',
+		'uniform vec2 res;',
+		'varying vec2 vUv; varying vec3 vV; varying vec3 vN; varying float vM;',
+		RELIEF_COVER,
+		'void main() {',
+		'  vec3 n = normalize( vN );',
+		'  vec3 L = normalize( vec3( cos( la ) * 0.8, sin( la ) * 0.45 + 0.3, 0.5 ) );',
+		// Lit relative to a flat surface, so the photo keeps its own brightness where it is flat.
+		'  float df = max( dot( n, L ), 0.0 ), fl = max( L.z, 0.05 );',
+		'  float sh = mix( 1.0, ( 0.28 + 0.72 * df ) / ( 0.28 + 0.72 * fl ), light );',
+		'  float sp = pow( max( dot( reflect( -L, n ), normalize( -vV ) ), 0.0 ), 36.0 ) * gloss;',
+		'  vec3 col = mix( texture2D( tA, cover( vUv, aA ) ).rgb, texture2D( tB, cover( vUv, aB ) ).rgb, smoothstep( 0.3, 0.7, vM ) ) * sh + vec3( sp );',
+		'  vec2 px = vUv * res; vec2 q = abs( px - res * 0.5 ) - ( res * 0.5 - rad ); float dd = length( max( q, 0.0 ) ) - rad;',
+		'  gl_FragColor = vec4( col, clamp( 0.5 - dd, 0.0, 1.0 ) * op );',
+		'}'
+	].join( '\n' );
+
+	/** A small copy of a photo (or placeholder), for reading heights: smooth and cheap. */
+	function smallCopy( el, w ) {
+		var iw = el.naturalWidth || el.width || 1, ih = el.naturalHeight || el.height || 1;
+		var cv = document.createElement( 'canvas' ); cv.width = w; cv.height = Math.max( 1, Math.round( w * ih / iw ) );
+		cv.getContext( '2d' ).drawImage( el, 0, 0, cv.width, cv.height );
+		return cv;
+	}
+
+	window.upwGallery3d.registerDesign( 'webgl_relief', function ( ctx ) {
+		if ( ! ctx.cards.length ) { return; }
+		var depth = ctx.num( 'data-tdg-depth', 50 ) / 100, inv = ctx.attr( 'data-tdg-from', 'bright' ) === 'dark' ? 1 : 0, smooth = ctx.num( 'data-tdg-smooth', 40 ) / 100;
+		var tilt = ctx.num( 'data-tdg-tilt', 50 ) / 100, sweep = ctx.num( 'data-tdg-sweep', 40 ) / 100, gloss = ctx.num( 'data-tdg-gloss', 30 ) / 100;
+		var size = Math.max( 0.5, Math.min( 1, ctx.num( 'data-tdg-card', 86 ) / 100 ) ), mt = Math.max( 0.15, Math.min( 0.9, ctx.num( 'data-tdg-movetime', 50 ) / 100 ) );
+		var n = ctx.cards.length, photos = [], texs = [], hts = [], u, mesh, st, rx = 0, ry = 0;
+		mount( ctx, {
+			build: function ( api ) {
+				var THREE = api.THREE;
+				ctx.cards.forEach( function ( c, k ) {
+					var tex = new THREE.Texture(), ht = new THREE.Texture();
+					[ tex, ht ].forEach( function ( x ) { x.generateMipmaps = false; x.minFilter = THREE.LinearFilter; } );
+					var p = loadPhoto( fullSrc( c ), Math.round( k * 360 / n ), function ( pp ) { swapImage( tex, pp.el ); swapImage( ht, smallCopy( pp.el, 192 ) ); api.dirty = true; } );
+					tex.image = p.el; tex.needsUpdate = true; ht.image = smallCopy( p.el, 192 ); ht.needsUpdate = true;
+					photos.push( p ); texs.push( tex ); hts.push( ht );
+				} );
+				u = {
+					tA: { value: texs[ 0 ] }, tB: { value: texs[ 0 ] }, hA: { value: hts[ 0 ] }, hB: { value: hts[ 0 ] }, aA: { value: 1.6 }, aB: { value: 1.6 }, pa: { value: 1.6 },
+					depth: { value: 0.3 }, seg: { value: new THREE.Vector2( 260, 160 ) }, inv: { value: inv }, e: { value: 0 }, soft: { value: 0.004 + smooth * 0.022 }, op: { value: 1 },
+					rad: { value: radiusOf( ctx.el ) }, res: { value: new THREE.Vector2( 800, 500 ) }, light: { value: 1 }, la: { value: 2.3 }, gloss: { value: gloss * 0.5 }
+				};
+				var sw0 = ctx.stage.clientWidth || 1200, sh0 = ctx.stage.clientHeight || 600, segX = 260, segY = Math.max( 60, Math.round( segX * sh0 / sw0 ) );
+				u.seg.value.set( segX, segY );
+				mesh = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1, segX, segY ), new THREE.ShaderMaterial( { uniforms: u, vertexShader: RELIEF_VS, fragmentShader: RELIEF_FS, transparent: true, toneMapped: false } ) );
+				mesh.frustumCulled = false; mesh.userData.card = 0; mesh.userData.appear = 0;
+				api.cards.push( mesh ); api.scene.add( mesh );
+				st = stepper( api, ctx, n, mt, n );
+				ctx.cards.forEach( function ( c, k ) { c.addEventListener( 'focusin', function () { st.go( k ); } ); } );
+			},
+			resize: function ( api ) {
+				api.camera.position.set( 0, 0, 6 ); api.camera.lookAt( 0, 0, 0 );
+				var hh = 6 * Math.tan( api.camera.fov * Math.PI / 360 ), W = hh * 2 * api.camera.aspect * size, H = hh * 2 * size;
+				mesh.scale.set( W, H, 1 );
+				u.pa.value = W / H; u.res.value.set( api.w * size, api.h * size ); u.depth.value = depth * Math.min( W, H ) * 0.16;
+			},
+			frame: function ( api, dt, t ) {
+				var s = st.state( t ), a = mod( s.a, n ), b = mod( s.b, n ), still = ctx.reduce || ctx.IN_EDITOR;
+				u.tA.value = texs[ a ]; u.tB.value = texs[ b ]; u.hA.value = hts[ a ]; u.hB.value = hts[ b ];
+				u.aA.value = photos[ a ].aspect; u.aB.value = photos[ b ].aspect; u.e.value = s.e;
+				// The light rakes slowly round (Light Sweep); with none it stays at the top left.
+				u.la.value = 2.3 + ( still ? 0 : Math.sin( t * 0.25 ) * sweep * 1.4 );
+				// Tilt toward the pointer; a slow sway when it is away.
+				var tx, ty;
+				if ( api.pointer && ! still ) { tx = -api.pointer.y * 0.32 * tilt; ty = api.pointer.x * 0.42 * tilt; }
+				else { tx = still ? 0 : Math.sin( t * 0.27 ) * 0.07 * tilt; ty = still ? 0 : Math.sin( t * 0.35 ) * 0.12 * tilt; }
+				rx += ( tx - rx ) * Math.min( 1, dt * 3 ); ry += ( ty - ry ) * Math.min( 1, dt * 3 );
+				mesh.rotation.set( rx, ry, 0 );
+				var ap = EASE( mesh.userData.appear );
+				u.op.value = ap;
+				mesh.userData.card = s.e > 0.5 ? b : a;
+			}
+		} );
+	} );
+
+	/* ---------------------------------------------------------------- Prism Wall */
+	// A row of three-sided prisms, each carrying a slice of the photo on every face. They turn in a wave to show
+	// the next photo; the faces as they turn catch the light. The pointer turns the prisms near it a little.
+	var PRISM_VS = 'varying vec2 vUv; varying vec3 vN; void main() { vUv = uv; vN = normalize( normalMatrix * normal ); gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }';
+	var PRISM_FS = [
+		'uniform sampler2D tP; uniform float aP, sa, x0, x1, op;',
+		'varying vec2 vUv; varying vec3 vN;',
+		'vec2 cover( vec2 uv, float ia ) { vec2 s = sa > ia ? vec2( 1.0, ia / sa ) : vec2( sa / ia, 1.0 ); return ( uv - 0.5 ) * s + 0.5; }',
+		'void main() {',
+		'  vec3 n = normalize( vN ); vec3 L = normalize( vec3( -0.45, 0.3, 0.84 ) );',
+		'  float sh = ( 0.22 + 0.78 * max( dot( n, L ), 0.0 ) ) / ( 0.22 + 0.78 * L.z );',
+		'  float sp = pow( max( dot( reflect( -L, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 28.0 ) * 0.22;',
+		'  vec3 col = texture2D( tP, cover( vec2( mix( x0, x1, vUv.x ), vUv.y ), aP ) ).rgb * min( sh, 1.12 ) + vec3( sp );',
+		'  col *= 1.0 - 0.3 * smoothstep( 0.035, 0.0, min( vUv.x, 1.0 - vUv.x ) );',      // a fine shade on each edge
+		'  gl_FragColor = vec4( col, op );',
+		'}'
+	].join( '\n' );
+
+	window.upwGallery3d.registerDesign( 'webgl_prism_wall', function ( ctx ) {
+		if ( ! ctx.cards.length ) { return; }
+		var count = Math.max( 4, Math.min( 40, ctx.num( 'data-tdg-count', 14 ) ) ), gap = Math.max( 0, Math.min( 0.4, ctx.num( 'data-tdg-gap', 6 ) / 100 ) );
+		var from = ctx.attr( 'data-tdg-from', 'left' ), spread = ctx.num( 'data-tdg-wave', 50 ) / 100 * 2, peekAmt = ctx.num( 'data-tdg-peek', 50 ) / 100;
+		var size = Math.max( 0.5, Math.min( 1, ctx.num( 'data-tdg-card', 88 ) / 100 ) ), mt = Math.max( 0.2, Math.min( 0.9, ctx.num( 'data-tdg-movetime', 55 ) / 100 ) );
+		var n = ctx.cards.length, photos = [], texs = [], prisms = [], picker, st, group, W = 4, H = 3, THREE;
+		var rand = function ( i, k ) { var x = Math.sin( i * 51.17 + k * 13.91 ) * 43758.5453; return x - Math.floor( x ); };
+		var TURN = Math.PI * 2 / 3;
+		var layout = function () {
+			var slot = W / count, s = slot * ( 1 - gap ), ap = s / ( 2 * Math.sqrt( 3 ) ), R = s / Math.sqrt( 3 );
+			prisms.forEach( function ( pr, i ) {
+				pr.g.position.set( -W / 2 + slot * ( i + 0.5 ), 0, -ap );
+				pr.faces.forEach( function ( f, j ) {
+					var ang = j * TURN;
+					f.m.scale.set( s, H, 1 ); f.m.position.set( Math.sin( ang ) * ap, 0, Math.cos( ang ) * ap ); f.m.rotation.set( 0, ang, 0 );
+					f.u.sa.value = W / H; f.u.x0.value = ( i * slot + ( slot - s ) / 2 ) / W; f.u.x1.value = ( i * slot + ( slot + s ) / 2 ) / W;
+				} );
+				// The caps: a dark triangle at each end.
+				[ pr.capT, pr.capB ].forEach( function ( cap, ci ) {
+					var y = ci ? -H / 2 : H / 2, a = cap.geometry.attributes.position;
+					for ( var k = 0; k < 3; k++ ) { var th = ( k * 120 + 60 ) * Math.PI / 180; a.setXYZ( k, Math.sin( th ) * R, y, Math.cos( th ) * R ); }
+					a.needsUpdate = true; cap.geometry.computeBoundingSphere();
+				} );
+			} );
+			picker.scale.set( W, H, 1 );
+		};
+		mount( ctx, {
+			build: function ( api ) {
+				THREE = api.THREE;
+				ctx.cards.forEach( function ( c, k ) {
+					var tex = new THREE.Texture(); tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter;
+					var p = loadPhoto( fullSrc( c ), Math.round( k * 360 / n ), function ( pp ) { swapImage( tex, pp.el ); api.dirty = true; } );
+					tex.image = p.el; tex.needsUpdate = true; photos.push( p ); texs.push( tex );
+				} );
+				group = new THREE.Group();
+				var plane = new THREE.PlaneGeometry( 1, 1 ), capM = new THREE.MeshBasicMaterial( { color: 0x15171b, side: THREE.DoubleSide } );
+				for ( var i = 0; i < count; i++ ) {
+					var g = new THREE.Group(), faces = [];
+					for ( var j = 0; j < 3; j++ ) {
+						var u = { tP: { value: texs[ 0 ] }, aP: { value: 1.6 }, sa: { value: 1.6 }, x0: { value: 0 }, x1: { value: 1 }, op: { value: 1 } };
+						var m = new THREE.Mesh( plane, new THREE.ShaderMaterial( { uniforms: u, vertexShader: PRISM_VS, fragmentShader: PRISM_FS, transparent: true, toneMapped: false } ) );
+						g.add( m ); faces.push( { m: m, u: u } );
+					}
+					var mkCap = function () { var geo = new THREE.BufferGeometry(); geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( 9 ), 3 ) ); var c2 = new THREE.Mesh( geo, capM ); g.add( c2 ); return c2; };
+					var order = from === 'center' ? Math.abs( i - ( count - 1 ) / 2 ) / Math.max( 1, ( count - 1 ) / 2 ) : ( from === 'random' ? rand( i, 1 ) : ( from === 'right' ? 1 - i / Math.max( 1, count - 1 ) : i / Math.max( 1, count - 1 ) ) );
+					prisms.push( { g: g, faces: faces, capT: mkCap(), capB: mkCap(), order: order, peek: 0 } );
+					group.add( g );
+				}
+				// An invisible sheet in front of the wall answers the pointer and clicks for the photo showing.
+				picker = new THREE.Mesh( plane, new THREE.MeshBasicMaterial( { transparent: true, opacity: 0, depthWrite: false } ) );
+				picker.position.z = 0.02; picker.userData.card = 0; picker.userData.appear = 0;
+				group.add( picker ); api.cards.push( picker );
+				api.scene.add( group );
+				st = stepper( api, ctx, n, mt, n );
+				ctx.cards.forEach( function ( c, k ) { c.addEventListener( 'focusin', function () { st.go( k ); } ); } );
+			},
+			resize: function ( api ) {
+				api.camera.position.set( 0, 0, 7 ); api.camera.lookAt( 0, 0, 0 );
+				var hh = 7 * Math.tan( api.camera.fov * Math.PI / 360 );
+				W = hh * 2 * api.camera.aspect * size; H = hh * 2 * size;
+				layout();
+			},
+			frame: function ( api, dt, t ) {
+				var s = st.state( t ), still = ctx.reduce || ctx.IN_EDITOR, ap = EASE( picker.userData.appear );
+				var px = api.pointer && ! still ? ( api.pointer.x + 1 ) / 2 : -9;
+				var mid = 0;
+				prisms.forEach( function ( pr, i ) {
+					var local = Math.max( 0, Math.min( 1, s.e * ( 1 + spread ) - pr.order * spread ) );
+					var near = px > -1 ? Math.exp( -Math.pow( ( ( i + 0.5 ) / count - px ) * 7, 2 ) ) : 0;
+					pr.peek += ( near * peekAmt - pr.peek ) * Math.min( 1, dt * 5 );
+					// Position along the faces (0, 1, 2 … one step each): from photo a toward b, plus the peek.
+					var P = s.a + ( s.b - s.a ) * EASE( local ) + pr.peek * 0.22, k0 = Math.floor( P );
+					for ( var k = k0 - 1; k <= k0 + 1; k++ ) { var f = pr.faces[ mod( k, 3 ) ], ph = mod( k, n ); f.u.tP.value = texs[ ph ]; f.u.aP.value = photos[ ph ].aspect; f.u.op.value = ap; }
+					pr.g.rotation.y = -P * TURN;
+					pr.g.position.y = -( 1 - ap ) * 0.5 * ( 0.5 + pr.order );
+					mid += P;
+				} );
+				picker.userData.card = mod( Math.round( mid / count ), n );
+			}
+		} );
+	} );
+
+	/* ---------------------------------------------------------------- Paint Reveal */
+	// The next photo is painted over the current one with a brush: on its own in broad strokes, or by the
+	// visitor's pointer. The strokes are a mask drawn on a small canvas; the shader gives them ragged edges and a
+	// little thickness, and floods the last gaps at the end of each change.
+	var PAINT_FS = [
+		'uniform sampler2D tA; uniform sampler2D tB; uniform sampler2D tM; uniform float aA, aB, pa, rad, op, flood, soft, rough, thick;',
+		'uniform vec2 res, mres;',
+		'varying vec2 vUv;',
+		'float h1( vec2 q ) { return fract( sin( dot( q, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }',
+		'float n2( vec2 q ) { vec2 i = floor( q ), f = fract( q ); f = f * f * ( 3.0 - 2.0 * f );',
+		'  return mix( mix( h1( i ), h1( i + vec2( 1.0, 0.0 ) ), f.x ), mix( h1( i + vec2( 0.0, 1.0 ) ), h1( i + vec2( 1.0, 1.0 ) ), f.x ), f.y ); }',
+		'float fbm( vec2 q ) { float v = 0.0, a = 0.5; for ( int i = 0; i < 4; i++ ) { v += a * n2( q ); q *= 2.03; a *= 0.5; } return v; }',
+		'vec2 cover( vec2 uv, float ia ) { vec2 s = pa > ia ? vec2( 1.0, ia / pa ) : vec2( pa / ia, 1.0 ); return ( uv - 0.5 ) * s + 0.5; }',
+		'float mk( vec2 uv ) { return texture2D( tM, uv ).r; }',
+		'void main() {',
+		'  vec2 uv = vUv;',
+		'  float br = n2( vec2( uv.x * pa * 3.0, uv.y * 140.0 ) ) * 0.6 + n2( vec2( uv.x * pa * 7.0, uv.y * 320.0 ) ) * 0.4;',
+		'  float th = 0.5 + ( fbm( uv * vec2( pa, 1.0 ) * 11.0 ) * 0.5 + br * 0.5 - 0.5 ) * rough;',
+		'  float m = smoothstep( th - soft, th + soft, mk( uv ) + flood * 1.4 );',
+		// The paint's thickness: light and shade from the slope of the mask, strongest at the stroke edges.
+		'  vec2 o = 1.5 / mres; float gx = mk( uv + vec2( o.x, 0.0 ) ) - mk( uv - vec2( o.x, 0.0 ) ), gy = mk( uv + vec2( 0.0, o.y ) ) - mk( uv - vec2( 0.0, o.y ) );',
+		'  vec3 nrm = normalize( vec3( -gx * thick * 14.0, -gy * thick * 14.0, 1.0 ) ), L = normalize( vec3( -0.5, 0.6, 0.65 ) );',
+		'  float sh = ( 0.4 + 0.6 * max( dot( nrm, L ), 0.0 ) ) / ( 0.4 + 0.6 * L.z );',
+		'  float sp = pow( max( dot( reflect( -L, nrm ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 22.0 ) * thick * 0.3 + ( br - 0.5 ) * thick * 0.08;',
+		'  vec3 col = mix( texture2D( tA, cover( uv, aA ) ).rgb, texture2D( tB, cover( uv, aB ) ).rgb, m );',
+		'  float k = m * ( 1.0 - flood ); col = col * mix( 1.0, sh, k ) + vec3( sp ) * k;',
+		'  vec2 px = vUv * res; vec2 q = abs( px - res * 0.5 ) - ( res * 0.5 - rad ); float dd = length( max( q, 0.0 ) ) - rad;',
+		'  gl_FragColor = vec4( col, clamp( 0.5 - dd, 0.0, 1.0 ) * op );',
+		'}'
+	].join( '\n' );
+
+	window.upwGallery3d.registerDesign( 'webgl_paint_reveal', function ( ctx ) {
+		if ( ! ctx.cards.length ) { return; }
+		var style = ctx.attr( 'data-tdg-brush', 'soft' ), sizeF = Math.max( 0.05, Math.min( 0.4, ctx.num( 'data-tdg-size', 16 ) / 100 ) ), thick = ctx.num( 'data-tdg-thick', 50 ) / 100;
+		var byPtr = ctx.attr( 'data-tdg-ptrpaint', '1' ) === '1', mt = Math.max( 0.2, Math.min( 0.9, ctx.num( 'data-tdg-movetime', 60 ) / 100 ) );
+		var n = ctx.cards.length, photos = [], texs = [], u, plane, st, cv, g, maskTex, MW = 512, MH = 320, key = '', lastS = 0, lastP = null, bristles = [], sprite;
+		var STY = { soft: [ 0.1, 0.75 ], dry: [ 0.06, 0.6 ], ink: [ 0.025, 0.25 ] }[ style ] || [ 0.1, 0.75 ];
+		var rad = function () { return sizeF * MH / 2; };
+		for ( var bi = 0; bi < 18; bi++ ) { bristles.push( { o: ( bi / 17 - 0.5 ) * 1.8, a: 0.35 + Math.random() * 0.65, r: 0.05 + Math.random() * 0.07 } ); }
+		var clear = function () { g.globalAlpha = 1; g.fillStyle = '#000'; g.fillRect( 0, 0, MW, MH ); maskTex.needsUpdate = true; };
+		var makeSprite = function () {
+			var r = Math.max( 2, Math.round( rad() ) ), sc = document.createElement( 'canvas' ); sc.width = sc.height = r * 2;
+			var sg = sc.getContext( '2d' );
+			if ( style === 'ink' ) { sg.fillStyle = '#fff'; sg.beginPath(); sg.arc( r, r, r, 0, 6.2832 ); sg.fill(); }
+			else { var gr = sg.createRadialGradient( r, r, 0, r, r, r ); gr.addColorStop( 0, 'rgba(255,255,255,1)' ); gr.addColorStop( 0.45, 'rgba(255,255,255,.92)' ); gr.addColorStop( 1, 'rgba(255,255,255,0)' ); sg.fillStyle = gr; sg.fillRect( 0, 0, r * 2, r * 2 ); }
+			return sc;
+		};
+		// One dab of paint at (x, y), the brush moving along (dx, dy).
+		var dab = function ( x, y, dx, dy, w ) {
+			var r = rad() * ( w || 1 );
+			if ( style === 'dry' ) {
+				var l = Math.sqrt( dx * dx + dy * dy ) || 1, nx = -dy / l, ny = dx / l;
+				g.fillStyle = '#fff';
+				bristles.forEach( function ( b ) { g.globalAlpha = b.a * 0.6; g.beginPath(); g.arc( x + nx * b.o * r * 0.55, y + ny * b.o * r * 0.55, r * b.r * 1.3, 0, 6.2832 ); g.fill(); } );
+				g.globalAlpha = 1;
+			} else { var sw = sprite.width * ( w || 1 ); g.globalAlpha = style === 'ink' ? 1 : 0.8; g.drawImage( sprite, x - sw / 2, y - sw / 2, sw, sw ); g.globalAlpha = 1; }
+		};
+		var stroke = function ( x0, y0, x1, y1, w0, w1 ) {
+			w0 = w0 || 1; w1 = w1 || w0;
+			var dx = x1 - x0, dy = y1 - y0, l = Math.sqrt( dx * dx + dy * dy ), sp = rad() * ( style === 'dry' ? 0.1 : 0.28 ), k = Math.max( 1, Math.ceil( l / sp ) );
+			for ( var i = 1; i <= k; i++ ) { dab( x0 + dx * i / k, y0 + dy * i / k, dx, dy, w0 + ( w1 - w0 ) * i / k ); }
+			maskTex.needsUpdate = true;
+		};
+		// The painter's path: broad strokes back and forth, top to bottom, with a little wobble.
+		var rows = function () { return Math.max( 2, Math.ceil( 1 / ( sizeF * 0.62 ) ) ); };
+		var path = function ( s ) {
+			var R = rows(), rf = Math.min( R - 1e-6, s * R ), row = Math.floor( rf ), f = rf - row, x = row % 2 ? 1 - f : f;
+			x = -0.06 + x * 1.12;
+			return { x: x * MW, y: ( ( row + 0.5 ) / R + Math.sin( f * 6.2832 * ( 0.7 + ( row % 3 ) * 0.25 ) + row * 1.7 ) * 0.38 / R + ( x - 0.5 ) * ( row % 2 ? 0.3 : -0.25 ) / R ) * MH,
+				w: 0.82 + 0.26 * Math.sin( f * 9.4 + row * 2.3 ) + 0.12 * Math.sin( f * 23.0 + row ) };
+		};
+		var paintTo = function ( s ) {
+			if ( s <= lastS ) { return; }
+			var R = rows(), len = R * MW * 1.15, ds = rad() * ( style === 'dry' ? 0.1 : 0.28 ) / len, p0 = path( lastS );
+			for ( var q = lastS + ds; q < s + ds; q += ds ) { var p1 = path( Math.min( s, q ) ); stroke( p0.x, p0.y, p1.x, p1.y, p0.w, p1.w ); p0 = p1; }
+			lastS = s;
+		};
+		mount( ctx, {
+			build: function ( api ) {
+				var THREE = api.THREE;
+				ctx.cards.forEach( function ( c, k ) {
+					var tex = new THREE.Texture(); tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter;
+					var p = loadPhoto( fullSrc( c ), Math.round( k * 360 / n ), function ( pp ) { swapImage( tex, pp.el ); api.dirty = true; } );
+					tex.image = p.el; tex.needsUpdate = true; photos.push( p ); texs.push( tex );
+				} );
+				var sw0 = ctx.stage.clientWidth || 1200, sh0 = ctx.stage.clientHeight || 600;
+				MH = Math.max( 160, Math.round( MW * sh0 / sw0 ) );
+				cv = document.createElement( 'canvas' ); cv.width = MW; cv.height = MH; g = cv.getContext( '2d' );
+				maskTex = new THREE.CanvasTexture( cv ); maskTex.generateMipmaps = false; maskTex.minFilter = THREE.LinearFilter;
+				sprite = makeSprite(); clear();
+				u = {
+					tA: { value: texs[ 0 ] }, tB: { value: texs[ 0 ] }, tM: { value: maskTex }, aA: { value: 1.6 }, aB: { value: 1.6 }, pa: { value: 1.6 },
+					rad: { value: radiusOf( ctx.el ) }, op: { value: 1 }, flood: { value: 0 }, soft: { value: STY[ 0 ] }, rough: { value: STY[ 1 ] }, thick: { value: thick },
+					res: { value: new THREE.Vector2( 800, 500 ) }, mres: { value: new THREE.Vector2( MW, MH ) }
+				};
+				plane = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), new THREE.ShaderMaterial( { uniforms: u, vertexShader: PLAIN_VS, fragmentShader: PAINT_FS, transparent: true, depthWrite: false, toneMapped: false } ) );
+				plane.userData.card = 0; plane.userData.appear = 0;
+				api.cards.push( plane ); api.scene.add( plane );
+				st = stepper( api, ctx, n, mt, n );
+				ctx.cards.forEach( function ( c, k ) { c.addEventListener( 'focusin', function () { st.go( k ); } ); } );
+			},
+			resize: function ( api ) {
+				api.camera.position.set( 0, 0, 5 ); api.camera.lookAt( 0, 0, 0 );
+				var h = 2 * 5 * Math.tan( api.camera.fov * Math.PI / 360 );
+				plane.scale.set( h * api.camera.aspect, h, 1 );
+				u.res.value.set( api.w, api.h ); u.pa.value = api.w / Math.max( 1, api.h );
+			},
+			frame: function ( api, dt, t ) {
+				var s = st.state( t ), a = mod( s.a, n ), b = mod( s.b, n ), still = ctx.reduce || ctx.IN_EDITOR;
+				// A new pair of photos: start from a clean canvas (the painted photo is now the one underneath).
+				var k2 = s.a + '/' + s.b;
+				if ( k2 !== key ) { key = k2; lastS = 0; clear(); }
+				u.tA.value = texs[ a ]; u.tB.value = texs[ b ]; u.aA.value = photos[ a ].aspect; u.aB.value = photos[ b ].aspect;
+				// The brush covers the photo over most of the change; the end floods the gaps that are left.
+				var target = Math.min( 1, s.e / 0.82 );
+				if ( target < lastS - 1e-4 ) { lastS = 0; clear(); }
+				paintTo( target );
+				u.flood.value = Math.max( 0, Math.min( 1, ( s.e - 0.8 ) / 0.2 ) );
+				// The pointer paints too.
+				if ( byPtr && api.pointer && ! still ) {
+					var x = ( api.pointer.x + 1 ) / 2 * MW, y = ( 1 - ( api.pointer.y + 1 ) / 2 ) * MH;
+					if ( lastP ) { if ( Math.abs( x - lastP.x ) + Math.abs( y - lastP.y ) > 0.5 ) { stroke( lastP.x, lastP.y, x, y ); } }
+					lastP = { x: x, y: y };
+				} else { lastP = null; }
+				u.op.value = EASE( plane.userData.appear );
+				plane.userData.card = s.e > 0.5 ? b : a;
+				if ( maskTex.needsUpdate ) { api.dirty = true; }
+			}
+		} );
+	} );
 } )();
