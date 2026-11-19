@@ -3,7 +3,9 @@
  *
  * A trigger on an element ([data-upw-ix] = JSON list of interactions) plays steps that animate this element,
  * elements inside it, or elements on the page. Web Animations API on the individual transform properties
- * (translate / scale / rotate) + opacity + filter, so it layers on top of the target's own transforms.
+ * (translate / scale / rotate) + opacity + filter, so it layers on top of the target's own transforms; plus
+ * (More properties, roadmap 6a) size, corner radius, colours, more filters, a clip, and skew / 3D tilt as an
+ * additive transform. Easing = a CSS timing function from the shared easing set (springs as linear()).
  *
  * One interaction = one "group" of animations laid on a shared timeline: every animation gets the same end
  * time (endDelay pads the short ones), so reversing the whole group mirrors the sequence exactly, and an
@@ -31,19 +33,87 @@
 		return s.q ? q( document, s.q ) : [];
 	}
 
-	/** The keyframe holding this step's values (only the properties it changes). */
-	/** The keyframe values of a step / state. `a` (amount, default 1) scales how far it goes: distance, rotation
-	 *  and blur, and the scale and opacity changes (the per-device "Amount on tablet / phone", roadmap I5). */
+	/** The keyframe values of a step / state (only the properties it changes). `a` (amount, default 1) scales how
+	 *  far it goes: distance, rotation, blur, the scale and opacity changes, skew, tilt, the filters and the clip
+	 *  (the per-device "Amount on tablet / phone", roadmap I5). Size, corner radius and colours are absolute. */
 	function valuesOf( s, a ) {
 		a = ( a === undefined || a === null ) ? 1 : a;
 		var k = {}, r2 = function ( n ) { return Math.round( n * 1000 ) / 1000; };
 		if ( s.x || s.y ) { k.translate = r2( ( s.x || 0 ) * a ) + 'px ' + r2( ( s.y || 0 ) * a ) + 'px'; }
-		if ( s.sc !== 1 ) { k.scale = String( r2( 1 + ( s.sc - 1 ) * a ) ); }
+		if ( s.sc !== undefined && s.sc !== 1 ) { k.scale = String( r2( 1 + ( s.sc - 1 ) * a ) ); }
 		if ( s.r ) { k.rotate = r2( s.r * a ) + 'deg'; }
-		if ( s.op !== 1 ) { k.opacity = String( Math.max( 0, Math.min( 1, r2( 1 - ( 1 - s.op ) * a ) ) ) ); }
-		if ( s.bl ) { k.filter = 'blur(' + r2( s.bl * a ) + 'px)'; }
+		if ( s.op !== undefined && s.op !== 1 ) { k.opacity = String( Math.max( 0, Math.min( 1, r2( 1 - ( 1 - s.op ) * a ) ) ) ); }
+		// More properties (roadmap 6a).
+		if ( s.w ) { k.width = s.w + 'px'; }
+		if ( s.h ) { k.height = s.h + 'px'; }
+		if ( s.rad ) { k.borderRadius = s.rad + 'px'; }
+		if ( s.bg ) { k.backgroundColor = s.bg; }
+		if ( s.fg ) { k.color = s.fg; }
+		if ( s.bc ) { k.borderColor = s.bc; }
+		var f = [], pct = function ( v ) { return r2( 1 + ( v / 100 - 1 ) * a ); };
+		if ( s.bl ) { f.push( 'blur(' + r2( s.bl * a ) + 'px)' ); }
+		if ( s.br !== undefined ) { f.push( 'brightness(' + pct( s.br ) + ')' ); }
+		if ( s.ct !== undefined ) { f.push( 'contrast(' + pct( s.ct ) + ')' ); }
+		if ( s.sa !== undefined ) { f.push( 'saturate(' + pct( s.sa ) + ')' ); }
+		if ( s.gs ) { f.push( 'grayscale(' + r2( s.gs / 100 * a ) + ')' ); }
+		if ( f.length ) { k.filter = f.join( ' ' ); }
 		return k;
 	}
+
+	/** Skew and 3D tilt, as a transform ADDED to the target's own (its Entrance, Hover, Scroll Motion...), or ''. */
+	function tiltOf( s, a ) {
+		a = ( a === undefined || a === null ) ? 1 : a;
+		var t = [], r = function ( n ) { return Math.round( n * a * 100 ) / 100; };
+		if ( s.rx || s.ry ) { t.push( 'perspective(900px)' ); }
+		if ( s.rx ) { t.push( 'rotateX(' + r( s.rx ) + 'deg)' ); }
+		if ( s.ry ) { t.push( 'rotateY(' + r( s.ry ) + 'deg)' ); }
+		if ( s.skx || s.sky ) { t.push( 'skew(' + r( s.skx || 0 ) + 'deg, ' + r( s.sky || 0 ) + 'deg)' ); }
+		return t.join( ' ' );
+	}
+
+	/** The clip as [ open, clipped ] (a clip-path pair that interpolates), or null. The open shape reaches past
+	 *  the box so shadows and outlines are not cut while nothing is hidden. */
+	function clipOf( s, a ) {
+		if ( ! s.cs || ! s.ca ) { return null; }
+		var c = Math.max( 0, Math.min( 100, s.ca * ( ( a === undefined || a === null ) ? 1 : a ) ) );
+		if ( s.cs === 'c' ) { return [ 'circle(100% at 50% 50%)', 'circle(' + ( Math.round( ( 100 - c ) * 100 ) / 100 ) + '% at 50% 50%)' ]; }
+		var o = -30, e = Math.round( ( o + ( 100 - o ) * c / 100 ) * 100 ) / 100, v = [ o, o, o, o ];
+		v[ { t: 0, r: 1, b: 2, l: 3 }[ s.cs ] ] = e;
+		return [ 'inset(-30% -30% -30% -30%)', 'inset(' + v.join( '% ' ) + '%)' ];
+	}
+
+	// Springs and the Motion design curves are CSS linear() curves (Chrome 113, Firefox 112, Safari 17.2). An older
+	// browser would reject them, so it gets the nearest cubic-bezier: an overshoot when the curve passes 1.
+	var LINEAR_OK = !! ( window.CSS && CSS.supports && CSS.supports( 'transition-timing-function', 'linear(0, 1)' ) );
+	function ez( e ) {
+		e = e || 'cubic-bezier(.22,1,.36,1)';
+		if ( LINEAR_OK || e.indexOf( 'linear(' ) !== 0 ) { return e; }
+		return e.split( ',' ).some( function ( v ) { return parseFloat( v.replace( 'linear(', '' ) ) > 1.001; } ) ? 'cubic-bezier(.34,1.56,.64,1)' : 'cubic-bezier(.22,1,.36,1)';
+	}
+
+	/**
+	 * The Web Animations for one target of a step / state: its values, its skew / tilt (additive, so it stacks on
+	 * the target's own transform) and its clip (an explicit pair, since clip-path does not ease from "none").
+	 * `from` = start at the values and return to the target's own look. Each animation comes back paused at 0.
+	 */
+	function animate( node, s, a, from, timing ) {
+		var out = [], vals = valuesOf( s, a ), tilt = tiltOf( s, a ), clip = clipOf( s, a );
+		var t = Object.assign( {}, timing, { easing: ez( timing.easing ) } );
+		var one = function ( kf, extra ) {
+			try {
+				var x = node.animate( kf, extra ? Object.assign( {}, t, extra ) : t );
+				x.pause();
+				x.currentTime = 0;
+				out.push( x );
+			} catch ( e ) {}
+		};
+		if ( Object.keys( vals ).length ) { one( [ Object.assign( { offset: from ? 0 : 1 }, vals ) ] ); }
+		if ( tilt ) { one( [ { offset: from ? 0 : 1, transform: tilt } ], { composite: 'add' } ); }
+		if ( clip ) { one( from ? [ { clipPath: clip[ 1 ] }, { clipPath: clip[ 0 ] } ] : [ { clipPath: clip[ 0 ] }, { clipPath: clip[ 1 ] } ] ); }
+		return out;
+	}
+	/** Does this step / state change anything? */
+	function moves( s ) { return !! ( Object.keys( valuesOf( s ) ).length || tiltOf( s ) || clipOf( s ) ); }
 
 	/* ---- States (roadmap I3) ----------------------------------------------------------------------------
 	 * [data-upw-states] = the element's named states: values (an animation to them, held while in the state),
@@ -72,27 +142,25 @@
 			} );
 		}
 		st.on[ name ] = !! on;
-		var vals = valuesOf( d );
-		if ( Object.keys( vals ).length ) {
+		if ( moves( d ) ) {
 			var dur = ( reduce || instant ) ? 0 : d.d * 1000;
-			var a = st.anims[ name ];
-			try {
-				if ( ! a ) {
-					a = el.animate( [ Object.assign( { offset: 1 }, vals ) ], { duration: dur, easing: d.e, fill: 'both' } );
-					a.pause();
-					a.currentTime = 0;
-					st.anims[ name ] = a;
-				} else if ( a.effect && a.effect.updateTiming ) {
-					a.effect.updateTiming( { duration: dur } );
-				}
-				a.playbackRate = on ? 1 : -1;
-				if ( ! on && ( a.currentTime || 0 ) <= 0 ) {
-					a.pause(); // never got going: playing backwards from 0 would jump to the end first
-				} else {
-					a.play();
-					if ( ! dur ) { a.finish(); }
-				}
-			} catch ( e ) {}
+			var list = st.anims[ name ];
+			if ( ! list ) {
+				list = st.anims[ name ] = animate( el, d, 1, false, { duration: dur, easing: d.e, fill: 'both' } );
+			} else {
+				list.forEach( function ( x ) { try { if ( x.effect && x.effect.updateTiming ) { x.effect.updateTiming( { duration: dur } ); } } catch ( e ) {} } );
+			}
+			list.forEach( function ( x ) {
+				try {
+					x.playbackRate = on ? 1 : -1;
+					if ( ! on && ( x.currentTime || 0 ) <= 0 ) {
+						x.pause(); // never got going: playing backwards from 0 would jump to the end first
+					} else {
+						x.play();
+						if ( ! dur ) { x.finish(); }
+					}
+				} catch ( e ) {}
+			} );
 		}
 		el.classList.toggle( 'upw-is-' + name, !! on );
 		String( d.cls || '' ).split( /\s+/ ).filter( Boolean ).forEach( function ( c ) { el.classList.toggle( c, !! on ); } );
@@ -102,8 +170,128 @@
 		el.setAttribute( 'data-upw-state', Object.keys( st.on ).filter( function ( k ) { return st.on[ k ]; } ).join( ' ' ) );
 		try { el.dispatchEvent( new CustomEvent( 'upw:state', { bubbles: true, detail: { state: name, on: !! on } } ) ); } catch ( e ) {}
 	}
-	/** Run one state step on a node; `rev` plays it backwards (on ↔ off, toggle stays toggle). */
+	/* ---- Set, Lottie and Rive steps (roadmap 6c, 6b) -----------------------------------------------------
+	 * Instant actions fired at their moment on the timeline, like a state step. Played backwards (hover out, a
+	 * second click, scrolling back) each is undone: show ↔ hide, add ↔ remove a class, a z-index / pointer change
+	 * or a Rive input goes back to what it was, a Lottie plays the other way. */
+	function remember( n, key, val ) {
+		n.__upwSet = n.__upwSet || {};
+		if ( ! ( key in n.__upwSet ) ) { n.__upwSet[ key ] = val; }
+		return n.__upwSet[ key ];
+	}
+	function restore( n, key ) {
+		var v = n.__upwSet && key in n.__upwSet ? n.__upwSet[ key ] : null;
+		if ( n.__upwSet ) { delete n.__upwSet[ key ]; }
+		return v;
+	}
+	function doSet( n, s, rev ) {
+		var k = s.sk, cls = String( s.sv || '' ).split( /\s+/ ).filter( Boolean );
+		if ( rev ) { k = { show: 'hide', hide: 'show', class_add: 'class_remove', class_remove: 'class_add', pointer_off: 'pointer_back', pointer_on: 'pointer_back', z_index: 'z_back' }[ k ] || k; }
+		switch ( k ) {
+			case 'hide':
+				remember( n, 'display', n.style.display );
+				n.style.display = 'none';
+				break;
+			case 'show':
+				var was = restore( n, 'display' );
+				n.style.display = was && was !== 'none' ? was : '';
+				if ( window.getComputedStyle( n ).display === 'none' ) { n.style.display = 'block'; } // hidden by its own CSS
+				break;
+			case 'class_add': cls.forEach( function ( c ) { n.classList.add( c ); } ); break;
+			case 'class_remove': cls.forEach( function ( c ) { n.classList.remove( c ); } ); break;
+			case 'class_toggle': cls.forEach( function ( c ) { n.classList.toggle( c ); } ); break;
+			case 'z_index':
+				remember( n, 'zIndex', n.style.zIndex );
+				remember( n, 'position', n.style.position );
+				if ( window.getComputedStyle( n ).position === 'static' ) { n.style.position = 'relative'; } // z-index needs a position
+				n.style.zIndex = String( s.sv );
+				break;
+			case 'z_back':
+				n.style.zIndex = restore( n, 'zIndex' ) || '';
+				n.style.position = restore( n, 'position' ) || '';
+				break;
+			case 'pointer_off':
+			case 'pointer_on':
+				remember( n, 'pointerEvents', n.style.pointerEvents );
+				n.style.pointerEvents = k === 'pointer_off' ? 'none' : 'auto';
+				break;
+			case 'pointer_back':
+				n.style.pointerEvents = restore( n, 'pointerEvents' ) || '';
+				break;
+		}
+	}
+	/** The control API of the Lottie / Rive on (or inside) a node, once that element has loaded (it loads its file
+	 *  asynchronously); calls fn( api ) now, or when it is ready (tries for about 5 s). */
+	function withPlayer( n, prop, sel, fn ) {
+		var tries = 0, find = function () {
+			var host = n[ prop ] ? n : ( n.querySelector && n.querySelector( sel ) );
+			return host && host[ prop ] ? host[ prop ] : null;
+		};
+		var go = function () {
+			var api = find();
+			if ( api ) { try { fn( api ); } catch ( e ) {} return; }
+			if ( ++tries < 25 ) { window.setTimeout( go, 200 ); }
+		};
+		go();
+	}
+	function doLottie( n, s, rev ) {
+		withPlayer( n, 'fwLottie', '[data-lottie]', function ( L ) {
+			var op = s.lo;
+			if ( reduce ) { // no playback: show where it would end
+				if ( op === 'play' || op === 'reverse' || op === 'segment' ) {
+					var end = op === 'segment' ? ( rev ? s.lf : s.lt ) : ( ( op === 'play' ) !== !! rev ? L.last() : 0 );
+					L.goTo( end, false );
+					return;
+				}
+			}
+			switch ( op ) {
+				case 'play': if ( rev ) { L.reverse(); } else { L.play(); } break;
+				case 'reverse': if ( rev ) { L.play(); } else { L.reverse(); } break;
+				case 'pause': if ( rev ) { L.play(); } else { L.pause(); } break;
+				case 'stop': if ( ! rev ) { L.stop(); } break;
+				case 'frame':
+					if ( rev ) { var f = restore( n, 'lottieFrame' ); if ( f !== null ) { L.goTo( f, false ); } } else { remember( n, 'lottieFrame', L.frame() ); L.goTo( s.lf, false ); }
+					break;
+				case 'segment': if ( rev ) { L.segment( s.lt, s.lf ); } else { L.segment( s.lf, s.lt ); } break;
+			}
+		} );
+	}
+	function doRive( n, s, rev ) {
+		withPlayer( n, 'fwRive', '.fw-rive', function ( R ) {
+			switch ( s.ro ) {
+				case 'play': if ( rev ) { R.pause(); } else { R.play(); } break;
+				case 'pause': if ( rev ) { R.play(); } else { R.pause(); } break;
+				case 'trigger': if ( ! rev ) { R.fireTrigger( s.rn ); } break; // a trigger has nothing to undo
+				case 'input':
+					if ( rev ) {
+						var v = restore( n, 'riveInput:' + s.rn );
+						if ( v !== null && v !== undefined ) { R.setInput( s.rn, v ); }
+					} else {
+						remember( n, 'riveInput:' + s.rn, R.getInput( s.rn ) );
+						R.setInput( s.rn, s.rv );
+					}
+					break;
+			}
+		} );
+	}
+
+	/** A burst from the node (roadmap 5b), drawn by the Confetti module's runtime; nothing to undo. */
+	function doBurst( n, s, rev ) {
+		if ( rev || reduce ) { return; }
+		var tries = 0, go = function () {
+			if ( window.upwBurst ) { window.upwBurst( n, { k: s.bk, n: s.bn, r: s.br, d: 0.6, w: 3, c: s.bc ? [ s.bc ] : null } ); return; }
+			if ( ++tries < 25 ) { window.setTimeout( go, 200 ); }
+		};
+		go();
+	}
+
+	/** Run one action step on a node; `rev` plays it backwards (state on ↔ off, toggle stays toggle; Set, Lottie and
+	 *  Rive steps are undone, see above). */
 	function act( p, rev ) {
+		if ( p.act === 'set' ) { doSet( p.node, p.s, rev ); return; }
+		if ( p.act === 'lottie' ) { doLottie( p.node, p.s, rev ); return; }
+		if ( p.act === 'rive' ) { doRive( p.node, p.s, rev ); return; }
+		if ( p.act === 'burst' ) { doBurst( p.node, p.s, rev ); return; }
 		var a = p.act;
 		if ( rev ) { a = a === 'on' ? 'off' : ( a === 'off' ? 'on' : 'toggle' ); }
 		setState( p.node, p.sn, a === 'toggle' ? ! inState( p.node, p.sn ) : a === 'on' );
@@ -119,30 +307,25 @@
 			if ( s.a ) {
 				nodes.forEach( function ( n, i ) {
 					var at = start + i * stg;
-					acts.push( { node: n, act: s.a, sn: s.sn, delay: at } );
+					acts.push( { node: n, act: s.a, sn: s.sn, s: s, delay: at } );
 					total = Math.max( total, at );
 				} );
 			} else {
-				var vals = valuesOf( s, amt );
-				if ( ! Object.keys( vals ).length ) { return; }
+				if ( ! moves( s ) ) { return; }
 				nodes.forEach( function ( n, i ) {
 					var at = start + i * stg;
-					plan.push( { node: n, kf: s.dir === 'from' ? [ Object.assign( { offset: 0 }, vals ) ] : [ Object.assign( { offset: 1 }, vals ) ], delay: at, dur: d, ease: s.e } );
+					plan.push( { node: n, s: s, delay: at, dur: d, ease: s.e } );
 					total = Math.max( total, at + d );
 				} );
 			}
 			prevStart = start;
 			t = Math.max( t, start + ( nodes.length - 1 ) * stg + ( s.a ? 0 : d ) );
 		} );
-		var anims = plan.map( function ( p ) {
-			var a;
-			try {
-				a = p.node.animate( p.kf, { duration: p.dur, delay: p.delay, endDelay: Math.max( 0, total - p.delay - p.dur ), easing: p.ease, fill: 'both' } );
-			} catch ( e ) { return null; }
-			a.pause();
-			a.currentTime = 0; // "From" steps show their start values straight away (no flash before the trigger)
-			return a;
-		} ).filter( Boolean );
+		// "From" steps show their start values straight away (each animation is paused at 0: no flash before the trigger).
+		var anims = [];
+		plan.forEach( function ( p ) {
+			anims = anims.concat( animate( p.node, p.s, amt, p.s.dir === 'from', { duration: p.dur, delay: p.delay, endDelay: Math.max( 0, total - p.delay - p.dur ), easing: p.ease, fill: 'both' } ) );
+		} );
 		return { anims: anims, acts: acts, total: total, timers: [], state: 'idle' };
 	}
 
@@ -247,7 +430,10 @@
 						}
 					} );
 				}, { threshold: 0.2 } );
-				io.observe( el );
+				// The browser counts an element's own clip-path, so one fully clipped by its own step (a clip reveal)
+				// would never be "in view": watch its parent instead.
+				var clipsSelf = ix.s.some( function ( st ) { return st.cs && st.tg === 'self'; } );
+				io.observe( clipsSelf && el.parentElement ? el.parentElement : el );
 				break;
 			case 'past':
 				var ticking = false;

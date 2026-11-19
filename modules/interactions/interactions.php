@@ -18,7 +18,8 @@
  *   [ 'mode' => 'off'|'hover'|'click'|'load'|'view'|'past',
  *     '<mode>' => [ 'again'|'leave'|'offset' => …, 'steps' => [ 's1' => step, 's2' => step, 's3' => step ] ] ]
  *   step = [ target self|inside|page|none, selector, direction to|from, x, y, scale, rotate, opacity, blur,
- *            duration, delay, ease, stagger, start after|with ]
+ *            more (size, radius, skew, tilt, colours, filters, clip), duration, delay, ease (a shared easing key
+ *            or a custom cubic-bezier), stagger, start after|with ]
  */
 
 if ( ! defined( 'UPW_INTERACTIONS_DIR' ) ) {
@@ -26,6 +27,7 @@ if ( ! defined( 'UPW_INTERACTIONS_DIR' ) ) {
 }
 
 require_once __DIR__ . '/includes/interactions-helpers.php';
+require_once __DIR__ . '/includes/interactions-more.php';        // More properties + the shared easing picker (6a / 5a)
 require_once __DIR__ . '/includes/interactions-settings.php';
 require_once __DIR__ . '/includes/states-settings.php';       // the States card (I3)
 require_once __DIR__ . '/includes/interactions-render.php';

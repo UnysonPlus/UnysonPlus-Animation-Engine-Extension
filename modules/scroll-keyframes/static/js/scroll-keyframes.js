@@ -127,7 +127,8 @@
 				var a = kf[i - 1], b = kf[i];
 				var span = b.at - a.at;
 				var seg = span > 0 ? (p - a.at) / span : 1;
-				var e = (EASE[b.ease] || EASE.out)(seg);
+				// A built-in name, else a CSS timing function from the shared easing set (springs as linear()).
+				var e = (EASE[b.ease] || (window.upwEase && window.upwEase(b.ease)) || EASE.out)(seg);
 				var out = {};
 				for (var k = 0; k < KEYS.length; k++) { var key = KEYS[k]; out[key] = a.v[key] + (b.v[key] - a.v[key]) * e; }
 				return out;

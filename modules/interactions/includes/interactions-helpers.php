@@ -63,8 +63,8 @@ if ( ! function_exists( 'upw_interactions_compile' ) ) :
 			if ( $target === 'page' && $sel === '' ) {
 				continue; // nothing to find
 			}
-			$ease = isset( $st['ease'], $eases[ $st['ease'] ] ) ? $eases[ $st['ease'] ] : $eases['out'];
-			$out[] = array(
+			$ease = upw_interactions_ease_css( isset( $st['ease'] ) ? $st['ease'] : 'out' );
+			$out[] = array_merge( array(
 				'tg'  => $target,
 				'q'   => $sel,
 				'dir' => ( isset( $st['direction'] ) && $st['direction'] === 'from' ) ? 'from' : 'to',
@@ -79,11 +79,22 @@ if ( ! function_exists( 'upw_interactions_compile' ) ) :
 				'st'  => upw_interactions_num( $st, 'stagger', 0.08, 0, 5 ),
 				'e'   => $ease,
 				'w'   => ( isset( $st['start'] ) && $st['start'] === 'with' ) ? 1 : 0,
-			);
+			), upw_interactions_more_compile( isset( $st['more'] ) ? $st['more'] : null ) );
 			// A state step (I3): put the targets in a named state, take them out, or toggle it. The state's
 			// own values / class / timing are defined on the target (States card); its delay / stagger / start
 			// order still come from the step.
 			$action = isset( $st['action'] ) ? (string) $st['action'] : 'animate';
+			// Set / Lottie / Rive steps (roadmap 6b, 6c): fired at their moment, like a state step.
+			if ( in_array( $action, array( 'set', 'lottie', 'rive', 'burst' ), true ) ) {
+				$extra = upw_interactions_action_compile( $action, $st );
+				if ( ! $extra ) {
+					array_pop( $out ); // nothing usable to do
+					continue;
+				}
+				$i = count( $out ) - 1;
+				$out[ $i ] = array_merge( $out[ $i ], $extra, array( 'a' => $action, 'd' => 0 ) );
+				continue;
+			}
 			if ( in_array( $action, array( 'state_on', 'state_off', 'state_toggle' ), true ) ) {
 				$name = upw_states_name( isset( $st['state'] ) ? $st['state'] : '' );
 				if ( $name === '' ) {
@@ -189,11 +200,11 @@ if ( ! function_exists( 'upw_states_compile' ) ) :
 				'bl'    => upw_interactions_num( $st, 'blur', 0, 0, 100 ),
 				'cls'   => substr( $cls, 0, 120 ),
 				'd'     => upw_interactions_num( $st, 'duration', 0.4, 0, 20 ),
-				'e'     => isset( $st['ease'], $eases[ $st['ease'] ] ) ? $eases[ $st['ease'] ] : $eases['out'],
+				'e'     => upw_interactions_ease_css( isset( $st['ease'] ) ? $st['ease'] : 'out' ),
 				'start' => ( isset( $st['start_in'] ) && $st['start_in'] === 'yes' ) ? 1 : 0,
 				'g'     => upw_states_name( isset( $st['group'] ) ? $st['group'] : '' ),
 				'inert' => ( isset( $st['inert'] ) && $st['inert'] === 'yes' ) ? 1 : 0,
-			);
+			) + upw_interactions_more_compile( isset( $st['more'] ) ? $st['more'] : null );
 		}
 		return $out;
 	}

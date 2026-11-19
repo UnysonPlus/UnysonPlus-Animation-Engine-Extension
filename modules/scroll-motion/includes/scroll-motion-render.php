@@ -340,9 +340,14 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             // Conservative allow-list for a hand-typed ease: GSAP names look like
             // `power4.inOut` / `back.out(1.7)` / `steps(12)`. Anything else is ignored so a typo
             // (or an injection attempt) can never reach the runtime.
-            if ( $ease !== '' && ! preg_match( '/^[A-Za-z][A-Za-z0-9]*(\.[A-Za-z]+)?(\(\s*-?[0-9.]+\s*(,\s*-?[0-9.]+\s*)*\))?$/', $ease ) ) {
+            if ( $ease !== '' && stripos( $ease, 'cubic-bezier' ) === 0 && function_exists( 'sc_easing_normalize' ) ) {
+                $ease = sc_easing_normalize( $ease );
+                $ease = $ease === 'default' ? '' : $ease; // a malformed curve falls back to the Style preset
+            } elseif ( $ease !== '' && ! preg_match( '/^[A-Za-z][A-Za-z0-9]*(\.[A-Za-z]+)?(\(\s*-?[0-9.]+\s*(,\s*-?[0-9.]+\s*)*\))?$/', $ease ) ) {
                 $ease = '';
             }
+        } elseif ( function_exists( 'sc_easing_defs' ) && $ease !== '' && isset( sc_easing_defs()[ $ease ] ) ) {
+            $ease = sc_easing_css( $ease ); // a shared curve (spring, Motion design): upw-gsap.js eases with it
         } elseif ( ! in_array( $ease, $ease_allow, true ) ) {
             $ease = ''; // '' = inherit the Style preset's ease
         }
@@ -429,6 +434,8 @@ add_action( 'wp_footer', function () {
         true
     );
     $init_deps = [ 'upw-gsap-scrolltrigger' ];
+    // The shared helpers (window.upwEase turns a spring / Motion design curve into an ease function).
+    if ( function_exists( 'upw_anim_raf_handle' ) ) { $init_deps[] = upw_anim_raf_handle(); }
 
     // SplitText is only needed when a "Split Text" effect is on the page.
     $used = function_exists( 'sc_gsap_used' ) ? sc_gsap_used() : [];

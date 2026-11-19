@@ -81,7 +81,9 @@
             if (!ease) { return st; }
             var out = {}, k;
             for (k in st) { if (Object.prototype.hasOwnProperty.call(st, k)) { out[k] = st[k]; } }
-            out.ease = ease;
+            // A CSS timing function (a shared spring / Motion design curve, or a custom cubic-bezier) becomes an
+            // ease function GSAP can run (window.upwEase, from the shared upw-raf.js); a GSAP name passes through.
+            out.ease = (/^(linear|cubic-bezier|steps)\(/.test(ease) && window.upwEase && window.upwEase(ease)) || ease;
             return out;
         }
 

@@ -59,6 +59,12 @@ if ( ! function_exists( 'upw_confetti_styles' ) ) :
 			'embers'         => __( 'Embers', 'fw' ),
 			'champagne'      => __( 'Champagne', 'fw' ),
 			'bubbles'        => __( 'Bubbles', 'fw' ),
+			// Bursts (roadmap 5b): a short radial pop from the element, for buttons and icons.
+			'burst_ring'     => __( 'Ring', 'fw' ),
+			'burst_sparks'   => __( 'Sparks', 'fw' ),
+			'burst_lines'    => __( 'Lines', 'fw' ),
+			'burst_mix'      => __( 'Ring, sparks and lines', 'fw' ),
+			'burst_confetti' => __( 'Confetti pop', 'fw' ),
 		);
 	}
 endif;
@@ -71,6 +77,7 @@ if ( ! function_exists( 'upw_confetti_style_groups' ) ) :
 			__( 'Realistic & Foil', 'fw' ) => array( 'realistic', 'foil_gold', 'foil_silver', 'rose_gold', 'holographic', 'triangles', 'hexagons', 'money', 'serpentine' ),
 			__( 'Nature', 'fw' )           => array( 'sakura', 'autumn_leaves', 'realistic_snow', 'rain' ),
 			__( 'Glow & Sparkle', 'fw' )   => array( 'glitter', 'bokeh', 'fairy_dust', 'fireflies', 'embers', 'champagne', 'bubbles' ),
+			__( 'Bursts', 'fw' )           => array( 'burst_mix', 'burst_ring', 'burst_sparks', 'burst_lines', 'burst_confetti' ),
 		);
 	}
 endif;
@@ -152,10 +159,20 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		),
 	);
 
+	// Bursts (roadmap 5b): a short pop, so its own options: how many rays, how far, how fast, how thick.
+	$burst_opts = array(
+		'trigger'   => array_merge( $opts['trigger'], array( 'value' => array( 'click' ), 'desc' => __( 'What sets off the burst. Click is the usual one for a button; Hover for an icon.', 'fw' ) ) ),
+		'count'     => array( 'type' => 'slider', 'label' => __( 'Rays / sparks', 'fw' ), 'value' => 10, 'properties' => array( 'min' => 3, 'max' => 60, 'step' => 1 ) ),
+		'size'      => array( 'type' => 'slider', 'label' => __( 'Size (px)', 'fw' ), 'desc' => __( 'How far the burst reaches from the centre of the element.', 'fw' ), 'value' => 70, 'properties' => array( 'min' => 10, 'max' => 400, 'step' => 5 ) ),
+		'duration'  => array( 'type' => 'slider', 'label' => __( 'Duration (s)', 'fw' ), 'value' => 0.6, 'properties' => array( 'min' => 0.15, 'max' => 3, 'step' => 0.05 ) ),
+		'thickness' => array( 'type' => 'slider', 'label' => __( 'Thickness (px)', 'fw' ), 'value' => 3, 'properties' => array( 'min' => 1, 'max' => 16, 'step' => 1 ) ),
+		'palette'   => $opts['palette'],
+		'colour'    => array( 'type' => 'rgba-color-picker', 'label' => __( 'One colour', 'fw' ), 'desc' => __( 'Optional: the whole burst in this colour instead of the Colours set. The swatches are your Theme Settings colours.', 'fw' ), 'value' => '' ),
+	);
 	$labels = upw_confetti_styles();
 	$reveal = array( 'none' => array() );
 	foreach ( $labels as $k => $lbl ) {
-		$reveal[ $k ] = array( 'group_confetti_' . $k => array( 'type' => 'group', 'options' => $opts ) );
+		$reveal[ $k ] = array( 'group_confetti_' . $k => array( 'type' => 'group', 'options' => strpos( $k, 'burst_' ) === 0 ? $burst_opts : $opts ) );
 	}
 	// Grouped, tabbed picker tiles (organises the 26 styles into Classic / Realistic / Nature / Glow).
 	$gi            = 0;
@@ -172,7 +189,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'type'         => 'multi-picker',
 		'popover'      => true,
 		'label'        => __( 'Confetti', 'fw' ),
-		'desc'         => __( 'A celebratory particle burst fired from this element on a trigger. 26 styles across Classic (flat/vector), Realistic & Foil (3D tumbling paper that sits on photo backgrounds), Nature and Glow.', 'fw' ),
+		'desc'         => __( 'A celebratory particle burst fired from this element on a trigger. 26 styles across Classic (flat/vector), Realistic & Foil (3D tumbling paper that sits on photo backgrounds), Nature and Glow, plus Bursts: a quick ring, sparks or lines popping from a button or icon.', 'fw' ),
 		'help'         => __( 'Confetti (Animation Engine): a Canvas 2D particle burst fired on scroll-into-view, click, load or hover. 26 styles — Classic flat (confetti / stars / fireworks / streamers / hearts / snow), Realistic & Foil (3D tumbling paper with sheen + shadow: realistic, gold/silver/rose foil, holographic, money, serpentine, triangles, hexagons), Nature (sakura, autumn leaves, realistic snow, rain) and Glow (glitter, bokeh, fairy dust, fireflies, embers, champagne, bubbles). One shared viewport canvas, no library, one on-demand script for all styles. Honours "reduce motion" and loads only on pages that use it.', 'fw' ) . ( function_exists( 'upw_perf_note' ) ? ' ' . upw_perf_note() : '' ),
 		'show_borders' => false,
 		'value'        => array( 'style' => 'none' ),
@@ -219,6 +236,21 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 
 	$attr['data-cf-style']    = esc_attr( $style );
 	$attr['data-cf-trigger']  = esc_attr( implode( ' ', $triggers ) );
+	if ( strpos( $style, 'burst_' ) === 0 ) { // a burst (roadmap 5b): its own few settings
+		$attr['data-cf-palette'] = esc_attr( $palette );
+		$attr['data-bf-n']       = esc_attr( max( 3, min( 60, (int) ( $o['count'] ?? 10 ) ) ) );
+		$attr['data-bf-r']       = esc_attr( max( 10, min( 400, (int) ( $o['size'] ?? 70 ) ) ) );
+		$attr['data-bf-d']       = esc_attr( max( 0.15, min( 3, (float) ( $o['duration'] ?? 0.6 ) ) ) );
+		$attr['data-bf-w']       = esc_attr( max( 1, min( 16, (int) ( $o['thickness'] ?? 3 ) ) ) );
+		$one = function_exists( 'upw_interactions_colour' ) ? upw_interactions_colour( $o['colour'] ?? '' ) : '';
+		if ( $one !== '' ) {
+			$attr['data-bf-colors'] = esc_attr( wp_json_encode( array( $one ) ) );
+		}
+		if ( function_exists( 'upw_anim_use_asset' ) ) {
+			upw_anim_use_asset( 'confetti', $style );
+		}
+		return $attr;
+	}
 	$attr['data-cf-count']    = esc_attr( max( 20, min( 400, (int) ( $o['count'] ?? 90 ) ) ) );
 	$attr['data-cf-spread']   = esc_attr( max( 20, min( 360, (int) ( $o['spread'] ?? 70 ) ) ) );
 	$attr['data-cf-power']    = esc_attr( max( 15, min( 100, (int) ( $o['power'] ?? 45 ) ) ) );

@@ -67,10 +67,10 @@
 		if (cfg.artboard) { opts.artboard = cfg.artboard; }
 		if (sm) { opts.stateMachines = sm; }
 		else if (cfg.animation) { opts.animations = cfg.animation; }
-		// Auto-bind the file's default View Model — so data-bound files render correctly, builder-entered
-		// bindings can be applied, and the JS control API (el.fwRive / window.fwRive) can drive properties
-		// at runtime. Harmless (a no-op) for files without a View Model.
-		opts.autoBind = true;
+		// The file's default View Model is bound on load (bindDefaultViewModel), so data-bound files render
+		// correctly, builder-entered bindings apply and el.fwRive can drive properties. Not with the runtime's
+		// autoBind: on a file without a View Model that logs a console error on every page.
+		opts.autoBind = false;
 
 		// Asset swaps: replace a referenced image/font in the .riv with the author's own. The runtime calls
 		// this for every asset; for names we're given, fetch → decode → set (async), and return true so Rive
@@ -237,7 +237,18 @@
 		REG.instances.push(api);
 		if (el.id) { REG.byId[el.id] = api; }
 
+		function bindDefaultViewModel() {
+			try {
+				if (!(r.viewModelCount > 0)) { return; } // asking a file with no View Model logs a console error
+				var vm = r.defaultViewModel && r.defaultViewModel();
+				if (!vm) { return; } // no View Model in this file: nothing to bind
+				var inst = vm.defaultInstance ? vm.defaultInstance() : (vm.instance ? vm.instance() : null);
+				if (inst) { r.bindViewModelInstance(inst); }
+			} catch (e) {}
+		}
+
 		function onLoad() {
+			bindDefaultViewModel();
 			try { r.resizeDrawingSurfaceToCanvas(); } catch (e) {}
 			fitToArtboard();
 			wireEvents();

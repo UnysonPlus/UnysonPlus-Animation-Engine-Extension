@@ -21,6 +21,33 @@
  * Only the selected effect's sub-array carries data; switching effects never
  * loses the others' values (standard multi-picker behaviour).
  */
+if ( ! function_exists( 'sc_gsap_shared_ease_choices' ) ) :
+/**
+ * The shared easing set's Motion design and Spring curves (shortcodes/includes/easing-defs.php) as optgroups
+ * for the Easing select, so Scroll Motion offers the same springs as Interactions and Scroll Keyframes.
+ * Keys are the shared easing keys; scroll-motion-render.php turns them into CSS for upw-gsap.js.
+ */
+function sc_gsap_shared_ease_choices() {
+    if ( ! function_exists( 'sc_easing_defs' ) ) {
+        return [];
+    }
+    $groups = [ 'Motion design' => __( 'Motion design', 'fw' ), 'Spring' => __( 'Springs', 'fw' ) ];
+    $out    = [];
+    foreach ( $groups as $group => $label ) {
+        $choices = [];
+        foreach ( sc_easing_defs() as $key => $d ) {
+            if ( isset( $d['group'] ) && $d['group'] === $group ) {
+                $choices[ $key ] = $d['label'];
+            }
+        }
+        if ( $choices ) {
+            $out[] = [ 'attr' => [ 'label' => $label ], 'choices' => $choices ];
+        }
+    }
+    return $out;
+}
+endif;
+
 if ( ! function_exists( 'sc_get_gsap_fields' ) ) :
 function sc_get_gsap_fields() {
 
@@ -166,12 +193,12 @@ function sc_get_gsap_fields() {
                     'circ.out'            => __( 'Circular  ·  circ.out', 'fw' ),
                     'sine.inOut'          => __( 'Smooth both ends  ·  sine.inOut', 'fw' ),
                     'custom'              => __( 'Custom…', 'fw' ),
-                ],
+                ] + sc_gsap_shared_ease_choices(),
             ],
             'ease_custom' => [
                 'type'  => 'text',
                 'label' => __( 'Custom easing', 'fw' ),
-                'desc'  => __( 'Used when Easing is set to Custom. Any GSAP ease string, e.g. power4.inOut or back.out(2).', 'fw' ),
+                'desc'  => __( 'Used when Easing is set to Custom. Any GSAP ease string, e.g. power4.inOut or back.out(2), or a CSS cubic-bezier(0.2, 0.8, 0.2, 1).', 'fw' ),
                 'help'  => __( 'Under the hood: passed straight to GSAP as `ease`. Invalid strings fall back to the Style preset\'s ease, so a typo can\'t break the animation.', 'fw' ),
                 'value' => '',
             ],

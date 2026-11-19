@@ -64,6 +64,10 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		);
 	};
 	$ease = function ( $label ) {
+		// The shared easing picker (springs, the Motion design curves, a custom cubic-bezier) when it is there.
+		if ( function_exists( 'sc_easing_defs' ) ) {
+			return array( 'type' => 'easing-picker', 'label' => $label, 'value' => 'classic_out' );
+		}
 		return array(
 			'type' => 'select', 'label' => $label, 'value' => 'out', 'choices' => array(
 				'linear' => __( 'Linear', 'fw' ), 'out' => __( 'Ease Out', 'fw' ), 'in' => __( 'Ease In', 'fw' ),
@@ -266,13 +270,24 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 		return $attr;
 	}
 
+	// A curve name the runtime has built in stays a name; any other (a shared easing key or a custom
+	// cubic-bezier) goes as its CSS timing function, which the runtime turns into a curve (window.upwEase).
+	$ease_of = function ( $k ) {
+		$k = (string) $k;
+		if ( in_array( $k, array( 'linear', 'out', 'in', 'inout', 'back', 'sine' ), true ) ) {
+			return $k;
+		}
+		$css = function_exists( 'sc_easing_css' ) ? sc_easing_css( $k ) : '';
+		return $css !== '' ? $css : 'out';
+	};
+
 	$kf   = array();
 	$kf[] = array( 'at' => 0, 'v' => $start, 'ease' => 'out' );
 	if ( $mid_on ) {
 		$at   = max( 5, min( 95, (int) ( isset( $mid['at'] ) ? $mid['at'] : 50 ) ) ) / 100;
-		$kf[] = array( 'at' => $at, 'v' => $state( 'mid' ), 'ease' => (string) ( isset( $mid['ease'] ) ? $mid['ease'] : 'out' ) );
+		$kf[] = array( 'at' => $at, 'v' => $state( 'mid' ), 'ease' => $ease_of( isset( $mid['ease'] ) ? $mid['ease'] : 'out' ) );
 	}
-	$kf[] = array( 'at' => 1, 'v' => $end, 'ease' => (string) ( isset( $end_s['ease'] ) ? $end_s['ease'] : 'out' ) );
+	$kf[] = array( 'at' => 1, 'v' => $end, 'ease' => $ease_of( isset( $end_s['ease'] ) ? $end_s['ease'] : 'out' ) );
 
 	$cls           = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
 	$attr['class'] = esc_attr( trim( $cls . ' sc-scroll-kf' ) );

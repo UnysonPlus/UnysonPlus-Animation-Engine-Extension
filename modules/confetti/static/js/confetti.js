@@ -314,10 +314,11 @@
 		}
 	}
 
-	function step() {
-		if ( ! particles.length ) { running = false; if ( ctx ) { ctx.clearRect( 0, 0, canvas.width, canvas.height ); } return; }
+	function step( now ) {
+		if ( ! particles.length && ! bursts.length ) { running = false; if ( ctx ) { ctx.clearRect( 0, 0, canvas.width, canvas.height ); } return; }
 		if ( document.hidden ) { requestAnimationFrame( step ); return; }
 		ctx.clearRect( 0, 0, canvas.width, canvas.height );
+		if ( bursts.length ) { drawBursts( now || ( window.performance ? performance.now() : Date.now() ) ); }
 		for ( var i = particles.length - 1; i >= 0; i-- ) {
 			var p = particles[ i ];
 			p.age++;
@@ -335,6 +336,112 @@
 		requestAnimationFrame( step );
 	}
 
+
+	/* ---- Bursts (Animation Engine roadmap 5b) -----------------------------------------------------------
+	 * A short, radial pop from an element: a ring that expands, sparks that fly out and shrink, lines that
+	 * shoot out, a mix of the three, or a small confetti pop. Timed in milliseconds and eased, drawn on the
+	 * same shared canvas and frame loop as the confetti; each burst follows its element while it plays.
+	 *   window.upwBurst( el, { k: 'ring'|'sparks'|'lines'|'mix'|'confetti', n: count, r: radius px,
+	 *                          d: seconds, w: thickness px, c: [ colours ] } )
+	 */
+	var bursts = [];
+	var BURST_KINDS = { ring: 1, sparks: 1, lines: 1, mix: 1, confetti: 1 };
+	function easeOut( t ) { return 1 - Math.pow( 1 - t, 3 ); }
+	function fireBurst( el, o ) {
+		if ( reduce || ! el || ! el.getBoundingClientRect ) { return; }
+		o = o || {};
+		var k = BURST_KINDS[ o.k ] ? o.k : 'mix';
+		var n = clamp( parseInt( o.n, 10 ) || 10, 3, 60 );
+		var R = clamp( parseFloat( o.r ) || 70, 10, 400 );
+		var d = clamp( parseFloat( o.d ) || 0.6, 0.15, 3 ) * 1000;
+		var w = clamp( parseFloat( o.w ) || 3, 1, 16 );
+		var colors = ( o.c && o.c.length ) ? o.c : PALETTES.brand;
+		if ( ! ctx ) { ensureCanvas(); }
+		if ( ! ctx ) { return; }
+		if ( k === 'confetti' ) { // a small, fast confetti pop in every direction
+			var r = el.getBoundingClientRect();
+			for ( var i = 0; i < n * 3; i++ ) {
+				var a = rand( 0, Math.PI * 2 ), v = ( R / 22 ) * rand( 0.5, 1 ) * dpr;
+				particles.push( { S: STYLES.confetti, name: 'confetti', x: ( r.left + r.width / 2 ) * dpr, y: ( r.top + r.height / 2 ) * dpr,
+					vx: Math.cos( a ) * v, vy: Math.sin( a ) * v, g: 0.12 * dpr, drag: 0.94, rot: rand( 0, 6.3 ), vr: rand( -0.3, 0.3 ),
+					flip: 0, vf: 0, size: rand( 3, 6 ) * dpr, len: rand( 8, 14 ) * dpr, color: pick( colors ),
+					life: ( d / 1000 ) * 60 * rand( 1.2, 1.8 ), age: 0, wob: 0, sway: 0, drift: 0, seed: rand( 0, 100 ) } );
+			}
+			start();
+			return;
+		}
+		var rays = [];
+		for ( var j = 0; j < n; j++ ) {
+			rays.push( { a: ( j / n ) * Math.PI * 2 + rand( -0.15, 0.15 ), len: rand( 0.75, 1.1 ), col: colors[ j % colors.length ], s: rand( 0.8, 1.2 ) } );
+		}
+		bursts.push( { el: el, k: k, R: R, d: d, w: w, colors: colors, rays: rays, t0: 0 } );
+		start();
+	}
+	function drawBursts( now ) {
+		for ( var i = bursts.length - 1; i >= 0; i-- ) {
+			var b = bursts[ i ];
+			if ( ! b.t0 ) { b.t0 = now; }
+			var t = ( now - b.t0 ) / b.d;
+			if ( t >= 1 ) { bursts.splice( i, 1 ); continue; }
+			var rc = b.el.getBoundingClientRect();
+			var cx = ( rc.left + rc.width / 2 ) * dpr, cy = ( rc.top + rc.height / 2 ) * dpr, R = b.R * dpr, e = easeOut( t );
+			ctx.save();
+			ctx.lineCap = 'round';
+			if ( b.k === 'ring' || b.k === 'mix' ) { // a circle that grows and thins out
+				ctx.globalAlpha = 1 - t;
+				ctx.strokeStyle = b.colors[ 0 ];
+				ctx.lineWidth = Math.max( 0.5, b.w * 1.6 * ( 1 - e ) ) * dpr;
+				ctx.beginPath();
+				ctx.arc( cx, cy, R * ( b.k === 'mix' ? 0.75 : 1 ) * e, 0, Math.PI * 2 );
+				ctx.stroke();
+			}
+			if ( b.k === 'sparks' || b.k === 'mix' ) { // dots that fly out and shrink
+				ctx.globalAlpha = 1;
+				b.rays.forEach( function ( r, idx ) {
+					if ( b.k === 'mix' && idx % 2 ) { return; }
+					var dist = R * ( 0.25 + 0.85 * e ) * r.len, size = b.w * 1.4 * r.s * ( 1 - t ) * dpr;
+					if ( size <= 0.2 ) { return; }
+					ctx.fillStyle = r.col;
+					ctx.beginPath();
+					ctx.arc( cx + Math.cos( r.a ) * dist, cy + Math.sin( r.a ) * dist, size, 0, Math.PI * 2 );
+					ctx.fill();
+				} );
+			}
+			if ( b.k === 'lines' || b.k === 'mix' ) { // rays: the head runs ahead of the tail, then the tail catches up
+				var tl = b.k === 'mix' ? Math.max( 0, ( t - 0.08 ) / 0.92 ) : t;
+				var head = easeOut( Math.min( 1, tl * 1.25 ) ), tail = easeOut( Math.max( 0, tl * 1.25 - 0.3 ) / 0.95 );
+				ctx.lineWidth = b.w * dpr;
+				ctx.globalAlpha = 1;
+				b.rays.forEach( function ( r, idx ) {
+					if ( b.k === 'mix' && ! ( idx % 2 ) ) { return; }
+					var r1 = R * ( 0.3 + 0.8 * tail ) * r.len, r2 = R * ( 0.3 + 0.8 * head ) * r.len;
+					if ( r2 - r1 < 0.5 ) { return; }
+					ctx.strokeStyle = r.col;
+					ctx.beginPath();
+					ctx.moveTo( cx + Math.cos( r.a ) * r1, cy + Math.sin( r.a ) * r1 );
+					ctx.lineTo( cx + Math.cos( r.a ) * r2, cy + Math.sin( r.a ) * r2 );
+					ctx.stroke();
+				} );
+			}
+			ctx.restore();
+		}
+	}
+	/** A burst set up on the element itself (a Confetti card with a Bursts style): data-bf-*. */
+	function burstFromAttrs( el ) {
+		var c = el.getAttribute( 'data-bf-colors' ), list = null;
+		try { list = c ? JSON.parse( c ) : null; } catch ( e ) {}
+		fireBurst( el, {
+			k: ( el.getAttribute( 'data-cf-style' ) || 'burst_mix' ).replace( 'burst_', '' ),
+			n: el.getAttribute( 'data-bf-n' ), r: el.getAttribute( 'data-bf-r' ), d: el.getAttribute( 'data-bf-d' ), w: el.getAttribute( 'data-bf-w' ),
+			c: list || PALETTES[ el.getAttribute( 'data-cf-palette' ) ] || PALETTES.brand
+		} );
+	}
+	window.upwBurst = function ( el, o ) {
+		if ( o && typeof o.c === 'string' ) { o.c = PALETTES[ o.c ] || [ o.c ]; }
+		fireBurst( el, o );
+	};
+	window.upwBurstPalettes = PALETTES;
+
 	function start() { if ( ! running ) { running = true; requestAnimationFrame( step ); } }
 
 	function bind( el ) {
@@ -346,20 +453,21 @@
 		if ( ! triggers.length ) { triggers = [ 'view' ]; }
 		var has    = function ( t ) { return triggers.indexOf( t ) >= 0; };
 		var replay = el.getAttribute( 'data-cf-replay' ) === '1';
+		var fire   = /^burst_/.test( el.getAttribute( 'data-cf-style' ) || '' ) ? function () { burstFromAttrs( el ); } : function () { burst( el ); };
 
-		if ( has( 'click' ) ) { el.addEventListener( 'click', function () { burst( el ); } ); }
-		if ( has( 'hover' ) ) { el.addEventListener( 'mouseenter', function () { burst( el ); } ); }
-		if ( has( 'load' ) )  { burst( el ); }
+		if ( has( 'click' ) ) { el.addEventListener( 'click', fire ); }
+		if ( has( 'hover' ) ) { el.addEventListener( 'mouseenter', fire ); }
+		if ( has( 'load' ) )  { fire(); }
 		if ( has( 'view' ) ) {
 			if ( 'IntersectionObserver' in window ) {
 				var io = new IntersectionObserver( function ( ents ) {
 					ents.forEach( function ( en ) {
-						if ( en.isIntersecting ) { burst( el ); if ( ! replay ) { io.unobserve( el ); } }
+						if ( en.isIntersecting ) { fire(); if ( ! replay ) { io.unobserve( el ); } }
 					} );
 				}, { threshold: 0.3 } );
 				io.observe( el );
 			} else {
-				burst( el );
+				fire();
 			}
 		}
 	}

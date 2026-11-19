@@ -12,6 +12,11 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 	if ( function_exists( 'upw_anim_use_asset' ) ) {
 		foreach ( $list as $c ) {
 			upw_anim_use_asset( 'interactions', $c['t'] );
+			foreach ( $c['s'] as $st ) {
+				if ( isset( $st['a'] ) && $st['a'] === 'burst' ) {
+					upw_anim_use_asset( 'confetti', 'burst_mix' ); // a burst step: the Confetti runtime draws it
+				}
+			}
 		}
 	}
 	return $attr;

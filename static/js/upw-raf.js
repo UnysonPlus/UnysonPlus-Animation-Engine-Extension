@@ -31,6 +31,70 @@
 		};
 	}
 
+	// Shared easing resolver — one CSS easing string (as the shared easing picker stores / resolves it:
+	// linear(…) with springs and the Motion design curves, cubic-bezier(…), steps(…), or a keyword) as a
+	// 0..1 → 0..1 function, for modules that ease by hand (scroll-scrubbed keyframes, GSAP). Cached per
+	// string; null for anything it does not recognise, so the caller keeps its own default.
+	//   var f = window.upwEase('linear(0, 0.3, 0.9, 1.05, 1)'); f(0.5) → 0.9
+	if (!window.upwEase) {
+		var EASE_CACHE = {};
+		var bezier = function (x1, y1, x2, y2) {
+			x1 = Math.max(0, Math.min(1, x1)); x2 = Math.max(0, Math.min(1, x2));
+			var bx = function (t) { var u = 1 - t; return 3 * x1 * t * u * u + 3 * x2 * t * t * u + t * t * t; };
+			var by = function (t) { var u = 1 - t; return 3 * y1 * t * u * u + 3 * y2 * t * t * u + t * t * t; };
+			return function (x) {
+				if (x <= 0) { return 0; }
+				if (x >= 1) { return 1; }
+				var lo = 0, hi = 1;
+				for (var i = 0; i < 24; i++) { var m = (lo + hi) / 2; if (bx(m) < x) { lo = m; } else { hi = m; } }
+				return by((lo + hi) / 2);
+			};
+		};
+		var KW = { ease: [0.25, 0.1, 0.25, 1], 'ease-in': [0.42, 0, 1, 1], 'ease-out': [0, 0, 0.58, 1], 'ease-in-out': [0.42, 0, 0.58, 1] };
+		window.upwEase = function (css) {
+			css = String(css || '').trim();
+			if (!css) { return null; }
+			if (EASE_CACHE[css]) { return EASE_CACHE[css]; }
+			var f = null, m, inner;
+			if (css === 'linear' || css === 'none') {
+				f = function (t) { return t; };
+			} else if (KW[css]) {
+				f = bezier.apply(null, KW[css]);
+			} else if ((m = /^cubic-bezier\(([^)]*)\)$/.exec(css))) {
+				var c = m[1].split(',').map(Number);
+				if (c.length === 4 && !c.some(isNaN)) { f = bezier(c[0], c[1], c[2], c[3]); }
+			} else if ((m = /^linear\(([^)]*)\)$/.exec(css))) {
+				// Points as "value" or "value pos%"; unpositioned points are spread evenly between their neighbours.
+				inner = m[1].split(',').map(function (p) { var q = p.trim().split(/\s+/); return { v: Number(q[0]), x: q[1] ? parseFloat(q[1]) / 100 : null }; });
+				if (inner.length >= 2 && !inner.some(function (p) { return isNaN(p.v); })) {
+					if (inner[0].x === null) { inner[0].x = 0; }
+					if (inner[inner.length - 1].x === null) { inner[inner.length - 1].x = 1; }
+					for (var i = 1; i < inner.length; i++) {
+						if (inner[i].x !== null) { continue; }
+						var j = i; while (inner[j].x === null) { j++; }
+						for (var k = i; k < j; k++) { inner[k].x = inner[i - 1].x + (inner[j].x - inner[i - 1].x) * (k - i + 1) / (j - i + 1); }
+					}
+					f = function (t) {
+						if (t <= 0) { return inner[0].v; }
+						if (t >= 1) { return inner[inner.length - 1].v; }
+						for (var n = 1; n < inner.length; n++) {
+							if (t <= inner[n].x) {
+								var a = inner[n - 1], b = inner[n], w = b.x - a.x;
+								return w > 0 ? a.v + (b.v - a.v) * (t - a.x) / w : b.v;
+							}
+						}
+						return 1;
+					};
+				}
+			} else if ((m = /^steps\(\s*(\d+)\s*(?:,\s*([a-z-]+))?\s*\)$/.exec(css))) {
+				var n = Math.max(1, parseInt(m[1], 10)), start = m[2] === 'jump-start' || m[2] === 'start';
+				f = function (t) { return t >= 1 ? 1 : Math.min(1, (start ? Math.floor(t * n) + 1 : Math.floor(t * n)) / n); };
+			}
+			if (f) { EASE_CACHE[css] = f; }
+			return f;
+		};
+	}
+
 	// Shared scroll-progress helper — one 0..1 formula every scroll-scrub module uses, instead of each
 	// re-deriving getBoundingClientRect math.
 	//   opts.pin === true  → progress through a PINNED stretch: while `el` is pinned, 0 at the start of

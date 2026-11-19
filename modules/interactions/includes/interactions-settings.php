@@ -40,6 +40,10 @@ if ( ! function_exists( 'upw_interactions_step_options' ) ) :
 					'state_on'     => __( 'Put it in a state', 'fw' ),
 					'state_off'    => __( 'Take it out of a state', 'fw' ),
 					'state_toggle' => __( 'Toggle a state', 'fw' ),
+					'set'          => __( 'Set something instantly (show, hide, a class…)', 'fw' ),
+					'lottie'       => __( 'Control its Lottie animation', 'fw' ),
+					'rive'         => __( 'Control its Rive animation', 'fw' ),
+					'burst'        => __( 'Burst from it (ring, sparks, lines…)', 'fw' ),
 				),
 			),
 			'state' => array(
@@ -48,6 +52,78 @@ if ( ! function_exists( 'upw_interactions_step_options' ) ) :
 				'value' => '',
 				'attr'  => array( 'placeholder' => 'open' ),
 			),
+			// Set (roadmap 6c): an instant change, no animation.
+			'set' => array(
+				'type'    => 'select',
+				'label'   => __( 'Set', 'fw' ),
+				'desc'    => __( 'With Do: Set something instantly. Played backwards (hover out, a second click), it is undone.', 'fw' ),
+				'value'   => 'hide',
+				'choices' => array(
+					'show'         => __( 'Show it', 'fw' ),
+					'hide'         => __( 'Hide it', 'fw' ),
+					'class_add'    => __( 'Add a CSS class', 'fw' ),
+					'class_remove' => __( 'Remove a CSS class', 'fw' ),
+					'class_toggle' => __( 'Toggle a CSS class', 'fw' ),
+					'z_index'      => __( 'Bring it forward (z-index)', 'fw' ),
+					'pointer_off'  => __( 'Stop it reacting to the mouse', 'fw' ),
+					'pointer_on'   => __( 'Let it react to the mouse again', 'fw' ),
+				),
+			),
+			'set_value' => array(
+				'type'  => 'text',
+				'label' => __( 'Class or value', 'fw' ),
+				'desc'  => __( 'The class name(s) for a class, or the number for z-index.', 'fw' ),
+				'value' => '',
+				'attr'  => array( 'placeholder' => 'is-open  ·  10' ),
+			),
+			// Lottie and Rive (roadmap 6b): control the animation inside the target.
+			'lottie' => array(
+				'type'    => 'select',
+				'label'   => __( 'Lottie', 'fw' ),
+				'desc'    => __( 'With Do: Control its Lottie animation. The target is a Lottie element, or contains one.', 'fw' ),
+				'value'   => 'play',
+				'choices' => array(
+					'play'    => __( 'Play', 'fw' ),
+					'reverse' => __( 'Play backwards', 'fw' ),
+					'pause'   => __( 'Pause', 'fw' ),
+					'stop'    => __( 'Stop (back to the start)', 'fw' ),
+					'frame'   => __( 'Go to a frame and stop', 'fw' ),
+					'segment' => __( 'Play from one frame to another', 'fw' ),
+				),
+			),
+			'lottie_from' => array( 'type' => 'text', 'label' => __( 'Frame', 'fw' ), 'desc' => __( 'For “Go to a frame”, and the first frame of “Play from one frame to another”.', 'fw' ), 'value' => '0', 'attr' => array( 'placeholder' => '0' ) ),
+			'lottie_to'   => array( 'type' => 'text', 'label' => __( 'To frame', 'fw' ), 'value' => '', 'attr' => array( 'placeholder' => '60' ) ),
+			'rive' => array(
+				'type'    => 'select',
+				'label'   => __( 'Rive', 'fw' ),
+				'desc'    => __( 'With Do: Control its Rive animation. The target is a Rive element, or contains one.', 'fw' ),
+				'value'   => 'trigger',
+				'choices' => array(
+					'play'    => __( 'Play', 'fw' ),
+					'pause'   => __( 'Pause', 'fw' ),
+					'trigger' => __( 'Fire a state-machine trigger', 'fw' ),
+					'input'   => __( 'Set a state-machine input', 'fw' ),
+				),
+			),
+			'rive_name'  => array( 'type' => 'text', 'label' => __( 'Trigger or input', 'fw' ), 'desc' => __( 'Its name in the Rive file, exactly as written there.', 'fw' ), 'value' => '', 'attr' => array( 'placeholder' => 'Pressed' ) ),
+			'rive_value' => array( 'type' => 'text', 'label' => __( 'Input value', 'fw' ), 'desc' => __( 'A number, or true / false for a boolean input. Played backwards, the input goes back to its previous value.', 'fw' ), 'value' => '', 'attr' => array( 'placeholder' => 'true  ·  50' ) ),
+			// Burst (roadmap 5b): a short radial pop from the target (the Confetti module draws it).
+			'burst' => array(
+				'type'    => 'select',
+				'label'   => __( 'Burst', 'fw' ),
+				'desc'    => __( 'With Do: Burst from it. Pops from the centre of the target; nothing to undo when played backwards.', 'fw' ),
+				'value'   => 'mix',
+				'choices' => array(
+					'mix'      => __( 'Ring, sparks and lines', 'fw' ),
+					'ring'     => __( 'Ring', 'fw' ),
+					'sparks'   => __( 'Sparks', 'fw' ),
+					'lines'    => __( 'Lines', 'fw' ),
+					'confetti' => __( 'Confetti pop', 'fw' ),
+				),
+			),
+			'burst_count' => array( 'type' => 'slider', 'label' => __( 'Burst rays / sparks', 'fw' ), 'value' => 10, 'properties' => array( 'min' => 3, 'max' => 60, 'step' => 1 ) ),
+			'burst_size'  => array( 'type' => 'slider', 'label' => __( 'Burst size (px)', 'fw' ), 'value' => 70, 'properties' => array( 'min' => 10, 'max' => 400, 'step' => 5 ) ),
+			'burst_colour' => array( 'type' => 'rgba-color-picker', 'label' => __( 'Burst colour', 'fw' ), 'desc' => __( 'Empty = a mix of brand colours.', 'fw' ), 'value' => '' ),
 			'direction' => array(
 				'type'    => 'select',
 				'label'   => __( 'Direction', 'fw' ),
@@ -63,20 +139,10 @@ if ( ! function_exists( 'upw_interactions_step_options' ) ) :
 			'rotate'   => $slider( __( 'Rotate (°)', 'fw' ), $d['rotate'], -360, 360, 1 ),
 			'opacity'  => $slider( __( 'Opacity', 'fw' ), $d['opacity'], 0, 1, 0.01 ),
 			'blur'     => $slider( __( 'Blur (px)', 'fw' ), $d['blur'], 0, 30, 1 ),
+			'more'     => upw_interactions_more_field(),
 			'duration' => $slider( __( 'Duration (seconds)', 'fw' ), $d['duration'], 0, 4, 0.05 ),
 			'delay'    => $slider( __( 'Delay (seconds)', 'fw' ), 0, 0, 4, 0.05 ),
-			'ease'     => array(
-				'type'    => 'select',
-				'label'   => __( 'Easing', 'fw' ),
-				'value'   => $d['ease'],
-				'choices' => array(
-					'out'    => __( 'Smooth stop', 'fw' ),
-					'inout'  => __( 'Smooth start and stop', 'fw' ),
-					'in'     => __( 'Speed up', 'fw' ),
-					'back'   => __( 'Overshoot', 'fw' ),
-					'linear' => __( 'Linear', 'fw' ),
-				),
-			),
+			'ease'     => upw_interactions_ease_field( $d['ease'] ),
 			'stagger'  => $slider( __( 'Stagger (seconds)', 'fw' ), 0.08, 0, 1, 0.01 ),
 			'start'    => array(
 				'type'    => 'select',
@@ -127,7 +193,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 			. esc_html__( 'Each step animates this element or other ones, one after another (or together, with “Starts: With the previous step”).', 'fw' ) . ' '
 			. esc_html__( '“That match” takes a CSS ID (#promo), a class (.card-arrow) or a tag (img): give the element an ID or class in its Advanced tab, or in the Live Editor click “Pick on the page”. “Inside” with nothing typed animates its direct children.', 'fw' ) . ' '
 			. esc_html__( '“To” moves it from how it looks now to the values; “From” starts at the values and returns to how it looks now (a reveal). Stagger is the gap between several matched elements.', 'fw' ) . ' '
-			. esc_html__( '“Do: Put it in a state” (or take it out, or toggle it) switches the target to a named state set up in its own States card (Open, Active…); the values below are then not used.', 'fw' )
+			. esc_html__( '“Do: Put it in a state” (or take it out, or toggle it) switches the target to a named state set up in its own States card (Open, Active…); the values below are then not used.', 'fw' ) . ' '
+			. esc_html__( '“Set something instantly” shows, hides, adds a class or changes z-index with no animation; “Control its Lottie / Rive animation” plays, pauses or steers the animation inside the target.', 'fw' )
 			. '</p>',
 	);
 
