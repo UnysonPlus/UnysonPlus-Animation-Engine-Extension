@@ -105,7 +105,10 @@ if ( ! function_exists( 'upw_interactions_more_compile' ) ) :
 			return upw_interactions_num( $m, $k, $def, $min, $max );
 		};
 		$out = array();
-		foreach ( array( 'w' => array( 'width', 1600 ), 'h' => array( 'height', 1200 ), 'rad' => array( 'radius', 300 ) ) as $key => $def ) {
+		// NB: width compiles to `wd`, not `w` — `w` is the step's "start with previous" flag
+		// (upw_interactions_compile), and the runtime's valuesOf() read `s.w` as a width, so a
+		// start:'with' step was getting width:1px and shrinking to nothing. Keep them separate.
+		foreach ( array( 'wd' => array( 'width', 1600 ), 'h' => array( 'height', 1200 ), 'rad' => array( 'radius', 300 ) ) as $key => $def ) {
 			$v = $n( $def[0], 0, 0, $def[1] );
 			if ( $v > 0 ) {
 				$out[ $key ] = $v;

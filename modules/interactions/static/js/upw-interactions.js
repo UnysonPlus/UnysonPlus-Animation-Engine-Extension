@@ -44,7 +44,7 @@
 		if ( s.r ) { k.rotate = r2( s.r * a ) + 'deg'; }
 		if ( s.op !== undefined && s.op !== 1 ) { k.opacity = String( Math.max( 0, Math.min( 1, r2( 1 - ( 1 - s.op ) * a ) ) ) ); }
 		// More properties (roadmap 6a).
-		if ( s.w ) { k.width = s.w + 'px'; }
+		if ( s.wd ) { k.width = s.wd + 'px'; }
 		if ( s.h ) { k.height = s.h + 'px'; }
 		if ( s.rad ) { k.borderRadius = s.rad + 'px'; }
 		if ( s.bg ) { k.backgroundColor = s.bg; }
