@@ -143,7 +143,8 @@
 
 		if (trigger === 'loop') {
 			var seg = 0, t0 = null, holding = true; // hold shape 0 first, then morph out
-			(function run(now) {
+			// Every frame on the shared frame scheduler (window.upwAnimRaf).
+			window.upwAnimRaf.add(function run(now) {
 				if (t0 == null) { t0 = now; }
 				var e = now - t0;
 				if (holding) {
@@ -154,8 +155,7 @@
 					draw(seg, seg + 1, t);
 					if (t >= 1) { seg = (seg + 1) % segs; holding = true; t0 = now; }
 				}
-				requestAnimationFrame(run);
-			})(performance.now());
+			});
 			return;
 		}
 
@@ -169,35 +169,31 @@
 				p += dir * (hdur > 0 ? dt / hdur : 1);
 				if ((dir > 0 && p >= target) || (dir < 0 && p <= target)) { p = target; }
 				draw(0, 1, p < 0 ? 0 : p > 1 ? 1 : p);
-				if (p !== target) { raf = requestAnimationFrame(tick); } else { raf = 0; last = null; }
+				if (p === target) { raf = 0; last = null; return false; }
 			}
-			el.addEventListener('pointerenter', function () { target = 1; if (!raf) { last = null; raf = requestAnimationFrame(tick); } });
-			el.addEventListener('pointerleave', function () { target = 0; if (!raf) { last = null; raf = requestAnimationFrame(tick); } });
+			// On the shared frame scheduler (window.upwAnimRaf) while it moves.
+			el.addEventListener('pointerenter', function () { target = 1; if (!raf) { last = null; raf = 1; window.upwAnimRaf.add(tick); } });
+			el.addEventListener('pointerleave', function () { target = 0; if (!raf) { last = null; raf = 1; window.upwAnimRaf.add(tick); } });
 			return;
 		}
 
 		// view / click: play once through the sequence, each transition at its shape's duration.
 		function play() {
 			var seg = 0, t0 = null;
-			(function run(now) {
+			window.upwAnimRaf.add(function (now) {
 				if (t0 == null) { t0 = now; }
 				var d = segDurMs(seg);
 				var t = d > 0 ? Math.min(1, (now - t0) / d) : 1;
 				draw(seg, seg + 1, t);
-				if (t >= 1) { seg++; if (seg >= segs) { return; } t0 = now; }
-				requestAnimationFrame(run);
-			})(performance.now());
+				if (t >= 1) { seg++; if (seg >= segs) { return false; } t0 = now; }
+			});
 		}
 		if (trigger === 'click') {
 			el.style.cursor = 'pointer';
 			el.addEventListener('click', play);
-		} else if ('IntersectionObserver' in window) {
-			var io = new IntersectionObserver(function (entries) {
-				entries.forEach(function (en) { if (en.isIntersecting) { play(); io.unobserve(en.target); } });
-			}, { threshold: 0.3 });
-			io.observe(el);
 		} else {
-			play();
+			// Once, when 30% in view (the engine's shared in-view watcher; plays at once without IntersectionObserver).
+			window.upwInView(el, function (v) { if (v) { play(); } }, { threshold: 0.3, once: true });
 		}
 	}
 

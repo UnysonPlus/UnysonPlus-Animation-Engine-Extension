@@ -31,10 +31,13 @@
 		};
 	}
 
-	// Shared easing resolver — one CSS easing string (as the shared easing picker stores / resolves it:
-	// linear(…) with springs and the Motion design curves, cubic-bezier(…), steps(…), or a keyword) as a
-	// 0..1 → 0..1 function, for modules that ease by hand (scroll-scrubbed keyframes, GSAP). Cached per
-	// string; null for anything it does not recognise, so the caller keeps its own default.
+	// Shared easing resolver: THE one set of curves every engine module eases with (roadmap Phase 11). Takes
+	//   - a CSS easing string, as the shared easing picker stores / resolves it: linear(…) with springs and the
+	//     Motion design curves, cubic-bezier(…), steps(…), or a keyword (ease, ease-in, ease-out, ease-in-out);
+	//   - a named curve: none, power1-4 (quad, cubic, quart, quint, strong), sine, expo, circ, back(s), elastic(a,p),
+	//     bounce, each .in / .out (default) / .inOut, e.g. 'power3.out', 'back.out(1.7)', 'elastic.out(1,0.5)'.
+	// and returns a 0..1 → 0..1 function, cached per string; null for anything it does not recognise, so the caller
+	// keeps its own default. The scroll core's upwScroll.ease() and every module's own short names map onto it.
 	//   var f = window.upwEase('linear(0, 0.3, 0.9, 1.05, 1)'); f(0.5) → 0.9
 	if (!window.upwEase) {
 		var EASE_CACHE = {};
@@ -51,6 +54,41 @@
 			};
 		};
 		var KW = { ease: [0.25, 0.1, 0.25, 1], 'ease-in': [0.42, 0, 1, 1], 'ease-out': [0, 0, 0.58, 1], 'ease-in-out': [0.42, 0, 0.58, 1] };
+		// Named curves, as "in" functions; .out and .inOut are made from them.
+		var powIn = function (p) { return function (t) { return Math.pow(t, p); }; };
+		var mkOut = function (g) { return function (t) { return 1 - g(1 - t); }; };
+		var mkInOut = function (g) { return function (t) { return t < 0.5 ? g(t * 2) / 2 : 1 - g((1 - t) * 2) / 2; }; };
+		var NAMED = {
+			power1: powIn(2), quad: powIn(2), power2: powIn(3), cubic: powIn(3), power3: powIn(4), quart: powIn(4),
+			power4: powIn(5), quint: powIn(5), strong: powIn(5),
+			sine: function (t) { return 1 - Math.cos(t * Math.PI / 2); },
+			expo: function (t) { return t === 0 ? 0 : Math.pow(2, 10 * (t - 1)); },
+			circ: function (t) { return 1 - Math.sqrt(1 - t * t); }
+		};
+		var backIn = function (b) { b = isNaN(b) ? 1.70158 : b; return function (t) { return t * t * ((b + 1) * t - b); }; };
+		var elasticOut = function (a, p) {
+			a = isNaN(a) ? 1 : Math.max(1, a); p = isNaN(p) ? 0.3 : p;
+			var o = p / (2 * Math.PI) * Math.asin(1 / a);
+			return function (t) { return t === 0 || t === 1 ? t : a * Math.pow(2, -10 * t) * Math.sin((t - o) * (2 * Math.PI) / p) + 1; };
+		};
+		var bounceOut = function (t) {
+			var n = 7.5625, d = 2.75;
+			if (t < 1 / d) { return n * t * t; }
+			if (t < 2 / d) { t -= 1.5 / d; return n * t * t + 0.75; }
+			if (t < 2.5 / d) { t -= 2.25 / d; return n * t * t + 0.9375; }
+			t -= 2.625 / d; return n * t * t + 0.984375;
+		};
+		var named = function (css) {
+			var m = /^([a-z0-9]+)(?:\.(in|out|inOut))?(?:\(([^)]*)\))?$/i.exec(css);
+			if (!m) { return null; }
+			var kind = m[1].toLowerCase(), dir = m[2] || 'out', args = (m[3] || '').split(',').map(parseFloat), g = null;
+			if (NAMED[kind]) { g = NAMED[kind]; }
+			else if (kind === 'back') { g = backIn(args[0]); }
+			else if (kind === 'elastic') { g = mkOut(elasticOut(args[0], args[1])); }
+			else if (kind === 'bounce') { g = mkOut(bounceOut); }
+			if (!g) { return null; }
+			return dir === 'in' ? g : (dir === 'inOut' ? mkInOut(g) : mkOut(g));
+		};
 		window.upwEase = function (css) {
 			css = String(css || '').trim();
 			if (!css) { return null; }
@@ -89,6 +127,8 @@
 			} else if ((m = /^steps\(\s*(\d+)\s*(?:,\s*([a-z-]+))?\s*\)$/.exec(css))) {
 				var n = Math.max(1, parseInt(m[1], 10)), start = m[2] === 'jump-start' || m[2] === 'start';
 				f = function (t) { return t >= 1 ? 1 : Math.min(1, (start ? Math.floor(t * n) + 1 : Math.floor(t * n)) / n); };
+			} else {
+				f = named(css);
 			}
 			if (f) { EASE_CACHE[css] = f; }
 			return f;
@@ -122,12 +162,73 @@
 		};
 	}
 
+	// Shared "in view" watcher (roadmap Phase 11c) — the one way every engine module learns that an element entered or
+	// left the screen, instead of each module creating its own IntersectionObserver. One observer per setting
+	// (threshold + rootMargin) serves every element and module that asks for it.
+	//   var off = window.upwInView(el, function (inView, entry) { … }, { threshold: 0.2, rootMargin: '0px 0px -10% 0px', once: true });
+	//   off();  // stop watching
+	// cb(inView, entry) runs with the element's current state as soon as it is known, then on every change. once: stop
+	// after the first time it is in view. root: watch inside a scrolling element (its own observer, not shared). Without
+	// IntersectionObserver (very old browsers) cb(true, null) runs at once, so content is never left hidden.
+	if (!window.upwInView) {
+		var IO_POOL = {};
+		window.upwInView = function (el, cb, opts) {
+			opts = opts || {};
+			var none = function () {};
+			if (!el || typeof cb !== 'function') { return none; }
+			if (!('IntersectionObserver' in window)) { cb(true, null); return none; }
+			var th = opts.threshold == null ? 0 : opts.threshold, rm = opts.rootMargin || '0px';
+			var key = (opts.root ? '' : (Array.isArray(th) ? th.join(',') : String(th)) + '|' + rm), g = key ? IO_POOL[key] : null;
+			if (!g) {
+				g = { list: new Map(), last: new Map() };
+				g.io = new IntersectionObserver(function (entries) {
+					entries.forEach(function (en) {
+						g.last.set(en.target, en);
+						var hs = g.list.get(en.target);
+						if (hs) { hs.slice().forEach(function (h) { h(en); }); }
+					});
+				}, { threshold: th, rootMargin: rm, root: opts.root || null });
+				if (key) { IO_POOL[key] = g; }
+			}
+			var done = false;
+			var off = function () {
+				if (done) { return; }
+				done = true;
+				var hs = g.list.get(el);
+				if (!hs) { return; }
+				var i = hs.indexOf(h);
+				if (i >= 0) { hs.splice(i, 1); }
+				if (!hs.length) { g.list.delete(el); g.last.delete(el); g.io.unobserve(el); }
+			};
+			var h = function (en) {
+				if (done) { return; }
+				try { cb(en.isIntersecting, en); } catch (e) { setTimeout(function () { throw e; }); }
+				if (opts.once && en.isIntersecting) { off(); }
+			};
+			var hs = g.list.get(el);
+			if (!hs) {
+				g.list.set(el, [h]);
+				g.io.observe(el);
+			} else {
+				// Already watched for another caller: this one gets the state the observer last reported.
+				hs.push(h);
+				var last = g.last.get(el);
+				if (last) { setTimeout(function () { h(last); }, 0); }
+			}
+			return off;
+		};
+	}
+
 	if (window.upwAnimRaf) { return; }
 
-	var fns = [], id = 0;
+	var fns = [], id = 0, ticking = false;
+	function drop(fn) { var j = fns.indexOf(fn); if (j >= 0) { fns.splice(j, 1); } }
 
 	function tick(t) {
 		id = 0;
+		// While subscribers run, add() must not request a frame of its own: the end of this tick requests the next one.
+		// (Without this, a subscriber that re-adds itself each frame doubled the ticks every frame.)
+		ticking = true;
 		// Read the scroll position and viewport height ONCE, here, before any subscriber runs.
 		//
 		// At the top of a frame the layout is still clean (nothing has written to the DOM since the
@@ -143,16 +244,21 @@
 		//   var y = (window.upwAnimRaf && window.upwAnimRaf.scrollY) || window.pageYOffset;
 		api.scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
 		api.vh = window.innerHeight || document.documentElement.clientHeight || 0;
-		// iterate backwards so a callback can remove itself (return false) mid-loop
-		for (var i = fns.length - 1; i >= 0; i--) {
-			try { if (fns[i](t) === false) { fns.splice(i, 1); } }
-			catch (e) { fns.splice(i, 1); } // a broken effect must not kill the whole loop
+		// Run a snapshot, newest first, and remove by identity: a subscriber may return false, call remove() on itself or
+		// on another subscriber, or add one, mid-loop, and every other subscriber still runs exactly once this frame.
+		var list = fns.slice();
+		for (var i = list.length - 1; i >= 0; i--) {
+			var fn = list[i];
+			if (fns.indexOf(fn) < 0) { continue; } // removed earlier in this frame
+			try { if (fn(t) === false) { drop(fn); } }
+			catch (e) { drop(fn); } // a broken effect must not kill the whole loop
 		}
+		ticking = false;
 		if (fns.length && !document.hidden) { id = requestAnimationFrame(tick); }
 	}
 
 	function start() {
-		if (!id && fns.length && !document.hidden) { id = requestAnimationFrame(tick); }
+		if (!id && !ticking && fns.length && !document.hidden) { id = requestAnimationFrame(tick); }
 	}
 
 	document.addEventListener('visibilitychange', function () { if (!document.hidden) { start(); } });

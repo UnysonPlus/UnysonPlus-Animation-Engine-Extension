@@ -13,7 +13,7 @@ H.spotlight_text = function (el, target) {
 	el.addEventListener('pointermove', function (e) {
 		var r = el.getBoundingClientRect();
 		px = e.clientX - r.left; py = e.clientY - r.top;
-		if (!raf) { raf = (window.requestAnimationFrame || function (f) { return setTimeout(f, 16); })(apply); }
+		if (!raf) { raf = 1; window.upwAnimRaf.add(function () { apply(); return false; }); } // one write per frame, on the shared loop
 	}, { passive: true });
 	el.addEventListener('pointerleave', function () {
 		el.style.removeProperty('--tt-x'); el.style.removeProperty('--tt-y'); // back to centered

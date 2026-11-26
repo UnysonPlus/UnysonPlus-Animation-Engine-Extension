@@ -89,6 +89,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_dir'    => 'static/js/effects',
 			'base_css'  => 'static/css/base.css',
 			'base_js'   => 'static/js/motion-path.js',
+			'needs_raf' => true, // loop / view drives and the scrub run on the shared frame loop + in-view watcher
 			// Every shape is listed so that using ANY of them marks a "used JS style" → the loader
 			// enqueues the shared base_js runtime. There are no per-shape JS partials (the shape rides
 			// in data-mp-d), so the loader's file_exists check simply skips the per-shape files and

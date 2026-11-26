@@ -36,11 +36,15 @@
 		var style = sec.getAttribute('data-hs-style') || 'standard';
 		var intensity = clamp(num(sec, 'data-hs-intensity', 0.5), 0, 1);
 
-		// Pin wrapper: move the track into a sticky 100vh box (drag mode un-pins it below).
+		// Pin wrapper: move the track into a sticky 100vh box (drag mode un-pins it below). The row usually sits inside
+		// the section's container (section > .fw-container > .fw-row), so the box wraps the section's direct child that
+		// holds the track: the box stays a direct child of the section (sticky needs that) and the container keeps its width.
 		var pin = document.createElement('div');
 		pin.className = 'upw-hs-pin';
-		sec.insertBefore(pin, track);
-		pin.appendChild(track);
+		var top = track;
+		while (top.parentNode && top.parentNode !== sec) { top = top.parentNode; }
+		sec.insertBefore(pin, top);
+		pin.appendChild(top);
 		track.classList.add('upw-hs-track');
 		panels.forEach(function (p) { p.classList.add('upw-hs-panel'); });
 
@@ -122,7 +126,7 @@
 			var lastY = -1;
 			function frame() {
 				if (!document.documentElement.contains(sec)) { return false; }
-				var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+				var y = window.upwAnimRaf.scrollY; // read once per frame by the shared scheduler
 				if (y === lastY) { return; }
 				lastY = y;
 				tick();
@@ -130,13 +134,7 @@
 			function recompute() { if (!document.documentElement.contains(sec)) { window.removeEventListener('resize', recompute); window.removeEventListener('load', recompute); return; } dist = distance(); lastY = -1; tick(); }
 			window.addEventListener('resize', recompute, { passive: true });
 			window.addEventListener('load', recompute);
-			if (window.upwAnimRaf && window.upwAnimRaf.add) {
-				window.upwAnimRaf.add(frame);
-			} else {
-				var pending = false;
-				var onScroll = function () { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; tick(); }); };
-				window.addEventListener('scroll', onScroll, { passive: true });
-			}
+			window.upwAnimRaf.add(frame); // the shared frame scheduler (upw-raf.js, this script's dependency)
 			tick();
 		}
 	}
@@ -150,10 +148,12 @@
 		function px(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
 		// Window mouse listeners are added only WHILE dragging (on mousedown) and removed on mouseup,
 		// so a builder rescan doesn't accumulate a leaked global mousemove/mouseup per drag section.
-		function down(e) { dragging = true; track.classList.add('is-grabbing'); startX = px(e); startPos = x; vx = 0; last = startX; if (raf) { cancelAnimationFrame(raf); raf = null; } window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); }
+		function down(e) { dragging = true; track.classList.add('is-grabbing'); startX = px(e); startPos = x; vx = 0; last = startX; if (raf) { window.upwAnimRaf.remove(raf); raf = null; } window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); }
 		function move(e) { if (!dragging) return; var cx = px(e); x = startPos + (cx - startX); vx = cx - last; last = cx; apply(); if (e.cancelable && Math.abs(cx - startX) > 4) e.preventDefault(); }
 		function up() { if (!dragging) return; dragging = false; track.classList.remove('is-grabbing'); inertia(); window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }
-		function inertia() { if (Math.abs(vx) < 0.4) return; x += vx; vx *= 0.94; apply(); raf = requestAnimationFrame(inertia); }
+		// The throw after a drag glides on the shared frame scheduler until it slows below 0.4px a frame.
+		function glide() { if (Math.abs(vx) < 0.4) { raf = null; return false; } x += vx; vx *= 0.94; apply(); }
+		function inertia() { if (raf) { window.upwAnimRaf.remove(raf); raf = null; } if (glide() !== false) { raf = window.upwAnimRaf.add(glide); } }
 		track.addEventListener('mousedown', down);
 		track.addEventListener('touchstart', down, { passive: true });
 		track.addEventListener('touchmove', move, { passive: false });

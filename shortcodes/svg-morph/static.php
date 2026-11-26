@@ -16,7 +16,8 @@ $js_ver   = file_exists( $js_path ) ? ( $version . '.' . filemtime( $js_path ) )
 $css_ver  = file_exists( $css_path ) ? ( $version . '.' . filemtime( $css_path ) ) : $version;
 
 wp_enqueue_style( 'fw-shortcode-svg-morph', $base . '/static/css/svg-morph.css', array(), $css_ver );
-wp_enqueue_script( 'fw-shortcode-svg-morph', $base . '/static/js/svg-morph.js', array(), $js_ver, true );
+// Depends on the shared frame scheduler + in-view watcher (window.upwAnimRaf, window.upwInView; static/js/upw-raf.js).
+wp_enqueue_script( 'fw-shortcode-svg-morph', $base . '/static/js/svg-morph.js', function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $js_ver, true );
 
 $cfg = array(
 	'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

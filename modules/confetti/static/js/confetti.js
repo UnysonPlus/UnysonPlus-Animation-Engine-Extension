@@ -315,8 +315,9 @@
 	}
 
 	function step( now ) {
-		if ( ! particles.length && ! bursts.length ) { running = false; if ( ctx ) { ctx.clearRect( 0, 0, canvas.width, canvas.height ); } return; }
-		if ( document.hidden ) { requestAnimationFrame( step ); return; }
+		// Runs on the engine's shared frame scheduler (upw-raf.js), which pauses while the tab is hidden; returning
+		// false unsubscribes once the last particle and burst are gone.
+		if ( ! particles.length && ! bursts.length ) { running = false; if ( ctx ) { ctx.clearRect( 0, 0, canvas.width, canvas.height ); } return false; }
 		ctx.clearRect( 0, 0, canvas.width, canvas.height );
 		if ( bursts.length ) { drawBursts( now || ( window.performance ? performance.now() : Date.now() ) ); }
 		for ( var i = particles.length - 1; i >= 0; i-- ) {
@@ -333,7 +334,6 @@
 			if ( t >= 1 || p.y > canvas.height + 60 * dpr ) { particles.splice( i, 1 ); continue; }
 			draw( p, t < 0.82 ? 1 : Math.max( 0, 1 - ( t - 0.82 ) / 0.18 ) );
 		}
-		requestAnimationFrame( step );
 	}
 
 
@@ -442,7 +442,7 @@
 	};
 	window.upwBurstPalettes = PALETTES;
 
-	function start() { if ( ! running ) { running = true; requestAnimationFrame( step ); } }
+	function start() { if ( ! running ) { running = true; window.upwAnimRaf.add( step ); } }
 
 	function bind( el ) {
 		if ( el.__cfBound ) { return; }
@@ -459,16 +459,8 @@
 		if ( has( 'hover' ) ) { el.addEventListener( 'mouseenter', fire ); }
 		if ( has( 'load' ) )  { fire(); }
 		if ( has( 'view' ) ) {
-			if ( 'IntersectionObserver' in window ) {
-				var io = new IntersectionObserver( function ( ents ) {
-					ents.forEach( function ( en ) {
-						if ( en.isIntersecting ) { fire(); if ( ! replay ) { io.unobserve( el ); } }
-					} );
-				}, { threshold: 0.3 } );
-				io.observe( el );
-			} else {
-				fire();
-			}
+			// The engine's shared in-view watcher (upw-raf.js); without replay it stops after the first time.
+			window.upwInView( el, function ( v ) { if ( v ) { fire(); } }, { threshold: 0.3, once: ! replay } );
 		}
 	}
 

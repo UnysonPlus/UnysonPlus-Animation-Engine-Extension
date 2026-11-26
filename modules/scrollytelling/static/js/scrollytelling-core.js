@@ -268,7 +268,7 @@
 		// Progress loop while the section is in view: scene switching + backdrop scrub. Rides the shared
 		// frame scheduler (window.upwAnimRaf) — one ordered tick that pauses when the tab is hidden — and
 		// falls back to a private rAF loop if the scheduler isn't present.
-		var raf = 0, inView = true, lastFade = -1;
+		var inView = true, lastFade = -1;
 		// Backdrop Motion — a scroll-scrubbed CAMERA move on the backdrop (the "camera glide"), not a
 		// flat parallax slide. The backdrop is treated as a PLANE the camera glides across: it pans
 		// (translate) AND yaws through a real perspective (rotateY/rotateX). The yaw is the crux — it
@@ -332,20 +332,12 @@
 		}
 		function run() {
 			if (!inView) { return; }
-			if (window.upwAnimRaf && window.upwAnimRaf.add) { window.upwAnimRaf.add(frame); }
-			else if (!raf) { var loop = function () { frame(); raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop); }
+			window.upwAnimRaf.add(frame); // the shared frame scheduler (upw-raf.js, this script's dependency)
 		}
-		function stop() {
-			if (window.upwAnimRaf && window.upwAnimRaf.remove) { window.upwAnimRaf.remove(frame); }
-			if (raf) { cancelAnimationFrame(raf); raf = 0; }
-		}
-		if ('IntersectionObserver' in window) {
-			var io = new IntersectionObserver(function (es) {
-				inView = es[0].isIntersecting; if (inView) { run(); } else { stop(); }
-			}, { threshold: 0 });
-			io.observe(el);
-			teardown.push(function () { stop(); io.disconnect(); });
-		} else { run(); }
+		function stop() { window.upwAnimRaf.remove(frame); }
+		// Runs only while the Section is on screen (the engine's shared in-view watcher).
+		var offView = window.upwInView(el, function (v) { inView = v; if (inView) { run(); } else { stop(); } }, { threshold: 0 });
+		teardown.push(function () { stop(); offView(); });
 		activate(0);
 		if (backdrop) { backdrop.update(0); }
 		bdApply(0);
@@ -469,21 +461,16 @@
 
 		// Step detection: a thin trigger band at `at`% of the viewport.
 		var band = '-' + at + '% 0px -' + (100 - at) + '% 0px';
-		if ('IntersectionObserver' in window) {
-			var io = new IntersectionObserver(function (entries) {
-				entries.forEach(function (en) {
-					if (en.isIntersecting) { activate(steps.indexOf(en.target)); }
-				});
-			}, { rootMargin: band, threshold: 0 });
-			steps.forEach(function (s) { io.observe(s); });
-			teardown.push(function () { io.disconnect(); });
-		}
+		steps.forEach(function (st) {
+			var offStep = window.upwInView(st, function (v) { if (v) { activate(steps.indexOf(st)); } }, { rootMargin: band, threshold: 0 });
+			teardown.push(offStep);
+		});
 		activate(0);
 
 		// Scrub styles: feed 0..1 progress while the Section is in view. Rides the shared frame
-		// scheduler (window.upwAnimRaf), with a private-rAF fallback.
+		// scheduler (window.upwAnimRaf).
 		if (def && def.scrub && typeof def.onProgress === 'function') {
-			var raf = 0, inView = true, lastP = -1;
+			var inView = true, lastP = -1;
 			function frame() {
 				var r = el.getBoundingClientRect();
 				var p = Math.max(0, Math.min(1, (window.innerHeight - r.top) / ((r.height + window.innerHeight) || 1)));
@@ -493,20 +480,11 @@
 			}
 			function run() {
 				if (!inView) { return; }
-				if (window.upwAnimRaf && window.upwAnimRaf.add) { window.upwAnimRaf.add(frame); }
-				else if (!raf) { var loop = function () { frame(); raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop); }
+				window.upwAnimRaf.add(frame);
 			}
-			function stop() {
-				if (window.upwAnimRaf && window.upwAnimRaf.remove) { window.upwAnimRaf.remove(frame); }
-				if (raf) { cancelAnimationFrame(raf); raf = 0; }
-			}
-			if ('IntersectionObserver' in window) {
-				var scrubIo = new IntersectionObserver(function (es) {
-					inView = es[0].isIntersecting; if (inView) { run(); } else { stop(); }
-				}, { threshold: 0 });
-				scrubIo.observe(el);
-				teardown.push(function () { stop(); scrubIo.disconnect(); });
-			} else { run(); }
+			function stop() { window.upwAnimRaf.remove(frame); }
+			var offScrub = window.upwInView(el, function (v) { inView = v; if (inView) { run(); } else { stop(); } }, { threshold: 0 });
+			teardown.push(function () { stop(); offScrub(); });
 		}
 
 		// Teardown for builder rescans: disconnect observers, stop the loop, and run any per-style

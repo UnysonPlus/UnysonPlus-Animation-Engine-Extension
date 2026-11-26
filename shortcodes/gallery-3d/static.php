@@ -14,7 +14,8 @@ if ( $upw_ae ) {
 	$ver  = $upw_ae->manifest->get_version();
 	$base = '/shortcodes/gallery-3d/static';
 	wp_enqueue_style( 'fw-shortcode-gallery-3d', $upw_ae->get_declared_URI( $base . '/css/gallery-3d.css' ), array(), $ver );
-	wp_enqueue_script( 'fw-shortcode-gallery-3d', $upw_ae->get_declared_URI( $base . '/js/gallery-3d.js' ), array(), $ver, true );
+	// Runs on the engine's shared frame scheduler + in-view watcher (window.upwAnimRaf / upwInView, static/js/upw-raf.js).
+	wp_enqueue_script( 'fw-shortcode-gallery-3d', $upw_ae->get_declared_URI( $base . '/js/gallery-3d.js' ), function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $ver, true );
 }
 
 if ( ! function_exists( '_fw_gallery_3d_enqueue_instance' ) ) :
@@ -64,18 +65,14 @@ if ( ! function_exists( '_fw_gallery_3d_enqueue_instance' ) ) :
 		// Motion engine uses, so they dedupe) and make the gallery runtime depend on ScrollTrigger so it
 		// loads AFTER it and takes the GSAP path.
 		$is_chained = ( isset( $atts['chain'] ) && $atts['chain'] === 'yes' );
-		if ( 'scroll_choreography' === $design || $is_chained ) {
-			$ae = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
-			if ( $ae ) {
-				$gver = '3.13.0';
-				wp_enqueue_script( 'upw-gsap-core', $ae->get_declared_URI( '/modules/scroll-motion/static/js/vendor/gsap/gsap.min.js' ), array(), $gver, true );
-				wp_enqueue_script( 'upw-gsap-scrolltrigger', $ae->get_declared_URI( '/modules/scroll-motion/static/js/vendor/gsap/ScrollTrigger.min.js' ), array( 'upw-gsap-core' ), $gver, true );
-				global $wp_scripts;
-				if ( isset( $wp_scripts->registered['fw-shortcode-gallery-3d'] ) ) {
-					$gdeps =& $wp_scripts->registered['fw-shortcode-gallery-3d']->deps;
-					if ( ! in_array( 'upw-gsap-scrolltrigger', $gdeps, true ) ) { $gdeps[] = 'upw-gsap-scrolltrigger'; }
-					unset( $gdeps );
-				}
+		if ( ( 'scroll_choreography' === $design || $is_chained ) && function_exists( 'upw_anim_scroll_handle' ) ) {
+			// The engine's own scroll core (pin + scrub; Roadmap Phase 9d), loaded before the gallery runtime.
+			$core = upw_anim_scroll_handle();
+			global $wp_scripts;
+			if ( isset( $wp_scripts->registered['fw-shortcode-gallery-3d'] ) ) {
+				$gdeps =& $wp_scripts->registered['fw-shortcode-gallery-3d']->deps;
+				if ( ! in_array( $core, $gdeps, true ) ) { $gdeps[] = $core; }
+				unset( $gdeps );
 			}
 		}
 		$click = function_exists( 'sc_get' )

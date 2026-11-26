@@ -434,6 +434,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'css_dir'   => 'static/css/effects',
 			'js_dir'    => 'static/js/effects',
 			'base_js'   => 'static/js/hover-core.js',
+			'needs_raf' => true, // Phase 11: frame loops on window.upwAnimRaf, in-view on window.upwInView (static/js/upw-raf.js)
 			// ONLY these effects ship a JS partial; every other effect is CSS-only,
 			// so a page using only CSS effects loads zero hover JavaScript.
 			'js_styles' => array( 'magnetic', 'tilt', 'spotlight', 'ripple', 'text_scramble', 'text_swap', 'webgl_displace', 'depth_layers', 'flashlight', 'blob', 'cursor_trail', 'magnetic_letters' ),

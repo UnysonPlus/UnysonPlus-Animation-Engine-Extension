@@ -2,12 +2,12 @@
  * UnysonPlus — Parallax Depth Layers runtime.
  *
  * Reads the clean data-pl-* attributes stamped by parallax.php and drives multi-layer depth
- * parallax from the pointer and/or scroll. One shared requestAnimationFrame loop; scene-level
+ * parallax from the pointer and/or scroll. Runs on the engine's shared frame scheduler (upw-raf.js); scene-level
  * pointer smoothing (each layer maps the smoothed pointer by its depth). No library.
  *
  * Guards: reduced motion + disable-on-mobile skip everything; the pointer source is skipped on
- * touch (scroll layers still move); off-screen layers are culled (IntersectionObserver); the loop
- * pauses when the tab is hidden.
+ * touch (scroll layers still move); off-screen layers are culled (the shared in-view watcher); the
+ * shared loop pauses when the tab is hidden.
  */
 (function () {
   'use strict';
@@ -97,37 +97,26 @@
         s.scroll = clamp((window.innerHeight / 2 - cy) / (window.innerHeight / 2 + r.height / 2), -1, 1);
       }
     }
-    var ticking = false;
+    var RAF = window.upwAnimRaf, ticking = false;
     window.addEventListener('scroll', function () {
-      if (!ticking) { ticking = true; requestAnimationFrame(function () { updateScroll(); ticking = false; kick(); }); }
+      if (!ticking) { ticking = true; RAF.add(function () { updateScroll(); ticking = false; kick(); return false; }); }
     }, { passive: true });
     window.addEventListener('resize', function () { measure(); updateScroll(); kick(); }, { passive: true });
     updateScroll();
 
     // Cull off-screen layers.
-    if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) {
-          for (var i = 0; i < layers.length; i++) { if (layers[i].el === en.target) { layers[i].visible = en.isIntersecting; break; } }
-        });
-        kick(); // a newly-visible layer needs one pass to be positioned
-      }, { rootMargin: '25%' });
-      layers.forEach(function (l) { io.observe(l.el); });
-    }
-
-    var running = true, rafId = 0;
-    // (Re)start the loop. No-op if already scheduled or paused — the scroll / mouse / IO / visibility
-    // handlers call this when there's new input, so an idle page stops rescheduling entirely instead of
-    // burning a permanent 60fps wake-up.
-    function kick() { if (!running || rafId) { return; } rafId = requestAnimationFrame(tick); }
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) { running = false; if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
-      else if (!running) { running = true; kick(); }
+    layers.forEach(function (l) {
+      // a newly-visible layer needs one pass to be positioned
+      window.upwInView(l.el, function (v) { l.visible = v; kick(); }, { rootMargin: '25%' });
     });
 
+    var looping = false;
+    // (Re)start the loop. No-op if already running — the scroll / mouse / in-view handlers call this when
+    // there's new input, so an idle page drops off the shared loop entirely instead of burning a permanent
+    // 60fps wake-up. (The shared loop itself pauses while the tab is hidden.)
+    function kick() { if (looping) { return; } looping = true; RAF.add(tick); }
+
     function tick() {
-      rafId = 0;
-      if (!running) return;
       var moving = false;
       for (var i = 0; i < scenes.length; i++) {
         var s = scenes[i];
@@ -156,7 +145,7 @@
       }
       // Keep running only while the mouse-ease is still settling; scroll / mouse / IO handlers re-kick
       // when there's new input.
-      if (moving) { rafId = requestAnimationFrame(tick); }
+      if (!moving) { looping = false; return false; }
     }
     kick();
   });

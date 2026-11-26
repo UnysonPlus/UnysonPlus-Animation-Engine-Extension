@@ -16,6 +16,7 @@
 				var th = [];
 				for (var i = 0; i < len; i++) { th[i] = (i / len) * 0.6 + Math.random() * 0.4; }
 
+				// One step per frame on the engine's shared frame loop (window.upwAnimRaf); returning false ends it.
 				function frame(ts) {
 					if (!start) { start = ts; }
 					var p = Math.min(1, (ts - start) / dur);
@@ -26,10 +27,9 @@
 						else { out += chars.charAt(Math.floor(Math.random() * chars.length)); }
 					}
 					el.textContent = out;
-					if (p < 1) { requestAnimationFrame(frame); }
-					else { el.textContent = text; running = false; }
+					if (p >= 1) { el.textContent = text; running = false; return false; }
 				}
-				requestAnimationFrame(frame);
+				window.upwAnimRaf.add(frame);
 			});
 		}
 	};

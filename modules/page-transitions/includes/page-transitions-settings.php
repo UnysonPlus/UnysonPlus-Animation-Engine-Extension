@@ -147,6 +147,19 @@ add_filter( 'upw_anim_engine_module_tabs', function ( $tabs ) {
 								'value'   => 'spinner',
 								'choices' => array( 'spinner' => __( 'Spinner', 'fw' ), 'bar' => __( 'Bar', 'fw' ), 'dots' => __( 'Dots', 'fw' ) ),
 							),
+							// Shared elements (roadmap 6e): independent of the overlay's Enable switch.
+							'shared_posts'    => $sw(
+								__( 'Featured images and titles flow into their post', 'fw' ),
+								__( 'From a list of posts, the clicked card’s picture and title move into the post’s featured image and title as the page changes (and back again). Uses the browser’s View Transitions; browsers without them change page as usual. Elements you name with a Shared Element card flow between pages whether this is on or not.', 'fw' ),
+								false
+							),
+							'shared_duration' => array(
+								'type'       => 'slider',
+								'label'      => __( 'Shared elements: duration (s)', 'fw' ),
+								'value'      => 0.45,
+								'properties' => array( 'min' => 0.2, 'max' => 1.5, 'step' => 0.05 ),
+							),
+							'shared_ease'     => function_exists( 'upw_interactions_ease_field' ) ? upw_interactions_ease_field( 'soft_land', __( 'Shared elements: easing', 'fw' ) ) : array( 'type' => 'text', 'label' => __( 'Shared elements: easing', 'fw' ), 'value' => 'soft_land' ),
 						),
 					),
 				),

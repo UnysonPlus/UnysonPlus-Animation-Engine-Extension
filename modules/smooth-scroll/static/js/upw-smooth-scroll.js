@@ -40,6 +40,10 @@
 				window.ScrollTrigger.refresh();
 			}
 		} else {
+			// Lenis keeps its OWN frame loop on purpose (roadmap Phase 11b): it must move the page before anything reads
+			// the scroll position in the frame. The shared scheduler (upw-raf.js) reads scrollY at the top of its tick, so
+			// Lenis as one of its subscribers left the other modules a frame behind (measured: 66 of 67 moving frames,
+			// up to 277px, pw-screens/_p11-lenis.mjs). Started at boot, this loop runs before the shared tick each frame.
 			var raf = function (time) { lenis.raf(time); requestAnimationFrame(raf); };
 			requestAnimationFrame(raf);
 		}

@@ -25,18 +25,14 @@
 	function num(el, attr, dflt) { var v = parseFloat(el.getAttribute('data-phys-' + attr)); return isNaN(v) ? dflt : v; }
 	function TF(el, s) { el.style.transform = s; }
 
-	/* ---- Continuous: run only while on-screen + tab visible. ONE shared observer drives every physics
-	   element (was a NEW IntersectionObserver per element, never disconnected — dozens on a busy section). ---- */
-	var contMap = ('WeakMap' in window) ? new WeakMap() : null;
-	var contIO = ('IntersectionObserver' in window && contMap) ? new IntersectionObserver(function (entries) {
-		entries.forEach(function (en) { var h = contMap.get(en.target); if (h) { en.isIntersecting ? h.show() : h.hide(); } });
-	}, { threshold: 0.01 }) : null;
+	/* ---- Continuous: run only while on-screen + tab visible, through the engine's shared in-view watcher
+	   (upw-raf.js window.upwInView: one observer for every element and module with the same setting). ---- */
 	function observe(el, fn) {
 		el.style.willChange = 'transform';
 		el.__pvis = false;
 		function show() { if (!el.__pvis && !document.hidden) { el.__pvis = true; add(fn); } }
 		function hide() { el.__pvis = false; remove(fn); }
-		if (contIO) { contMap.set(el, { show: show, hide: hide }); contIO.observe(el); }
+		if (window.upwInView) { window.upwInView(el, function (v) { if (v) { show(); } else { hide(); } }, { threshold: 0.01 }); }
 		else { show(); }
 		// (Tab-hidden pausing is handled centrally by the shared RAF scheduler — no per-element
 		// visibilitychange listener, which would leak one document listener per physics element.)
@@ -45,10 +41,8 @@
 	/* ---- One-shot entrance when scrolled into view ---- */
 	function entrance(el, run) {
 		el.style.willChange = 'transform, opacity';
-		if (!('IntersectionObserver' in window)) { run(); return; }
-		var done = false;
-		var io = new IntersectionObserver(function (e) { e.forEach(function (en) { if (en.isIntersecting && !done) { done = true; io.disconnect(); run(); } }); }, { threshold: 0.15 });
-		io.observe(el);
+		if (!window.upwInView) { run(); return; }
+		window.upwInView(el, function (v) { if (v) { run(); } }, { threshold: 0.15, once: true });
 	}
 
 	/* ---- Spring a scalar from → to, calling apply(x) each frame ---- */

@@ -31,4 +31,5 @@ require_once __DIR__ . '/includes/interactions-more.php';        // More propert
 require_once __DIR__ . '/includes/interactions-settings.php';
 require_once __DIR__ . '/includes/states-settings.php';       // the States card (I3)
 require_once __DIR__ . '/includes/interactions-render.php';
-require_once __DIR__ . '/includes/interactions-sitewide.php';   // "Use on every page" (I5 reuse across pages)
+require_once __DIR__ . '/includes/interactions-sitewide.php';
+require_once __DIR__ . '/includes/interactions-presets.php';     // Saved Interactions + Import / Export (roadmap 6g)   // "Use on every page" (I5 reuse across pages)

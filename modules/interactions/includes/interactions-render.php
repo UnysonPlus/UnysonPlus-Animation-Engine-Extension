@@ -57,6 +57,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'css_dir'   => 'static/css',
 			'js_dir'    => 'static/js',
 			'base_js'   => 'static/js/upw-interactions.js',
+			'needs_raf' => true, // the in-view / scroll-past triggers and the mouse smoothing use the shared loop + in-view watcher
 			'js_styles' => array_merge( upw_interactions_modes(), array( 'states', 'site' ) ),
 			'js_cfg'    => function () {
 				$cfg = array(

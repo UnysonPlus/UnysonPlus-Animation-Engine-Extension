@@ -1,7 +1,7 @@
 /**
  * UnysonPlus — Marquee runtime.
  *
- * Seamless ticker for any element's content, driven by ONE shared requestAnimationFrame loop so
+ * Seamless ticker for any element's content, driven by the engine's shared frame loop (window.upwAnimRaf) so
  * pause-on-hover, drag-with-momentum and scroll-reactive speed all work uniformly.
  *
  *  - Straight mode: the content is cloned into a doubled track; the track is translated by JS
@@ -47,11 +47,10 @@
       boost = Math.min(8, boost + Math.abs(y - lastY) * 0.06); lastY = y;
     }, { passive: true });
 
-    var last = 0, running = true;
-    document.addEventListener('visibilitychange', function () { if (document.hidden) { running = false; } else if (!running) { running = true; last = 0; requestAnimationFrame(tick); } });
+    // The shared loop (static/js/upw-raf.js) pauses itself while the tab is hidden; dt is capped, so it never jumps.
+    var last = 0;
 
     function tick(t) {
-      if (!running) return;
       var dt = last ? Math.min(0.05, (t - last) / 1000) : 0.016; last = t;
       boost *= 0.92;
       for (var i = 0; i < items.length; i++) {
@@ -66,9 +65,8 @@
         }
         m.apply();
       }
-      requestAnimationFrame(tick);
     }
-    requestAnimationFrame(tick);
+    window.upwAnimRaf.add(tick);
 
     function build(el) {
       if (el.__mq) return null; el.__mq = true;

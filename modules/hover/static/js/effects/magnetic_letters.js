@@ -51,7 +51,7 @@
 			el.addEventListener('pointerenter', function () { hovering = true; measure(); });
 			el.addEventListener('pointermove', function (e) {
 				mx = e.clientX; my = e.clientY;
-				if (!ticking) { ticking = true; requestAnimationFrame(apply); } // coalesce writes to one per frame
+				if (!ticking) { ticking = true; window.upwAnimRaf.add(function () { apply(); return false; }); } // coalesce writes to one per frame, on the shared loop
 			}, { passive: true });
 			el.addEventListener('pointerleave', function () {
 				hovering = false;

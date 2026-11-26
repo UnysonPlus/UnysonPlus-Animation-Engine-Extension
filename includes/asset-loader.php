@@ -96,6 +96,38 @@ if ( ! function_exists( 'upw_anim_raf_handle' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'upw_anim_scroll_handle' ) ) :
+	/**
+	 * Register + enqueue the engine's own scroll core (static/js/upw-scroll.js: scroll triggers, pinning, tweens on the
+	 * browser's Web Animations, timelines; window.upwScroll) once per request and return its handle. With $split, also the
+	 * text splitter (static/js/upw-split.js, window.upwSplit) and return its handle instead (it depends on nothing, the
+	 * caller depends on both). Roadmap Phase 9: the engine's scroll motion no longer needs GSAP.
+	 */
+	function upw_anim_scroll_handle( $split = false ) {
+		$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
+		$h   = 'upw-scroll-core';
+		if ( ! $ext ) {
+			return $h;
+		}
+		$ver = $ext->manifest->get_version();
+		if ( ! wp_script_is( $h, 'registered' ) ) {
+			$abs = $ext->get_declared_path( '/static/js/upw-scroll.js' );
+			wp_register_script( $h, fw_min_uri( $ext->get_declared_URI( '/static/js/upw-scroll.js' ) ), array( upw_anim_raf_handle() ), upw_anim_asset_ver( $ver, $abs ), true );
+		}
+		wp_enqueue_script( $h );
+		if ( ! $split ) {
+			return $h;
+		}
+		$s = 'upw-split';
+		if ( ! wp_script_is( $s, 'registered' ) ) {
+			$abs = $ext->get_declared_path( '/static/js/upw-split.js' );
+			wp_register_script( $s, fw_min_uri( $ext->get_declared_URI( '/static/js/upw-split.js' ) ), array(), upw_anim_asset_ver( $ver, $abs ), true );
+		}
+		wp_enqueue_script( $s );
+		return $s;
+	}
+endif;
+
 if ( ! function_exists( 'upw_anim_use_asset' ) ) :
 	/** Record that $module used $style on this request → its partial(s) get enqueued. */
 	function upw_anim_use_asset( $module, $style ) {

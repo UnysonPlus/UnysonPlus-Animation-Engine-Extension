@@ -100,23 +100,15 @@
 					draw(sizes[k]);
 					var wait = (k === 0) ? speed * 3 : speed; // dwell on the first (blockiest) frame
 					k++;
-					setTimeout(function () { requestAnimationFrame(step); }, wait);
+					setTimeout(function () { window.upwAnimRaf.add(function () { step(); return false; }); }, wait); // drawn on the engine's shared frame loop
 				}
 				step();
 			}
 
 			window.addEventListener('resize', function () { fit(); draw(1); });
 
-			if ('IntersectionObserver' in window) {
-				var io = new IntersectionObserver(function (ents) {
-					ents.forEach(function (en) {
-						if (en.isIntersecting) { animate(); if (!replay) { io.unobserve(el); } }
-					});
-				}, { threshold: 0.15 });
-				io.observe(el);
-			} else {
-				animate();
-			}
+			// Plays each time it comes into view (once unless replay), via the engine's shared in-view watcher.
+			window.upwInView(el, function (v) { if (v) { animate(); } }, { threshold: 0.15, once: !replay });
 		}
 
 		start();

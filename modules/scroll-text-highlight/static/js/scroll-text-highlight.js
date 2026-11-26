@@ -93,7 +93,8 @@
 	function onScroll() {
 		if (ticking) return;
 		ticking = true;
-		requestAnimationFrame(function () {
+		// One update per frame, on the engine's shared frame loop (window.upwAnimRaf).
+		window.upwAnimRaf.add(function () {
 			for (var i = 0; i < items.length; i++) {
 				var it = items[i];
 				if (!document.documentElement.contains(it.el)) { items.splice(i, 1); i--; continue; } // self-clean
@@ -101,6 +102,7 @@
 				update(it);
 			}
 			ticking = false;
+			return false;
 		});
 	}
 
@@ -109,13 +111,11 @@
 		if (!items.length) return;
 		// Gate per-item rect reads to on-screen items only (was reading every item's rect every scroll
 		// frame — O(n) forced reflows on long pages). Off-screen items are skipped in the loop above.
-		if ('IntersectionObserver' in window) {
-			var io = new IntersectionObserver(function (entries) {
-				entries.forEach(function (en) { for (var i = 0; i < items.length; i++) { if (items[i].el === en.target) { items[i].vis = en.isIntersecting; break; } } });
-				onScroll();
-			}, { rootMargin: '15%' });
-			items.forEach(function (it) { it.vis = false; io.observe(it.el); });
-		}
+		// (the engine's shared in-view watcher, window.upwInView)
+		items.forEach(function (it) {
+			it.vis = false;
+			window.upwInView(it.el, function (v) { it.vis = v; onScroll(); }, { rootMargin: '15%' });
+		});
 		window.addEventListener('scroll', onScroll, { passive: true });
 		window.addEventListener('resize', onScroll);
 		onScroll();

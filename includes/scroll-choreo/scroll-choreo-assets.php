@@ -25,6 +25,10 @@ if ( ! function_exists( 'fw_scroll_choreo_enqueue_base' ) ) :
 		require_once dirname( __DIR__ ) . '/anim-guide/anim-guide-assets.php';
 		$guide_dep = function_exists( 'upw_anim_guide_enqueue' ) ? upw_anim_guide_enqueue() : '';
 		$deps      = $guide_dep ? array( $guide_dep ) : array();
+		// The engine's one easing set (window.upwEase) lives in the shared frame scheduler.
+		if ( function_exists( 'upw_anim_raf_handle' ) ) {
+			$deps[] = upw_anim_raf_handle();
+		}
 
 		wp_enqueue_style( 'fw-scroll-choreo-base', $uri . '/scroll-choreo-base.css', array(), $cv );
 		wp_enqueue_script( 'fw-scroll-choreo-engine', $uri . '/scroll-choreo-engine.js', $deps, $jv, true );

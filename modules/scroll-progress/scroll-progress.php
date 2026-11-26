@@ -221,7 +221,8 @@ add_action( 'wp_enqueue_scripts', function () {
 
 	wp_enqueue_style( 'upw-sp-base', $base . '/static/css/base.css', array(), $fver( '/static/css/base.css' ) );
 	wp_enqueue_style( 'upw-sp-css-' . $fam, $base . '/static/css/families/' . $fam . '.css', array( 'upw-sp-base' ), $fver( '/static/css/families/' . $fam . '.css' ) );
-	wp_enqueue_script( 'upw-scroll-progress', $base . '/static/js/families/' . $fam . '.js', array(), $fver( '/static/js/families/' . $fam . '.js' ), true );
+	// Depends on the shared frame scheduler (window.upwAnimRaf): one update per frame, on the engine's shared loop.
+	wp_enqueue_script( 'upw-scroll-progress', $base . '/static/js/families/' . $fam . '.js', function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $fver( '/static/js/families/' . $fam . '.js' ), true );
 
 	$o     = ( is_array( $s ) && isset( $s[ $kind ] ) && is_array( $s[ $kind ] ) ) ? $s[ $kind ] : array();
 	$col   = function ( $v, $d ) { return function_exists( 'sc_color_to_css' ) ? sc_color_to_css( $v, $d ) : $d; };

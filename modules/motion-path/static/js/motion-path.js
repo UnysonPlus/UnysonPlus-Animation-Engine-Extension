@@ -123,7 +123,7 @@
 		}
 	}
 
-	// ---- loop + view: rAF ----
+	// ---- loop + view: the engine's shared frame loop (window.upwAnimRaf), only while something moves ----
 	function tick(now) {
 		var alive = false;
 		for (var i = 0; i < loopItems.length; i++) {
@@ -139,25 +139,25 @@
 				apply(it, it.ease(e));
 			}
 		}
-		raf = alive ? requestAnimationFrame(tick) : 0;
+		if (!alive) { raf = 0; return false; }
 	}
-	function kick() { if (!raf) { raf = requestAnimationFrame(tick); } }
+	function kick() { if (!raf) { raf = 1; window.upwAnimRaf.add(tick); } }
 
 	function init() {
 		if (reduce || disableMobile) { return; }
 		var els = document.querySelectorAll('.sc-motion-path');
 		if (!els.length) { return; }
 
-		var viewObs = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
-			entries.forEach(function (en) {
-				if (!en.isIntersecting) { return; }
-				var it = en.target.__mpItem;
-				if (it && it.mode === 'view' && !it.done) {
+		// "On view" plays once, the first time 20% of it is on screen (the engine's shared in-view watcher, upwInView).
+		var watchView = function (el) {
+			window.upwInView(el, function (inView) {
+				var it = el.__mpItem;
+				if (inView && it && it.mode === 'view' && !it.done) {
 					it.done = true; it.playing = true; it.t0 = performance.now();
 					kick();
 				}
-			});
-		}, { threshold: 0.2 }) : null;
+			}, { threshold: 0.2, once: true });
+		};
 
 		for (var i = 0; i < els.length; i++) {
 			var el = els[i];
@@ -173,8 +173,7 @@
 			} else if (drive === 'view') {
 				item.mode = 'view'; item.done = false; item.playing = false;
 				loopItems.push(item);
-				if (viewObs) { viewObs.observe(el); }
-				else { item.done = true; item.playing = true; item.t0 = performance.now(); kick(); }
+				watchView(el);
 			} else {
 				item.mode = 'scrub';
 				measure(item);
@@ -186,7 +185,8 @@
 			// rAF-throttle the scroll handler: scroll fires more often than frames, and scrubUpdate does
 			// getPointAtLength() + style writes — running it once per frame (not per event) removes the jank.
 			var scrubTick = false;
-			function onScrubScroll() { if (scrubTick) { return; } scrubTick = true; requestAnimationFrame(function () { scrubTick = false; scrubUpdate(); }); }
+			var scrubFrame = function () { scrubTick = false; scrubUpdate(); return false; };
+			function onScrubScroll() { if (scrubTick) { return; } scrubTick = true; window.upwAnimRaf.add(scrubFrame); }
 			window.addEventListener('scroll', onScrubScroll, { passive: true });
 			window.addEventListener('resize', function () {
 				for (var j = 0; j < scrubItems.length; j++) { measure(scrubItems[j]); }

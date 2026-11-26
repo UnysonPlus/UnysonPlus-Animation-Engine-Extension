@@ -214,8 +214,119 @@ if ( ! function_exists( 'fw_ext_animation_engine_ai_register' ) ) :
 				);
 			},
 		) );
+
+		// Page timelines (Animation Creator 5g): the AI reads and writes the timelines the Live Editor's Animate makes.
+		if ( function_exists( 'upw_page_timelines_save' ) ) {
+			fw_ai_register_ability( 'page-timelines', array(
+				'label'       => __( 'Read page timelines', 'fw' ),
+				'description' => 'The page timelines of one page (keyframed motion of its elements, made in the Live Editor\'s Animate), the site-wide timelines, the saved motion presets and the curve keys. Format: { id, name, duration (s), trigger: { type: load|in-view|hover|click|scroll, target?: element unique_id or ".class", once?, leave?: "stay", toggle?, threshold?, delay?, pin?, length? (scroll, screen heights) }, repeat? (-1 forever), yoyo?, runsOn?: [desktop|tablet|phone], tracks: [ { target: element unique_id (from get_page) or ".class" (every element with it), stagger?, order?: first|last|center|random (class tracks), frames: [ { t (s), x?, y? (% of its own size), scale?, rotate? (deg), opacity? (0-1), blur? (1 = 10px), ease?: a curve key } ] } ] }. A property keyed later than t=0 should also be keyed at 0 with its rest value (x 0, y 0, scale 1, rotate 0, opacity 1, blur 0).',
+				'input'       => array( 'post_id' => array( 'type' => 'integer' ) ),
+				'required'    => array( 'post_id' ),
+				'permission'  => 'edit_post',
+				'readonly'    => true,
+				'execute'     => function ( $in ) {
+					$curves = array();
+					if ( function_exists( 'sc_easing_defs' ) ) {
+						foreach ( sc_easing_defs() as $k => $d ) {
+							if ( 'default' !== $k && ! empty( $d['css'] ) && ( $d['group'] ?? '' ) !== 'Steps' ) {
+								$curves[] = $k;
+							}
+						}
+					}
+					return array(
+						'post_id'        => (int) $in['post_id'],
+						'timelines'      => upw_page_timelines_get( (int) $in['post_id'] ),
+						'site_timelines' => upw_site_timelines_get(),
+						'presets'        => upw_timeline_presets_get(),
+						'curves'         => $curves,
+						'note'           => 'Write with page_timelines_save. Good defaults: entrances 0.5–0.8 s on soft_land or pop_over, a stagger of 0.08–0.15 s for a row of cards (one class track), at most one or two timelines per section. Site-wide timelines play on every page and take only class tracks.',
+					);
+				},
+			) );
+
+			fw_ai_register_ability( 'page-timelines-save', array(
+				'label'       => __( 'Save page timelines', 'fw' ),
+				'description' => 'Saves page timelines on a page (format: see page_timelines). mode "merge" (default) adds or replaces timelines by id and keeps the others; "replace" sets the whole list (an empty list removes them all). site_timelines (optional, needs Theme Settings rights) sets the site-wide list, played on every page (class tracks only). Every value is checked: unknown fields are dropped, numbers kept in range, curve keys turned into their CSS. Revision first: undo_change reverts. Someone with the page open in the Live Editor sees the change after reloading it.',
+				'input'       => array(
+					'post_id'        => array( 'type' => 'integer' ),
+					'timelines'      => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
+					'mode'           => array( 'type' => 'string', 'enum' => array( 'merge', 'replace' ) ),
+					'site_timelines' => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
+				),
+				'required'    => array( 'post_id', 'timelines' ),
+				'permission'  => 'edit_post',
+				'execute'     => 'fw_ext_animation_engine_ai_timelines_save',
+			) );
+		}
 	}
 	add_action( 'fw_ai_assistant_register_abilities', 'fw_ext_animation_engine_ai_register' );
+
+	/** A keyframe's curve key → its CSS, so the runtime plays the curve (the editor does the same). */
+	function fw_ext_animation_engine_ai_bake( $list ) {
+		$defs = function_exists( 'sc_easing_defs' ) ? sc_easing_defs() : array();
+		foreach ( $list as &$tl ) {
+			foreach ( $tl['tracks'] as &$tr ) {
+				foreach ( $tr['frames'] as &$f ) {
+					$key = isset( $f['ease'] ) ? strtolower( preg_replace( '/([a-z0-9])([A-Z])/', '$1_$2', (string) $f['ease'] ) ) : '';
+					if ( '' !== $key && ! empty( $defs[ $key ]['css'] ) ) {
+						$f['ease'] = $key;
+						$f['e']    = (string) $defs[ $key ]['css'];
+					}
+				}
+				unset( $f );
+			}
+			unset( $tr );
+		}
+		unset( $tl );
+		return $list;
+	}
+
+	/**
+	 * @param array $in
+	 * @return array|WP_Error
+	 */
+	function fw_ext_animation_engine_ai_timelines_save( $in ) {
+		$post_id = (int) $in['post_id'];
+		if ( ! get_post( $post_id ) ) {
+			return new WP_Error( 'fw_ae_ai_post', 'No such page.' );
+		}
+		$incoming = fw_ext_animation_engine_ai_bake( upw_page_timelines_clean( json_decode( wp_json_encode( $in['timelines'] ), true ) ) );
+		$site     = isset( $in['site_timelines'] ) && is_array( $in['site_timelines'] );
+		if ( $site && ! current_user_can( 'edit_theme_options' ) ) {
+			return new WP_Error( 'fw_ae_ai_site', 'Site-wide timelines need Theme Settings rights. Nothing was changed.' );
+		}
+		$spec = array( 'post_meta' => array( $post_id => array( UPW_PAGE_TIMELINES_META ) ) );
+		if ( $site ) {
+			$spec['options'] = array( UPW_SITE_TIMELINES_OPTION );
+		}
+		$rev = FW_AI_Toolkit::snapshot( $spec, 'unysonplus/page-timelines-save', 'Page timelines — ' . get_the_title( $post_id ) );
+
+		$list = $incoming;
+		if ( ( $in['mode'] ?? 'merge' ) !== 'replace' ) {
+			$ids  = array_map( function ( $t ) { return $t['id']; }, $incoming );
+			$keep = array_values( array_filter( upw_page_timelines_get( $post_id ), function ( $t ) use ( $ids ) { return ! in_array( $t['id'], $ids, true ); } ) );
+			$list = array_merge( $keep, $incoming );
+		}
+		$saved = upw_page_timelines_save( $post_id, $list );
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+		$out = array(
+			'ok'               => true,
+			'post_id'          => $post_id,
+			'timelines'        => $saved,
+			'message'          => sprintf( 'Saved %d page timeline(s) on “%s”.', count( $saved ), get_the_title( $post_id ) ),
+			'undo_revision_id' => (int) $rev,
+		);
+		if ( $site ) {
+			$s = upw_site_timelines_save( fw_ext_animation_engine_ai_bake( upw_site_timelines_clean( json_decode( wp_json_encode( $in['site_timelines'] ), true ) ) ) );
+			if ( is_wp_error( $s ) ) {
+				return $s;
+			}
+			$out['site_timelines'] = $s;
+		}
+		return $out;
+	}
 
 	/**
 	 * @param array $in

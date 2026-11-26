@@ -34,10 +34,36 @@
 	var IN_EDITOR = false;
 	try { IN_EDITOR = /[?&]fw-live-editor(-frame)?=/.test( window.location.search || '' ); } catch ( e ) {}
 	var EDITOR_FRAMES = 0, EDITOR_MAX = 80; // ~1.3s of frames to settle, then freeze
+	// Every design's frame loop runs on the engine's shared frame scheduler (window.upwAnimRaf, roadmap Phase 11b): ONE
+	// subscriber drains the frame callbacks the designs request, so a page with several galleries (and other engine
+	// effects) runs one loop, which pauses while the tab is hidden. Callbacks requested during a frame wait for the next
+	// one (as with requestAnimationFrame); the subscriber stays while there is work and leaves when the queue is empty.
+	var QUEUE = [], PUMPING = false, SEQ = 0;
+	function pump( t ) {
+		var q = QUEUE;
+		QUEUE = [];
+		for ( var i = 0; i < q.length; i++ ) {
+			try { q[ i ]( t ); } catch ( e ) { setTimeout( function () { throw e; } ); } // one broken design must not stop the others
+		}
+		if ( ! QUEUE.length ) { PUMPING = false; return false; }
+	}
 	function requestAnimationFrame( fn ) {
 		if ( IN_EDITOR && EDITOR_FRAMES > EDITOR_MAX ) { return 0; } // frozen — stop re-scheduling the loop
 		var g = GEN;
-		return _raf( function ( t ) { if ( g === GEN ) { if ( IN_EDITOR ) { EDITOR_FRAMES++; } fn( t ); } } );
+		var run = function ( t ) { if ( g === GEN ) { if ( IN_EDITOR ) { EDITOR_FRAMES++; } fn( t ); } };
+		var S = window.upwAnimRaf;
+		if ( ! S ) { return _raf( run ); }
+		QUEUE.push( run );
+		if ( ! PUMPING ) { PUMPING = true; S.add( pump ); }
+		return ++SEQ;
+	}
+
+	// In-view watching through the engine's shared watcher (window.upwInView, roadmap Phase 11c): one observer per
+	// setting for every gallery and effect on the page. cb(inView) runs with the current state, then on each change.
+	function watchView( target, cb, opts ) {
+		if ( window.upwInView ) { return window.upwInView( target, function ( v ) { cb( v ); }, opts ); }
+		cb( true ); // no shared watcher on this page: treat the gallery as visible, as the old no-observer path did
+		return function () {};
 	}
 
 	function num( el, attr, dflt ) { var v = parseFloat( el.getAttribute( attr ) ); return isNaN( v ) ? dflt : v; }
@@ -937,12 +963,10 @@
 			// libraries don't always emit a 'scroll' per frame — rAF reads the freshest progress.
 			var sraf = 0, sInView = true;
 			var loop = function () { if ( ! sInView ) { sraf = 0; return; } renderScroll(); sraf = requestAnimationFrame( loop ); };
-			if ( 'IntersectionObserver' in window ) {
-				new IntersectionObserver( function ( es ) {
-					sInView = es[ 0 ].isIntersecting;
-					if ( sInView && ! sraf ) { sraf = requestAnimationFrame( loop ); }
-				}, { threshold: 0 } ).observe( storyEl || el );
-			} else { sraf = requestAnimationFrame( loop ); }
+			watchView( storyEl || el, function ( v ) {
+				sInView = v;
+				if ( sInView && ! sraf ) { sraf = requestAnimationFrame( loop ); }
+			}, { threshold: 0 } );
 			window.addEventListener( 'resize', renderScroll, { passive: true } );
 			renderScroll();
 			return;   // scroll mode fully handles placement + motion
@@ -1047,9 +1071,7 @@
 			};
 			var craf = 0, cInView = true;
 			var cloop = function () { if ( ! cInView ) { craf = 0; return; } renderCycle(); craf = requestAnimationFrame( cloop ); };
-			if ( 'IntersectionObserver' in window ) {
-				new IntersectionObserver( function ( es ) { cInView = es[ 0 ].isIntersecting; if ( cInView && ! craf ) { craf = requestAnimationFrame( cloop ); } }, { threshold: 0 } ).observe( storyEl || el );
-			} else { craf = requestAnimationFrame( cloop ); }
+			watchView( storyEl || el, function ( v ) { cInView = v; if ( cInView && ! craf ) { craf = requestAnimationFrame( cloop ); } }, { threshold: 0 } );
 			window.addEventListener( 'resize', renderCycle, { passive: true } );
 			renderCycle();
 			return;   // scroll-cycle mode fully handles placement + motion
@@ -1058,13 +1080,10 @@
 		if ( reduce ) { applySet( 0, false ); return; } // reduced motion: static scatter, no cycling
 
 		// Enter once the scatter is actually in view (and pause auto-cycling off-screen).
-		if ( 'IntersectionObserver' in window ) {
-			var io = new IntersectionObserver( function ( es ) {
-				inView = es[ 0 ].isIntersecting;
-				if ( inView && ! entered ) { entered = true; applySet( 0, true ); schedule(); }
-			}, { threshold: 0.15 } );
-			io.observe( el );
-		} else { entered = true; applySet( 0, true ); schedule(); }
+		watchView( el, function ( v ) {
+			inView = v;
+			if ( inView && ! entered ) { entered = true; applySet( 0, true ); schedule(); }
+		}, { threshold: 0.15 } );
 
 		el.addEventListener( 'mouseenter', function () { hovering = true; } );
 		el.addEventListener( 'mouseleave', function () { hovering = false; } );
@@ -1128,18 +1147,14 @@
 			};
 			var raf = 0, inView = true;
 			var loop = function () { if ( ! inView ) { raf = 0; return; } activate( Math.floor( progOf() * N ) ); raf = requestAnimationFrame( loop ); };
-			if ( 'IntersectionObserver' in window ) {
-				new IntersectionObserver( function ( es ) { inView = es[ 0 ].isIntersecting; if ( inView && ! raf ) { raf = requestAnimationFrame( loop ); } }, { threshold: 0 } ).observe( el );
-			} else { raf = requestAnimationFrame( loop ); }
+			watchView( el, function ( v ) { inView = v; if ( inView && ! raf ) { raf = requestAnimationFrame( loop ); } }, { threshold: 0 } );
 			return;
 		}
 
 		// auto — dwell timer, paused while off-screen.
 		var idx = 0, timer = 0, vis = true;
 		function tick() { if ( vis ) { idx = ( idx + 1 ) % N; activate( idx ); } timer = setTimeout( tick, dwell ); }
-		if ( 'IntersectionObserver' in window ) {
-			new IntersectionObserver( function ( es ) { vis = es[ 0 ].isIntersecting; }, { threshold: 0.2 } ).observe( el );
-		}
+		watchView( el, function ( v ) { vis = v; }, { threshold: 0.2 } );
 		timer = setTimeout( tick, dwell );
 	}
 
@@ -5139,9 +5154,7 @@
 			};
 			var raf = 0, inView = true;
 			var loop = function () { if ( ! inView ) { raf = 0; return; } render( progOf() * ( N - 1 ) ); raf = requestAnimationFrame( loop ); };
-			if ( 'IntersectionObserver' in window ) {
-				new IntersectionObserver( function ( es ) { inView = es[ 0 ].isIntersecting; if ( inView && ! raf ) { raf = requestAnimationFrame( loop ); } }, { threshold: 0 } ).observe( storyEl || el );
-			} else { raf = requestAnimationFrame( loop ); }
+			watchView( storyEl || el, function ( v ) { inView = v; if ( inView && ! raf ) { raf = requestAnimationFrame( loop ); } }, { threshold: 0 } );
 			return;
 		}
 
@@ -5152,9 +5165,7 @@
 			if ( ! vis ) { return; }
 			if ( target >= N - 1 ) { target = 0; pos = 0; } else { target += 1; }
 		}, dwell );
-		if ( 'IntersectionObserver' in window ) {
-			new IntersectionObserver( function ( es ) { vis = es[ 0 ].isIntersecting; }, { threshold: 0.2 } ).observe( el );
-		}
+		watchView( el, function ( v ) { vis = v; }, { threshold: 0.2 } );
 		araf = requestAnimationFrame( frame );
 		void timer;
 	}
@@ -5635,31 +5646,34 @@
 		box.style.position = 'relative';
 		box.style.height = stageH;
 		var OVERLAP = 0.3, UNIT = 2.4; // step overlap fraction, and screen-heights of scroll per gallery
-		var master = window.gsap.timeline();
 		var total = 0;
 		items.forEach( function ( it, idx ) {
-			window.gsap.set( it.g, { opacity: idx === 0 ? 1 : 0 } );
+			it.at = idx * ( 1 - OVERLAP ); // each gallery's turn starts before the previous one ends
+			it.g.style.opacity = idx === 0 ? '1' : '0';
 			poseIt( it, 0 );
-			var proxy = { p: 0 }, sub = window.gsap.timeline();
-			sub.set( it.g, { opacity: 1 }, 0 );
-			sub.to( proxy, { p: 1, duration: 1, ease: 'none', onUpdate: function () { poseIt( it, proxy.p ); } }, 0 );
-			sub.set( it.g, { opacity: 0 }, 1 ); // after its turn (cards are already scattered/faded)
-			var pos = idx * ( 1 - OVERLAP );
-			master.add( sub, pos );
-			total = pos + 1;
+			total = it.at + 1;
 		} );
-		window.ScrollTrigger.create( {
-			trigger: box, start: 'top top', end: '+=' + Math.round( total * UNIT * window.innerHeight ),
-			pin: true, pinSpacing: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true, animation: master
+		// One scrubbed position across the chain: each gallery shows during its turn (posed 0 → 1), then hides
+		// (its cards have already scattered / faded), so gallery 1 flies out as gallery 2 assembles in.
+		function seek( p ) {
+			var t = p * total;
+			items.forEach( function ( it, idx ) {
+				var local = t - it.at;
+				it.g.style.opacity = local < 0 ? ( idx === 0 ? '1' : '0' ) : ( local >= 1 && idx < items.length - 1 ? '0' : '1' );
+				poseIt( it, clamp( local, 0, 1 ) );
+			} );
+		}
+		window.upwScroll.create( {
+			trigger: box, start: 'top top', end: '+=' + Math.round( total * UNIT * 100 ) + '%',
+			pin: true, scrub: true, animation: { progress: seek }
 		} );
 	}
 
 	// Chain controller: auto-group adjacent chained galleries, then build every `.tdg-choreo-chain`
-	// container (explicit css_class OR auto-grouped). Requires GSAP; without it the galleries fall back
-	// to the single-gallery driver (sequential pins), still functional.
+	// container (explicit css_class OR auto-grouped). Runs on the engine's scroll core (window.upwScroll); without
+	// it the galleries fall back to the single-gallery driver (sequential pins), still functional.
 	function initChoreoChain() {
-		if ( IN_EDITOR || ! window.gsap || ! window.ScrollTrigger ) { return; }
-		window.gsap.registerPlugin( window.ScrollTrigger );
+		if ( IN_EDITOR || ! window.upwScroll ) { return; }
 		autoGroupChains();
 		Array.prototype.forEach.call( document.querySelectorAll( '.tdg-choreo-chain' ), buildChain );
 	}
@@ -5675,20 +5689,17 @@
 
 		if ( reduce || window.upwReduceMotion ) { poseAt( k > 1 ? 1 / ( k - 1 ) : 0 ); return; } // the first formed look, static
 
-		// GSAP path: when gsap + ScrollTrigger are on the page, drive the choreography with a pinned,
-		// scrubbed ScrollTrigger (robust pin + scrub) instead of the hand-rolled rAF. poseAt does the
-		// posing either way (same formations, holds, cascade, easing). Falls back to rAF below if absent.
-		if ( ! IN_EDITOR && window.gsap && window.ScrollTrigger ) {
-			window.gsap.registerPlugin( window.ScrollTrigger );
+		// Scroll-core path: when the engine's scroll core is on the page, drive the choreography with a pinned,
+		// scrubbed trigger instead of the hand-rolled rAF. poseAt does the posing either way (same formations,
+		// holds, cascade, easing). Falls back to rAF below if absent.
+		if ( ! IN_EDITOR && window.upwScroll ) {
 			var len = clamp( num( el, 'data-tdg-len', 3 ), 1, 6 );
 			el.classList.remove( 'tdg--pinned' );                       // drop the CSS sticky pin
 			el.style.height = ( getComputedStyle( el ).getPropertyValue( '--tdg-stage-h' ) || '70vh' ).trim();
 			poseAt( 0 );
-			window.ScrollTrigger.create( {
-				trigger: el, start: 'top top', end: '+=' + Math.round( len * window.innerHeight ),
-				pin: true, pinSpacing: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true,
-				onUpdate: function ( self ) { poseAt( self.progress ); },
-				onRefresh: function ( self ) { poseAt( self.progress ); }
+			window.upwScroll.create( {
+				trigger: el, start: 'top top', end: '+=' + Math.round( len * 100 ) + '%',
+				pin: true, scrub: true, animation: { progress: poseAt }
 			} );
 			return;
 		}

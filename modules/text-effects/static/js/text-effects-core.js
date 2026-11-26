@@ -20,14 +20,9 @@
 		return list.length ? Array.prototype.slice.call(list) : [el];
 	}
 
+	// Runs cb once, the first time el is in view (the engine's shared in-view watcher, window.upwInView).
 	function onView(el, cb) {
-		if (!('IntersectionObserver' in window)) { cb(); return; }
-		var io = new IntersectionObserver(function (entries) {
-			for (var i = 0; i < entries.length; i++) {
-				if (entries[i].isIntersecting) { cb(); io.disconnect(); return; }
-			}
-		}, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
-		io.observe(el);
+		window.upwInView(el, function (inView) { if (inView) { cb(); } }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px', once: true });
 	}
 
 	function piece(txt) {

@@ -1,7 +1,7 @@
 /**
  * Animation Engine — Scroll Ruler (admin-only, front end).
  *
- * Lists every GSAP ScrollTrigger on the page and maps their [start,end] scroll ranges onto a vertical
+ * Lists every scroll trigger on the page (the engine's scroll core, and GSAP's on a page with a Motion Snippet) and maps their [start,end] scroll ranges onto a vertical
  * ruler with a live playhead. Toggle with the ⟺ button (bottom-left) or Shift+R. Read-only.
  */
 ( function () {
@@ -10,7 +10,15 @@
 	var OPEN_KEY = 'upwScrollRulerOpen';
 	var btn, panel, rail, list, playhead, abItem, open = false, built = false;
 
-	function ST() { return window.ScrollTrigger || null; }
+	function ST() {
+		// The engine's own scroll core (window.upwScroll), plus GSAP's ScrollTrigger on a page that still loads it (a Motion Snippet).
+		var a = window.upwScroll, b = window.ScrollTrigger;
+		if ( ! a && ! b ) { return null; }
+		return {
+			getAll: function () { return ( a ? a.getAll() : [] ).concat( b ? b.getAll() : [] ); },
+			refresh: function () { if ( a ) { a.refresh(); } if ( b ) { b.refresh(); } }
+		};
+	}
 	function maxScroll() { return Math.max( 1, ( document.documentElement.scrollHeight || document.body.scrollHeight ) - window.innerHeight ); }
 	function scrollY() { return window.pageYOffset || document.documentElement.scrollTop || 0; }
 
@@ -126,7 +134,8 @@
 	function toggle() { open = ! open; apply(); }
 
 	var rafPending = false;
-	function onScroll() { if ( rafPending ) { return; } rafPending = true; requestAnimationFrame( function () { rafPending = false; updatePlayhead(); } ); }
+	// Once per frame while scrolling, on the shared frame scheduler (upw-raf.js, this script's dependency).
+	function onScroll() { if ( rafPending ) { return; } rafPending = true; window.upwAnimRaf.add( function () { rafPending = false; updatePlayhead(); return false; } ); }
 	var reT;
 	function onResize() { clearTimeout( reT ); reT = setTimeout( render, 150 ); }
 

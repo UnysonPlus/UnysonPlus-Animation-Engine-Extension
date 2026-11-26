@@ -169,7 +169,8 @@ add_action( 'wp_footer', function () {
 	wp_enqueue_script(
 		'upw-scroll-var',
 		$ext->get_declared_URI( '/modules/scroll-var/static/js/upw-scroll-var.js' ),
-		array(),
+		// The shared frame scheduler + in-view watcher (window.upwAnimRaf / upwInView, static/js/upw-raf.js).
+		function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(),
 		$ext->manifest->get_version(),
 		true
 	);

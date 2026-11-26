@@ -33,7 +33,7 @@ wp_enqueue_style(
 wp_enqueue_script(
 	'fw-shortcode-text-scroll-choreography',
 	$base . '/static/js/text-scroll-choreography.js',
-	array(),
+	function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), // the shared frame scheduler (window.upwAnimRaf)
 	$js_ver,
 	true
 );

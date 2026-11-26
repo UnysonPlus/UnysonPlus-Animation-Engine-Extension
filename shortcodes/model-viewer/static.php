@@ -43,7 +43,8 @@ $guide_dep = function_exists( 'upw_anim_guide_enqueue' ) ? upw_anim_guide_enqueu
 wp_enqueue_script(
 	'fw-shortcode-model-viewer',
 	$base . '/static/js/model-viewer.js',
-	$guide_dep ? array( $guide_dep ) : array(),
+	// The guide HUD + the shared frame scheduler (window.upwAnimRaf).
+	array_merge( $guide_dep ? array( $guide_dep ) : array(), function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array() ),
 	$js_ver,
 	true
 );

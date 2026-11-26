@@ -344,17 +344,44 @@
 			g.timers.push( window.setTimeout( function () { act( p, rate < 0 ); }, at ) );
 		} );
 	}
+	/* Repeat and back-and-forth (roadmap 6g): ix.rep = how many times (-1 = forever), ix.yo = every other play runs
+	 * backwards, one time being there and back (so it ends where it started). Timed on the sequence's total length;
+	 * cancelled by anything that plays it back. */
+	function loop( g ) {
+		window.clearTimeout( g.rt );
+		var ix = g.ix || {};
+		if ( ! ix.rep || reduce || ! ( g.total > 0 ) ) { return; }
+		g.rt = window.setTimeout( function () {
+			if ( g.state !== 'on' && g.state !== 'yo' ) { return; }
+			g.cycle = ( g.cycle || 0 ) + 1;
+			// With back and forth, one "time" is there and back, so it always ends where it started.
+			if ( ix.rep > 0 && g.cycle >= ( ix.yo ? ix.rep * 2 : ix.rep ) ) { return; }
+			if ( ix.yo ) {
+				var fwd = g.state === 'yo';
+				run( g, fwd ? 1 : -1 );
+				g.state = fwd ? 'on' : 'yo';
+			} else {
+				g.anims.forEach( function ( a ) { a.pause(); a.playbackRate = 1; a.currentTime = 0; } );
+				run( g, 1 );
+			}
+			loop( g );
+		}, g.total + 30 );
+	}
 	function play( g ) {
-		if ( g.state === 'on' ) { return; } // already playing / played forwards (play() at the end would rewind)
+		if ( g.state === 'on' || g.state === 'yo' ) { return; } // already playing / played forwards (play() at the end would rewind)
 		run( g, 1 );
 		g.state = 'on';
+		g.cycle = 0;
+		loop( g );
 	}
 	function back( g ) {
-		if ( g.state !== 'on' ) { return; } // never played: nothing to reverse
+		if ( g.state !== 'on' && g.state !== 'yo' ) { return; } // never played: nothing to reverse
+		window.clearTimeout( g.rt );
 		run( g, -1 );
 		g.state = 'off';
 	}
 	function replay( g ) {
+		window.clearTimeout( g.rt );
 		g.anims.forEach( function ( a ) { a.pause(); a.playbackRate = 1; a.currentTime = 0; } );
 		g.state = 'off';
 		play( g );
@@ -369,6 +396,7 @@
 		return dev.filter( function ( k ) { return DEVICE_MQ[ k ]; } ).map( function ( k ) { return window.matchMedia( DEVICE_MQ[ k ] ); } );
 	}
 	function teardown( g ) {
+		window.clearTimeout( g.rt );
 		g.timers.forEach( function ( t ) { window.clearTimeout( t ); } );
 		g.anims.forEach( function ( a ) { try { a.cancel(); } catch ( e ) {} } );
 	}
@@ -389,7 +417,7 @@
 			if ( allowed() ) {
 				var k = amount();
 				if ( g && g.k !== k ) { teardown( g ); g = null; }
-				if ( ! g ) { g = build( el, ix, k ); g.k = k; }
+				if ( ! g ) { g = build( el, ix, k ); g.k = k; g.ix = ix; }
 				return ( g.anims.length || g.acts.length ) ? g : null;
 			}
 			if ( g ) { teardown( g ); g = null; }
@@ -407,8 +435,8 @@
 				var toggles = ix.again === 'reverse' && ix.s.some( function ( st ) { return st.a; } );
 				if ( toggles ) { el.setAttribute( 'aria-expanded', 'false' ); }
 				el.addEventListener( 'click', on( function ( x ) {
-					if ( x.state !== 'on' ) { play( x ); } else if ( ix.again === 'reverse' ) { back( x ); } else if ( ix.again === 'replay' ) { replay( x ); }
-					if ( toggles ) { el.setAttribute( 'aria-expanded', x.state === 'on' ? 'true' : 'false' ); }
+					if ( x.state !== 'on' && x.state !== 'yo' ) { play( x ); } else if ( ix.again === 'reverse' ) { back( x ); } else if ( ix.again === 'replay' ) { replay( x ); }
+					if ( toggles ) { el.setAttribute( 'aria-expanded', ( x.state === 'on' || x.state === 'yo' ) ? 'true' : 'false' ); }
 				} ) );
 				if ( el.style.cursor === '' ) { el.style.cursor = 'pointer'; }
 				break;
@@ -416,36 +444,45 @@
 				var go = function () { window.requestAnimationFrame( on( play ) ); };
 				if ( document.readyState === 'complete' ) { go(); } else { window.addEventListener( 'load', go ); }
 				break;
-			case 'view':
-				if ( ! ( 'IntersectionObserver' in window ) ) { var x0 = G(); if ( x0 ) { play( x0 ); } break; }
-				var io = new IntersectionObserver( function ( entries ) {
-					entries.forEach( function ( en ) {
-						var x = G();
-						if ( ! x ) { return; }
-						if ( en.isIntersecting ) {
-							if ( x.state !== 'on' ) { play( x ); }
-							if ( ix.leave === 'keep' ) { io.disconnect(); }
-						} else if ( ix.leave !== 'keep' ) {
-							back( x );
-						}
-					} );
-				}, { threshold: 0.2 } );
-				// The browser counts an element's own clip-path, so one fully clipped by its own step (a clip reveal)
-				// would never be "in view": watch its parent instead.
-				var clipsSelf = ix.s.some( function ( st ) { return st.cs && st.tg === 'self'; } );
-				io.observe( clipsSelf && el.parentElement ? el.parentElement : el );
+			case 'start':
+				// Page starts loading (roadmap 8c): play at once, as soon as it is wired (the page is still
+				// parsing — before images and fonts), instead of waiting for window.load like 'load' above.
+				window.requestAnimationFrame( on( play ) );
 				break;
+			case 'view':
+				// The browser counts an element's own clip-path, so one fully clipped by its own step (a clip reveal)
+				// would never be "in view": watch its parent instead. The engine's shared in-view watcher (upwInView).
+				var clipsSelf = ix.s.some( function ( st ) { return st.cs && st.tg === 'self'; } );
+				var offView = window.upwInView( clipsSelf && el.parentElement ? el.parentElement : el, function ( inView ) {
+					var x = G();
+					if ( ! x ) { return; }
+					if ( inView ) {
+						if ( x.state !== 'on' && x.state !== 'yo' ) { play( x ); }
+						if ( ix.leave === 'keep' && offView ) { offView(); }
+					} else if ( ix.leave !== 'keep' ) {
+						back( x );
+					}
+				}, { threshold: 0.2 } );
+				break;
+			case 'component':
+				// Component event (roadmap 8b): watch another component and fire on its own events.
+				wireComponent( el, ix, G );
+				return; // driven by a MutationObserver: no timeline to pre-build here
+			case 'mouse':
+				wireMouse( el, ix, allowed, amount );
+				return; // scrubbed by the pointer: no timeline to build
 			case 'past':
 				var ticking = false;
 				var check = function () {
 					ticking = false;
 					var x = G();
-					if ( ! x ) { return; }
+					if ( ! x ) { return false; }
 					var past = el.getBoundingClientRect().bottom < ( ix.offset || 0 );
-					if ( past && x.state !== 'on' ) { play( x ); } else if ( ! past ) { back( x ); }
+					if ( past && x.state !== 'on' && x.state !== 'yo' ) { play( x ); } else if ( ! past ) { back( x ); }
+					return false; // one frame only (the shared loop, upwAnimRaf): the next scroll event asks again
 				};
 				window.addEventListener( 'scroll', function () {
-					if ( ! ticking ) { ticking = true; window.requestAnimationFrame( check ); }
+					if ( ! ticking ) { ticking = true; window.upwAnimRaf.add( check ); }
 				}, { passive: true } );
 				check();
 				break;
@@ -455,11 +492,158 @@
 		( mqs || [] ).concat( amq ? [ amq.t, amq.p ] : [] ).forEach( function ( m ) {
 			var change = function () {
 				var had = !! g, x = G();
-				if ( x && ! had && ix.t === 'load' ) { play( x ); }
+				if ( x && ! had && ( ix.t === 'load' || ix.t === 'start' ) ) { play( x ); }
 				if ( x && ! had && ix.t === 'past' ) { window.requestAnimationFrame( function () { window.dispatchEvent( new Event( 'scroll' ) ); } ); }
 			};
 			if ( m.addEventListener ) { m.addEventListener( 'change', change ); } else if ( m.addListener ) { m.addListener( change ); }
 		} );
+	}
+
+	/* ---- Mouse move (roadmap 6f) -----------------------------------------------------------------------
+	 * The pointer's place scrubs the steps: px / py in -1..1 (over the element, or the page), d = its distance from
+	 * the centre (0..1). Each target holds one animation per kind (its values, replacing; its skew / tilt, added), whose
+	 * keyframe is rewritten each frame from the step's values scaled by the smoothed pointer. Left / right: Move X,
+	 * Rotate, Tilt Y, Skew X. Up / down: Move Y, Tilt X, Skew Y. Distance: Scale, Opacity, Blur, the filters. */
+	function wireMouse( el, ix, allowed, amount ) {
+		if ( reduce || ! ( window.matchMedia && window.matchMedia( '(hover: hover) and (pointer: fine)' ).matches ) ) { return; }
+		var steps = ix.s.filter( function ( s ) { return ! s.a; } );
+		if ( ! steps.length ) { return; }
+		var held = null, tx = 0, ty = 0, cx = 0, cy = 0, inside = false, raf = 0;
+		var k = Math.max( 0.02, 1 - ( ix.smooth === undefined ? 0.85 : ix.smooth ) );
+		var build = function () {
+			held = [];
+			steps.forEach( function ( s ) {
+				targetsOf( el, s ).forEach( function ( n ) {
+					var h = { n: n, s: s, a: null, t: null };
+					// persist(): a finished, filling animation the browser thinks is overridden is otherwise removed, and the
+					// keyframes written into it later would go nowhere.
+					// finish(): held at its end, so it always shows its whole keyframe (not the start of a 1 ms run).
+					try { h.a = n.animate( [ {} ], { duration: 1, fill: 'forwards' } ); h.a.finish(); h.a.persist(); } catch ( e ) {}
+					try { h.t = n.animate( [ {} ], { duration: 1, fill: 'forwards', composite: 'add' } ); h.t.finish(); h.t.persist(); } catch ( e ) {}
+					held.push( h );
+				} );
+			} );
+		};
+		var drop = function () {
+			( held || [] ).forEach( function ( h ) { try { if ( h.a ) { h.a.cancel(); } if ( h.t ) { h.t.cancel(); } } catch ( e ) {} } );
+			held = null;
+		};
+		var apply = function () {
+			var d = Math.min( 1, Math.sqrt( cx * cx + cy * cy ) ), m = amount();
+			held.forEach( function ( h ) {
+				var s = h.s, p = {
+					x: ( s.x || 0 ) * cx, y: ( s.y || 0 ) * cy, r: ( s.r || 0 ) * cx,
+					sc: 1 + ( ( s.sc === undefined ? 1 : s.sc ) - 1 ) * d, op: 1 - ( 1 - ( s.op === undefined ? 1 : s.op ) ) * d, bl: ( s.bl || 0 ) * d,
+					skx: ( s.skx || 0 ) * cx, sky: ( s.sky || 0 ) * cy, rx: ( s.rx || 0 ) * cy, ry: ( s.ry || 0 ) * cx
+				};
+				[ 'br', 'ct', 'sa' ].forEach( function ( f ) { if ( s[ f ] !== undefined ) { p[ f ] = 100 + ( s[ f ] - 100 ) * d; } } );
+				if ( s.gs ) { p.gs = s.gs * d; }
+				try { if ( h.a ) { h.a.effect.setKeyframes( [ valuesOf( p, m ) ] ); } } catch ( e ) {}
+				try { if ( h.t ) { var t = tiltOf( p, m ); h.t.effect.setKeyframes( [ t ? { transform: t } : {} ] ); } } catch ( e ) {}
+			} );
+		};
+		// Smoothing runs on the engine's shared frame loop (window.upwAnimRaf) while the pointer's place settles.
+		var tick = function () {
+			if ( ! allowed() ) { drop(); raf = 0; return false; }
+			if ( ! held ) { build(); }
+			cx += ( tx - cx ) * k;
+			cy += ( ty - cy ) * k;
+			var settled = Math.abs( tx - cx ) < 0.001 && Math.abs( ty - cy ) < 0.001;
+			if ( settled ) { cx = tx; cy = ty; }
+			apply();
+			if ( settled ) { raf = 0; return false; }
+		};
+		var go = function () { if ( ! raf ) { raf = 1; window.upwAnimRaf.add( tick ); } };
+		var clamp = function ( v ) { return Math.max( -1, Math.min( 1, v ) ); };
+		var host = ix.area === 'page' ? window : el;
+		host.addEventListener( 'pointermove', function ( e ) {
+			if ( e.pointerType && e.pointerType !== 'mouse' && e.pointerType !== 'pen' ) { return; }
+			var r = ix.area === 'page' ? { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight } : el.getBoundingClientRect();
+			tx = clamp( ( ( e.clientX - r.left ) / ( r.width || 1 ) ) * 2 - 1 );
+			ty = clamp( ( ( e.clientY - r.top ) / ( r.height || 1 ) ) * 2 - 1 );
+			inside = true;
+			go();
+		}, { passive: true } );
+		var away = function () {
+			inside = false;
+			if ( ix.leave !== 'stay' ) { tx = 0; ty = 0; go(); }
+		};
+		if ( ix.area === 'page' ) { document.documentElement.addEventListener( 'mouseleave', away ); } else { el.addEventListener( 'pointerleave', away ); }
+	}
+
+	/* ---- Component events (roadmap 8b) -----------------------------------------------------------------
+	 * Fire when ANOTHER component changes: a menu / dropdown / panel opens or closes, a tab changes, a
+	 * slider changes slide. Read from the components' own DOM signals with one MutationObserver, so the
+	 * components themselves are not touched: open/close = aria-expanded, aria-hidden or an is-open / open /
+	 * show class; a tab = aria-selected or the active tab; a slide = the active slide (.is-active, aria-current).
+	 * ix.cmp = the component to watch (a CSS selector); empty = this element. `open` plays forwards on open and
+	 * reverses on close (`close` is the mirror); `tab` and `slide` replay on each change.
+	 */
+	var UPW_OPEN_CLASS = /(^|\s)(is-open|open|show|is-flyout-open|menu-drawer-open)(\s|$)/;
+	function wireComponent( el, ix, G ) {
+		var ev = ix.ev || 'open';
+		var indexIn = function ( node ) {
+			var p = node.parentNode;
+			return p ? Array.prototype.indexOf.call( p.children, node ) : -1;
+		};
+		var isOpen = function ( root ) {
+			if ( root.hasAttribute( 'aria-expanded' ) ) { return root.getAttribute( 'aria-expanded' ) === 'true'; }
+			if ( UPW_OPEN_CLASS.test( root.className || '' ) ) { return true; }
+			if ( root.getAttribute( 'aria-hidden' ) === 'false' ) { return true; }
+			var t = root.querySelector( '[aria-expanded]' );
+			if ( t ) { return t.getAttribute( 'aria-expanded' ) === 'true'; }
+			return !! root.querySelector( '.is-open, .open, .show, .is-flyout-open' );
+		};
+		var tabKey = function ( root ) {
+			var sel = root.querySelector( '[role="tab"][aria-selected="true"], [aria-selected="true"], .nav-link.active, [role="tab"].active, .ui-tabs-active' );
+			return sel ? ( sel.id || sel.getAttribute( 'aria-controls' ) || sel.getAttribute( 'href' ) || String( indexIn( sel ) ) ) : '';
+		};
+		var slideKey = function ( root ) {
+			var a = root.querySelector( '.splide__slide.is-active, .swiper-slide-active, .slick-active, [aria-current="true"], .is-active[data-slide]' );
+			return a ? ( a.getAttribute( 'aria-label' ) || a.id || a.getAttribute( 'data-slide' ) || String( indexIn( a ) ) ) : '';
+		};
+		var watch = function ( root ) {
+			var prevOpen = isOpen( root ), prevTab = tabKey( root ), prevSlide = slideKey( root ), raf = 0;
+			var evaluate = function () {
+				raf = 0;
+				var g = G();
+				if ( ! g ) { return; }
+				if ( ev === 'open' || ev === 'close' ) {
+					var now = isOpen( root );
+					if ( now === prevOpen ) { return; }
+					prevOpen = now;
+					// "open": forwards on open, reverse on close. "close": the mirror.
+					if ( ( ev === 'open' ) === now ) {
+						if ( g.state !== 'on' && g.state !== 'yo' ) { play( g ); } else { replay( g ); }
+					} else {
+						back( g );
+					}
+				} else if ( ev === 'tab' ) {
+					var tk = tabKey( root );
+					if ( tk !== prevTab ) { prevTab = tk; replay( g ); }
+				} else if ( ev === 'slide' ) {
+					var sk = slideKey( root );
+					if ( sk !== prevSlide ) { prevSlide = sk; replay( g ); }
+				}
+			};
+			var schedule = function () { if ( ! raf ) { raf = window.requestAnimationFrame( evaluate ); } };
+			try {
+				new MutationObserver( schedule ).observe( root, {
+					attributes: true, subtree: true, childList: true,
+					attributeFilter: [ 'class', 'aria-expanded', 'aria-selected', 'aria-hidden', 'aria-current' ]
+				} );
+			} catch ( e ) {}
+		};
+		// The named component may mount after this runs (a slider builds on load): retry a few times.
+		// No selector = watch this element itself.
+		( function attach( tries ) {
+			var roots = ix.cmp ? q( document, ix.cmp ) : [ el ];
+			if ( ! roots.length ) {
+				if ( tries < 25 ) { window.setTimeout( function () { attach( tries + 1 ); }, 200 ); }
+				return;
+			}
+			roots.forEach( watch );
+		} )( 0 );
 	}
 
 	/** Wire one interaction on its element — or, when it is set to run on every element that matches a selector

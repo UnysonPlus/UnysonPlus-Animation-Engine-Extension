@@ -57,16 +57,13 @@
 	// off-screen. Enqueued as a dependency by the loader (needs_raf).
 	var RAF = window.upwAnimRaf;
 	function loop(host, cb) {
-		var visible = true, io = null;
-		if ('IntersectionObserver' in window) {
-			io = new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0, rootMargin: '120px' });
-			io.observe(host);
-		}
+		// The engine's shared in-view watcher (upw-raf.js): drawing pauses while the host is off screen.
+		var visible = true, off = window.upwInView ? window.upwInView(host, function (v) { visible = v; }, { threshold: 0, rootMargin: '120px' }) : null;
 		// Self-cleaning: once the host leaves the DOM (a builder re-render), disconnect the observer
 		// and return false so the shared scheduler drops this callback — no leaked RAF work or IO.
 		if (RAF) {
 			RAF.add(function (t) {
-				if (!document.documentElement.contains(host)) { if (io) { io.disconnect(); } return false; }
+				if (!document.documentElement.contains(host)) { if (off) { off(); } return false; }
 				if (visible) { cb(t); }
 			});
 		}

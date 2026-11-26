@@ -132,6 +132,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_dir'    => 'static/js/effects',
 			'base_css'  => 'static/css/base.css',
 			'base_js'   => 'static/js/scroll-reveal.js', // clip runtime; Pixelate ships its own JS partial
+			'needs_raf' => true, // Phase 11: frame loops on window.upwAnimRaf, in-view on window.upwInView (static/js/upw-raf.js)
 			// Directions have no JS partial (the loader only enqueues a per-style file that EXISTS);
 			// 'pixelate' DOES have static/js/effects/pixelate.js, so it loads only when used.
 			// Every clip/mask mode needs the shared clip runtime; pixelate & dissolve ship their own JS.

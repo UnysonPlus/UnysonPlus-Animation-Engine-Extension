@@ -25,7 +25,8 @@ wp_enqueue_style( 'fw-shortcode-rive', $base . '/static/css/rive.css', array(), 
 
 wp_enqueue_script( 'rive-canvas', $rive_src, array(), '2.30.0', true );
 
-wp_enqueue_script( 'fw-shortcode-rive', $base . '/static/js/rive.js', array( 'rive-canvas' ), $js_ver, true );
+// Depends on the shared frame scheduler + in-view watcher (window.upwAnimRaf, window.upwInView; static/js/upw-raf.js).
+wp_enqueue_script( 'fw-shortcode-rive', $base . '/static/js/rive.js', array_merge( array( 'rive-canvas' ), function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array() ), $js_ver, true );
 
 // Tell the runtime where the vendored WASM lives (Rive otherwise fetches it from unpkg — which the
 // CSP / offline sites can't reach). Printed BEFORE rive.js runs.

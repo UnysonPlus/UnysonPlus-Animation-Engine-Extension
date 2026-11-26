@@ -85,7 +85,7 @@
 		var lastY = -1;
 		function frame() {
 			if (!document.documentElement.contains(sec)) { return false; }
-			var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+			var y = window.upwAnimRaf.scrollY; // read once per frame by the shared scheduler
 			if (y === lastY) { return; }
 			lastY = y;
 			tick();
@@ -94,14 +94,7 @@
 		// rescans don't accumulate leaked global resize listeners holding the detached section.
 		function onResize() { if (!document.documentElement.contains(sec)) { window.removeEventListener('resize', onResize); return; } lastY = -1; }
 		window.addEventListener('resize', onResize, { passive: true });
-		if (window.upwAnimRaf && window.upwAnimRaf.add) {
-			window.upwAnimRaf.add(frame);
-		} else {
-			var pending = false;
-			var onScroll = function () { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; tick(); }); };
-			window.addEventListener('scroll', onScroll, { passive: true });
-			window.addEventListener('resize', onScroll, { passive: true });
-		}
+		window.upwAnimRaf.add(frame); // the shared frame scheduler (upw-raf.js, this script's dependency)
 		tick();
 	}
 

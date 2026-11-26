@@ -417,37 +417,20 @@ add_action( 'wp_footer', function () {
     $ver     = $ext->manifest->get_version();
     $gsap_ver = '3.13.0';
 
-    // Vendor files are already minified — reference them directly (do NOT pass
-    // through fw_min_uri, which would look for *.min.min.js).
-    wp_enqueue_script(
-        'upw-gsap-core',
-        $ext->get_declared_URI( '/modules/scroll-motion/static/js/vendor/gsap/gsap.min.js' ),
-        [],
-        $gsap_ver,
-        true
-    );
-    wp_enqueue_script(
-        'upw-gsap-scrolltrigger',
-        $ext->get_declared_URI( '/modules/scroll-motion/static/js/vendor/gsap/ScrollTrigger.min.js' ),
-        [ 'upw-gsap-core' ],
-        $gsap_ver,
-        true
-    );
-    $init_deps = [ 'upw-gsap-scrolltrigger' ];
-    // The shared helpers (window.upwEase turns a spring / Motion design curve into an ease function).
-    if ( function_exists( 'upw_anim_raf_handle' ) ) { $init_deps[] = upw_anim_raf_handle(); }
-
-    // SplitText is only needed when a "Split Text" effect is on the page.
-    $used = function_exists( 'sc_gsap_used' ) ? sc_gsap_used() : [];
+    // The engine's own scroll core runs every effect (Roadmap Phase 9); the text splitter only where a "Split Text"
+    // effect is on the page.
+    $used      = function_exists( 'sc_gsap_used' ) ? sc_gsap_used() : [];
+    $init_deps = [ upw_anim_scroll_handle() ];
     if ( isset( $used['splittext'] ) ) {
-        wp_enqueue_script(
-            'upw-gsap-splittext',
-            $ext->get_declared_URI( '/modules/scroll-motion/static/js/vendor/gsap/SplitText.min.js' ),
-            [ 'upw-gsap-core' ],
-            $gsap_ver,
-            true
-        );
-        $init_deps[] = 'upw-gsap-splittext';
+        $init_deps[] = upw_anim_scroll_handle( true );
+    }
+
+    // GSAP itself only for a Motion Snippet (Scroll Effect → Custom Code): that is the author's own GSAP code.
+    // Vendor files are already minified: referenced directly (fw_min_uri would look for *.min.min.js).
+    if ( isset( $used['custom'] ) ) {
+        wp_enqueue_script( 'upw-gsap-core', $ext->get_declared_URI( '/modules/scroll-motion/static/js/vendor/gsap/gsap.min.js' ), [], $gsap_ver, true );
+        wp_enqueue_script( 'upw-gsap-scrolltrigger', $ext->get_declared_URI( '/modules/scroll-motion/static/js/vendor/gsap/ScrollTrigger.min.js' ), [ 'upw-gsap-core' ], $gsap_ver, true );
+        $init_deps[] = 'upw-gsap-scrolltrigger';
     }
 
     // Serve the built .min sibling in production. fw_min_uri() only swaps when the

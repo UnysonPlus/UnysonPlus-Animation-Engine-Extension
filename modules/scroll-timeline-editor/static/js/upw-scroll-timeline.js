@@ -1,7 +1,7 @@
 /**
  * Animation Engine — Scroll Timeline Editor (admin-only, front end).
  *
- * A bottom-docked, video-editor-style timeline of every GSAP ScrollTrigger on the page. Each trigger
+ * A bottom-docked, video-editor-style timeline of every scroll trigger on the page (the engine's scroll core, and GSAP's on a page with a Motion Snippet). Each trigger
  * is a TRACK; its [start, end] scroll range is drawn as a block on a 0–100 % scroll axis. A draggable
  * playhead scrubs the real page live.
  *
@@ -40,7 +40,15 @@
 		if ( ! o || Array.isArray( o ) ) { o = window.upwTimingOverrides = {}; } // PHP prints [] for empty
 		return o;
 	}
-	function ST() { return window.ScrollTrigger || null; }
+	function ST() {
+		// The engine's own scroll core (window.upwScroll), plus GSAP's ScrollTrigger on a page that still loads it (a Motion Snippet).
+		var a = window.upwScroll, b = window.ScrollTrigger;
+		if ( ! a && ! b ) { return null; }
+		return {
+			getAll: function () { return ( a ? a.getAll() : [] ).concat( b ? b.getAll() : [] ); },
+			refresh: function () { if ( a ) { a.refresh(); } if ( b ) { b.refresh(); } }
+		};
+	}
 	function maxScroll() { return Math.max( 1, ( document.documentElement.scrollHeight || document.body.scrollHeight ) - window.innerHeight ); }
 	function scrollY() { return window.pageYOffset || document.documentElement.scrollTop || 0; }
 	function pct( n ) { return Math.round( n * 1000 ) / 10; }
@@ -668,7 +676,8 @@
 	function toggle() { open = ! open; apply(); }
 
 	var rafPending = false;
-	function onScroll() { if ( rafPending ) { return; } rafPending = true; requestAnimationFrame( function () { rafPending = false; updatePlayhead(); } ); }
+	// Once per frame while scrolling, on the shared frame scheduler (upw-raf.js, this script's dependency).
+	function onScroll() { if ( rafPending ) { return; } rafPending = true; window.upwAnimRaf.add( function () { rafPending = false; updatePlayhead(); return false; } ); }
 	var reT;
 	function onResize() { clearTimeout( reT ); reT = setTimeout( render, 150 ); }
 

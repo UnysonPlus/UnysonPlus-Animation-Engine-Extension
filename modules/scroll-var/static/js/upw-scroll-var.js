@@ -51,7 +51,7 @@
 
 	function update() {
 		var vw = window.innerWidth || document.documentElement.clientWidth;
-		var vh = window.innerHeight || document.documentElement.clientHeight;
+		var vh = window.upwAnimRaf.vh || window.innerHeight || document.documentElement.clientHeight; // read once per frame by the shared loop
 		for ( var i = 0; i < active.length; i++ ) {
 			var el   = active[ i ];
 			var rect = el.getBoundingClientRect();
@@ -70,11 +70,7 @@
 			return;
 		}
 		ticking = true;
-		if ( window.upwAnimRaf && typeof window.upwAnimRaf.add === 'function' ) {
-			window.upwAnimRaf.add( update ); // reuse the shared scheduler when present
-		} else {
-			window.requestAnimationFrame( update );
-		}
+		window.upwAnimRaf.add( update ); // the engine's shared frame loop (upw-raf.js, this script's dependency)
 	}
 
 	function add( el ) {
@@ -103,23 +99,15 @@
 			el.__svarRange = el.getAttribute( 'data-upw-svar-range' ) || 'cover';
 		}
 
-		var io = ( 'IntersectionObserver' in window ) ? new IntersectionObserver( function ( entries ) {
-			for ( var j = 0; j < entries.length; j++ ) {
-				if ( entries[ j ].isIntersecting ) {
-					add( entries[ j ].target );
-				} else {
-					remove( entries[ j ].target );
-				}
-			}
-			schedule();
-		}, { rootMargin: '0px', threshold: 0 } ) : null;
-
+		// Only on-screen elements are tracked (the engine's shared in-view watcher; without IntersectionObserver it
+		// reports every element in view, so everything is tracked).
 		for ( var k = 0; k < els.length; k++ ) {
-			if ( io ) {
-				io.observe( els[ k ] );
-			} else {
-				add( els[ k ] ); // no IO support → track everything
-			}
+			( function ( node ) {
+				window.upwInView( node, function ( inView ) {
+					if ( inView ) { add( node ); } else { remove( node ); }
+					schedule();
+				}, { rootMargin: '0px', threshold: 0 } );
+			} )( els[ k ] );
 		}
 
 		window.addEventListener( 'scroll', schedule, { passive: true } );

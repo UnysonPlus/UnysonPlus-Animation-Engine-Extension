@@ -22,7 +22,10 @@
 require_once __DIR__ . '/timing-overrides.php';
 
 add_action( 'wp_enqueue_scripts', function () {
-	if ( is_admin() || ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
+	// Never on the Live Editor canvas (Animate will hold the scroll tools, Animation Creator A1 / A5).
+	// Only in the Live Editor's Preview opened with Animate › Scroll tools (Animation Creator A5): never on the public
+	// site, the admin bar or the Edit canvas.
+	if ( is_admin() || ! current_user_can( 'manage_options' ) || ! function_exists( 'fw_live_editor_scroll_tools' ) || ! fw_live_editor_scroll_tools() ) {
 		return;
 	}
 	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
@@ -35,7 +38,7 @@ add_action( 'wp_enqueue_scripts', function () {
 	$fver = function ( $rel ) use ( $dir, $ver ) { $abs = $dir . $rel; return file_exists( $abs ) ? $ver . '.' . filemtime( $abs ) : $ver; };
 
 	wp_enqueue_style( 'upw-scroll-timeline', $base . '/static/css/upw-scroll-timeline.css', array(), $fver( '/static/css/upw-scroll-timeline.css' ) );
-	wp_enqueue_script( 'upw-scroll-timeline', $base . '/static/js/upw-scroll-timeline.js', array(), $fver( '/static/js/upw-scroll-timeline.js' ), true );
+	wp_enqueue_script( 'upw-scroll-timeline', $base . '/static/js/upw-scroll-timeline.js', function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $fver( '/static/js/upw-scroll-timeline.js' ), true );
 
 	// Drag-to-retime needs the save endpoint, a nonce and the current page id (edit-capable only).
 	$pid = is_singular() ? get_queried_object_id() : 0;
@@ -47,26 +50,4 @@ add_action( 'wp_enqueue_scripts', function () {
 	) );
 }, 31 );
 
-/**
- * Admin-bar entry for the Scroll Timeline editor — see the Scroll Ruler module for the rationale (the
- * floating "Timeline" pill collided with site-side floating chrome). Adds the shared "Scroll Tools"
- * parent node idempotently plus this module's "Timeline" item; the timeline JS wires the click.
- */
-add_action( 'admin_bar_menu', function ( $bar ) {
-	if ( is_admin() || ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
-		return;
-	}
-	$bar->add_node( array(
-		'id'    => 'upw-scroll-tools',
-		'title' => '<span class="ab-icon dashicons dashicons-chart-bar" style="top:2px;font:400 20px/1 dashicons;"></span><span class="ab-label">Scroll Tools</span>',
-		'href'  => false,
-		'meta'  => array( 'title' => __( 'Unyson+ scroll author tools', 'fw' ) ),
-	) );
-	$bar->add_node( array(
-		'parent' => 'upw-scroll-tools',
-		'id'     => 'upw-scroll-tools-timeline',
-		'title'  => __( 'Timeline', 'fw' ),
-		'href'   => '#',
-		'meta'   => array( 'class' => 'upw-scroll-tools-item', 'title' => __( 'Toggle the Scroll Timeline (Shift+T)', 'fw' ) ),
-	) );
-}, 80 );
+// (No admin-bar entry any more: the tool opens from the Live Editor, Animate › Scroll tools.)

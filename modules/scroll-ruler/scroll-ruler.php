@@ -14,7 +14,10 @@
  */
 
 add_action( 'wp_enqueue_scripts', function () {
-	if ( is_admin() || ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
+	// Never on the Live Editor canvas (Animate will hold the scroll tools, Animation Creator A1 / A5).
+	// Only in the Live Editor's Preview opened with Animate › Scroll tools (Animation Creator A5): never on the public
+	// site, the admin bar or the Edit canvas.
+	if ( is_admin() || ! current_user_can( 'manage_options' ) || ! function_exists( 'fw_live_editor_scroll_tools' ) || ! fw_live_editor_scroll_tools() ) {
 		return;
 	}
 	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'animation-engine' ) : null;
@@ -27,32 +30,7 @@ add_action( 'wp_enqueue_scripts', function () {
 	$fver = function ( $rel ) use ( $dir, $ver ) { $abs = $dir . $rel; return file_exists( $abs ) ? $ver . '.' . filemtime( $abs ) : $ver; };
 
 	wp_enqueue_style( 'upw-scroll-ruler', $base . '/static/css/upw-scroll-ruler.css', array(), $fver( '/static/css/upw-scroll-ruler.css' ) );
-	wp_enqueue_script( 'upw-scroll-ruler', $base . '/static/js/upw-scroll-ruler.js', array(), $fver( '/static/js/upw-scroll-ruler.js' ), true );
+	wp_enqueue_script( 'upw-scroll-ruler', $base . '/static/js/upw-scroll-ruler.js', function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $fver( '/static/js/upw-scroll-ruler.js' ), true );
 }, 30 );
 
-/**
- * Admin-bar entry for the Scroll Ruler. The toggle used to be a fixed floating button that collided
- * with site-side floating chrome (chat FABs, back-to-top), blocking clicks; it now lives in a shared
- * "Scroll Tools" admin-bar menu instead. The parent node is added idempotently (the Timeline module
- * adds the same node), so whichever author tools are active contribute their own item under it. The
- * ruler JS wires this item's click to its toggle, and only falls back to the floating button when the
- * admin bar is hidden.
- */
-add_action( 'admin_bar_menu', function ( $bar ) {
-	if ( is_admin() || ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
-		return;
-	}
-	$bar->add_node( array(
-		'id'    => 'upw-scroll-tools',
-		'title' => '<span class="ab-icon dashicons dashicons-chart-bar" style="top:2px;font:400 20px/1 dashicons;"></span><span class="ab-label">Scroll Tools</span>',
-		'href'  => false,
-		'meta'  => array( 'title' => __( 'Unyson+ scroll author tools', 'fw' ) ),
-	) );
-	$bar->add_node( array(
-		'parent' => 'upw-scroll-tools',
-		'id'     => 'upw-scroll-tools-ruler',
-		'title'  => __( 'Scroll Ruler', 'fw' ),
-		'href'   => '#',
-		'meta'   => array( 'class' => 'upw-scroll-tools-item', 'title' => __( 'Toggle the Scroll Ruler (Shift+R)', 'fw' ) ),
-	) );
-}, 80 );
+// (No admin-bar entry any more: the tool opens from the Live Editor, Animate › Scroll tools.)

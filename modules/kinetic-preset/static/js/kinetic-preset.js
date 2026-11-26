@@ -49,15 +49,11 @@
 		if (c.t === 'load') { play(); return; }
 		if (c.t === 'hover') { el.addEventListener('mouseenter', function () { played = false; play(); }); el.addEventListener('focusin', function () { played = false; play(); }); return; }
 		if (c.t === 'click') { el.addEventListener('click', function () { played = false; play(); }); return; }
-		// In view: a quarter on screen.
-		if (!('IntersectionObserver' in window)) { play(); return; }
-		var io = new IntersectionObserver(function (entries) {
-			entries.forEach(function (en) {
-				if (en.isIntersecting) { play(); if (!c.r) io.unobserve(el); }
-				else if (c.r && played) { run.reset(); played = false; }
-			});
-		}, { threshold: 0.25 });
-		io.observe(el);
+		// In view: a quarter on screen (the engine's shared in-view watcher, upwInView). Once, unless it replays.
+		window.upwInView(el, function (inView) {
+			if (inView) { play(); }
+			else if (c.r && played) { run.reset(); played = false; }
+		}, { threshold: 0.25, once: !c.r });
 	}
 
 	function init() {

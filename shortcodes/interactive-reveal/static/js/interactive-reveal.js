@@ -78,7 +78,7 @@
         applyDriver(0);
         var lastY = -1;
         function frame() {
-          var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+          var y = window.upwAnimRaf.scrollY;
           if (y === lastY) return; lastY = y;
           var d;
           if (typeof window.upwScrollProgress === 'function') {
@@ -97,8 +97,7 @@
           var r = el.getBoundingClientRect();
           return clamp((vh - r.top) / (vh + r.height), 0, 1);
         }
-        if (window.upwAnimRaf && window.upwAnimRaf.add) { window.upwAnimRaf.add(frame); }
-        else { window.addEventListener('scroll', function () { lastY = -1; frame(); }, { passive: true }); }
+        window.upwAnimRaf.add(frame);
         window.addEventListener('resize', function () { lastY = -1; }, { passive: true });
         frame();
         return;
@@ -111,14 +110,16 @@
       function tweenTo(tv) {
         target = tv; animFrom = d; animStart = 0;
         if (raf) return;
-        raf = requestAnimationFrame(step);
+        raf = 1;
+        window.upwAnimRaf.add(step);
       }
+      // On the shared frame scheduler (window.upwAnimRaf); returning false ends the tween.
       function step(ts) {
         if (!animStart) animStart = ts;
         var k = clamp((ts - animStart) / duration, 0, 1);
         d = animFrom + (target - animFrom) * easeInOut(k);
         applyDriver(d);
-        if (k < 1) { raf = requestAnimationFrame(step); } else { raf = 0; d = target; }
+        if (k >= 1) { raf = 0; d = target; return false; }
       }
 
       if (trigger === 'hover') {
@@ -154,7 +155,7 @@
         el.addEventListener('pointerup', endDrag);
         el.addEventListener('pointercancel', endDrag);
       } else if (trigger === 'auto') {
-        var dir = 1, io;
+        var dir = 1;
         function loop() {
           tweenTo(dir > 0 ? 1 : 0);
           dir = -dir;
@@ -162,12 +163,7 @@
         var timer = 0;
         function run() { loop(); timer = setInterval(loop, duration + 400); }
         function stop() { if (timer) { clearInterval(timer); timer = 0; } }
-        if ('IntersectionObserver' in window) {
-          io = new IntersectionObserver(function (ents) {
-            ents.forEach(function (e2) { e2.isIntersecting ? (timer || run()) : stop(); });
-          }, { threshold: 0.2 });
-          io.observe(el);
-        } else { run(); }
+        window.upwInView(el, function (inView) { inView ? (timer || run()) : stop(); }, { threshold: 0.2 });
         el.addEventListener('mouseenter', stop);
         el.addEventListener('mouseleave', function () { if (!timer) run(); });
       }

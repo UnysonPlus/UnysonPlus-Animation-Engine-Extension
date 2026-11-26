@@ -38,7 +38,8 @@ wp_enqueue_script( 'three', $three_src, array(), '0.149.0', true );
 wp_enqueue_script(
 	'fw-shortcode-webgl-object',
 	$base . '/static/js/webgl-object.js',
-	array( 'three' ),
+	// three + the shared frame scheduler / in-view watcher (window.upwAnimRaf, window.upwInView).
+	array_merge( array( 'three' ), function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array() ),
 	$js_ver,
 	true
 );

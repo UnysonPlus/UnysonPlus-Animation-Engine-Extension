@@ -67,10 +67,9 @@
 		void host.offsetWidth; // reflow
 	}
 
+	// Once, the first time el is a quarter in view (the engine's shared in-view watcher, window.upwInView).
 	function onView(el, cb) {
-		if (!('IntersectionObserver' in window)) { cb(); return; }
-		var io = new IntersectionObserver(function (e) { for (var i = 0; i < e.length; i++) { if (e[i].isIntersecting) { cb(); io.disconnect(); return; } } }, { threshold: 0.25 });
-		io.observe(el);
+		window.upwInView(el, function (v) { if (v) { cb(); } }, { threshold: 0.25, once: true });
 	}
 
 	function play(host, items) {
@@ -111,8 +110,9 @@
 
 	function bindScrub(host, items) {
 		var ticking = false;
-		function tick() { ticking = false; applyScrub(host, items); }
-		function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(tick); } }
+		// One-shot on the shared frame scheduler (window.upwAnimRaf).
+		function tick() { ticking = false; applyScrub(host, items); return false; }
+		function onScroll() { if (!ticking) { ticking = true; window.upwAnimRaf.add(tick); } }
 		addEventListener('scroll', onScroll, { passive: true });
 		addEventListener('resize', onScroll, { passive: true });
 		applyScrub(host, items);

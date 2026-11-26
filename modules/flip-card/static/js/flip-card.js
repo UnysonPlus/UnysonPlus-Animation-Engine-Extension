@@ -110,16 +110,8 @@
 		}
 
 		if (isScroll) {
-			if ('IntersectionObserver' in window) {
-				var io = new IntersectionObserver(function (entries) {
-					entries.forEach(function (en) {
-						if (en.isIntersecting) { el.classList.add('is-flipped'); io.disconnect(); }
-					});
-				}, { threshold: 0.35 });
-				io.observe(el);
-			} else {
-				el.classList.add('is-flipped');
-			}
+			// Flips once, the first time a third of it is on screen (the engine's shared in-view watcher, upwInView).
+			window.upwInView(el, function (inView) { if (inView) { el.classList.add('is-flipped'); } }, { threshold: 0.35, once: true });
 		}
 
 		if (isAuto) {
@@ -132,14 +124,10 @@
 			if (!reduce) {
 				var start = function () { if (!timer) { timer = setInterval(tick, Math.max(500, iv * 1000)); } };
 				var stop = function () { if (timer) { clearInterval(timer); timer = null; } };
-				if ('IntersectionObserver' in window) {
-					new IntersectionObserver(function (entries) {
-						entries.forEach(function (en) {
-							inView = en.isIntersecting;
-							(inView && !document.hidden) ? start() : stop();
-						});
-					}, { threshold: 0.2 }).observe(el);
-				} else { start(); }
+				window.upwInView(el, function (v) {
+					inView = v;
+					(inView && !document.hidden) ? start() : stop();
+				}, { threshold: 0.2 });
 				document.addEventListener('visibilitychange', function () {
 					if (document.hidden) { stop(); } else if (inView) { start(); }
 				});

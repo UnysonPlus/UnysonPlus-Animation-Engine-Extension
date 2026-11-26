@@ -16,13 +16,13 @@
 	var REDUCE = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 	function clamp01(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
 
+	// The key's ease, from the engine's one easing set (window.upwEase, upw-raf.js): linear, in, out, in-out (quadratic).
+	var EASE_NAME = { linear: 'none', 'in': 'power1.in', out: 'power1.out' };
 	function easeT(t, mode) {
 		if (t <= 0) { return 0; }
 		if (t >= 1) { return 1; }
-		if (mode === 'linear') { return t; }
-		if (mode === 'in') { return t * t; }
-		if (mode === 'out') { return t * (2 - t); }
-		return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; // in-out
+		var f = window.upwEase && window.upwEase(EASE_NAME[mode] || 'power1.inOut');
+		return f ? f(t) : t;
 	}
 
 	function poseAt(keys, p) {
@@ -166,20 +166,20 @@
 			startY = scene.getBoundingClientRect().top + (window.pageYOffset || window.scrollY || 0);
 			if (guide) { guide.positionMarks(travel, vh, startY); }
 		}
-		function raw() { return ((window.pageYOffset || window.scrollY || 0) - startY) / (travel * vh); }
+		function raw(y) { return ((y == null ? (window.pageYOffset || window.scrollY || 0) : y) - startY) / (travel * vh); }
 
+		// Runs on the shared frame scheduler (window.upwAnimRaf); returning false unsubscribes until the next kick.
 		function tick() {
-			if (editP !== null) { dispP = editP; poseAll(dispP); if (guide) { updateGuide(guide, layers, dispP, Math.round(dispP * 100)); } running = false; return; }
-			var tp = clamp01(raw());
+			if (editP !== null) { dispP = editP; poseAll(dispP); if (guide) { updateGuide(guide, layers, dispP, Math.round(dispP * 100)); } running = false; return false; }
+			var y = window.upwAnimRaf.scrollY, tp = clamp01(raw(y));
 			dispP += (tp - dispP) * damp;
 			if (Math.abs(tp - dispP) < 0.0004) { dispP = tp; }
 			poseAll(dispP);
 			if (guide) { updateGuide(guide, layers, dispP, Math.round(tp * 100)); guide.syncScrub(Math.round(tp * 100)); }
-			var r = raw(), active = r > -0.3 && r < 1.3;
-			if (dispP === tp && !active) { running = false; return; }
-			requestAnimationFrame(tick);
+			var r = raw(y), active = r > -0.3 && r < 1.3;
+			if (dispP === tp && !active) { running = false; return false; }
 		}
-		function kick() { if (!running) { running = true; requestAnimationFrame(tick); } }
+		function kick() { if (!running) { running = true; window.upwAnimRaf.add(tick); } }
 
 		measure();
 		dispP = clamp01(raw());

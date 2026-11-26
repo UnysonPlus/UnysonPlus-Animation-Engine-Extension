@@ -48,7 +48,8 @@ class FW_Option_Type_Gallery_3D_Preview extends FW_Option_Type {
 		// hosts the preview builds — it never auto-scans real content here.
 		wp_enqueue_style( 'fw-gallery-3d-runtime', $this->gallery_uri( '/css/gallery-3d.css' ), array(), $ver );
 		wp_enqueue_style( 'fw-gallery-3d-preview', $this->own_uri( '/static/css/preview.css' ), array( 'fw-gallery-3d-runtime' ), $ver );
-		wp_enqueue_script( 'fw-gallery-3d-runtime', $this->gallery_uri( '/js/gallery-3d.js' ), array(), $ver, true );
+		// The runtime runs on the engine's shared frame scheduler + in-view watcher (static/js/upw-raf.js).
+		wp_enqueue_script( 'fw-gallery-3d-runtime', $this->gallery_uri( '/js/gallery-3d.js' ), function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $ver, true );
 		// The WebGL designs (Mirror Ring, Depth Field, Wave Wall): Three.js + their driver, so the preview draws
 		// them for real. Same handle as the WebGL Object element.
 		if ( $ae ) {

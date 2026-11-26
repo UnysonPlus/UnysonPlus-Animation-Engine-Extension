@@ -46,7 +46,9 @@
 					}
 				}
 			}
-			function rSchedule() { if (!rTick) { rTick = true; requestAnimationFrame(function () { reveal(); rTick = false; }); } }
+			// One-shot on the shared frame scheduler (window.upwAnimRaf).
+			var rRun = function () { reveal(); rTick = false; return false; };
+			function rSchedule() { if (!rTick) { rTick = true; window.upwAnimRaf.add(rRun); } }
 			addEventListener('scroll', rSchedule, { passive: true });
 			addEventListener('resize', rSchedule, { passive: true });
 			reveal();
@@ -71,7 +73,9 @@
 				moves[i].style.transform = 'translate(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px)';
 			}
 		}
-		function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(function () { apply(); ticking = false; }); } }
+		// One-shot on the shared frame scheduler (window.upwAnimRaf).
+		var run = function () { apply(); ticking = false; return false; };
+		function schedule() { if (!ticking) { ticking = true; window.upwAnimRaf.add(run); } }
 		addEventListener('scroll', schedule, { passive: true });
 		addEventListener('resize', schedule, { passive: true });
 		if (source === 'pointer' || source === 'both') {

@@ -95,6 +95,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'css_dir'   => 'static/css/effects',
 			'js_dir'    => 'static/js/effects',
 			'base_js'   => 'static/js/kinetic-preset.js',
+			'needs_raf' => true, // the in-view trigger uses the shared in-view watcher (upw-raf.js)
 			'js_styles' => array(),
 			'js_cfg'    => function () use ( $upw_kp_ext ) {
 				// The Kinetic Scene element's own copy of the player (the same file, so a page with both loads it once).

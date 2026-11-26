@@ -247,6 +247,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'js_dir'        => 'static/js/effects',
 			'base_css'      => 'static/css/base.css',   // the split-piece / line spans, always needed
 			'base_js'       => 'static/js/text-effects-core.js',
+			'needs_raf' => true, // Phase 11: frame loops on window.upwAnimRaf, in-view on window.upwInView (static/js/upw-raf.js)
 			'js_core_first' => true,                    // core (engine) loads before the effect partials
 			'js_styles'     => upw_text_effects(),      // every effect ships a JS partial (registers into window.upwText)
 			// The split/mask reveal engine (piece staggering, presets, cascade) is kept OUT of the

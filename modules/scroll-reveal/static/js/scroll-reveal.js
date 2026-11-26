@@ -117,7 +117,7 @@
 		function onScroll() {
 			if (pending) return;
 			pending = true;
-			requestAnimationFrame(function () { pending = false; check(); });
+			window.upwAnimRaf.add(function () { pending = false; check(); return false; }); // one check per frame, on the shared loop
 		}
 		window.addEventListener('scroll', onScroll, { passive: true });
 		window.addEventListener('resize', onScroll, { passive: true });

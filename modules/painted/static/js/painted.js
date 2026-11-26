@@ -275,9 +275,7 @@
 			self.show(t);
 			if (t >= 1) { self.done = true; return false; }
 		};
-		var RAF = window.upwAnimRaf;
-		if (RAF && RAF.add) { RAF.add(tick); }
-		else { (function loop(now) { if (tick(now) !== false) { requestAnimationFrame(loop); } })(performance.now()); }
+		window.upwAnimRaf.add(tick); // the shared frame scheduler (upw-raf.js, this script's dependency)
 	};
 
 	/* ---- Wiring: paint when near the screen, draw on when in view, repaint on resize ---- */
@@ -286,12 +284,12 @@
 		if (busy || !queue.length) { return; }
 		busy = true;
 		engine().then(function (api) {
-			(function next() {
+			// One painting job per frame, on the shared frame scheduler, until the queue is empty.
+			window.upwAnimRaf.add(function () {
 				var job = queue.shift();
-				if (!job) { busy = false; return; }
+				if (!job) { busy = false; return false; }
 				try { job(api); } catch (e) { if (window.console) { console.warn('Painted:', e); } }
-				requestAnimationFrame(next);
-			})();
+			});
 		}, function (err) { busy = false; queue.length = 0; if (window.console) { console.warn(err); } });
 	}
 	function schedule(fn) { queue.push(fn); runQueue(); }
@@ -308,22 +306,13 @@
 				if (inView) { p.play(); }
 			});
 		};
-		if ('IntersectionObserver' in window) {
-			var nearIO = new IntersectionObserver(function (es) {
-				if (es.some(function (e) { return e.isIntersecting; })) { nearIO.disconnect(); near(); }
-			}, { rootMargin: '400px 0px' });
-			nearIO.observe(el);
-			var viewIO = new IntersectionObserver(function (es) {
-				if (!es.some(function (e) { return e.isIntersecting; })) { return; }
-				viewIO.disconnect();
-				inView = true;
-				if (p.painted) { p.play(); }
-			}, { threshold: 0.2 });
-			viewIO.observe(el);
-		} else {
+		// The engine's shared in-view watcher (upw-raf.js): paint when near the screen, draw on when in view.
+		window.upwInView(el, function (v) { if (v) { near(); } }, { rootMargin: '400px 0px', once: true });
+		window.upwInView(el, function (v) {
+			if (!v) { return; }
 			inView = true;
-			near();
-		}
+			if (p.painted) { p.play(); }
+		}, { threshold: 0.2, once: true });
 		if ('ResizeObserver' in window) {
 			var timer = 0;
 			new ResizeObserver(function () {

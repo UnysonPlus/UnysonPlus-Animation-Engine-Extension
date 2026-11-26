@@ -28,3 +28,4 @@ if ( ! defined( 'UPW_PAGE_TRANSITIONS_DIR' ) ) {
 require_once __DIR__ . '/includes/page-transitions-helpers.php';   // must load first (settings + enqueue use it)
 require_once __DIR__ . '/includes/page-transitions-settings.php';
 require_once __DIR__ . '/includes/page-transitions-enqueue.php';
+require_once __DIR__ . '/includes/shared-elements.php';           // Shared elements between pages (roadmap 6e)

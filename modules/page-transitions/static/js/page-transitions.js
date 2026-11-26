@@ -18,6 +18,9 @@
 
 	var overlay = document.querySelector('.upw-pt');
 	if (!overlay || reduce) { return; }
+	// Shared elements between pages (View Transitions) on this page, in a browser that has them: the cover would hide
+	// them, so the browser's own transition plays instead.
+	if (window.upwShareCfg && window.upwShareCfg.on && ('onpagereveal' in window)) { overlay.style.display = 'none'; return; }
 	// Total covers the slowest case (staggered strips / grid cells); PHP computes it.
 	var totalMs = (parseFloat(overlay.getAttribute('data-pt-total')) || cfg.duration || 0.6) * 1000;
 	var isRipple = overlay.getAttribute('data-pt-type') === 'ripple';

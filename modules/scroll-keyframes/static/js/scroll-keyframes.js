@@ -22,14 +22,14 @@
 	var IDENT = { x: 0, y: 0, scale: 1, rotation: 0, rotationX: 0, rotationY: 0, opacity: 1, blur: 0 };
 
 	// Easing curves (0..1 → 0..1).
-	var EASE = {
-		linear: function (t) { return t; },
-		out:    function (t) { return 1 - Math.pow(1 - t, 3); },
-		in:     function (t) { return t * t * t; },
-		inout:  function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; },
-		back:   function (t) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
-		sine:   function (t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
-	};
+	// This module's short ease names, as curves of the engine's one easing set (window.upwEase, upw-raf.js).
+	var EASE_NAME = { linear: 'none', out: 'power2.out', in: 'power2.in', inout: 'power2.inOut', back: 'back.out(1.70158)', sine: 'sine.inOut' };
+	var LIN = function (t) { return t; };
+	function easeFn(name) {
+		var E = window.upwEase;
+		if (!E) { return LIN; }
+		return E(EASE_NAME[name] || name || 'power2.out') || E('power2.out');
+	}
 
 	// Registry (element key -> element) + beat-position override plumbing, for the Scroll Timeline editor.
 	var REG = {};
@@ -128,7 +128,7 @@
 				var span = b.at - a.at;
 				var seg = span > 0 ? (p - a.at) / span : 1;
 				// A built-in name, else a CSS timing function from the shared easing set (springs as linear()).
-				var e = (EASE[b.ease] || (window.upwEase && window.upwEase(b.ease)) || EASE.out)(seg);
+				var e = easeFn(b.ease)(seg);
 				var out = {};
 				for (var k = 0; k < KEYS.length; k++) { var key = KEYS[k]; out[key] = a.v[key] + (b.v[key] - a.v[key]) * e; }
 				return out;

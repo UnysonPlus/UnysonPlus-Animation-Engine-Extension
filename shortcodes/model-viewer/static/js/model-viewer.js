@@ -161,22 +161,22 @@
 			if (guide) { guide.positionMarks(travel, vh, startY); }
 		}
 		function scrollY() { return window.pageYOffset || window.scrollY || 0; }
-		function raw() { return (scrollY() - startY) / (travel * vh); }
+		function raw(y) { return ((y == null ? scrollY() : y) - startY) / (travel * vh); }
 
 		var dispP = 0, running = false;
+		// Runs on the shared frame scheduler (window.upwAnimRaf); returning false unsubscribes until the next kick.
 		function tick() {
-			var tp = Math.min(1, Math.max(0, raw()));
+			var y = window.upwAnimRaf.scrollY, tp = Math.min(1, Math.max(0, raw(y)));
 			dispP += (tp - dispP) * damp;
 			if (Math.abs(tp - dispP) < 0.0004) { dispP = tp; }
 			applyPose(poseAt(dispP));
-			var r = raw();
+			var r = raw(y);
 			var active = r > -0.3 && r < 1.3;      // a little lead-in / lead-out
 			fixed.style.visibility = active ? 'visible' : 'hidden';
 			if (guide) { updateGuide(guide, poseAt(dispP), Math.round(tp * 100)); }
-			if (dispP === tp && !active) { running = false; return; }   // idle → stop the loop
-			requestAnimationFrame(tick);
+			if (dispP === tp && !active) { running = false; return false; }   // idle → stop the loop
 		}
-		function kick() { if (!running) { running = true; requestAnimationFrame(tick); } }
+		function kick() { if (!running) { running = true; window.upwAnimRaf.add(tick); } }
 
 		measure();
 		dispP = Math.min(1, Math.max(0, raw()));

@@ -8,8 +8,9 @@ H.scramble = function (el, target) {
 		var runId = 0; // a newer run supersedes any in-flight one (clean click/hover replay)
 		function run() {
 			var myId = ++runId, start = null;
-			(function frame(t) {
-				if (myId !== runId) { return; }
+			// One step per frame on the engine's shared frame loop (window.upwAnimRaf); returning false ends the run.
+			var frame = function (t) {
+				if (myId !== runId) { return false; }
 				if (!start) { start = t; }
 				var prog = Math.min(1, (t - start) / dur), rev = Math.floor(prog * len), out = '', i;
 				for (i = 0; i < len; i++) {
@@ -18,8 +19,9 @@ H.scramble = function (el, target) {
 					else { out += CH[(Math.random() * CH.length) | 0]; }
 				}
 				target.textContent = out;
-				if (prog < 1) { requestAnimationFrame(frame); } else { target.textContent = final; }
-			})(0);
+				if (prog >= 1) { target.textContent = final; return false; }
+			};
+			if (frame(0) !== false) { window.upwAnimRaf.add(frame); }
 		}
 		API.bindTriggers(el, run);
 	};

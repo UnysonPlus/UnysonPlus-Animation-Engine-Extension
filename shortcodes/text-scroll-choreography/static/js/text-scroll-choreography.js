@@ -119,7 +119,9 @@
 		}
 	}
 	var sTick = false;
-	function scheduleScrub() { if (!sTick) { sTick = true; requestAnimationFrame(function () { updateScrub(); sTick = false; }); } }
+	// One-shot on the shared frame scheduler (window.upwAnimRaf).
+	function scrubNow() { updateScrub(); sTick = false; return false; }
+	function scheduleScrub() { if (!sTick) { sTick = true; window.upwAnimRaf.add(scrubNow); } }
 
 	function boot() {
 		[].slice.call(document.querySelectorAll('.fw-choreo__text[data-curve]')).forEach(curveOne);

@@ -27,10 +27,10 @@
     var api = build(kind);
     if (!api) return;
     document.body.appendChild(api.root);
-    function progress() { var d = document.documentElement, sc = d.scrollHeight - d.clientHeight; return sc <= 0 ? 0 : Math.min(1, Math.max(0, (window.scrollY || d.scrollTop || 0) / sc)); }
+    function progress(y) { var d = document.documentElement, sc = d.scrollHeight - d.clientHeight; return sc <= 0 ? 0 : Math.min(1, Math.max(0, (y != null ? y : (window.scrollY || d.scrollTop || 0)) / sc)); }
     var pend = false;
-    function tick() { pend = false; var p = progress(); api.update(p); if (cfg.hideTop && kind !== 'dots') api.root.classList.toggle('is-hidden', p < 0.01); }
-    function onScroll() { if (pend) return; pend = true; requestAnimationFrame(tick); }
+    function tick(y) { pend = false; var p = progress(y); api.update(p); if (cfg.hideTop && kind !== 'dots') api.root.classList.toggle('is-hidden', p < 0.01); }
+    function onScroll() { if (pend) return; pend = true; window.upwAnimRaf.add(function () { tick(window.upwAnimRaf.scrollY); return false; }); } // one update per frame, on the engine's shared loop (scroll position read once per frame there)
     tick();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });

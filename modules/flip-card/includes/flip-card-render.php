@@ -134,5 +134,6 @@ add_action( 'wp_footer', function () {
 	$cssv = file_exists( "$dir/static/css/flip-card.css" ) ? $ver . '.' . filemtime( "$dir/static/css/flip-card.css" ) : $ver;
 
 	wp_enqueue_style( 'upw-flip-card', $base . '/static/css/flip-card.css', array(), $cssv );
-	wp_enqueue_script( 'upw-flip-card', $base . '/static/js/flip-card.js', array(), $jsv, true );
+	// The scroll and auto flips use the engine's shared in-view watcher (window.upwInView, upw-raf.js).
+	wp_enqueue_script( 'upw-flip-card', $base . '/static/js/flip-card.js', function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $jsv, true );
 }, 5 );

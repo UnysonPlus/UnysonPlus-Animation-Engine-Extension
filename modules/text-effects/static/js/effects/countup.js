@@ -17,7 +17,8 @@ H.countup = function (el, target) {
 		}
 		t.textContent = fmt(0);
 		var runId = 0; // a newer run supersedes any in-flight one (clean click/hover replay)
-		function run() { var myId = ++runId, start = null; (function f(tm) { if (myId !== runId) { return; } if (!start) { start = tm; } var p = Math.min(1, (tm - start) / dur); t.textContent = fmt(goal * (1 - Math.pow(1 - p, 3))); if (p < 1) { requestAnimationFrame(f); } else { t.textContent = fmt(goal); } })(0); }
+		// Counts on the engine's shared frame loop (window.upwAnimRaf); returning false ends the run.
+		function run() { var myId = ++runId, start = null; var f = function (tm) { if (myId !== runId) { return false; } if (!start) { start = tm; } var p = Math.min(1, (tm - start) / dur); t.textContent = fmt(goal * (1 - Math.pow(1 - p, 3))); if (p >= 1) { t.textContent = fmt(goal); return false; } }; if (f(0) !== false) { window.upwAnimRaf.add(f); } }
 		API.bindTriggers(el, run);
 	};
 })();

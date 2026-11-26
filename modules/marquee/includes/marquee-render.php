@@ -114,7 +114,8 @@ add_action( 'wp_footer', function () {
 	$cssv = file_exists( "$dir/static/css/marquee.css" ) ? $ver . '.' . filemtime( "$dir/static/css/marquee.css" ) : $ver;
 
 	wp_enqueue_style( 'upw-marquee', $base . '/static/css/marquee.css', array(), $cssv );
-	wp_enqueue_script( 'upw-marquee', $base . '/static/js/marquee.js', array(), $jsv, true );
+	// The ticker runs on the engine's shared frame loop (window.upwAnimRaf).
+	wp_enqueue_script( 'upw-marquee', $base . '/static/js/marquee.js', function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $jsv, true );
 
 	$cfg = array(
 		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

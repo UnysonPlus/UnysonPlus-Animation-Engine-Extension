@@ -3,7 +3,7 @@
  */
 (function () {
 	'use strict';
-	var RAF = window.upwAnimRaf || (window.upwAnimRaf = { add: function (f) { (function l(t) { if (!document.hidden) { f(t); } requestAnimationFrame(l); })(0); return f; }, remove: function () {} });
+	var RAF = window.upwAnimRaf; // the shared frame loop (upw-raf.js); the cursor loader depends on it
 
 
 	var cfg = window.upwCursorCfg || {};

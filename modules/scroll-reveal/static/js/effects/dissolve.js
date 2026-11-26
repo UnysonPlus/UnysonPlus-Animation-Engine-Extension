@@ -106,7 +106,7 @@
 						drawBlock(c[0], c[1], c[2], c[3]);
 					}
 					if (k < cells.length) {
-						timer = setTimeout(function () { requestAnimationFrame(step); }, speed);
+						timer = setTimeout(function () { window.upwAnimRaf.add(function () { step(); return false; }); }, speed);
 					} else {
 						running = false;
 					}
@@ -116,16 +116,8 @@
 
 			window.addEventListener('resize', function () { if (timer) { clearTimeout(timer); } fit(); drawAll(); });
 
-			if ('IntersectionObserver' in window) {
-				var io = new IntersectionObserver(function (ents) {
-					ents.forEach(function (en) {
-						if (en.isIntersecting) { animate(); if (!replay) { io.unobserve(el); } }
-					});
-				}, { threshold: 0.15 });
-				io.observe(el);
-			} else {
-				animate();
-			}
+			// Plays each time it comes into view (once unless replay), via the engine's shared in-view watcher.
+			window.upwInView(el, function (v) { if (v) { animate(); } }, { threshold: 0.15, once: !replay });
 		}
 
 		start();

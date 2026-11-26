@@ -55,7 +55,8 @@
 			if (k >= sizes.length) { return; }
 			draw(sizes[k]);
 			k++;
-			setTimeout(function () { requestAnimationFrame(step); }, k === 1 ? 120 : 70);
+			// The next size after a short pause, drawn on the shared frame scheduler (upw-raf.js).
+			setTimeout(function () { window.upwAnimRaf.add(function () { step(); return false; }); }, k === 1 ? 120 : 70);
 		})();
 	}
 

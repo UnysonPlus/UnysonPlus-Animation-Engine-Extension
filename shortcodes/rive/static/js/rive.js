@@ -107,8 +107,8 @@
 
 		var inView = true;
 		function observe(cb) {
-			if ('IntersectionObserver' in window) { new IntersectionObserver(function (es) { inView = es[0].isIntersecting; cb(inView); }, { rootMargin: '80px' }).observe(el); }
-			else { cb(true); }
+			// The engine's shared in-view watcher (window.upwInView; cb(true) at once without IntersectionObserver).
+			window.upwInView(el, function (v) { inView = v; cb(inView); }, { rootMargin: '80px' });
 		}
 
 		// Shrink the wrapper to the artboard's own aspect ratio (centered) so a `contain`/`fit-height`/
@@ -333,7 +333,8 @@
 				if (src === 'scroll') { return scrollProgress(el, 1); }
 				return 0;
 			}
-			(function frame() {
+			// Drives the inputs every frame on the shared frame scheduler (window.upwAnimRaf); idle while out of view.
+			window.upwAnimRaf.add(function frame() {
 				if (inView && !document.hidden) {
 					for (var i = 0; i < state.length; i++) {
 						var s = state[i], f = s.f;
@@ -345,8 +346,7 @@
 						} catch (e) {}
 					}
 				}
-				requestAnimationFrame(frame);
-			})();
+			});
 		}
 
 		function onError() { /* keep the poster / veil as the fallback */ }

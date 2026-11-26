@@ -63,14 +63,14 @@
 		gl.uniform1f(U.uStrength, 0.12 + (ctx.intensity || 0.5) * 0.22);
 
 		var texes = [], ready = [], dead = false;
-		var from = 0, to = 0, mix = 1, raf = 0, t0 = null, t = 0;
+		var from = 0, to = 0, mix = 1, t0 = null, t = 0, RAF = window.upwAnimRaf; // the shared frame scheduler (upw-raf.js)
 
 		// Tear the instance down and hand the panel back to the CSS crossfade fallback.
 		function bail() {
 			if (dead) { return; }
 			dead = true;
 			section.__upwLiquidFailed = true;
-			if (raf) { cancelAnimationFrame(raf); raf = 0; }
+			RAF.remove(frame);
 			window.removeEventListener('resize', size);
 			try {
 				for (var i = 0; i < texes.length; i++) { if (texes[i]) { gl.deleteTexture(texes[i]); } }
@@ -123,13 +123,13 @@
 			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 		}
 		function frame(ts) {
-			if (dead) { return; }
+			if (dead) { return false; }
 			if (t0 === null) { t0 = ts; }
 			var dur = parseFloat(getComputedStyle(section).getPropertyValue('--story-trans')) || 0.6;
 			var d = (ts - t0) / 1000; t = d;
 			mix = Math.min(1, d / dur);
 			render();
-			if (mix < 1) { raf = requestAnimationFrame(frame); } else { from = to; }
+			if (mix >= 1) { from = to; return false; }
 		}
 		window.addEventListener('resize', size);
 		size();
@@ -138,7 +138,7 @@
 			go: function (i) {
 				if (dead || (i === to && mix >= 1)) { return; }
 				from = (mix < 1) ? from : to; to = i; mix = 0; t0 = null;
-				if (raf) { cancelAnimationFrame(raf); } raf = requestAnimationFrame(frame);
+				RAF.remove(frame); RAF.add(frame);
 			},
 			dispose: bail
 		};

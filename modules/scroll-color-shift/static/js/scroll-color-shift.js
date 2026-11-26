@@ -80,19 +80,7 @@
 		}
 		window.addEventListener('resize', function () { lastY = -1; }, { passive: true });
 
-		if (window.upwAnimRaf && window.upwAnimRaf.add) {
-			window.upwAnimRaf.add(frame);
-		} else {
-			// Fallback: the original passive, rAF-throttled scroll handler.
-			var ticking = false;
-			var onScroll = function () {
-				if (ticking) return;
-				ticking = true;
-				requestAnimationFrame(function () { pick(); ticking = false; });
-			};
-			window.addEventListener('scroll', onScroll, { passive: true });
-			window.addEventListener('resize', onScroll, { passive: true });
-		}
+		window.upwAnimRaf.add(frame); // the shared frame scheduler (upw-raf.js, this script's dependency)
 		pick(); // initial paint
 	}
 

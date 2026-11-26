@@ -79,7 +79,7 @@ add_action( 'wp_footer', function () {
 	$cssv = file_exists( "$dir/static/css/parallax.css" ) ? $ver . '.' . filemtime( "$dir/static/css/parallax.css" ) : $ver;
 
 	wp_enqueue_style( 'upw-parallax', $base . '/static/css/parallax.css', array(), $cssv );
-	wp_enqueue_script( 'upw-parallax', $base . '/static/js/parallax.js', array(), $jsv, true );
+	wp_enqueue_script( 'upw-parallax', $base . '/static/js/parallax.js', function_exists( 'upw_anim_raf_handle' ) ? array( upw_anim_raf_handle() ) : array(), $jsv, true ); // shared frame scheduler + in-view watcher
 
 	$cfg = array(
 		'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

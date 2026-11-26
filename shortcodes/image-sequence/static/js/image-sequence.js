@@ -83,28 +83,21 @@
       }
       function indexFor() { var i = Math.round(progress() * (frames.length - 1)); return reverse ? (frames.length - 1 - i) : i; }
 
-      var pending = false;
-      function onScroll() { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; draw(indexFor()); }); }
-
       resize();
       draw(indexFor());
       if (REDUCE) return; // static frame only
 
       // Ride the shared frame scheduler — redraw only when the scroll position changed (cheap when
-      // idle, frame-synced with smooth scroll). Fall back to a passive scroll listener otherwise.
+      // idle, frame-synced with smooth scroll). The scheduler is this script's dependency.
       window.addEventListener('resize', function () { resize(); draw(cur < 0 ? indexFor() : cur); lastY = -1; }, { passive: true });
       var lastY = -1;
       function frame() {
-        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+        var y = window.upwAnimRaf.scrollY;
         if (y === lastY) return;
         lastY = y;
         draw(indexFor());
       }
-      if (window.upwAnimRaf && window.upwAnimRaf.add) {
-        window.upwAnimRaf.add(frame);
-      } else {
-        window.addEventListener('scroll', onScroll, { passive: true });
-      }
+      window.upwAnimRaf.add(frame);
     }
   }
   ready(run);

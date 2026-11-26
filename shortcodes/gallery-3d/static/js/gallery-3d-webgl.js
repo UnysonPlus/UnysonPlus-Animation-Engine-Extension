@@ -285,21 +285,23 @@
 			return phase;
 		};
 
-		// Visibility: render only while on screen and the tab is visible.
+		// Visibility: render only while on screen and the tab is visible. Watched through the engine's shared in-view
+		// watcher (window.upwInView, roadmap Phase 11c): one observer per setting for every element on the page.
 		var visible = false;
-		if ( 'IntersectionObserver' in window ) {
-			new IntersectionObserver( function ( en ) {
-				visible = en[ 0 ].isIntersecting;
+		if ( window.upwInView ) {
+			window.upwInView( el, function ( v ) {
+				visible = v;
 				if ( visible ) { attach(); api.dirty = true; if ( introStart < 0 ) { introStart = api.t; } }
-			}, { rootMargin: '200px' } ).observe( el );
-			new IntersectionObserver( function ( en ) { if ( ! en[ 0 ].isIntersecting ) { detach(); } }, { rootMargin: '1200px' } ).observe( el );
+			}, { rootMargin: '200px' } );
+			window.upwInView( el, function ( v ) { if ( ! v ) { detach(); } }, { rootMargin: '1200px' } );
 		} else { visible = true; introStart = 0; attach(); }
 
+		// The frame loop runs on the engine's shared frame scheduler (window.upwAnimRaf, roadmap Phase 11b), which pauses
+		// while the tab is hidden; returning false unsubscribes it.
 		var last = performance.now();
 		var frame = function ( now ) {
 			// The gallery was removed (the builder's preview rebuilds its scene on every change): stop and free the GPU.
-			if ( ! el.isConnected ) { detach(); return; }
-			window.requestAnimationFrame( frame );
+			if ( ! el.isConnected ) { detach(); return false; }
 			var dt = Math.min( 0.05, ( now - last ) / 1000 ); last = now;
 			if ( ! visible || document.hidden || ! renderer ) { return; }
 			api.t += dt;
@@ -317,7 +319,8 @@
 			api.dirty = false;
 		};
 		if ( still ) { intro( 0 ); }
-		window.requestAnimationFrame( frame );
+		if ( window.upwAnimRaf ) { window.upwAnimRaf.add( frame ); }
+		else { var own = function ( t ) { if ( frame( t ) !== false ) { window.requestAnimationFrame( own ); } }; window.requestAnimationFrame( own ); }
 		if ( drive === 'scroll' ) { window.addEventListener( 'scroll', function () { api.dirty = true; }, { passive: true } ); }
 	}
 

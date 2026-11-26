@@ -142,7 +142,7 @@
 			else { window.addEventListener('resize', size); }
 
 			var amount = always ? 1 : 0, target = always ? 1 : 0;
-			var mx = 0, my = 0, raf = 0, t0 = null, running = false, inView = true;
+			var mx = 0, my = 0, t0 = null, running = false, inView = true;
 
 			el.addEventListener('pointerenter', function () { if (!always) { target = 1; ensure(); } });
 			el.addEventListener('pointerleave', function () { if (!always) { target = 0; } });
@@ -161,19 +161,16 @@
 				gl.uniform2f(U.mouse, mx, my);
 				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 				// Keep looping while active, animating in view, or still easing out.
-				if (inView && (target > 0 || amount > 0.002 || always)) {
-					raf = requestAnimationFrame(frame);
-				} else { running = false; }
+				if (!(inView && (target > 0 || amount > 0.002 || always))) { running = false; return false; }
 			}
-			function ensure() { if (!running) { running = true; raf = requestAnimationFrame(frame); } }
+			// Runs on the engine's shared frame loop (window.upwAnimRaf); frame() returns false to stop.
+			function ensure() { if (!running) { running = true; window.upwAnimRaf.add(frame); } }
 
 			// Pause off-screen; resume (and redraw at least once) when back in view.
-			if ('IntersectionObserver' in window) {
-				new IntersectionObserver(function (ents) {
-					inView = ents[0].isIntersecting;
-					if (inView && (always || target > 0)) { ensure(); }
-				}, { threshold: 0.01 }).observe(el);
-			}
+			window.upwInView(el, function (v) {
+				inView = v;
+				if (inView && (always || target > 0)) { ensure(); }
+			}, { threshold: 0.01 });
 
 			ensure(); // draw the first (static) frame so the canvas isn't blank before hover
 		}

@@ -5,7 +5,7 @@
 if ( ! function_exists( 'upw_interactions_modes' ) ) :
 	/** The triggers, in inserter order. */
 	function upw_interactions_modes() {
-		return array( 'hover', 'click', 'load', 'view', 'past' );
+		return array( 'hover', 'click', 'load', 'start', 'view', 'past', 'mouse', 'component' );
 	}
 endif;
 
@@ -45,6 +45,12 @@ if ( ! function_exists( 'upw_interactions_compile' ) ) :
 	 * @return array|null [ 't' => trigger, 'again'|'leave'|'offset' => …, 's' => [ step, … ] ]
 	 */
 	function upw_interactions_compile( $value ) {
+		// A saved Interaction (roadmap 6g): the preset's own value, live-linked; a preset never points at another.
+		if ( is_array( $value ) && isset( $value['mode'] ) && $value['mode'] === 'saved' ) {
+			$id     = isset( $value['saved']['preset'] ) ? (string) $value['saved']['preset'] : '';
+			$preset = function_exists( 'upw_ix_preset_get' ) ? upw_ix_preset_get( $id ) : null;
+			return ( $preset && ( ! isset( $preset['mode'] ) || $preset['mode'] !== 'saved' ) ) ? upw_interactions_compile( $preset ) : null;
+		}
 		if ( ! is_array( $value ) || empty( $value['mode'] ) || ! in_array( $value['mode'], upw_interactions_modes(), true ) ) {
 			return null;
 		}
@@ -147,12 +153,30 @@ if ( ! function_exists( 'upw_interactions_compile' ) ) :
 				}
 			}
 		}
+		// Repeat and back-and-forth (roadmap 6g).
+		if ( in_array( $mode, array( 'hover', 'click', 'load', 'start', 'view', 'component' ), true ) && isset( $o['repeat'] ) ) {
+			$rep = (int) $o['repeat'];
+			if ( $rep === -1 || $rep > 1 ) {
+				$cfg['rep'] = $rep === -1 ? -1 : min( 20, $rep );
+				if ( isset( $o['yoyo'] ) && $o['yoyo'] === 'yes' ) {
+					$cfg['yo'] = 1;
+				}
+			}
+		}
 		if ( $mode === 'click' ) {
 			$cfg['again'] = ( isset( $o['again'] ) && in_array( $o['again'], array( 'reverse', 'replay', 'none' ), true ) ) ? $o['again'] : 'reverse';
 		} elseif ( $mode === 'view' ) {
 			$cfg['leave'] = ( isset( $o['leave'] ) && $o['leave'] === 'keep' ) ? 'keep' : 'reverse';
 		} elseif ( $mode === 'past' ) {
 			$cfg['offset'] = upw_interactions_num( $o, 'offset', 80, -2000, 4000 );
+		} elseif ( $mode === 'mouse' ) { // roadmap 6f: scrubbed by the pointer
+			$cfg['area']   = ( isset( $o['area'] ) && $o['area'] === 'page' ) ? 'page' : 'element';
+			$cfg['smooth'] = round( upw_interactions_num( $o, 'smooth', 85, 0, 98 ) / 100, 3 );
+			$cfg['leave']  = ( isset( $o['leave'] ) && $o['leave'] === 'stay' ) ? 'stay' : 'rest';
+		} elseif ( $mode === 'component' ) { // roadmap 8b: fire on another component's own event
+			$ev = isset( $o['event'] ) ? (string) $o['event'] : 'open';
+			$cfg['ev']  = in_array( $ev, array( 'open', 'close', 'tab', 'slide' ), true ) ? $ev : 'open';
+			$cfg['cmp'] = upw_interactions_selector( isset( $o['component'] ) ? $o['component'] : '' );
 		}
 		return $cfg;
 	}

@@ -774,7 +774,7 @@
 		}
 
 		var clock = new THREE.Clock();
-		var running = false, raf = 0, last = 0;
+		var running = false, last = 0;
 		var minDelta = (cfg.quality === 'low') ? (1 / 30) : 0;
 
 		function renderFrame() {
@@ -862,18 +862,19 @@
 			renderer.render(scene, camera);
 		}
 
+		// Every frame on the shared frame scheduler (window.upwAnimRaf) while running. stop() unsubscribes it (so it never
+		// also returns false: a subscriber that removes itself AND returns false would make the scheduler drop another one).
 		function loop() {
 			if (!running) { return; }
 			if (!document.body.contains(root)) { dispose(); return; }
-			raf = requestAnimationFrame(loop);
 			var now = clock.getElapsedTime();
 			if (minDelta && (now - last) < minDelta) { return; }
 			last = now;
 			renderFrame();
 		}
 
-		function start() { if (running) { return; } running = true; loop(); }
-		function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+		function start() { if (running) { return; } running = true; window.upwAnimRaf.add(loop); }
+		function stop() { running = false; window.upwAnimRaf.remove(loop); }
 
 		var disposed = false;
 		function dispose() {
@@ -909,14 +910,8 @@
 		if (REDUCE && cfg.preset !== 'image_particles') { renderFrame(); return; }
 
 		// Run only while in view; pause when the tab is hidden.
-		if ('IntersectionObserver' in window) {
-			var io = new IntersectionObserver(function (entries) {
-				entries.forEach(function (en) { if (en.isIntersecting) { start(); } else { stop(); } });
-			}, { threshold: 0.05 });
-			io.observe(root);
-		} else {
-			start();
-		}
+		// The engine's shared in-view watcher (window.upwInView; starts at once without IntersectionObserver).
+		window.upwInView(root, function (v) { if (v) { start(); } else { stop(); } }, { threshold: 0.05 });
 		document.addEventListener('visibilitychange', function () {
 			if (document.hidden) { stop(); } else if ('IntersectionObserver' in window) {
 				var r = root.getBoundingClientRect();

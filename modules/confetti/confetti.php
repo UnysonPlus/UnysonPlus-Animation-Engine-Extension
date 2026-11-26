@@ -289,6 +289,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'base_css'  => 'static/css/confetti.css',
 			'base_js'   => 'static/js/confetti.js',
 			'js_styles' => array_keys( upw_confetti_styles() ), // every style needs the one runtime
+			'needs_raf' => true, // frame loop + in-view watcher: the shared scheduler (static/js/upw-raf.js)
 			'js_cfg'    => function () {
 				$cfg = array(
 					'reducedMotion' => ( ! function_exists( 'upw_anim_engine_setting' ) || upw_anim_engine_setting( 'respect_reduced_motion', 'yes' ) !== 'no' ),

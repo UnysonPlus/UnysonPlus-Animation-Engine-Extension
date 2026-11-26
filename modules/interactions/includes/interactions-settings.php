@@ -241,6 +241,28 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'attr'  => array( 'class' => 'upw-ix-scope', 'placeholder' => '.card' ),
 	);
 
+	// Repeat and back-and-forth (roadmap 6g): how many times the steps play, and whether every other play runs backwards.
+	$repeat = array(
+		'type'    => 'select',
+		'label'   => __( 'Repeat', 'fw' ),
+		'value'   => '1',
+		'choices' => array(
+			'1'  => __( 'Play once', 'fw' ),
+			'2'  => __( '2 times', 'fw' ),
+			'3'  => __( '3 times', 'fw' ),
+			'5'  => __( '5 times', 'fw' ),
+			'-1' => __( 'Forever (while it is on)', 'fw' ),
+		),
+	);
+	$yoyo = array(
+		'type'         => 'switch',
+		'label'        => __( 'Back and forth', 'fw' ),
+		'desc'         => __( 'With Repeat: each time plays forwards and then back (a pulse, a swing), so it ends where it started, instead of starting again from the beginning.', 'fw' ),
+		'value'        => 'no',
+		'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+		'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+	);
+
 	$sitewide = array(
 		'type'         => 'switch',
 		'label'        => __( 'Use on every page', 'fw' ),
@@ -255,7 +277,7 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 		'popover'      => true,
 		'label'        => __( 'Interactions', 'fw' ),
 		'desc'         => __( 'When this element is hovered, clicked, loaded or scrolled to, animate it or other elements: hover a card to lift it and zoom its image, click a button to slide in a panel, scroll past the hero to shrink the header.', 'fw' ),
-		'help'         => __( 'Interactions (Animation Engine): a trigger on this element plays up to three steps, and each step animates this element, elements inside it, or any elements on the page you name with a CSS ID, class or tag (or pick in the Live Editor). Hover plays on the way in and reverses on the way out; Click can reverse, replay or play once; In view can reverse when it leaves; Scrolled past reverses when you scroll back. Moves, scales, rotates, fades and blurs on top of any other effect the target has. Honours “reduce motion” (jumps straight to the end). Loads only on pages that use it.', 'fw' ),
+		'help'         => __( 'Interactions (Animation Engine): a trigger on this element plays up to three steps, and each step animates this element, elements inside it, or any elements on the page you name with a CSS ID, class or tag (or pick in the Live Editor). Hover plays on the way in and reverses on the way out; Click can reverse, replay or play once; In view can reverse when it leaves; Scrolled past reverses when you scroll back. Page starts loading plays the instant the page begins (before images and fonts); Component event fires when a tab, slider or menu on the page changes. Moves, scales, rotates, fades and blurs on top of any other effect the target has. Honours “reduce motion” (jumps straight to the end). Loads only on pages that use it.', 'fw' ),
 		'show_borders' => false,
 		'value'        => array( 'mode' => 'off' ),
 		'placeholder'  => __( 'Off', 'fw' ),
@@ -269,14 +291,78 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 					'hover' => $tile( 'hover', __( 'On hover', 'fw' ) ),
 					'click' => $tile( 'click', __( 'On click', 'fw' ) ),
 					'load'  => $tile( 'load', __( 'On page load', 'fw' ) ),
+						'start' => $tile( 'start', __( 'Page starts loading', 'fw' ) ),
 					'view'  => $tile( 'view', __( 'In view', 'fw' ) ),
 					'past'  => $tile( 'past', __( 'Scrolled past', 'fw' ) ),
+					'mouse' => $tile( 'mouse', __( 'Mouse move', 'fw' ) ),
+						'component' => $tile( 'component', __( 'Component event', 'fw' ) ),
+					'saved' => $tile( 'saved', __( 'A saved Interaction', 'fw' ) ),
 				),
 			),
 		),
 		'choices' => array(
 			'off'   => array(),
+			// Page starts loading (roadmap 8c): plays at once as the page begins to load.
+			'start' => array(
+				'start_note' => array(
+					'type'  => 'html',
+					'label' => false,
+					'desc'  => false,
+					'html'  => '<p class="upw-ix-note" style="margin:0;color:#646970;font-size:12px;line-height:1.5;">'
+						. esc_html__( 'Plays the moment the page starts loading — before images and fonts finish — for an intro that must begin at once. “On page load” waits until everything has loaded instead.', 'fw' ) . '</p>',
+				),
+				'repeat'  => $repeat,
+				'yoyo'    => $yoyo,
+				'devices' => $devices,
+				'amount_tablet' => $amount_t,
+				'amount_phone'  => $amount_p,
+				'scope'   => $scope,
+				'scope_selector' => $scope_sel,
+				'sitewide' => $sitewide,
+				'note'  => $steps_note,
+				'steps' => upw_interactions_steps_field( array( 'direction' => 'from', 'y' => 24, 'opacity' => 0, 'duration' => 0.6 ) ),
+			),
+			// Component event (roadmap 8b): fire on another component's own event (a tab, a slider, a menu).
+			'component' => array(
+				'event' => array(
+					'type'    => 'select',
+					'label'   => __( 'Fires when', 'fw' ),
+					'value'   => 'open',
+					'choices' => array(
+						'open'  => __( 'A menu, dropdown or panel opens (reverses when it closes)', 'fw' ),
+						'close' => __( 'A menu, dropdown or panel closes', 'fw' ),
+						'tab'   => __( 'A tab changes', 'fw' ),
+						'slide' => __( 'A slider changes slide', 'fw' ),
+					),
+				),
+				'component' => array(
+					'type'  => 'text',
+					'label' => __( 'Watch', 'fw' ),
+					'desc'  => __( 'A CSS selector for the component to watch — a mega-menu item (.menu-item-has-mega-menu), the mobile menu drawer (#primary-navigation-drawer), the tabs or the slider. Leave empty to watch this element. In the Live Editor, click “Pick on the page”.', 'fw' ),
+					'value' => '',
+					'attr'  => array( 'class' => 'upw-ix-scope', 'placeholder' => '.menu-item-has-mega-menu, #primary-navigation-drawer, .wpc-tabs, .splide' ),
+				),
+				'component_note' => array(
+					'type'  => 'html',
+					'label' => false,
+					'desc'  => false,
+					'html'  => '<p class="upw-ix-note" style="margin:0;color:#646970;font-size:12px;line-height:1.5;">'
+						. esc_html__( 'Listens for another component’s own event and plays these steps — slide a panel in when the mobile menu opens, pulse a badge when a tab changes, fade a caption when the slider moves. “Opens” plays forwards on open and reverses on close; “A tab changes” and “A slider changes slide” replay each time.', 'fw' ) . '</p>',
+				),
+				'repeat'  => $repeat,
+				'yoyo'    => $yoyo,
+				'devices' => $devices,
+				'amount_tablet' => $amount_t,
+				'amount_phone'  => $amount_p,
+				'scope'   => $scope,
+				'scope_selector' => $scope_sel,
+				'sitewide' => $sitewide,
+				'note'  => $steps_note,
+				'steps' => upw_interactions_steps_field( array( 'target' => 'self', 'direction' => 'from', 'y' => 16, 'opacity' => 0, 'duration' => 0.5 ) ),
+			),
 			'hover' => array(
+				'repeat'  => $repeat,
+				'yoyo'    => $yoyo,
 				'devices' => $devices,
 				'amount_tablet' => $amount_t,
 				'amount_phone'  => $amount_p,
@@ -297,6 +383,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 						'none'    => __( 'Does nothing (plays once)', 'fw' ),
 					),
 				),
+				'repeat'  => $repeat,
+				'yoyo'    => $yoyo,
 				'devices' => $devices,
 				'amount_tablet' => $amount_t,
 				'amount_phone'  => $amount_p,
@@ -307,6 +395,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'steps' => upw_interactions_steps_field( array( 'scale' => 1.06, 'duration' => 0.3, 'ease' => 'back' ) ),
 			),
 			'load'  => array(
+				'repeat'  => $repeat,
+				'yoyo'    => $yoyo,
 				'devices' => $devices,
 				'amount_tablet' => $amount_t,
 				'amount_phone'  => $amount_p,
@@ -326,6 +416,8 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 						'keep'    => __( 'Keep the end state (plays once)', 'fw' ),
 					),
 				),
+				'repeat'  => $repeat,
+				'yoyo'    => $yoyo,
 				'devices' => $devices,
 				'amount_tablet' => $amount_t,
 				'amount_phone'  => $amount_p,
@@ -334,6 +426,57 @@ add_filter( 'sc_animation_fields', function ( $fields ) {
 				'sitewide' => $sitewide,
 				'note'  => $steps_note,
 				'steps' => upw_interactions_steps_field( array( 'direction' => 'from', 'y' => 40, 'opacity' => 0, 'duration' => 0.7 ) ),
+			),
+			'saved' => array(
+				'preset' => array(
+					'type'    => 'select',
+					'label'   => __( 'Saved Interaction', 'fw' ),
+					'desc'    => __( 'Plays an Interaction saved from the Live Editor (Interaction timeline → Save as preset). Saving a preset again under the same name changes it everywhere it is used. Theme Settings → Site-wide UX → Interactions lists them, with Import / Export.', 'fw' ),
+					'value'   => '',
+					'choices' => function_exists( 'upw_ix_preset_choices' ) ? upw_ix_preset_choices() : array( '' => __( '— None saved yet —', 'fw' ) ),
+				),
+			),
+			'mouse' => array(
+				'area'   => array(
+					'type'    => 'select',
+					'label'   => __( 'Follows the pointer', 'fw' ),
+					'value'   => 'element',
+					'choices' => array(
+						'element' => __( 'Over this element', 'fw' ),
+						'page'    => __( 'Anywhere on the page', 'fw' ),
+					),
+				),
+				'smooth' => array(
+					'type'       => 'slider',
+					'label'      => __( 'Smoothing (%)', 'fw' ),
+					'desc'       => __( '0 = follows the pointer exactly; higher = glides after it.', 'fw' ),
+					'value'      => 85,
+					'properties' => array( 'min' => 0, 'max' => 98, 'step' => 1 ),
+				),
+				'leave'  => array(
+					'type'    => 'select',
+					'label'   => __( 'When the pointer leaves it', 'fw' ),
+					'value'   => 'rest',
+					'choices' => array(
+						'rest' => __( 'Glide back to its own look', 'fw' ),
+						'stay' => __( 'Stay where it is', 'fw' ),
+					),
+				),
+				'mouse_note' => array(
+					'type'  => 'html',
+					'label' => false,
+					'desc'  => false,
+					'html'  => '<p style="margin:0;color:#646970;font-size:12px;line-height:1.5;">'
+						. esc_html__( 'Each step’s values are its look with the pointer at the right or bottom edge (mirrored at the left or top): left and right move Move X, Rotate, Tilt Y and Skew X; up and down move Move Y, Tilt X and Skew Y; how far the pointer is from the centre sets Scale, Opacity, Blur and the filters. Duration, delay, easing and the instant steps are not used. Pointers only: phones and tablets keep the element still.', 'fw' )
+						. '</p>',
+				),
+				'devices' => $devices,
+				'amount_tablet' => $amount_t,
+				'amount_phone'  => $amount_p,
+				'scope'   => $scope,
+				'scope_selector' => $scope_sel,
+				'sitewide' => $sitewide,
+				'steps' => upw_interactions_steps_field( array( 'x' => 16, 'y' => 12 ) ),
 			),
 			'past'  => array(
 				'offset' => array(

@@ -209,6 +209,7 @@ if ( function_exists( 'upw_anim_register_assets' ) ) {
 			'css_dir'   => 'static/css/effects',
 			'base_css'  => 'static/css/base.css',
 			'base_js'   => 'static/js/scroll-text-highlight.js',
+			'needs_raf' => true, // Phase 11: frame loops on window.upwAnimRaf, in-view on window.upwInView (static/js/upw-raf.js)
 			'js_styles' => array_keys( upw_sth_styles() ), // every highlight mode needs the word-wrap runtime
 			'js_cfg'    => function () {
 				$cfg = array(
